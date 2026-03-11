@@ -447,13 +447,19 @@ def _apply_state_to_config(
         elif state.get("d_cin_excel") == "":
             if cfg.has_option("DTC", "cin_input_excel"):
                 cfg.remove_option("DTC", "cin_input_excel")
-        if state.get("d_io_excel"):
+        # DTC IO Mapping：路径与 Sheet 勾选合并写入 [DTC_IOMAPPING].inputs，格式为
+        # path | sheet1,sheet2；当 sheets 为空时使用 * 表示“全选”
+        if "d_io_excel" in state or "d_io_selected_sheets" in state:
             if not cfg.has_section("DTC_IOMAPPING"):
                 cfg.add_section("DTC_IOMAPPING")
-            cfg.set("DTC_IOMAPPING", "inputs", f"{str(state['d_io_excel']).strip()} | *")
-        elif state.get("d_io_excel") == "":
-            if cfg.has_section("DTC_IOMAPPING") and cfg.has_option("DTC_IOMAPPING", "inputs"):
-                cfg.remove_option("DTC_IOMAPPING", "inputs")
+            path = str(state.get("d_io_excel") or "").strip()
+            sheets = str(state.get("d_io_selected_sheets") or "").strip()
+            if path:
+                val = f"{path} | {sheets if sheets else '*'}"
+                cfg.set("DTC_IOMAPPING", "inputs", val)
+            else:
+                if cfg.has_option("DTC_IOMAPPING", "inputs"):
+                    cfg.remove_option("DTC_IOMAPPING", "inputs")
         if state.get("d_didconfig_excel"):
             if not cfg.has_section("DTC_CONFIG_ENUM"):
                 cfg.add_section("DTC_CONFIG_ENUM")
@@ -539,10 +545,12 @@ def generate():
         orch = TaskOrchestrator.from_base_dir(base)
         # 左右后域默认不跑 UART；仅当前端传了串口矩阵路径（中央域配置）时才尝试生成 UART
         has_uart_config = bool(state.get("c_uart") if state else False)
+        # 关键字集 Clib（CIN）：仅当配置里实际有 cin_input_excel/关键字集路径时才生成 CIN；否则跳过 CIN 生成
+        has_cin_config = bool(state.get("cin_excel") if state else False)
         result = orch.run_lr_bundle(
             run_can=True,
             run_xml=True,
-            run_cin=True,
+            run_cin=has_cin_config,
             run_did=True,
             run_uart=has_uart_config,
         )
@@ -605,7 +613,9 @@ def generate_dtc():
             mgr._write_formatted_config(cfg, uds_domains=["DTC"])
             _flush_config_to_disk()
         orch = TaskOrchestrator.from_base_dir(base)
-        result = orch.run_dtc_bundle(run_can=True, run_xml=True)
+        # DTC 关键字集 Clib：仅当 DTC Tab 配置了 d_cin_excel 时才生成 DTC CIN，否则跳过
+        has_cin_config = bool(state.get("d_cin_excel") if state else False)
+        result = orch.run_dtc_bundle(run_can=True, run_xml=True, run_cin=has_cin_config)
         if not result.success:
             return jsonify({"success": False, "message": " / ".join(result.messages), "detail": result.detail}), 500
         message = " / ".join(result.messages)

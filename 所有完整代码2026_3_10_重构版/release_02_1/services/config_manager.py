@@ -622,8 +622,16 @@ class ConfigManager:
             out["d_didinfo_excel"] = didinfo_raw.split(" | ")[0] if didinfo_raw else ""
             out["d_cin_excel"] = d.get("cin_input_excel", "")
         if config.has_section("DTC_IOMAPPING"):
-            io_raw = config.get("DTC_IOMAPPING", "inputs", fallback="")
-            out["d_io_excel"] = io_raw.split(" | ")[0] if io_raw else ""
+            io_raw = (config.get("DTC_IOMAPPING", "inputs", fallback="") or "").strip()
+            if io_raw and "|" in io_raw:
+                path_part, sheets_part = io_raw.split("|", 1)
+                out["d_io_excel"] = path_part.strip()
+                sheets_str = (sheets_part or "").strip()
+                # 若为 * 或空串，表示全选，前端用空串表示“全选/不做过滤”
+                out["d_io_selected_sheets"] = "" if sheets_str in ("", "*") else sheets_str
+            else:
+                out["d_io_excel"] = io_raw
+                out["d_io_selected_sheets"] = ""
         if config.has_section("DTC_CONFIG_ENUM"):
             didcfg_raw = config.get("DTC_CONFIG_ENUM", "inputs", fallback="")
             out["d_didconfig_excel"] = didcfg_raw.split(" | ")[0] if didcfg_raw else ""

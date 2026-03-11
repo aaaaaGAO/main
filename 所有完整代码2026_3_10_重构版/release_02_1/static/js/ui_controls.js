@@ -60,6 +60,12 @@
                 if (keyToContainer[key]) {
                     autoParseAndRender(key, keyToContainer[key]);
                 }
+                if (key === 'd_io_excel' && global.autoParseDtcIoSheets) {
+                    // 选择 IO_Mapping 后，显示下方的灰色勾选区域
+                    var wrap = document.getElementById('d_io_sheets_wrapper');
+                    if (wrap) wrap.style.display = 'block';
+                    global.autoParseDtcIoSheets();
+                }
             }
         } catch (e) { console.error(e); }
     }
@@ -85,6 +91,7 @@
                 el.classList.remove('selected');
             }
         }
+        // 对应的“勾选用例”区域不再显示提示文字，保持为空，由解析成功后再填充
         var keyToContainer = {
             can_input: 'can_select_cases_group',
             c_input: 'c_select_cases_group',
@@ -93,8 +100,15 @@
         if (keyToContainer[key]) {
             var container = document.getElementById(keyToContainer[key]);
             if (container) {
-                container.innerHTML = '<p style="color:#909399;font-size:13px;padding:8px;">请先选择文件或文件夹</p>';
+                container.innerHTML = '';
             }
+        }
+        // 清空 DTC IO_Mapping 时，同时清空并隐藏 Sheet 勾选区域（保持干净，不显示灰框）
+        if (key === 'd_io_excel') {
+            var ioWrapper = document.getElementById('d_io_sheets_wrapper');
+            if (ioWrapper) ioWrapper.style.display = 'none';
+            var ioContainer = document.getElementById('d_io_sheets_container');
+            if (ioContainer) ioContainer.innerHTML = '';
         }
         if (global.autoSaveConfig) {
             global.autoSaveConfig();
@@ -211,7 +225,8 @@
         var container = document.getElementById(containerId);
         if (!container) return;
         if (!path) {
-            container.innerHTML = '<p style="color:#909399;font-size:13px;padding:8px;">请先选择文件或文件夹</p>';
+            // 未选择文件或文件夹时，不显示任何提示文案，保持区域为空
+            container.innerHTML = '';
             return;
         }
         try {
@@ -235,6 +250,55 @@
 
     function esc(v) {
         return String(v).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    async function autoParseDtcIoSheets(initialSelectedSheets) {
+        var path = selection.d_io_excel;
+        var container = document.getElementById('d_io_sheets_container');
+        if (!container) return;
+
+        // 未选择 IO_Mapping 文件时，保持区域为空（不显示提示文字）
+        if (!path) {
+            container.innerHTML = '';
+            return;
+        }
+
+        try {
+            var data = await global.API.parseFileStructure(path);
+            if (!data.success || !data.data || data.data.length === 0) {
+                container.innerHTML = '<p style="color:#f56c6c;padding:8px;">解析失败</p>';
+                return;
+            }
+
+            // 复用通用树形渲染逻辑，使样式/折叠行为与“勾选用例”一致
+            container.innerHTML = _renderCaseSelectCheckboxes(data.data, 'd_io_sheets_container');
+
+            // 处理勾选状态还原：
+            // - initialSelectedSheets 为空或为 "*"：默认全选
+            // - 否则按 "Sheet1,Sheet2" 还原
+            if (initialSelectedSheets && initialSelectedSheets !== '*') {
+                var first = data.data[0] || {};
+                var filename = first.relpath || first.filename || '';
+                var formatted = String(initialSelectedSheets)
+                    .split(',')
+                    .map(function (s) { return s.trim(); })
+                    .filter(Boolean)
+                    .map(function (s) { return filename + '|' + s; })
+                    .join(',');
+                if (global.restoreCaseCheckboxes) {
+                    global.restoreCaseCheckboxes('d_io_sheets_container', formatted);
+                }
+            } else {
+                container.querySelectorAll('input.sheet-checkbox').forEach(function (inp) {
+                    inp.checked = true;
+                });
+            }
+
+            updateAllParentAndSelectAllState('d_io_sheets_container');
+        } catch (e) {
+            console.error(e);
+            container.innerHTML = '<p style="color:#f56c6c;padding:8px;">解析异常</p>';
+        }
     }
 
     function _renderCaseSelectCheckboxes(items, containerId) {
@@ -542,6 +606,7 @@
             d_selected_sheets: global.getSelectedSheets('d_select_cases_group'),
             d_log_level: document.getElementById('d_log_level') ? document.getElementById('d_log_level').value : 'info',
             d_io_excel: selection.d_io_excel || '',
+            d_io_selected_sheets: (global.getDtcIoSelectedSheets ? global.getDtcIoSelectedSheets() : ''),
             d_didconfig_excel: selection.d_didconfig_excel || '',
             d_didinfo_excel: selection.d_didinfo_excel || '',
             d_cin_excel: selection.d_cin_excel || '',
@@ -1339,6 +1404,7 @@
     global.loadSerialPortsForRelay = loadSerialPortsForRelay;
     global.handleRelaySelectChange = handleRelaySelectChange;
     global.handleRelayCustomInputChange = handleRelayCustomInputChange;
+    global.autoParseDtcIoSheets = autoParseDtcIoSheets;
     global.showIGConfig = showIGConfig;
     global.closeIGConfig = closeIGConfig;
     global.updateIGConfig = updateIGConfig;

@@ -319,7 +319,18 @@
             <div class="section">
                 <div class="section-header">🛠️ 2. 配置表</div>
                 <div class="section-body">
-                    <div class="row row-inline"><div class="label-text">IO_Mapping配置表：</div><button class="btn" onclick="selectPath('d_io_excel', 'file', 'd_io_disp')">浏览</button><button class="btn btn-delete" onclick="clearPath('d_io_excel', 'd_io_disp')">删除</button><span id="d_io_disp" class="status">未选择</span></div>
+                        <div class="row">
+                            <div class="row row-inline">
+                                <div class="label-text">IO_Mapping配置表：</div>
+                                <button class="btn" onclick="selectPath('d_io_excel', 'file', 'd_io_disp')">浏览</button>
+                                <button class="btn btn-delete" onclick="clearPath('d_io_excel', 'd_io_disp')">删除</button>
+                                <span id="d_io_disp" class="status">未选择</span>
+                            </div>
+                            <!-- 默认完全隐藏，只有选择 IO_Mapping 文件后才由 JS 显示 -->
+                            <div id="d_io_sheets_wrapper" class="filter-container" style="display:none;margin-top:8px;max-height:220px;">
+                                <div id="d_io_sheets_container" class="case-sheet-grid"></div>
+                            </div>
+                        </div>
                     <div class="row row-inline"><div class="label-text">DID_Config配置表：</div><button class="btn" onclick="selectPath('d_didconfig_excel', 'file', 'd_didconfig_disp')">浏览</button><button class="btn btn-delete" onclick="clearPath('d_didconfig_excel', 'd_didconfig_disp')">删除</button><span id="d_didconfig_disp" class="status">未选择</span></div>
                     <div class="row row-inline"><div class="label-text">ResetDid_Value配置表：</div><button class="btn" onclick="selectPath('d_didinfo_excel', 'file', 'd_didinfo_disp')">浏览</button><button class="btn btn-delete" onclick="clearPath('d_didinfo_excel', 'd_didinfo_disp')">删除</button><span id="d_didinfo_disp" class="status">未选择</span></div>
                     <div class="row row-inline"><div class="label-text">关键字集Clib配置表：</div><button class="btn" onclick="selectPath('d_cin_excel', 'file', 'd_cin_disp')">浏览</button><button class="btn btn-delete" onclick="clearPath('d_cin_excel', 'd_cin_disp')">删除</button><span id="d_cin_disp" class="status">未选择</span></div>

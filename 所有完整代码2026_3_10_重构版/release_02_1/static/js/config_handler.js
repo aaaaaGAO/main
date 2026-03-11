@@ -101,6 +101,7 @@
             d_selected_sheets: getSelectedSheets('d_select_cases_group'),
             d_log_level: document.getElementById('d_log_level') ? document.getElementById('d_log_level').value : 'info',
             d_io_excel: selection.d_io_excel || '',
+            d_io_selected_sheets: getDtcIoSelectedSheets(),
             d_didconfig_excel: selection.d_didconfig_excel || '',
             d_didinfo_excel: selection.d_didinfo_excel || '',
             d_cin_excel: selection.d_cin_excel || '',
@@ -112,6 +113,20 @@
             d_uds_ecu_qualifier: document.getElementById('d_uds_ecu_qualifier') ? document.getElementById('d_uds_ecu_qualifier').value : ''
         };
         return state;
+    }
+
+    function getDtcIoSelectedSheets() {
+        var container = document.getElementById('d_io_sheets_container');
+        if (!container) return '';
+        // 复用用例树的结构，这里直接按 sheet-checkbox 收集
+        var inputs = container.querySelectorAll('input.sheet-checkbox:checked');
+        if (!inputs || inputs.length === 0) return '';
+        var sheets = [];
+        inputs.forEach(function (inp) {
+            var name = inp.value || inp.getAttribute('data-sheet') || '';
+            if (name) sheets.push(name);
+        });
+        return sheets.join(',');
     }
 
     function restoreChecks(id, vals) {
@@ -382,6 +397,9 @@
             restoreChecks('d_model_group', cfg.d_models);
             restoreChecks('d_target_version_group', cfg.d_target_versions);
             renderUdsSelect('d_uds_ecu_qualifier', fData.uds_ecu_qualifier, cfg.d_uds_ecu_qualifier);
+            if (cfg.d_io_excel && global.autoParseDtcIoSheets) {
+                await global.autoParseDtcIoSheets(cfg.d_io_selected_sheets);
+            }
             if (cfg.can_input && global.autoParseAndRender) {
                 await global.autoParseAndRender('can_input', 'can_select_cases_group', cfg.selected_sheets);
             }
@@ -629,6 +647,7 @@
     global.loginConfig = loginConfig;
     global.getChecks = getChecks;
     global.getSelectedSheets = getSelectedSheets;
+    global.getDtcIoSelectedSheets = getDtcIoSelectedSheets;
     global.collectCurrentState = collectCurrentState;
     global.restoreChecks = restoreChecks;
     global.restoreCaseCheckboxes = restoreCaseCheckboxes;
