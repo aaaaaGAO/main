@@ -653,11 +653,40 @@ class ConfigManager:
             self._init_fixed_config_from_main_config()
             self._write_formatted_config(config)
 
+    @staticmethod
+    def _is_relay_list_effectively_empty(val: Any) -> bool:
+        """判断继电器列表是否为“有效空”：空列表，或所有项均未填 port/relayID 等核心项（含前端残留的多条空槽）。"""
+        if val is None or val == "" or val == [] or val == {}:
+            return True
+        # 前端可能传回已解析的 list 或 JSON 字符串
+        if isinstance(val, str):
+            val = val.strip()
+            if val in ("", "[]", "[{}]"):
+                return True
+            try:
+                val = json.loads(val)
+            except Exception:
+                return False
+        if not isinstance(val, list):
+            return False
+        if len(val) == 0:
+            return True
+        # 任意一项只要填了 port 或 relayID 即视为“有内容”；全部未填则视为有效空
+        for item in val:
+            if not isinstance(item, dict):
+                continue
+            port = str(item.get("port", "") or "").strip()
+            relay_id = str(item.get("relayID", "") or "").strip()
+            if port or relay_id:
+                return False
+        return True
+
     def save_ui_data(self, data: Dict[str, Dict[str, Any]]) -> None:
         """将前端按节提交的 data 写回主配置并格式化写回文件。
         增强点：
         - 对 CENTRAL 段的 UI 托管键（如 c_pwr/c_rly/c_ig/c_pw/ign_*/login_*/uart_comm_*）做“缺失即删”的处理，
           防止增量更新导致旧值残留。
+        - 继电器 c_rly 为列表：空列表或所有项均未填 port/relayID 时视为“有效空”，从配置中删除，避免骨架残留。
         - 对所有节的键，若值为 None / 空串 / 空列表 / 空字典，则优先执行 remove_option 而不是写入空字符串。
         参数:
             data: 节名为键、值为「选项名->值」字典，如 {"LR_REAR": {"input_excel": "..."}, ...}。
@@ -669,7 +698,7 @@ class ConfigManager:
             # 本次前端实际提交更新的节名列表，用于后续精确控制 UDS/中央域附属文件的生成范围
             updated_sections: List[str] = list(data.keys())
 
-            # 中央域由前端 UI 统一托管的配置键：当前端未提供或提供的是“空值”时，应主动从配置文件中移除
+            # 中央域由前端 UI 统一托管的配置键：当前端未提供或提供的是“空值/有效空”时，应主动从配置文件中移除
             central_managed_keys = {
                 "c_pwr",
                 "c_rly",
@@ -692,18 +721,26 @@ class ConfigManager:
                 if not config.has_section(section):
                     config.add_section(section)
 
-                # 1) CENTRAL 段：先对托管键做“缺失/空值即删除”的处理
+                # 1) CENTRAL 段：先对托管键做“缺失/空值/有效空即删除”的处理
                 if section == "CENTRAL":
                     for m_key in central_managed_keys:
-                        # 前端完全没传这个键，或者传的是 None / "" / [] / {}，都视为“用户清空/关闭”
-                        if m_key not in kv or kv.get(m_key) in (None, "", [], {}):
+                        val = kv.get(m_key)
+                        is_effectively_empty = False
+                        if val in (None, "", [], {}):
+                            is_effectively_empty = True
+                        elif m_key == "c_rly":
+                            is_effectively_empty = self._is_relay_list_effectively_empty(val)
+                        if m_key not in kv or is_effectively_empty:
                             if config.has_option(section, m_key):
                                 config.remove_option(section, m_key)
 
-                # 2) 通用写入逻辑：有值则 set，空值则删
+                # 2) 通用写入逻辑：有值则 set，空值则删；继电器列表为“有效空”时也按删除处理，避免脏数据回流
                 for key, val in kv.items():
                     opt = str(key)
                     if val in (None, "", [], {}):
+                        if config.has_option(section, opt):
+                            config.remove_option(section, opt)
+                    elif opt == "c_rly" and self._is_relay_list_effectively_empty(val):
                         if config.has_option(section, opt):
                             config.remove_option(section, opt)
                     else:

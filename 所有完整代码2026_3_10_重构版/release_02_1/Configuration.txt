@@ -24,6 +24,18 @@ output_dir = C:/Users/高登兰/Desktop/python开发合肥/DTC
 # 中央域配置
 # ============================================================
 [CENTRAL]
+input_excel = C:/Users/高登兰/Desktop/python开发合肥/python工具转译校验_V1.0.xlsx
+uart_excel = C:/Users/高登兰/Desktop/python开发合肥/LDCU/Uart/MCU_CDCU_CommunicationMatrix.xlsx
+selected_sheets = python工具转译校验_V1.0.xlsx|TC
+
+# 串口通信配置
+uart_comm_port = COM3
+uart_comm_baudrate = 115200
+uart_comm_dataBits = 8
+uart_comm_stopBits = 1
+uart_comm_kHANDSHAKE_DISABLED = 0
+uart_comm_parity = 0
+uart_comm_frameTypeIs8676 = 0
 
 output_dir = C:/Users/高登兰/Desktop/python开发合肥/left-right
 
@@ -46,6 +58,8 @@ current =
 # DTC配置
 # ============================================================
 [DTC]
+input_excel = C:/Users/高登兰/Desktop/python开发合肥/CDCU_MQB.xlsx
+selected_sheets = CDCU_MQB.xlsx|车窗
 
 output_dir = C:/Users/高登兰/Desktop/python开发合肥/DTC
 
