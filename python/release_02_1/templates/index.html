@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>python转capl 自动化工具</title>
+    <style>
+        :root { --primary: #4a90e2; --bg: #f5f7fa; --border: #dcdfe6; --success: #67c23a; }
+        body { font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif; background: var(--bg); padding: 20px; color: #303133; }
+        .container { max-width: 1000px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 12px rgba(0,0,0,0.1); position: relative; }
+        h1 { text-align: center; color: #409eff; margin-bottom: 20px; }
+        
+        /* 工具栏按钮 */
+        .toolbar-btn { 
+            padding: 8px 16px; 
+            border-radius: 4px; 
+            border: 1px solid var(--border);
+            background: white;
+            cursor: pointer; 
+            font-size: 13px; 
+            font-weight: 500;
+            transition: all 0.2s ease; 
+            color: #606266;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .toolbar-btn:hover { 
+            border-color: var(--primary);
+            color: var(--primary);
+            background: #ecf5ff;
+        }
+        .toolbar-btn:active {
+            background: #d9ecff;
+        }
+        
+        /* 导航标签 */
+        .nav-tabs { display: flex; border-bottom: 2px solid var(--border); margin-bottom: 25px; gap: 5px; justify-content: center; align-items: center; }
+        .nav-tabs-wrapper { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 2px solid var(--border); }
+        .nav-tabs-left { display: flex; gap: 5px; }
+        .nav-tabs-right { display: flex; gap: 10px; padding-right: 10px; align-items: center; }
+        .app-name { position: absolute; top: 20px; right: 24px; font-size: 13px; color: #409eff; font-weight: 600; padding: 4px 10px; background: #ecf5ff; border-radius: 4px; white-space: nowrap; border: 1px solid #b3d8ff; z-index: 20; }
+        .nav-tab { padding: 12px 40px; cursor: pointer; background: #fdfdfd; border: 1px solid var(--border); border-bottom: none; border-radius: 8px 8px 0 0; font-weight: bold; color: #909399; transition: 0.3s; margin-bottom: -2px; }
+        .nav-tab.active { background: white; color: var(--primary); border-top: 3px solid var(--primary); border-bottom: 2px solid white; z-index: 10; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* 区块样式 */
+        .section { margin-bottom: 25px; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
+        .section-header { background: #f2f6fc; padding: 12px 20px; font-weight: bold; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .section-body { padding: 20px; }
+        
+        .row { display: flex; flex-direction: column; margin-bottom: 15px; gap: 10px; }
+        .row-inline { flex-direction: row; align-items: center; }
+        .label-text { min-width: 180px; font-size: 14px; font-weight: 600; color: #606266; }
+        .label-group { font-size: 14px; font-weight: 600; color: #606266; display: flex; align-items: center; justify-content: space-between; }
+        
+        .status { flex: 1; font-size: 13px; color: #909399; border-bottom: 1px solid #eee; padding-bottom: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .status.selected { color: var(--success); font-weight: bold; }
+
+        .btn { padding: 6px 15px; border-radius: 4px; border: 1px solid var(--border); background: white; cursor: pointer; font-size: 12px; transition: 0.2s; }
+        .btn:hover { border-color: var(--primary); color: var(--primary); }
+        .btn-mini { padding: 2px 8px; font-size: 11px; background: #ecf5ff; color: #409eff; border: 1px solid #b3d8ff; }
+        /* 删除按钮视觉上与普通按钮一致，仅保留轻微左间距 */
+        .btn-delete {
+            margin-left: 5px;
+        }
+        
+        .btn-primary { background: #409eff; color: white; border: none; width: 100%; padding: 15px; font-size: 16px; font-weight: bold; border-radius: 4px; cursor: pointer; margin-top: 10px; }
+        .btn-primary:hover { background: #66b1ff; }
+        .btn-primary:disabled { background: #a0cfff; cursor: not-allowed; }
+
+        input[type="text"] { flex: 1; padding: 8px; border: 1px solid var(--border); border-radius: 4px; }
+        .select-config { min-width: 160px; padding: 8px 12px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px; color: #303133; background: #fff; cursor: pointer; outline: none; }
+        .select-config:hover { border-color: #c0c4cc; }
+        .select-config:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.1); }
+
+        /* 网格布局 */
+        .filter-container {
+            border: 1px solid #ebeef5;
+            background-color: #fafafa;
+            border-radius: 4px;
+            padding: 12px;
+            max-height: 180px;
+            overflow-y: auto;
+        }
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 8px;
+        }
+        .check-item {
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            background: white;
+            padding: 6px 10px;
+            border-radius: 4px;
+            border: 1px solid #e4e7ed;
+            transition: 0.2s;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .check-item:hover { border-color: var(--primary); background: #f0f7ff; }
+        .filter-container::-webkit-scrollbar { width: 6px; }
+        .filter-container::-webkit-scrollbar-thumb { background: #dcdfe6; border-radius: 3px; }
+        .case-select-container { display: flex; flex-direction: column; gap: 8px; }
+        .case-table-block .check-item { margin: 2px 0; }
+        /* 勾选用例树形列表（可折叠） */
+        .case-tree-list { border: 1px solid #dcdfe6; border-radius: 6px; background: #fff; overflow: hidden; }
+        .case-tree-parent { border-bottom: 1px solid #e4e7ed; }
+        .case-tree-parent:last-child { border-bottom: none; }
+        .case-parent-row { display: flex; align-items: center; gap: 0; padding: 0; background: #fff; min-height: 36px; }
+        .case-parent-row:hover { background: #f5f7fa; }
+        .case-expand-btn { width: 24px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #606266; font-size: 10px; flex-shrink: 0; user-select: none; }
+        .case-expand-btn:hover { color: #409eff; background: rgba(64,158,255,0.08); }
+        .case-tree-parent.expanded .case-expand-btn { transform: rotate(0deg); }
+        .case-tree-parent:not(.expanded) .case-expand-btn .icon-expanded { display: none; }
+        .case-tree-parent:not(.expanded) .case-expand-btn .icon-collapsed { display: inline; }
+        .case-tree-parent.expanded .case-expand-btn .icon-collapsed { display: none; }
+        .case-tree-parent.expanded .case-expand-btn .icon-expanded { display: inline; }
+        .case-tree-parent.no-expand .case-expand-btn { display: none; }
+        .case-tree-parent.no-expand .case-tree-children { display: block !important; }
+        .case-tree-parent.no-expand .case-parent-row label { padding-left: 8px; }
+        .case-parent-row label { display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 600; color: #303133; font-size: 13px; flex: 1; padding: 0 10px 0 4px; min-height: 36px; margin: 0; }
+        .case-parent-row input.parent-checkbox { width: 16px; height: 16px; cursor: pointer; flex-shrink: 0; }
+        .case-tree-children { display: none; padding: 10px 14px 12px 38px; background: #fff; border-top: 1px solid #e4e7ed; }
+        .case-tree-parent.expanded .case-tree-children { display: block; }
+        /* 展开后 sheet 单列竖排，整齐一列 */
+        .case-sheet-grid { display: flex; flex-direction: column; gap: 4px; }
+        .case-sheet-grid .check-item { margin: 0; }
+        .case-sheet-grid .check-item input.sheet-checkbox { margin: 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 python转capl自动化工具</h1>
+
+        <div class="nav-tabs-wrapper">
+            <div class="nav-tabs-left">
+                <div class="nav-tab active" onclick="showTab('tab-lr-rear')">左右后域</div>
+                <div class="nav-tab" onclick="showTab('tab-central')">中央域</div>
+                <div class="nav-tab" onclick="showTab('tab-dtc')">DTC</div>
+            </div>
+            <div class="nav-tabs-right">
+                <button class="toolbar-btn" onclick="saveConfigPreset()">
+                    <span>💾</span>
+                    <span>保存配置</span>
+                </button>
+                <button class="toolbar-btn" onclick="importConfigPreset()">
+                    <span>📥</span>
+                    <span>导入配置</span>
+                </button>
+            </div>
+        <span class="app-name">{{ app_name or '测试用例生成工具' }}</span>
+        </div>
+
+        <!-- 1. 左右后域 -->
+        <div id="tab-lr-rear" class="tab-content active">
+            <div class="section">
+                <div class="section-header">📂 1.Excel用例</div>
+                <div class="section-body">
+                    <div class="row row-inline">
+                        <div class="label-text">测试用例/测试文件夹导入：</div>
+                        <button class="btn" onclick="selectPath('can_input', 'file', 'can_disp')">选择文件</button>
+                        <button class="btn" onclick="selectPath('can_input', 'folder', 'can_disp')">选择文件夹</button>
+                        <button class="btn btn-delete" onclick="clearPath('can_input', 'can_disp')">删除</button>
+                        <span id="can_disp" class="status">未选择</span>
+                    </div>
+                </div>
+            </div>
+            <div class="section">
+                <div class="section-header">🛠️ 2. 配置表</div>
+                <div class="section-body">
+                    <div class="row row-inline"><div class="label-text">IO_Mapping配置表：</div><button class="btn" onclick="selectPath('io_excel', 'file', 'io_disp')">浏览</button><button class="btn btn-delete" onclick="clearPath('io_excel', 'io_disp')">删除</button><span id="io_disp" class="status">未选择</span></div>
+                    <div class="row row-inline"><div class="label-text">DID_Config配置表：</div><button class="btn" onclick="selectPath('didconfig_excel', 'file', 'didconfig_disp')">浏览</button><button class="btn btn-delete" onclick="clearPath('didconfig_excel', 'didconfig_disp')">删除</button><span id="didconfig_disp" class="status">未选择</span></div>
+                    <div class="row row-inline"><div class="label-text">ResetDid_Value配置表：</div><button class="btn" onclick="selectPath('didinfo_excel', 'file', 'didinfo_disp')">浏览</button><button class="btn btn-delete" onclick="clearPath('didinfo_excel', 'didinfo_disp')">删除</button><span id="didinfo_disp" class="status">未选择</span></div>
+                    <div class="row row-inline"><div class="label-text">关键字集Clib配置表：</div><button class="btn" onclick="selectPath('cin_excel', 'file', 'cin_disp')">浏览</button><button class="btn btn-delete" onclick="clearPath('cin_excel', 'cin_disp')">删除</button><span id="cin_disp" class="status">未选择</span></div>
+                    <div class="row row-inline"><div class="label-text">UDS_ECU_qualifier：</div><select id="uds_ecu_qualifier" class="select-config" onchange="autoSaveConfig()"></select></div>
+                </div>
+            </div>
+            <div class="section">
+                <div class="section-header">🎯 3. 用例筛选</div>
+                <div class="section-body">
+                    <div class="row">
+                        <div class="label-group">用例优先级：<button class="btn btn-mini" onclick="toggleCheck('level_group')">全选/反选</button></div>
+                        <div class="filter-container"><div class="filter-grid" id="level_group"></div></div>
+                    </div>
+                    <div class="row">
+                        <div class="label-group">测试平台：</div>
+                        <div class="filter-container"><div class="filter-grid" id="platform_group"></div></div>
+                    </div>
+                    <div class="row">
+                        <div class="label-group">测试车型：</div>
+                        <div class="filter-container"><div class="filter-grid" id="model_group"></div></div>
+                    </div>
+                    <div class="row">
+                        <div class="label-group">Target Version：<button class="btn btn-mini" onclick="toggleCheck('target_version_group')">全选/反选</button></div>
+                        <div class="filter-container"><div class="filter-grid" id="target_version_group"></div></div>
+                    </div>
+                    <div class="row">
+                        <div class="label-group">勾选用例：</div>
+                        <div class="filter-container" style="max-height:280px;"><div id="can_select_cases_group" class="case-select-container"></div></div>
+                    </div>
+                    <div class="row row-inline">
+                        <div class="label-text">日志生成选择：</div>
+                        <select id="log_level" class="select-config" onchange="autoSaveConfig()">
+                            <option value="info">info</option>
+                            <option value="warning">warning</option>
+                            <option value="error">error</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="section">
+                <div class="section-header">📤 4. 输出</div>
+                <div class="section-body">
+                    <div class="row row-inline">
+                        <div class="label-text">脚本输出路径/Canoe测试工程文件夹：</div>
+                        <input type="text" id="out_root" placeholder="请选择或粘贴工程路径" onchange="autoSaveConfig()">
+                        <button class="btn" onclick="selectPath('out_root', 'folder', 'out_root')">浏览</button>
+                    </div>
+                </div>
+            </div>
+            <button class="btn-primary" id="runBtn" onclick="run()">⚡ 开始一键运行左右后域任务</button>
+        </div>
+
+        <!-- 2. 中央域 -->
+        <div id="tab-central" class="tab-content">
+            <div class="section">
+                <div class="section-header">📂 1.Excel用例</div>
+                <div class="section-body">
+                    <div class="row row-inline">
+                        <div class="label-text">测试用例/测试文件夹导入：</div>
+                        <button class="btn" onclick="selectPath('c_input', 'file', 'c_disp')">选择文件</button>
+                        <button class="btn" onclick="selectPath('c_input', 'folder', 'c_disp')">选择文件夹</button>
+                        <button class="btn btn-delete" onclick="clearPath('c_input', 'c_disp')">删除</button>
+                        <span id="c_disp" class="status">未选择</span>
+                    </div>
+                </div>
+            </div>
+            <div class="section">
+                <div class="section-header">🛠️ 2. 配置表</div>
+                <div class="section-body">
+                    <div class="row row-inline"><div class="label-text">串口通信配置：</div><button class="btn" onclick="showUartCommConfig()">配置</button><button class="btn btn-delete" onclick="clearUartCommConfig()">删除</button><span id="c_uart_comm_disp" class="status">未配置</span></div>
+                    <div class="row row-inline"><div class="label-text">串口通信矩阵：</div><button class="btn" onclick="selectPath('c_uart', 'file', 'c_uart_disp')">浏览</button><button class="btn btn-delete" onclick="clearPath('c_uart', 'c_uart_disp')">删除</button><span id="c_uart_disp" class="status">未选择</span></div>
+                    <div class="row row-inline"><div class="label-text">服务通信矩阵：</div><button class="btn" onclick="selectPath('c_srv', 'file', 'c_srv_disp')">浏览</button><button class="btn btn-delete" onclick="clearPath('c_srv', 'c_srv_disp')">删除</button><span id="c_srv_disp" class="status">未选择</span></div>
+                    <div class="row row-inline"><div class="label-text">程控电源配置：</div><button class="btn" onclick="showPowerConfig()">配置</button><button class="btn btn-delete" onclick="clearPowerConfig()">删除</button><span id="c_pwr_disp" class="status">未配置</span></div>
+                    <div class="row row-inline"><div class="label-text">继电器配置：</div><button class="btn" onclick="showRelayConfig()">配置</button><button class="btn btn-delete" onclick="clearRelayConfigState()">删除</button><span id="c_rly_disp" class="status">未配置</span></div>
+                    <div class="row row-inline"><div class="label-text">IG配置：</div><button class="btn" onclick="showIGConfig()">配置</button><button class="btn btn-delete" onclick="clearIGConfigState()">删除</button><span id="c_ig_disp" class="status">未配置</span></div>
+                    <div class="row row-inline"><div class="label-text">PW配置：</div><button class="btn" onclick="showPWConfig()">配置</button><button class="btn btn-delete" onclick="clearPWConfigState()">删除</button><span id="c_pw_disp" class="status">未配置</span></div>
+                    <div class="row row-inline"><div class="label-text">点火循环配置：</div><button class="btn" onclick="showIgnitionConfig()">配置</button><button class="btn btn-delete" onclick="clearIgnitionConfigState()">删除</button><span id="c_ignition_disp" class="status">未配置</span></div>
+                    <div class="row row-inline"><div class="label-text">账号密码配置：</div><button class="btn" onclick="showLoginConfig()">配置</button><button class="btn btn-delete" onclick="clearLoginConfigState()">删除</button><span id="c_login_disp" class="status">未配置</span></div>
+                    <div class="row row-inline"><div class="label-text">UDS_ECU_qualifier：</div><select id="c_uds_ecu_qualifier" class="select-config" onchange="autoSaveConfig()"></select></div>
+                </div>
+            </div>
+            <div class="section">
+                <div class="section-header">🎯 3. 用例筛选</div>
+                <div class="section-body">
+                    <div class="row">
+                        <div class="label-group">用例优先级：<button class="btn btn-mini" onclick="toggleCheck('c_level_group')">全选/反选</button></div>
+                        <div class="filter-container"><div class="filter-grid" id="c_level_group"></div></div>
+                    </div>
+                    <div class="row">
+                        <div class="label-group">测试平台：</div>
+                        <div class="filter-container"><div class="filter-grid" id="c_platform_group"></div></div>
+                    </div>
+                    <div class="row">
+                        <div class="label-group">测试车型：</div>
+                        <div class="filter-container"><div class="filter-grid" id="c_model_group"></div></div>
+                    </div>
+                    <div class="row">
+                        <div class="label-group">Target Version：<button class="btn btn-mini" onclick="toggleCheck('c_target_version_group')">全选/反选</button></div>
+                        <div class="filter-container"><div class="filter-grid" id="c_target_version_group"></div></div>
+                    </div>
+                    <div class="row">
+                        <div class="label-group">勾选用例：</div>
+                        <div class="filter-container" style="max-height:280px;"><div id="c_select_cases_group" class="case-select-container"></div></div>
+                    </div>
+                    <div class="row row-inline">
+                        <div class="label-text">日志生成选择：</div>
+                        <select id="c_log_level" class="select-config" onchange="autoSaveConfig()">
+                            <option value="info">info</option>
+                            <option value="warning">warning</option>
+                            <option value="error">error</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="section">
+                <div class="section-header">📤 4. 输出</div>
+                <div class="section-body">
+                    <div class="row row-inline">
+                        <div class="label-text">输出路径/Canoe工程：</div>
+                        <input type="text" id="c_out_root" placeholder="请选择或粘贴工程路径" onchange="autoSaveConfig()">
+                        <button class="btn" onclick="selectPath('c_out_root', 'folder', 'c_out_root')">浏览</button>
+                    </div>
+                </div>
+            </div>
+            <button class="btn-primary" id="runCentralBtn" onclick="runCentral()">⚡ 开始一键运行中央域任务</button>
+        </div>
+
+        <!-- 3. DTC -->
+        <div id="tab-dtc" class="tab-content">
+            <div class="section">
+                <div class="section-header">📂 1.Excel用例</div>
+                <div class="section-body">
+                    <div class="row row-inline">
+                        <div class="label-text">测试用例/测试文件夹导入：</div>
+                        <button class="btn" onclick="selectPath('d_input', 'file', 'd_disp')">选择文件</button>
+                        <button class="btn" onclick="selectPath('d_input', 'folder', 'd_disp')">选择文件夹</button>
+                        <button class="btn btn-delete" onclick="clearPath('d_input', 'd_disp')">删除</button>
+                        <span id="d_disp" class="status">未选择</span>
+                    </div>
+                </div>
+            </div>
+            <div class="section">
+                <div class="section-header">🛠️ 2. 配置表</div>
+                <div class="section-body">
+                        <div class="row">
+                            <div class="row row-inline">
+                                <div class="label-text">IO_Mapping配置表：</div>
+                                <button class="btn" onclick="selectPath('d_io_excel', 'file', 'd_io_disp')">浏览</button>
+                                <button class="btn btn-delete" onclick="clearPath('d_io_excel', 'd_io_disp')">删除</button>
+                                <span id="d_io_disp" class="status">未选择</span>
+                            </div>
+                            <!-- 默认完全隐藏，只有选择 IO_Mapping 文件后才由 JS 显示 -->
+                            <div id="d_io_sheets_wrapper" class="filter-container" style="display:none;margin-top:8px;max-height:220px;">
+                                <div id="d_io_sheets_container" class="case-sheet-grid"></div>
+                            </div>
+                        </div>
+                    <div class="row row-inline"><div class="label-text">DID_Config配置表：</div><button class="btn" onclick="selectPath('d_didconfig_excel', 'file', 'd_didconfig_disp')">浏览</button><button class="btn btn-delete" onclick="clearPath('d_didconfig_excel', 'd_didconfig_disp')">删除</button><span id="d_didconfig_disp" class="status">未选择</span></div>
+                    <div class="row row-inline"><div class="label-text">ResetDid_Value配置表：</div><button class="btn" onclick="selectPath('d_didinfo_excel', 'file', 'd_didinfo_disp')">浏览</button><button class="btn btn-delete" onclick="clearPath('d_didinfo_excel', 'd_didinfo_disp')">删除</button><span id="d_didinfo_disp" class="status">未选择</span></div>
+                    <div class="row row-inline"><div class="label-text">关键字集Clib配置表：</div><button class="btn" onclick="selectPath('d_cin_excel', 'file', 'd_cin_disp')">浏览</button><button class="btn btn-delete" onclick="clearPath('d_cin_excel', 'd_cin_disp')">删除</button><span id="d_cin_disp" class="status">未选择</span></div>
+                    <div class="row row-inline"><div class="label-text">UDS_ECU_qualifier：</div><select id="d_uds_ecu_qualifier" class="select-config" onchange="autoSaveConfig()"></select></div>
+                </div>
+            </div>
+            <div class="section">
+                <div class="section-header">🎯 3. 用例筛选</div>
+                <div class="section-body">
+                    <div class="row">
+                        <div class="label-group">用例优先级：<button class="btn btn-mini" onclick="toggleCheck('d_level_group')">全选/反选</button></div>
+                        <div class="filter-container"><div class="filter-grid" id="d_level_group"></div></div>
+                    </div>
+                    <div class="row">
+                        <div class="label-group">测试平台：</div>
+                        <div class="filter-container"><div class="filter-grid" id="d_platform_group"></div></div>
+                    </div>
+                    <div class="row">
+                        <div class="label-group">测试车型：</div>
+                        <div class="filter-container"><div class="filter-grid" id="d_model_group"></div></div>
+                    </div>
+                    <div class="row">
+                        <div class="label-group">Target Version：<button class="btn btn-mini" onclick="toggleCheck('d_target_version_group')">全选/反选</button></div>
+                        <div class="filter-container"><div class="filter-grid" id="d_target_version_group"></div></div>
+                    </div>
+                    <div class="row">
+                        <div class="label-group">勾选用例：</div>
+                        <div class="filter-container" style="max-height:280px;"><div id="d_select_cases_group" class="case-select-container"></div></div>
+                    </div>
+                    <div class="row row-inline">
+                        <div class="label-text">日志生成选择：</div>
+                        <select id="d_log_level" class="select-config" onchange="autoSaveConfig()">
+                            <option value="info">info</option>
+                            <option value="warning">warning</option>
+                            <option value="error">error</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="section">
+                <div class="section-header">📤 4. 输出</div>
+                <div class="section-body">
+                    <div class="row row-inline">
+                        <div class="label-text">脚本输出路径/Canoe测试工程文件夹：</div>
+                        <input type="text" id="d_out_root" placeholder="请选择或粘贴工程路径" onchange="autoSaveConfig()">
+                        <button class="btn" onclick="selectPath('d_out_root', 'folder', 'd_out_root')">浏览</button>
+                    </div>
+                </div>
+            </div>
+            <button class="btn-primary" id="runDTCBtn" onclick="runDTC()">⚡ 开始一键运行DTC任务</button>
+        </div>
+    </div>
+
+    <!-- 串口通信配置模态框 -->
+    <div id="uartCommConfigModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
+        <div style="background: white; padding: 30px; border-radius: 8px; max-width: 500px; width: 90%; max-height: 90vh; overflow-y: auto;">
+            <h2 style="margin-top: 0; margin-bottom: 20px;">串口通信配置</h2>
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px; font-weight: 600;">端口号 (port):</label>
+                <select id="uart_comm_port" style="width: 100%; padding: 8px; border: 1px solid #dcdfe6; border-radius: 4px;">
+                </select>
+            </div>
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px; font-weight: 600;">波特率 (baudrate):</label>
+                <select id="uart_comm_baudrate" onchange="onSelectWithCustomChange('uart_comm_baudrate','uart_comm_baudrate_custom')" style="width: 100%; padding: 8px; border: 1px solid #dcdfe6; border-radius: 4px;">
+                    <option value="9600">9600</option>
+                    <option value="19200">19200</option>
+                    <option value="38400">38400</option>
+                    <option value="57600">57600</option>
+                    <option value="115200">115200</option>
+                    <option value="230400">230400</option>
+                    <option value="460800">460800</option>
+                    <option value="921600">921600</option>
+                    <option value="__custom__">其他（自定义）</option>
+                </select>
+                <input type="number" id="uart_comm_baudrate_custom" placeholder="请输入自定义波特率" style="margin-top: 6px; width: 100%; padding: 8px; border: 1px solid #dcdfe6; border-radius: 4px; display: none;">
+            </div>
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px; font-weight: 600;">数据位 (dataBits):</label>
+                <select id="uart_comm_databits" onchange="onSelectWithCustomChange('uart_comm_databits','uart_comm_databits_custom')" style="width: 100%; padding: 8px; border: 1px solid #dcdfe6; border-radius: 4px;">
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="__custom__">其他（自定义）</option>
+                </select>
+                <input type="number" id="uart_comm_databits_custom" placeholder="请输入自定义数据位" style="margin-top: 6px; width: 100%; padding: 8px; border: 1px solid #dcdfe6; border-radius: 4px; display: none;">
+            </div>
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px; font-weight: 600;">停止位 (stopBits):</label>
+                <select id="uart_comm_stopbits" onchange="onSelectWithCustomChange('uart_comm_stopbits','uart_comm_stopbits_custom')" style="width: 100%; padding: 8px; border: 1px solid #dcdfe6; border-radius: 4px;">
+                    <option value="1">1</option>
+                    <option value="1.5">1.5</option>
+                    <option value="2">2</option>
+                    <option value="__custom__">其他（自定义）</option>
+                </select>
+                <input type="text" id="uart_comm_stopbits_custom" placeholder="请输入自定义停止位" style="margin-top: 6px; width: 100%; padding: 8px; border: 1px solid #dcdfe6; border-radius: 4px; display: none;">
+            </div>
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px; font-weight: 600;">握手 (kHANDSHAKE_DISABLED):</label>
+                <select id="uart_comm_handshake" style="width: 100%; padding: 8px; border: 1px solid #dcdfe6; border-radius: 4px;">
+                    <option value="0" selected>0</option>
+                    <option value="1">1</option>
+                </select>
+            </div>
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px; font-weight: 600;">校验 (parity):</label>
+                <select id="uart_comm_parity" style="width: 100%; padding: 8px; border: 1px solid #dcdfe6; border-radius: 4px;">
+                    <option value="0" selected>无校验</option>
+                    <option value="1">奇校验</option>
+                    <option value="2">偶校验</option>
+                </select>
+            </div>
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 5px; font-weight: 600;">Uart_FrameTypeIs8676:</label>
+                <select id="uart_comm_frameTypeIs8676" style="width: 100%; padding: 8px; border: 1px solid #dcdfe6; border-radius: 4px;">
+                    <option value="0" selected>0（不支持）</option>
+                    <option value="1">1（支持）</option>
+                </select>
+            </div>
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button class="btn" onclick="closeUartCommConfig()" style="padding: 8px 20px;">取消</button>
+                <button class="btn btn-primary" onclick="saveUartCommConfig()" style="padding: 8px 20px; background: #409eff; color: white; border: none;">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 程控电源配置模态框 -->
+    <div id="powerConfigModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
+        <div style="background: white; padding: 30px; border-radius: 8px; max-width: 500px; width: 90%; max-height: 90vh; overflow-y: auto;">
+            <h2 style="margin-top: 0; margin-bottom: 20px;">程控电源配置</h2>
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px; font-weight: 600;">端口号 (port):</label>
+                <select id="power_port" style="width: 100%; padding: 8px; border: 1px solid #dcdfe6; border-radius: 4px;">
+                </select>
+            </div>
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px; font-weight: 600;">波特率 (baudrate):</label>
+                <select id="power_baudrate" onchange="onSelectWithCustomChange('power_baudrate','power_baudrate_custom')" style="width: 100%; padding: 8px; border: 1px solid #dcdfe6; border-radius: 4px;">
+                    <option value="9600">9600</option>
+                    <option value="19200">19200</option>
+                    <option value="38400">38400</option>
+                    <option value="57600">57600</option>
+                    <option value="115200">115200</option>
+                    <option value="230400">230400</option>
+                    <option value="460800">460800</option>
+                    <option value="921600">921600</option>
+                    <option value="__custom__">其他（自定义）</option>
+                </select>
+                <input type="number" id="power_baudrate_custom" placeholder="请输入自定义波特率" style="margin-top: 6px; width: 100%; padding: 8px; border: 1px solid #dcdfe6; border-radius: 4px; display: none;">
+            </div>
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px; font-weight: 600;">数据位 (dataBits):</label>
+                <select id="power_databits" onchange="onSelectWithCustomChange('power_databits','power_databits_custom')" style="width: 100%; padding: 8px; border: 1px solid #dcdfe6; border-radius: 4px;">
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="__custom__">其他（自定义）</option>
+                </select>
+                <input type="number" id="power_databits_custom" placeholder="请输入自定义数据位" style="margin-top: 6px; width: 100%; padding: 8px; border: 1px solid #dcdfe6; border-radius: 4px; display: none;">
+            </div>
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px; font-weight: 600;">停止位 (stopBits):</label>
+                <select id="power_stopbits" onchange="onSelectWithCustomChange('power_stopbits','power_stopbits_custom')" style="width: 100%; padding: 8px; border: 1px solid #dcdfe6; border-radius: 4px;">
+                    <option value="1">1</option>
+                    <option value="1.5">1.5</option>
+                    <option value="2">2</option>
+                    <option value="__custom__">其他（自定义）</option>
+                </select>
+                <input type="text" id="power_stopbits_custom" placeholder="请输入自定义停止位" style="margin-top: 6px; width: 100%; padding: 8px; border: 1px solid #dcdfe6; border-radius: 4px; display: none;">
+            </div>
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px; font-weight: 600;">握手 (kHANDSHAKE_DISABLED):</label>
+                <select id="power_handshake" style="width: 100%; padding: 8px; border: 1px solid #dcdfe6; border-radius: 4px;">
+                    <option value="0" selected>0</option>
+                    <option value="1">1</option>
+                </select>
+            </div>
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px; font-weight: 600;">校验 (parity):</label>
+                <select id="power_parity" style="width: 100%; padding: 8px; border: 1px solid #dcdfe6; border-radius: 4px;">
+                    <option value="0" selected>无校验</option>
+                    <option value="1">奇校验</option>
+                    <option value="2">偶校验</option>
+                </select>
+            </div>
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 5px; font-weight: 600;">默认读取电流通道 (channel):</label>
+                <input type="number" id="power_channel" value="1" min="1" style="width: 100%; padding: 8px; border: 1px solid #dcdfe6; border-radius: 4px;">
+            </div>
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button class="btn" onclick="closePowerConfig()" style="padding: 8px 20px;">取消</button>
+                <button class="btn btn-primary" onclick="savePowerConfig()" style="padding: 8px 20px; background: #409eff; color: white; border: none;">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 继电器配置模态框 -->
+    <div id="relayConfigModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
+        <div style="background: white; padding: 30px; border-radius: 8px; max-width: 800px; width: 90%; max-height: 90vh; overflow-y: auto;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="margin: 0;">继电器配置</h2>
+                <button class="btn" onclick="addRelay()" style="padding: 6px 15px; background: #67c23a; color: white; border: none;">+ 添加继电器</button>
+            </div>
+            <div id="relayList" style="margin-bottom: 20px;">
+                <!-- 继电器列表将动态添加到这里 -->
+            </div>
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button class="btn" onclick="closeRelayConfig()" style="padding: 8px 20px;">取消</button>
+                <button class="btn btn-primary" onclick="saveRelayConfig()" style="padding: 8px 20px; background: #409eff; color: white; border: none;">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- IG配置模态框 -->
+    <div id="igConfigModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
+        <div style="background: white; padding: 30px; border-radius: 8px; max-width: 500px; width: 90%; max-height: 90vh; overflow-y: auto;">
+            <h2 style="margin-top: 0; margin-bottom: 20px;">IG配置</h2>
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px; font-weight: 600;">设备类型 (Equipment_Type):</label>
+                <select id="ig_equipment_type" onchange="updateIGConfig()" style="width: 100%; padding: 8px; border: 1px solid #dcdfe6; border-radius: 4px;">
+                    <option value="Power">Power</option>
+                    <option value="Relay">Relay</option>
+                </select>
+            </div>
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px; font-weight: 600;">通道号 (ChannelNumber):</label>
+                <select id="ig_channel_number" style="width: 100%; padding: 8px; border: 1px solid #dcdfe6; border-radius: 4px;">
+                </select>
+            </div>
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px; font-weight: 600;">初始状态 (initStatus):</label>
+                <select id="ig_init_status" style="width: 100%; padding: 8px; border: 1px solid #dcdfe6; border-radius: 4px;">
+                </select>
+            </div>
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px; font-weight: 600;">设备位置 (eqPosition):</label>
+                <select id="ig_eq_position" style="width: 100%; padding: 8px; border: 1px solid #dcdfe6; border-radius: 4px;">
+                </select>
+            </div>
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button class="btn" onclick="closeIGConfig()" style="padding: 8px 20px;">取消</button>
+                <button class="btn btn-primary" onclick="saveIGConfig()" style="padding: 8px 20px; background: #409eff; color: white; border: none;">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 解析文件结构模态框 -->
+    <div id="parseFileModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
+        <div style="background: white; padding: 30px; border-radius: 8px; max-width: 600px; width: 90%; max-height: 85vh; overflow: hidden; display: flex; flex-direction: column;">
+            <h2 style="margin-top: 0; margin-bottom: 15px;">📋 文件结构解析</h2>
+            <div id="parseFileContent" style="flex: 1; overflow-y: auto; font-size: 13px; line-height: 1.6;"></div>
+            <div style="margin-top: 15px; text-align: right;">
+                <button class="btn btn-primary" onclick="closeParseFileModal()" style="padding: 8px 24px; background: #409eff; color: white; border: none;">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 账号密码配置模态框（autocomplete=off 避免浏览器弹出“保存密码”） -->
+    <div id="loginConfigModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
+        <div style="background: white; padding: 30px; border-radius: 8px; max-width: 500px; width: 90%; max-height: 90vh; overflow-y: auto;">
+            <h2 style="margin-top: 0; margin-bottom: 20px;">账号密码配置</h2>
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px; font-weight: 600;">用户名 (username)：</label>
+                <input type="text" id="login_username" placeholder="请输入用户名" autocomplete="off" style="width: 100%; padding: 8px; border: 1px solid #dcdfe6; border-radius: 4px;">
+            </div>
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px; font-weight: 600;">密码 (password)：</label>
+                <div style="display: flex; align-items: center; border: 1px solid #dcdfe6; border-radius: 4px; background: #fff;">
+                    <input type="password" id="login_password" placeholder="请输入密码" autocomplete="new-password" style="flex: 1; padding: 8px 10px; border: none; border-radius: 4px; outline: none;">
+                    <button type="button" id="login_password_toggle" onclick="toggleLoginPasswordVisible()" title="点击显示/隐藏密码" style="padding: 6px 12px; margin-right: 4px; border: none; background: transparent; color: #909399; cursor: pointer; font-size: 16px; line-height: 1;">●</button>
+                </div>
+            </div>
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button class="btn" onclick="closeLoginConfig()" style="padding: 8px 20px;">取消</button>
+                <button class="btn btn-primary" onclick="saveLoginConfig()" style="padding: 8px 20px; background: #409eff; color: white; border: none;">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 点火循环配置模态框 -->
+    <div id="ignitionConfigModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
+        <div style="background: white; padding: 30px; border-radius: 8px; max-width: 500px; width: 90%; max-height: 90vh; overflow-y: auto;">
+            <h2 style="margin-top: 0; margin-bottom: 20px;">点火循环配置</h2>
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px; font-weight: 600;">等待时间 waitTime (s):</label>
+                <input type="number" id="ignition_waitTime" step="1" min="0" placeholder="7" style="width: 100%; padding: 8px; border: 1px solid #dcdfe6; border-radius: 4px;">
+            </div>
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px; font-weight: 600;">电流 current (A):</label>
+                <input type="number" id="ignition_current" step="0.1" placeholder="-0.5" style="width: 100%; padding: 8px; border: 1px solid #dcdfe6; border-radius: 4px;">
+            </div>
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button class="btn" onclick="closeIgnitionConfig()" style="padding: 8px 20px;">取消</button>
+                <button class="btn btn-primary" onclick="saveIgnitionConfig()" style="padding: 8px 20px; background: #409eff; color: white; border: none;">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PW配置模态框 -->
+    <div id="pwConfigModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
+        <div style="background: white; padding: 30px; border-radius: 8px; max-width: 500px; width: 90%; max-height: 90vh; overflow-y: auto;">
+            <h2 style="margin-top: 0; margin-bottom: 20px;">PW配置</h2>
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px; font-weight: 600;">设备类型 (Equipment_Type):</label>
+                <select id="pw_equipment_type" onchange="updatePWConfig()" style="width: 100%; padding: 8px; border: 1px solid #dcdfe6; border-radius: 4px;">
+                    <option value="Power">Power</option>
+                    <option value="Relay">Relay</option>
+                </select>
+            </div>
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px; font-weight: 600;">通道号 (ChannelNumber):</label>
+                <select id="pw_channel_number" style="width: 100%; padding: 8px; border: 1px solid #dcdfe6; border-radius: 4px;">
+                </select>
+            </div>
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px; font-weight: 600;">初始状态 (initStatus):</label>
+                <select id="pw_init_status" style="width: 100%; padding: 8px; border: 1px solid #dcdfe6; border-radius: 4px;">
+                </select>
+            </div>
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px; font-weight: 600;">设备位置 (eqPosition):</label>
+                <select id="pw_eq_position" style="width: 100%; padding: 8px; border: 1px solid #dcdfe6; border-radius: 4px;">
+                </select>
+            </div>
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button class="btn" onclick="closePWConfig()" style="padding: 8px 20px;">取消</button>
+                <button class="btn btn-primary" onclick="savePWConfig()" style="padding: 8px 20px; background: #409eff; color: white; border: none;">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/api.js"></script>
+    <script src="/static/js/config_handler.js"></script>
+    <script src="/static/js/ui_controls.js"></script>
+</body>
+</html>
