@@ -1,0 +1,7 @@
+2026-03-20 10:22:02,396  解析 Excel 文件: MQB_20260303.xlsx
+2026-03-20 10:22:25,900 INFO   处理表=座椅按摩+通风+加热+舒缓
+2026-03-20 10:22:26,032 INFO 生成 XML 文件...
+2026-03-20 10:22:26,032 INFO 文件已使用 UTF-8 编码保存
+2026-03-20 10:22:26,032 INFO XML 文件已生成: C:\Users\高登兰\Desktop\python开发合肥\left-right\TESTmode\Generated_Testcase.xml
+2026-03-20 10:22:26,032 INFO ============================================================
+2026-03-20 10:22:26,037  所有文件生成完成！XML 文件已生成: C:\Users\高登兰\Desktop\python开发合肥\left-right\TESTmode\Generated_Testcase.xml

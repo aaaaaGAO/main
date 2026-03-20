@@ -35,7 +35,7 @@ from utils.path_utils import get_base_dir
 from web import create_app
 
 # 工具显示名（Web 右上角 + build_exe 打包时的 EXE 文件名，只改此处即可）
-TOOL_DISPLAY_NAME = "测试用例生成工具_2026.3.15V1.0"
+TOOL_DISPLAY_NAME = "测试用例生成工具_2026.3.20"
 
 # ---------------------------------------------------------------------------
 # 配置

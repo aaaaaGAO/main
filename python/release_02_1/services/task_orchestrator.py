@@ -88,13 +88,35 @@ class TaskOrchestrator:
         didinfo = (d.get("didinfo_inputs") or "").strip()
         cin_excel = (d.get("cin_input_excel") or "").strip()
 
+        # 判断 DTC 界面是否“真正配置了自己专用的 DID/DIDInfo/Clib 表”
+        dtc_cfg_enum_inputs_raw = ""
+        if cfg.has_section("DTC_CONFIG_ENUM"):
+            dtc_cfg_enum_inputs_raw = (cfg.get("DTC_CONFIG_ENUM", "inputs", fallback="") or "").strip()
+        dtc_cfg_enum_first = (
+            dtc_cfg_enum_inputs_raw.replace(";", "|").split("|")[0].strip()
+            if dtc_cfg_enum_inputs_raw
+            else ""
+        )
+        has_any_dtc_tables = bool(dtc_cfg_enum_first or didinfo or cin_excel)
+
+        # 如果第三个界面根本没配这些表，就认为本次应“按要求跳过 DID/DIDInfo”，
+        # 因此要临时隐藏全局 [DID_CONFIG]/[LR_REAR] 中与 DID 相关的路径，避免误用第一个界面的配置。
+        if not has_any_dtc_tables:
+            if cfg.has_section("DID_CONFIG") and cfg.has_option("DID_CONFIG", "input_excel"):
+                cfg.remove_option("DID_CONFIG", "input_excel")
+            if cfg.has_section("LR_REAR"):
+                for opt in ("didinfo_inputs", "cin_input_excel"):
+                    if cfg.has_option("LR_REAR", opt):
+                        cfg.remove_option("LR_REAR", opt)
+            # 仅针对 DTC 域相关配置做 patch，因此附带生成的 uds 也只限定在 DTC
+            self._config_manager._write_formatted_config(cfg, uds_domains=["DTC"])
+            return backup
+
         if not cfg.has_section("DID_CONFIG"):
             cfg.add_section("DID_CONFIG")
         if cfg.has_section("DTC_CONFIG_ENUM"):
-            inputs_raw = (cfg.get("DTC_CONFIG_ENUM", "inputs", fallback="") or "").strip()
-            first = inputs_raw.split("|")[0].strip() if inputs_raw else ""
-            if first:
-                cfg.set("DID_CONFIG", "input_excel", first)
+            if dtc_cfg_enum_first:
+                cfg.set("DID_CONFIG", "input_excel", dtc_cfg_enum_first)
         if out_dir:
             cfg.set("DID_CONFIG", "output_dir", out_dir)
 

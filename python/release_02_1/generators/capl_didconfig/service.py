@@ -28,17 +28,21 @@ class DIDConfigGeneratorService:
         try:
             cfg = gconfig.raw_config
             if not cfg.has_section("DID_CONFIG"):
-                print("错误: 配置文件缺少 [DID_CONFIG] 节")
-                logger.error("配置文件缺少 [DID_CONFIG] 节")
-                return
+                msg = "未配置 DID_Config 配置节 [DID_CONFIG]"
+                print(f"错误: {msg}")
+                logger.error(msg)
+                # 抛异常，交由 TaskService 决定是“跳过”还是失败，避免前端误认为已生成
+                raise ValueError(msg)
 
             excel_rel_path = cfg.get("DID_CONFIG", "input_excel", fallback=None) or cfg.get(
                 "DID_CONFIG", "Input_Excel", fallback=None
             )
             if not excel_rel_path:
-                print("错误: 配置文件中未找到 DID_CONFIG.input_excel 或 DID_CONFIG.Input_Excel")
-                logger.error("配置文件中未找到 DID_CONFIG.input_excel 或 DID_CONFIG.Input_Excel")
-                return
+                msg = "未配置 DID_Config 配置表：配置文件中未找到 DID_CONFIG.input_excel 或 DID_CONFIG.Input_Excel"
+                print(f"错误: {msg}")
+                logger.error(msg)
+                # 抛异常以便上层按“未配置时跳过”处理，而不是静默 return
+                raise ValueError(msg)
 
             output_name = (
                 gconfig.get_fixed("didconfig_output_filename")
@@ -49,9 +53,10 @@ class DIDConfigGeneratorService:
                 "DID_CONFIG", "Output_Dir", fallback=None
             )
             if not output_dir_rel:
-                print("错误: 配置文件中未找到 DID_CONFIG.output_dir 或 DID_CONFIG.Output_Dir")
-                logger.error("配置文件中未找到 DID_CONFIG.output_dir 或 DID_CONFIG.Output_Dir")
-                return
+                msg = "配置文件中未找到 DID_CONFIG.output_dir 或 DID_CONFIG.Output_Dir"
+                print(f"错误: {msg}")
+                logger.error(msg)
+                raise ValueError(msg)
 
             config_dir = gconfig.config_dir
             excel_rel_path_normalized = excel_rel_path.replace("/", os.sep)

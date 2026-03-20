@@ -198,6 +198,15 @@ class TaskService:
             return TaskResult(success=True, message="DIDConfig 生成完成")
         except Exception as e:
             tb = traceback.format_exc()
+            msg = str(e)
+            # 未配置 DID_Config 配置表/节时，按“静默跳过”处理，不视为失败，只返回提示信息
+            if "未配置 DID_Config 配置表" in msg or "未配置 DID_Config 配置节" in msg:
+                print(f"DIDConfig 执行跳过（{msg}）: {e}")
+                return TaskResult(
+                    success=True,
+                    message="DIDConfig 未生成（未配置 DID_Config 配置表，已按要求跳过）",
+                    detail=tb,
+                )
             return TaskResult(success=False, message=f"DIDConfig 生成失败: {e}", detail=tb)
 
     def run_uart(self) -> TaskResult:

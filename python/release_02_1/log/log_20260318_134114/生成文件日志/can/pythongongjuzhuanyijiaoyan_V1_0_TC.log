@@ -1,0 +1,3 @@
+2026-03-18 13:41:15,260 INFO   处理Sheet=TC
+2026-03-18 13:41:15,262 ERROR 错误模块【写入错误】 用例ID=SYS-LDCU-light-001 行号：9  用例步骤：Step AutoIncreaseInVal Set J_DO_LS_DeforstrRly 2 100 3  原因：步骤语法错误: AutoIncreaseInVal 数值参数错误: ['Set', 'J_DO_LS_DeforstrRly', '2']
+2026-03-18 13:41:15,263  生成文件: generated_from_cases_pythongongjuzhuanyijiaoyan_V1_0_TC.can (用例数=8)

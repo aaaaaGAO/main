@@ -1,0 +1,61 @@
+<mxfile host="app.diagrams.net" modified="2026-03-19T00:00:00.000Z" agent="Cursor" version="22.1.0">
+  <diagram id="overall" name="overall_architecture">
+    <mxGraphModel dx="1180" dy="720" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <mxCell id="frame" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#fa8c16;dashed=1;dashPattern=6 6;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="30" y="40" width="1020" height="560" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="t1" value="页面顶部区域&#10;标题 版本&#10;工具栏 保存配置 导入配置" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff7e6;strokeColor=#fa8c16;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="60" y="80" width="960" height="70" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="t2" value="页签导航&#10;左右后域  中央域  DTC" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff1b8;strokeColor=#fa8c16;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="60" y="160" width="960" height="55" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="t3" value="左右后域页签 UI 结构&#10;1 用例导入  2 配置表  3 用例筛选  4 输出&#10;按钮 一键运行" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#fa8c16;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="60" y="240" width="300" height="150" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="t4" value="中央域页签 UI 结构&#10;1 用例导入  2 配置表与弹窗&#10;3 用例筛选  4 输出&#10;按钮 一键运行" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#fa8c16;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="390" y="240" width="300" height="150" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="t5" value="DTC 页签 UI 结构&#10;1 用例导入  2 配置表与动态 IO sheet&#10;3 用例筛选  4 输出&#10;按钮 一键运行" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#fa8c16;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="720" y="240" width="300" height="150" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="t6" value="共通交互规范&#10;选择 浏览 删除 状态显示 未选择 已选择&#10;筛选控件 复选框 单选按钮 三态树&#10;日志级别下拉 info warning error" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff1b8;strokeColor=#fa8c16;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="60" y="410" width="470" height="150" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="t7" value="结果与提示区&#10;一键运行状态 进行中 成功 失败&#10;生成摘要与错误摘要&#10;日志目录入口" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff7e6;strokeColor=#fa8c16;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="550" y="410" width="470" height="150" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="e1" style="endArrow=block;html=1;rounded=0;strokeWidth=2;strokeColor=#fa8c16;" edge="1" parent="1" source="t1" target="t2">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e2" style="endArrow=block;html=1;rounded=0;strokeWidth=2;strokeColor=#fa8c16;" edge="1" parent="1" source="t2" target="t3">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e3" style="endArrow=block;html=1;rounded=0;strokeWidth=2;strokeColor=#fa8c16;" edge="1" parent="1" source="t2" target="t4">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e4" style="endArrow=block;html=1;rounded=0;strokeWidth=2;strokeColor=#fa8c16;" edge="1" parent="1" source="t2" target="t5">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e5" style="endArrow=block;html=1;rounded=0;strokeWidth=2;strokeColor=#fa8c16;" edge="1" parent="1" source="t3" target="t6">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e6" style="endArrow=block;html=1;rounded=0;strokeWidth=2;strokeColor=#fa8c16;" edge="1" parent="1" source="t3" target="t7">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

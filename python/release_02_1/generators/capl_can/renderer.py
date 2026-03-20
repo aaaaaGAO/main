@@ -85,39 +85,67 @@ class CANFileRenderer:
     @staticmethod
     def _apply_soa_prepare_reorder(lines: list[str]) -> list[str]:
         """
-        SOA 重排 Version 5.0 (多请求无损支持版):
-        1. 每一个原始行(REQ, CHECK, 普通步骤)都必须无条件保留在原位置。
-        2. 将每个 CHECK 自动关联到它上方最近的一个 REQ。
-        3. 遇到 REQ 时，在其上方额外插入它所关联的所有 CHECK 的 Prepare 副本。
+        按“节点”重排 SOA CHECK / CHECKREQ：
+
+        - 不再基于 SOA REQ / CHECK 的行内匹配关系。
+        - 一个“节点”从某一行“测试步骤”开始，一直到下一行“测试步骤”之前（或文件结束）。
+        - 若该节点内的“预期结果”中出现 SOA CHECK / SOA CHECKREQ：
+          * 预期结果行本身不改动；
+          * 为每个 SOA CHECK / CHECKREQ 生成一个带 _Prepare 后缀的副本；
+          * 若节点首行「测试步骤」行在 // 注释语义中未出现 wait、TC_4G_Time_Delay_Second 或 TC_Sleep（整词，不区分大小写），则将所有 _Prepare 行插入到该测试步骤“上方”；
+          * 若 // 注释中出现上述三者之一，则将所有 _Prepare 行插入到该测试步骤“下方”（不依生成后的 CAPL 函数名，如 g_HIL_Gen_Swc_Wait 等）。
+
+        这样既保留了原始步骤顺序，又按节点粒度在测试步骤附近集中插入 Prepare。
         """
         if not lines:
             return lines
 
-        def _is_soa_req(s: str) -> bool:
-            """精准判断：代码区含 SOA 和 REQ，且不含 CHECK。"""
+        def _split_parts(s: str) -> tuple[str, str]:
             if "//" not in s:
-                return False
-            parts = s.split("//", 1)
-            code_part = parts[0].upper()
-            comment_part = parts[1]
-            return (
-                ("测试步骤" in comment_part or "\u6d4b\u8bd5\u6b65\u9aa4" in comment_part)
-                and "SOA" in code_part
-                and "REQ" in code_part
-                and "CHECK" not in code_part
-            )
+                return s, ""
+            code, comment = s.split("//", 1)
+            return code, comment
 
-        def _is_soa_check(s: str) -> bool:
-            """精准判断：代码区含 SOA 验证函数，排除副本。"""
-            if "//" not in s or "_Prepare" in s or "_PREPARE" in s:
+        def _is_test_step(s: str) -> bool:
+            _, comment = _split_parts(s)
+            return "测试步骤" in comment or "\u6d4b\u8bd5\u6b65\u9aa4" in comment
+
+        def _is_expect(s: str) -> bool:
+            _, comment = _split_parts(s)
+            return "预期结果" in comment or "\u9884\u671f\u7ed3\u679c" in comment
+
+        def _is_soa_expect_check(s: str) -> bool:
+            """判断是否为 SOA CHECK / CHECKREQ 的预期结果行（排除已带 _Prepare）。
+
+            仅匹配函数调用中显式出现的：
+            - SOA_CHECK(
+            - CHECKREQ(
+
+            例如：
+            - g_EM_SOAClient_Swc_SOA_CHECK("...")         -> 匹配
+            - gTC_CANTest_SOA_CheckReq("...")             -> 匹配
+            - g_EM_SOAClient_Swc_SOA_CHECKNotRec("...")   -> 不匹配
+            """
+            if "_Prepare" in s or "_PREPARE" in s:
                 return False
-            parts = s.split("//", 1)
-            code_part = parts[0].upper()
-            comment_part = parts[1]
-            return (
-                ("预期结果" in comment_part or "\u9884\u671f\u7ed3\u679c" in comment_part)
-                and "SOA" in code_part
-                and ("CHECK" in code_part or "CHECKREQ" in code_part)
+            code_part, _ = _split_parts(s)
+            code_upper = code_part.upper()
+            if "SOA" not in code_upper:
+                return False
+            # 只对真正的 SOA_CHECK / CHECKREQ 加 Prepare，排除类似 SOA_CHECKNotRec
+            return "SOA_CHECK(" in code_upper or "CHECKREQ(" in code_upper
+
+        def _is_wait_or_sleep_step(s: str) -> bool:
+            # 仅看 // 后「测试步骤」侧语义（如「测试步骤 wait 15」「测试步骤 TC_Sleep 15」），不看生成后的 CAPL 函数名
+            _, comment = _split_parts(s)
+            if not comment.strip():
+                return False
+            return bool(
+                re.search(
+                    r"\b(?:wait|TC_4G_Time_Delay_Second|TC_Sleep)\b",
+                    comment,
+                    re.IGNORECASE,
+                )
             )
 
         def _add_prepare_suffix(src: str) -> str:
@@ -138,28 +166,44 @@ class CANFileRenderer:
             return src
 
         n = len(lines)
-        # 第一阶段：建立 REQ 索引 -> 它所属 CHECK 副本列表 的映射
-        req_basket: dict[int, list[str]] = {}
-        last_req_idx = -1
+        # 记录每个“节点首行测试步骤”前/后需要插入的 Prepare 行
+        prepare_before: dict[int, list[str]] = {}
+        prepare_after: dict[int, list[str]] = {}
 
-        for i in range(n):
-            if _is_soa_req(lines[i]):
-                last_req_idx = i
-                req_basket[i] = []
-            elif _is_soa_check(lines[i]):
-                if last_req_idx != -1:
-                    # 发现验证行，将其副本放入当前 REQ 的篮子里
-                    req_basket[last_req_idx].append(_add_prepare_suffix(lines[i]))
+        i = 0
+        while i < n:
+            if not _is_test_step(lines[i]):
+                i += 1
+                continue
 
-        # 第二阶段：无损构造最终序列
+            node_start = i
+            j = i + 1
+            # 节点范围：[node_start, j) —— 直到下一个测试步骤或结尾
+            while j < n and not _is_test_step(lines[j]):
+                j += 1
+
+            # 在该节点范围内查找 SOA CHECK / CHECKREQ 预期结果行
+            prepare_lines: list[str] = []
+            for k in range(node_start, j):
+                if _is_expect(lines[k]) and _is_soa_expect_check(lines[k]):
+                    prepare_lines.append(_add_prepare_suffix(lines[k]))
+
+            if prepare_lines:
+                if _is_wait_or_sleep_step(lines[node_start]):
+                    prepare_after.setdefault(node_start, []).extend(prepare_lines)
+                else:
+                    prepare_before.setdefault(node_start, []).extend(prepare_lines)
+
+            i = j
+
+        # 第二阶段：根据 before/after 映射无损生成最终行
         final_output: list[str] = []
-        for i in range(n):
-            # 如果当前行是 REQ，先喷出属于它的篮子（Prepare 副本）
-            if i in req_basket:
-                final_output.extend(req_basket[i])
-
-            # 无论什么行，原始行 line[i] 必须 append，确保不丢失
-            final_output.append(lines[i])
+        for idx, line in enumerate(lines):
+            if idx in prepare_before:
+                final_output.extend(prepare_before[idx])
+            final_output.append(line)
+            if idx in prepare_after:
+                final_output.extend(prepare_after[idx])
 
         return final_output
 

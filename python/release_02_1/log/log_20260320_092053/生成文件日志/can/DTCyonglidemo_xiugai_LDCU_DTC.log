@@ -1,0 +1,7 @@
+2026-03-20 09:20:55,915 INFO   处理Sheet=LDCU_DTC
+2026-03-20 09:20:55,916 INFO [跳过] 用例ID=TC-DTC-LDCU-001, 功能模块=LDCU_DTC, 用例类型='自动测试'（平台过滤：生成{MQB} 当前'CMP'）
+2026-03-20 09:20:55,917 INFO [跳过] 用例ID=TC-DTC-LDCU-002, 功能模块=LDCU_DTC, 用例类型='自动测试'（平台过滤：生成{MQB} 当前'CMP'）
+2026-03-20 09:20:55,920 INFO [跳过] 用例ID=TC-DTC-LDCU-003, 功能模块=LDCU_DTC, 用例类型='自动测试'（平台过滤：生成{MQB} 当前'CMP'）
+2026-03-20 09:20:55,921 INFO [跳过] 用例ID=TC-DTC-LDCU-004, 功能模块=LDCU_DTC, 用例类型='自动测试'（平台过滤：生成{MQB} 当前'CMP'）
+2026-03-20 09:20:55,921 INFO [跳过] 用例ID=TC-DTC-LDCU-005, 功能模块=LDCU_DTC, 用例类型='自动测试'（平台过滤：生成{MQB} 当前'CMP'）
+2026-03-20 09:20:55,925  生成文件: generated_from_cases_DTCyonglidemo_xiugai_LDCU_DTC.can (用例数=0)

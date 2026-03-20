@@ -353,8 +353,55 @@ def parse_step_line(
             else:
                 # 未配置 io_mapping 时，全部透传为参数，不报错
                 one_arg_raw = " ".join(args_kt).strip()
+
+        extra_lines_kt: List[str] = []
+
+        # 对 KeepOpenWithTime 等特殊关键字，同样支持“两行 Path”规则：
+        # 若 one_arg_raw 以两行 Path 开头，则：
+        #   - 第 1 行按 Set 关键字生成一条额外 Set CAPL 行；
+        #   - 第 2 行及其后续内容作为当前关键字的参数。
+        def _maybe_emit_set_for_two_line_in_keep_time() -> None:
+            nonlocal one_arg_raw, extra_lines_kt
+            if not one_arg_raw:
+                return
+            text = str(one_arg_raw)
+            if "\n" not in text and "\r" not in text:
+                return
+            raw_lines = text.replace("\r\n", "\n").replace("\r", "\n").split("\n")
+            path_lines = [ln.strip() for ln in raw_lines if ln.strip()]
+            if len(path_lines) != 2:
+                return
+            first_line, second_line = path_lines
+
+            # 将第 1 行当作“普通 Step Set”来处理：
+            # 直接构造一行 Step Set + 第一行的文本，不再拆分 "=" 号或去掉分号，
+            # 交给关键字-函数映射表按正常规则解析成 CAPL 函数。
+            inner_step_line = f"Step Set {first_line}"
+            try:
+                inner_res = parse_step_line(
+                    inner_step_line,
+                    keyword_specs,
+                    mode=mode_l,
+                    io_mapping_ctx=None,  # 这里 Path 已是 IO 映射后的结果，无需再次做 IO_mapping
+                    config_enum_ctx=config_enum_ctx,
+                    sanitize_clib_name=sanitize_clib_name,
+                    default_param_parser=default_param_parser,
+                    clib_validator=clib_validator,
+                )
+            except Exception:
+                inner_res = None
+
+            if inner_res and inner_res.code_lines:
+                extra_lines_kt.extend(inner_res.code_lines)
+
+            # 将第 2 行作为当前关键字参数的开头，后续保持原样
+            one_arg_raw = second_line
+
+        _maybe_emit_set_for_two_line_in_keep_time()
+
         one_arg = _escape_c_string(one_arg_raw or "")
-        return ParseResult([f'  {capl_func}("{one_arg}");'], original_line_full)
+        all_lines_kt = extra_lines_kt + [f'  {capl_func}("{one_arg}");']
+        return ParseResult(all_lines_kt, original_line_full)
 
     match_tokens = tokens[1:] if (len(tokens) >= 2 and tokens[0].lower() == "step") else tokens
     if not match_tokens:
@@ -453,14 +500,76 @@ def parse_step_line(
             if first_arg.upper().startswith("J_"):
                 args = list(io_mapping_ctx.transform_args(args))
 
+    extra_lines: List[str] = []
+
+    # 特殊规则：当经 IO_mapping 后首参数 Path 为两行时：
+    # - 第 1 行按 Set 关键字生成一条额外的 Set CAPL 行（仅处理“两行 Path”的情况）；
+    # - 第 2 行作为当前关键字的 Path，走原有逻辑。
+    def _maybe_emit_set_for_two_line_path() -> None:
+        nonlocal args, extra_lines
+        if not args:
+            return
+        first_arg = str(args[0]).strip()
+        if "\n" not in first_arg and "\r" not in first_arg:
+            return
+        # 按行拆分，仅保留非空行；只处理恰好两行的情况
+        raw_lines = first_arg.replace("\r\n", "\n").replace("\r", "\n").split("\n")
+        path_lines = [ln.strip() for ln in raw_lines if ln.strip()]
+        if len(path_lines) != 2:
+            return
+        first_line, second_line = path_lines
+
+        # 将第 1 行当作“普通 Step Set”来处理：
+        # 直接构造一行 Step Set + 第一行的文本，不再拆分 "=" 号或去掉分号，
+        # 交给关键字-函数映射表按正常规则解析成 CAPL 函数。
+        inner_step_line = f"Step Set {first_line}"
+        try:
+            inner_res = parse_step_line(
+                inner_step_line,
+                keyword_specs,
+                mode=mode_l,
+                io_mapping_ctx=None,  # 这里 Path 已是 IO 映射后的结果，无需再次做 IO_mapping
+                config_enum_ctx=config_enum_ctx,
+                sanitize_clib_name=sanitize_clib_name,
+                default_param_parser=default_param_parser,
+                clib_validator=clib_validator,
+            )
+        except Exception:
+            inner_res = None
+
+        if inner_res and inner_res.code_lines:
+            extra_lines.extend(inner_res.code_lines)
+
+        # 将第 2 行作为当前关键字的 Path，后续按原有逻辑生成主 CAPL 行
+        args = [second_line] + list(args[1:])
+
+    _maybe_emit_set_for_two_line_path()
+
     if args:
         one_arg = " ".join([str(a) for a in args]).strip()
-        one_arg = _escape_c_string(one_arg)
-        code = f'  {spec.capl_func}("{one_arg}");'
-    else:
-        code = f"  {spec.capl_func}();"
 
-    return ParseResult([code], original_line_full)
+        # 兼容 IO_mapping / Path 中带有“= …;”这类写法：
+        # - 不关心右边具体是什么值（1、0、枚举等），原样跟在 Path 后面；
+        # - 仅去掉中间的 "=" 和末尾可选的分号 ";"；
+        # - 若原本就是 "Path 1" 或不含 "="，则保持不变。
+        text = one_arg
+        if "=" in text and "\n" not in text and "\r" not in text:
+            # 只处理单行、单个 "=" 的简单形式
+            left, right = text.split("=", 1)
+            left = left.strip()
+            right = right.strip()
+            if right.endswith(";"):
+                right = right[:-1].strip()
+            if left and right:
+                one_arg = f"{left} {right}"
+
+        one_arg = _escape_c_string(one_arg)
+        main_code = f'  {spec.capl_func}("{one_arg}");'
+    else:
+        main_code = f"  {spec.capl_func}();"
+
+    all_lines = extra_lines + [main_code]
+    return ParseResult(all_lines, original_line_full)
 
 
 __all__ = [

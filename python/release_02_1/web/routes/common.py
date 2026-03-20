@@ -613,11 +613,21 @@ def generate_dtc():
         has_cin_config = bool(state.get("d_cin_excel") if state else False)
         result = orch.run_dtc_bundle(run_can=True, run_xml=True, run_cin=has_cin_config)
         if not result.success:
-            return jsonify({"success": False, "message": " / ".join(result.messages), "detail": result.detail}), 500
-        message = " / ".join(result.messages)
+            return jsonify(
+                {
+                    "success": False,
+                    "message": "生成过程中出错",
+                    "detail": result.detail,
+                }
+            ), 500
+        # 与第一界面保持完全一致的提示风格：
+        # - 前缀固定为「一键生成完成:」
+        # - 各子任务结果（DIDConfig/DIDInfo/CIN/CAN/XML）按顺序用「 | 」拼接，
+        #   包括“未生成（已按要求跳过）”这类文案
+        message = "一键生成完成: " + " | ".join(result.messages)
         uds_path = _resolve_uds_output_path(cfg, base, "DTC")
         if uds_path and os.path.isfile(uds_path):
-            message += " / UDS.txt 生成完成"
+            message += " | UDS.txt 生成完成"
         return jsonify({"success": True, "message": message})
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500

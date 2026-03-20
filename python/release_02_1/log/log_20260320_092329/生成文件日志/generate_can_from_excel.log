@@ -1,0 +1,10 @@
+2026-03-20 09:23:31,247 INFO >>> 开始执行 [LR_REAR] 域生成任务...
+2026-03-20 09:23:31,534  解析 Excel 文件: MQB_20260303.xlsx
+2026-03-20 09:23:31,534  处理Excel=MQB_20260303.xlsx
+2026-03-20 09:24:15,549 INFO   处理Sheet=座椅按摩+通风+加热+舒缓
+2026-03-20 09:24:15,549 ERROR 错误模块【关键字映射表】 用例ID=SYS-CDCU-zhujiazuoyianmo-0002 行号：18  用例步骤：Sleep 15  原因：关键字匹配失败: Sleep
+2026-03-20 09:24:15,549  生成文件: generated_from_cases_MQB_20260303_zuoyianmo_tongfeng_jiare_shuhuan.can (用例数=204)
+2026-03-20 09:24:15,564  Master .can 文件已生成: C:\Users\高登兰\Desktop\python开发合肥\left-right\TESTmode\generated_from_cases.can
+2026-03-20 09:24:15,564  所有文件生成完成！共生成 1 个小文件和 1 个Master文件
+2026-03-20 09:24:15,564    Excel=MQB_20260303.xlsx → 生成 1 个 .can：generated_from_cases_MQB_20260303_zuoyianmo_tongfeng_jiare_shuhuan.can
+2026-03-20 09:24:15,564 INFO >>> 任务完成！日志已保存至: C:\Users\高登兰\Desktop\所有完整代码2026_3_10_重构版\python\release_02_1\log\log_20260320_092329\生成文件日志\generate_can_from_excel.log

@@ -2,9 +2,9 @@
 # 左右后域配置
 # ============================================================
 [LR_REAR]
-input_excel = C:/Users/高登兰/Desktop/python开发合肥/python工具转译校验_V1.0.xlsx
+input_excel = C:/Users/高登兰/Downloads/MQB_20260303.xlsx
 
-output_dir = C:/Users/高登兰/Desktop/python开发合肥/20260127_V01_输入文件(1)
+output_dir = C:/Users/高登兰/Desktop/python开发合肥/left-right
 
 case_levels = ALL
 case_platforms = MQB
@@ -12,17 +12,22 @@ case_models = MQB
 case_target_versions = ALL
 
 # 勾选的工作表
-selected_sheets = python工具转译校验_V1.0.xlsx|TC
+selected_sheets = MQB_20260303.xlsx|座椅按摩+通风+加热+舒缓
 
 log_level_min = info
 
+didinfo_inputs = C:/Users/高登兰/Desktop/python开发合肥/LDCU/Reat_Did/reset_did_configure_ldcu.xlsx | *
+cin_input_excel = C:/Users/高登兰/Desktop/python开发合肥/LDCU/Hil_clib/MQB/VEEA_LDCU_Clib_GZ_MQB_0127 (1).xlsx
 [IOMAPPING]
+inputs = C:/Users/高登兰/Desktop/python开发合肥/LDCU/IO_Mapping/CARIAD MQB LDCU-RDCU HiL_IO_mapping0209 (1).xlsx | *
 
 [DID_CONFIG]
 output_filename = DIDConfig.txt
-output_dir = C:/Users/高登兰/Desktop/python开发合肥/DTC
+output_dir = C:/Users/高登兰/Desktop/python开发合肥/left-right
+input_excel = C:/Users/高登兰/Desktop/python开发合肥/LDCU/Set_config/LDCU_Configuration(1).xlsx
 
 [CONFIG_ENUM]
+inputs = C:/Users/高登兰/Desktop/python开发合肥/LDCU/Set_config/LDCU_Configuration(1).xlsx | *
 
 # ============================================================
 # 中央域配置
@@ -37,7 +42,7 @@ case_levels = ALL
 case_platforms = MQB
 case_models = MQB
 case_target_versions = ALL
-log_level_min = warning
+log_level_min = info
 uds_ecu_qualifier = RDCU
 
 # 运行账号（生成至 output_dir/Configuration/login.txt）
@@ -61,7 +66,7 @@ case_levels = ALL
 case_platforms = MQB
 case_models = MQB
 case_target_versions = ALL
-log_level_min = error
+log_level_min = info
 uds_ecu_qualifier = RDCU
 
 [DTC_IOMAPPING]

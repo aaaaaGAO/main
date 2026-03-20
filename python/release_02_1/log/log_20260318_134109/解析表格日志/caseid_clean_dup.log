@@ -1,0 +1,7 @@
+2026-03-18 13:41:11,768 WARNING [dup] 用例ID重复：表=python工具转译校验_V1.0.xlsx sheet=TC 用例ID='SYS-LDCU-light-002' 首次行=11 再次行=13 已改为 'SYS-LDCU-light-002_1'
+2026-03-18 13:41:11,768 WARNING [warn] 用例ID清洗：表=python工具转译校验_V1.0.xlsx/TC 行=15 raw='你好' -> cleaned='nihao'（chinese_to_pinyin，已做处理）
+2026-03-18 13:41:11,773 WARNING [warn] 用例ID含中文已转拼音：表=python工具转译校验_V1.0.xlsx/TC 行=15 原始id='你好' -> 清洗后='nihao'
+2026-03-18 13:41:11,773 WARNING [warn] 用例ID清洗：表=python工具转译校验_V1.0.xlsx/TC 行=17 raw='SYS-（LDCU-light-003' -> cleaned='SYS-LDCU-light-003'（remove_spaces_or_illegal_chars，已做处理）
+2026-03-18 13:41:11,779 WARNING [warn] 用例ID清洗：表=python工具转译校验_V1.0.xlsx/TC 行=19 raw='SYS-LDCU-light-004）' -> cleaned='SYS-LDCU-light-004'（remove_spaces_or_illegal_chars，已做处理）
+2026-03-18 13:41:11,779 WARNING [warn] 用例ID清洗：表=python工具转译校验_V1.0.xlsx/TC 行=21 raw='SYS-LDCU-light- 005' -> cleaned='SYS-LDCU-light-005'（remove_spaces_or_illegal_chars，已做处理）
+2026-03-18 13:41:11,779 WARNING [warn] 用例ID清洗：表=python工具转译校验_V1.0.xlsx/TC 行=23 raw='SYS-LDCU-light-006，' -> cleaned='SYS-LDCU-light-006'（strip_trailing_punct，已做处理）
