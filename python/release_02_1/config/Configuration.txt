@@ -2,9 +2,9 @@
 # 左右后域配置
 # ============================================================
 [LR_REAR]
-input_excel = C:/Users/高登兰/Downloads/MQB_20260303.xlsx
+input_excel = C:/Users/高登兰/Downloads/MQB_20260318_修改.xlsx
 
-output_dir = C:/Users/高登兰/Desktop/python开发合肥/left-right
+output_dir = C:/Users/高登兰/Desktop/python开发合肥/zhongyang
 
 case_levels = ALL
 case_platforms = MQB
@@ -12,7 +12,7 @@ case_models = MQB
 case_target_versions = ALL
 
 # 勾选的工作表
-selected_sheets = MQB_20260303.xlsx|座椅按摩+通风+加热+舒缓
+selected_sheets = MQB_20260318_修改.xlsx|T8-Standby-Abnormal
 
 log_level_min = info
 
@@ -23,7 +23,7 @@ inputs = C:/Users/高登兰/Desktop/python开发合肥/LDCU/IO_Mapping/CARIAD MQ
 
 [DID_CONFIG]
 output_filename = DIDConfig.txt
-output_dir = C:/Users/高登兰/Desktop/python开发合肥/left-right
+output_dir = C:/Users/高登兰/Desktop/python开发合肥/zhongyang
 input_excel = C:/Users/高登兰/Desktop/python开发合肥/LDCU/Set_config/LDCU_Configuration(1).xlsx
 
 [CONFIG_ENUM]

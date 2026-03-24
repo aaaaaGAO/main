@@ -384,24 +384,30 @@ class CANExcelRepository:
             if skipping_case or current_case is None:
                 continue
 
-            # 收集步骤/预期列（兼容多行）
+            # 收集步骤/预期列（按行号 zip 配对，保留位置对齐）
+            # 注意：不能对整个文本 norm_str（会 strip 前导换行），先 splitlines 再逐行 norm
+            step_lines: list[str] = []
+            expected_lines: list[str] = []
             if step_col_idx is not None and len(row_vals) > step_col_idx:
-                step_text = norm_str(row_vals[step_col_idx])
-                for line in step_text.splitlines():
-                    s = norm_str(line)
-                    if s:
-                        current_case.raw_steps.append(
-                            CANRawStep(content=s, source="step", excel_row=row_idx)
-                        )
-
+                raw_step = row_vals[step_col_idx]
+                step_text = str(raw_step) if raw_step is not None else ""
+                step_lines = step_text.splitlines() if step_text else []
             if expected_col_idx is not None and len(row_vals) > expected_col_idx:
-                expected_text = norm_str(row_vals[expected_col_idx])
-                for line in expected_text.splitlines():
-                    s = norm_str(line)
-                    if s:
-                        current_case.raw_steps.append(
-                            CANRawStep(content=s, source="expected", excel_row=row_idx)
-                        )
+                raw_expected = row_vals[expected_col_idx]
+                expected_text = str(raw_expected) if raw_expected is not None else ""
+                expected_lines = expected_text.splitlines() if expected_text else []
+
+            for i in range(max(len(step_lines), len(expected_lines))):
+                s = norm_str(step_lines[i]) if i < len(step_lines) else ""
+                e = norm_str(expected_lines[i]) if i < len(expected_lines) else ""
+                if s:
+                    current_case.raw_steps.append(
+                        CANRawStep(content=s, source="step", excel_row=row_idx)
+                    )
+                if e:
+                    current_case.raw_steps.append(
+                        CANRawStep(content=e, source="expected", excel_row=row_idx)
+                    )
 
         if current_case is not None:
             cases.append(current_case)
@@ -441,18 +447,24 @@ class CANExcelRepository:
 
     def _collect_raw_steps(self, row: tuple, row_idx: int, mapper: ColumnMapper) -> list[CANRawStep]:
         items: list[CANRawStep] = []
+        step_lines: list[str] = []
+        expected_lines: list[str] = []
         if mapper.has("step"):
-            step_text = norm_str(row[mapper.get("step")])
-            for line in step_text.splitlines():
-                s = norm_str(line)
-                if s:
-                    items.append(CANRawStep(content=s, source="step", excel_row=row_idx))
+            raw_step = row[mapper.get("step")]
+            step_text = str(raw_step) if raw_step is not None else ""
+            step_lines = step_text.splitlines() if step_text else []
         if mapper.has("expected"):
-            expected_text = norm_str(row[mapper.get("expected")])
-            for line in expected_text.splitlines():
-                s = norm_str(line)
-                if s:
-                    items.append(CANRawStep(content=s, source="expected", excel_row=row_idx))
+            raw_expected = row[mapper.get("expected")]
+            expected_text = str(raw_expected) if raw_expected is not None else ""
+            expected_lines = expected_text.splitlines() if expected_text else []
+
+        for i in range(max(len(step_lines), len(expected_lines))):
+            s = norm_str(step_lines[i]) if i < len(step_lines) else ""
+            e = norm_str(expected_lines[i]) if i < len(expected_lines) else ""
+            if s:
+                items.append(CANRawStep(content=s, source="step", excel_row=row_idx))
+            if e:
+                items.append(CANRawStep(content=e, source="expected", excel_row=row_idx))
         return items
 
     @staticmethod
