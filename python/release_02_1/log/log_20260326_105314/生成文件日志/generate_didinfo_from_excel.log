@@ -1,0 +1,11 @@
+2026-03-26 10:53:15,734  解析 Excel 文件: reset_did_configure_ldcu.xlsx sheet=LDCU
+2026-03-26 10:53:15,824  解析 Excel 文件: reset_did_configure_ldcu.xlsx sheet=Change log.
+2026-03-26 10:53:15,837 ERROR 跳过 sheet: Excel=reset_did_configure_ldcu.xlsx sheet=Change log. 表里少了必须列：Configure DID, Length (Bytes), Byte, Bit
+2026-03-26 10:53:15,839  解析 Excel 文件: reset_did_configure_ldcu.xlsx sheet=A COSe  KOPP (12,2023 Archive)
+2026-03-26 10:53:15,876 ERROR 跳过 sheet: Excel=reset_did_configure_ldcu.xlsx sheet=A COSe  KOPP (12,2023 Archive) 表里少了必须列：Configure DID, Length (Bytes), Byte, Bit
+2026-03-26 10:53:15,879  解析 Excel 文件: reset_did_configure_ldcu.xlsx sheet=change
+2026-03-26 10:53:15,880 ERROR 跳过 sheet: Excel=reset_did_configure_ldcu.xlsx sheet=change 表里少了必须列：Configure DID, Length (Bytes), Byte, Bit
+2026-03-26 10:53:15,882  解析 Excel 文件: reset_did_configure_ldcu.xlsx sheet=Backup Equipment
+2026-03-26 10:53:16,186 ERROR 跳过 sheet: Excel=reset_did_configure_ldcu.xlsx sheet=Backup Equipment 表里少了必须列：Configure DID, Length (Bytes), Byte, Bit
+2026-03-26 10:53:16,186 INFO 已生成: C:\Users\高登兰\Desktop\python开发合肥\left-right\Configuration\DIDInfo.txt
+2026-03-26 10:53:16,191  已生成: C:\Users\高登兰\Desktop\python开发合肥\left-right\Configuration\DIDInfo.txt

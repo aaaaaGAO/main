@@ -43,7 +43,9 @@
         if (isRadioGroup) {
             return checked.length > 0 ? checked[0] : '';
         }
-        return (checked.length === 0 || checked.length === inputs.length) ? 'ALL' : checked.join(',');
+        // 仅「未勾选任何项」表示不过滤（与后端 parse_* 中 ALL/空 一致）。
+        // 若「全选」也发 ALL，后端会当做不过滤，表中多出筛选项（如等级 F）仍会生成。
+        return checked.length === 0 ? 'ALL' : checked.join(',');
     }
 
     function getSelectedSheets(containerId) {

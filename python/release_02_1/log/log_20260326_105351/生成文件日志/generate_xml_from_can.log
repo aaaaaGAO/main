@@ -1,0 +1,12 @@
+2026-03-26 10:53:53,320  解析 Excel 文件: python工具转译校验_V1.0 - 副本.xlsx
+2026-03-26 10:53:53,416 INFO   处理表=TC
+2026-03-26 10:53:53,420 INFO [跳过] 用例ID=nihao, 功能模块=内部灯光（Target Version 过滤：生成{CEA2.x_A_Sample,CEA2.x_B1_Sample,CEA2.x_IPDT2.0,CEA2.x_VP1.1(IPDT1.0)...} 当前'CEA2.x_IPDT3.0'）
+2026-03-26 10:53:53,420 INFO [跳过] 用例ID=SYS-LDCU-light-003, 功能模块=内部灯光（Target Version 过滤：生成{CEA2.x_A_Sample,CEA2.x_B1_Sample,CEA2.x_IPDT2.0,CEA2.x_VP1.1(IPDT1.0)...} 当前'CEA2.x_IPDT4.0'）
+2026-03-26 10:53:53,420 INFO [跳过] 用例ID=SYS-LDCU-light-005, 功能模块=内部灯光（Target Version 过滤：生成{CEA2.x_A_Sample,CEA2.x_B1_Sample,CEA2.x_IPDT2.0,CEA2.x_VP1.1(IPDT1.0)...} 当前'MQB'）
+2026-03-26 10:53:53,424 INFO [跳过] 用例ID=SYS-LDCU-light-006, 功能模块=内部灯光（等级过滤：生成{A,B,C,S} 当前'F'）
+2026-03-26 10:53:53,424 INFO   [本表 'TC'] 跳过 4 个用例（等级=1 平台=0 车型=0 Target Version=3 类型=0），通过 4 个
+2026-03-26 10:53:53,426 INFO 生成 XML 文件...
+2026-03-26 10:53:53,427 INFO 文件已使用 UTF-8 编码保存
+2026-03-26 10:53:53,427 INFO XML 文件已生成: C:\Users\高登兰\Desktop\python开发合肥\left-right\TESTmode\Generated_Testcase.xml
+2026-03-26 10:53:53,427 INFO ============================================================
+2026-03-26 10:53:53,428  所有文件生成完成！XML 文件已生成: C:\Users\高登兰\Desktop\python开发合肥\left-right\TESTmode\Generated_Testcase.xml

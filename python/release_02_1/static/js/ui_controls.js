@@ -515,7 +515,7 @@
         if (isRadioGroup) {
             return checked.length > 0 ? checked[0] : '';
         }
-        return (checked.length === 0 || checked.length === inputs.length) ? 'ALL' : checked.join(',');
+        return checked.length === 0 ? 'ALL' : checked.join(',');
     }
 
     async function run() {
