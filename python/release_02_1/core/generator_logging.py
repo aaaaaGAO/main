@@ -23,6 +23,9 @@ from utils.logger import (
     get_log_level_from_config,
 )
 
+from core.log_run_context import ensure_run_log_dirs
+from core.run_context import clear_run_logger
+
 
 # 单文件：(log_subdir, log_basename)；多文件：列表
 LogSpec = Tuple[str, str]  # (subdir, basename)
@@ -100,19 +103,17 @@ class GeneratorLogger:
 
     def setup(self) -> logging.Logger:
         """创建/返回 logger，添加 RotatingFileHandler（主+进度）及可选控制台。"""
-        from core.log_run_context import ensure_run_log_dirs
-
         if self._logger is not None and self._logger.handlers:
             return self._logger
 
         user_level = get_log_level_from_config(self.base_dir, section=None)
         self._run_dirs = ensure_run_log_dirs(self.base_dir)
-        fmt = self._formatter_factory("%(asctime)s %(levelname)s %(message)s")
+        formatter = self._formatter_factory("%(asctime)s %(levelname)s %(message)s")
 
-        name = self._logger_name
-        if name is None and self._log_specs:
-            name = (self._log_specs[0][1] or "").replace(".log", "").strip() or "generator"
-        self._logger = logging.getLogger(name or "generator")
+        logger_name = self._logger_name
+        if logger_name is None and self._log_specs:
+            logger_name = (self._log_specs[0][1] or "").replace(".log", "").strip() or "generator"
+        self._logger = logging.getLogger(logger_name or "generator")
         self._logger.setLevel(logging.DEBUG)
         self._logger.propagate = False
 
@@ -120,54 +121,54 @@ class GeneratorLogger:
             "gen": self._run_dirs.gen_dir,
             "parse": self._run_dirs.parse_dir,
         }
-        for i, raw_spec in enumerate(self._log_specs):
-            spec = self._normalize_log_spec(raw_spec)
+        for spec_index, raw_spec in enumerate(self._log_specs):
+            spec = self.normalize_log_spec(raw_spec)
             subdir, basename = spec.subdir, spec.basename
             log_dir = subdir_to_path.get(subdir, self._run_dirs.gen_dir)
             os.makedirs(log_dir, exist_ok=True)
             log_path = os.path.join(log_dir, basename)
-            if i == 0:
+            if spec_index == 0:
                 self._primary_log_path = log_path
 
-            fh = logging.handlers.RotatingFileHandler(
+            file_handler = logging.handlers.RotatingFileHandler(
                 log_path,
                 maxBytes=5 * 1024 * 1024,
                 backupCount=20,
                 encoding="utf-8",
             )
-            fh.addFilter(ExcludeProgressFilter())
-            for flt in self._file_filters:
-                fh.addFilter(flt)
-            for flt in spec.file_filters:
-                fh.addFilter(flt)
-            fh.setLevel(user_level)
-            fh.setFormatter(fmt)
-            self._logger.addHandler(fh)
+            file_handler.addFilter(ExcludeProgressFilter())
+            for file_filter in self._file_filters:
+                file_handler.addFilter(file_filter)
+            for file_filter in spec.file_filters:
+                file_handler.addFilter(file_filter)
+            file_handler.setLevel(user_level)
+            file_handler.setFormatter(formatter)
+            self._logger.addHandler(file_handler)
 
-            fh_progress = logging.handlers.RotatingFileHandler(
+            progress_handler = logging.handlers.RotatingFileHandler(
                 log_path,
                 maxBytes=5 * 1024 * 1024,
                 backupCount=20,
                 encoding="utf-8",
             )
-            fh_progress.addFilter(ProgressOnlyFilter())
-            for flt in spec.progress_filters:
-                fh_progress.addFilter(flt)
-            fh_progress.setLevel(PROGRESS_LEVEL)
-            fh_progress.setFormatter(fmt)
-            self._logger.addHandler(fh_progress)
+            progress_handler.addFilter(ProgressOnlyFilter())
+            for progress_filter in spec.progress_filters:
+                progress_handler.addFilter(progress_filter)
+            progress_handler.setLevel(PROGRESS_LEVEL)
+            progress_handler.setFormatter(formatter)
+            self._logger.addHandler(progress_handler)
 
         if self._console:
-            ch = logging.StreamHandler()
-            ch.addFilter(ExcludeProgressFilter())
-            ch.setLevel(logging.INFO)
-            ch.setFormatter(fmt)
-            self._logger.addHandler(ch)
+            console_handler = logging.StreamHandler()
+            console_handler.addFilter(ExcludeProgressFilter())
+            console_handler.setLevel(logging.INFO)
+            console_handler.setFormatter(formatter)
+            self._logger.addHandler(console_handler)
 
         return self._logger
 
     @staticmethod
-    def _normalize_log_spec(spec: LogSpec | LogSpecConfig) -> LogSpecConfig:
+    def normalize_log_spec(spec: LogSpec | LogSpecConfig) -> LogSpecConfig:
         """将 (subdir, basename) 或 LogSpecConfig 统一为 LogSpecConfig。参数: spec — 日志规格。返回: LogSpecConfig。"""
         if isinstance(spec, LogSpecConfig):
             return spec
@@ -191,6 +192,5 @@ class GeneratorLogger:
 
     def clear(self) -> None:
         """关闭并清空 logger 的 handlers，便于下次运行重新 setup 并写入新目录。"""
-        from core.run_context import clear_run_logger
         clear_run_logger(self._logger)
         self._logger = None

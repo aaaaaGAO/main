@@ -15,15 +15,13 @@ web 包：Web 层（Flask 应用 + 路由）
 - create_app() -> Flask
   无参数。创建并配置 Flask 实例，注册上述蓝图，并设置 app.config["BASE_DIR"] 为项目根目录。
   项目根目录由路径解析动态确定：打包时为 exe 所在目录；开发时从当前包所在目录向上查找
-  含 Configuration.txt 的目录（目录名可任意，不依赖 release_02_1 等固定名称）。返回配置好的 Flask 应用。
+  含主配置 / 固定配置的目录（如 `config/Configuration.ini`，目录名可任意，不依赖 release_02_1 等固定名称）。返回配置好的 Flask 应用。
 """
 
 from __future__ import annotations
 
-import os
-
 from flask import Flask
-from infra.filesystem.pathing import get_project_root
+from infra.filesystem.pathing import RuntimePathResolver
 
 from .routes.common import common_bp
 from .routes.lr_rear import lr_rear_bp
@@ -32,11 +30,11 @@ from .routes.dtc import dtc_bp
 
 
 def _project_root() -> str:
-    """获取项目根目录（Configuration.txt、filter_options.txt、FixedConfig.txt 所在目录），统一使用 infra.filesystem.pathing.get_project_root。
+    """获取项目根目录（主配置、固定配置、filter_options.ini 所在目录），统一使用 infra.filesystem.pathing.get_project_root。
     参数：无。
     返回：根目录绝对路径。
     """
-    return get_project_root(__file__)
+    return RuntimePathResolver.resolve_base_dir(__file__)
 
 
 def create_app() -> Flask:

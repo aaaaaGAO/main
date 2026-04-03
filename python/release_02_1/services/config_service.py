@@ -21,6 +21,33 @@ from dataclasses import dataclass
 from typing import Any, Dict, Optional
 
 from infra.config import read_fixed_config
+from infra.filesystem import (
+    ProjectPaths,
+    resolve_main_config_path,
+    resolve_main_config_write_path,
+)
+from services.config_manager import ConfigManager
+from services.config_constants import (
+    DEFAULT_DID_CONFIG_FILENAME,
+    OPTION_CASE_LEVELS,
+    OPTION_CASE_MODELS,
+    OPTION_CASE_PLATFORMS,
+    OPTION_CASE_TARGET_VERSIONS,
+    OPTION_CIN_INPUT_EXCEL,
+    OPTION_DIDINFO_INPUTS,
+    OPTION_INPUT_EXCEL,
+    OPTION_INPUTS,
+    OPTION_LOG_LEVEL_MIN,
+    OPTION_OUTPUT_DIR,
+    OPTION_OUTPUT_FILENAME,
+    OPTION_SELECTED_SHEETS,
+    SECTION_CONFIG_ENUM,
+    SECTION_DID_CONFIG,
+    SECTION_IOMAPPING,
+    SECTION_LR_REAR,
+    SECTION_PATHS,
+    VALID_LOG_LEVELS,
+)
 
 
 @dataclass
@@ -33,7 +60,7 @@ class ConfigPaths:
 
 class ConfigService:
     """
-    配置服务：封装 Configuration.txt / FixedConfig.txt 的访问。
+    配置服务：封装主配置文件 / 固定配置文件的访问。
 
     使用方式（后续在 web/routes 或 app.py 中）：
         svc = ConfigService.from_base_dir(base_dir)
@@ -42,42 +69,62 @@ class ConfigService:
         svc.update_section("LR_REAR", {"input_excel": "xxx.xlsx"})
     """
 
-    def __init__(self, paths: ConfigPaths) -> None:
+    def __init__(
+        self,
+        paths: ConfigPaths,
+        *,
+        config_manager: ConfigManager | None = None,
+    ) -> None:
         self.paths = paths
+        self.config_manager = config_manager or ConfigManager(
+            paths.base_dir,
+            config_path=paths.config_path,
+        )
 
     # ------------------------------------------------------------------
     # 构造方法
     # ------------------------------------------------------------------
     @classmethod
-    def from_base_dir(cls, base_dir: str, config_filename: str = "Configuration.txt") -> "ConfigService":
+    def from_base_dir(cls, base_dir: str, config_filename: str = "Configuration.ini") -> "ConfigService":
         """从项目根目录创建 ConfigService 实例。
         参数:
             base_dir: 项目根目录。
-            config_filename: 主配置文件名，默认 Configuration.txt。
+            config_filename: 非标准文件名时按该名单一路径读写；标准名则使用默认 Configuration.ini 解析与写回。
         返回: ConfigService 实例。
         """
-        base_dir = os.path.abspath(base_dir)
-        # 新目录结构：主配置固定位于 base_dir/config 下
-        cfg_path = os.path.join(base_dir, "config", config_filename)
-        return cls(ConfigPaths(base_dir=base_dir, config_path=cfg_path))
+        project_paths = ProjectPaths.from_base_dir(base_dir, config_filename=config_filename)
+        if config_filename not in (None, "Configuration.ini"):
+            config_path = resolve_main_config_path(
+                base_dir,
+                config_filename=config_filename,
+            )
+            return cls(
+                ConfigPaths(
+                    base_dir=project_paths.base_dir,
+                    config_path=config_path,
+                ),
+                config_manager=ConfigManager(
+                    project_paths.base_dir,
+                    config_path=config_path,
+                ),
+            )
+        return cls(
+            ConfigPaths(
+                base_dir=project_paths.base_dir,
+                config_path=resolve_main_config_write_path(base_dir),
+            ),
+            config_manager=ConfigManager(project_paths.base_dir, config_path=None),
+        )
 
     # ------------------------------------------------------------------
     # 读取配置
     # ------------------------------------------------------------------
     def load_main_config(self) -> configparser.ConfigParser:
         """读取主配置文件。无参数。返回: ConfigParser 实例（不存在则为空）。"""
-        cfg = configparser.ConfigParser()
-        if os.path.exists(self.paths.config_path):
-            try:
-                cfg.read(self.paths.config_path, encoding="utf-8")
-            except Exception:
-                # 兼容部分历史文件中混杂的非法字符
-                with open(self.paths.config_path, "r", encoding="utf-8", errors="replace") as f:
-                    cfg.read_file(f)
-        return cfg
+        return self.config_manager.load_config()
 
     def load_fixed_config(self) -> Dict[str, str]:
-        """读取 FixedConfig.txt（键值优先级高于主配置）。"""
+        """读取固定配置文件（键值优先级高于主配置）。"""
         return read_fixed_config(self.paths.base_dir)
 
     # ------------------------------------------------------------------
@@ -98,15 +145,11 @@ class ConfigService:
         参数: section — 节名；values — 选项名到值的字典（None 会转为空串）。
         无返回值。
         """
-        cfg = self.load_main_config()
-        if not cfg.has_section(section):
-            cfg.add_section(section)
-        for key, val in values.items():
-            cfg.set(section, str(key), "" if val is None else str(val))
-
-        # TODO: 将 app.py 中的“格式化写回逻辑”迁移到独立的 _write_formatted_config()，这里调用
-        with open(self.paths.config_path, "w", encoding="utf-8") as f:
-            cfg.write(f)
+        normalized_values = {
+            str(key): "" if value is None else str(value)
+            for key, value in values.items()
+        }
+        self.config_manager.update_domain_config(section, normalized_values)
 
     # ------------------------------------------------------------------
     # 预留：专用 LR_REAR / PATHS 操作接口（方便路由调用）
@@ -114,16 +157,58 @@ class ConfigService:
     def get_lr_rear(self) -> Dict[str, str]:
         """读取 [LR_REAR] 节内容为字典。无参数。返回: 节内键值对字典。"""
         cfg = self.load_main_config()
-        return self.get_section_dict(cfg, "LR_REAR")
+        return self.get_section_dict(cfg, SECTION_LR_REAR)
 
     def save_lr_rear(self, data: Dict[str, Any]) -> None:
         """更新 [LR_REAR] 节并写回文件。参数: data — 选项名到值的字典。无返回值。"""
-        self.update_section("LR_REAR", data)
+        self.update_section(SECTION_LR_REAR, data)
+
+    def build_lr_rear_section_data(self, payload: Dict[str, Any]) -> Dict[str, str]:
+        """将 LR_REAR 页面请求体映射为 [LR_REAR] 节键值。"""
+        lr_data: Dict[str, str] = {}
+
+        levels = payload.get("levels")
+        if levels is not None:
+            lr_data[OPTION_CASE_LEVELS] = levels if str(levels).strip() else "ALL"
+
+        platforms = payload.get("platforms")
+        if platforms is not None:
+            lr_data[OPTION_CASE_PLATFORMS] = str(platforms).strip()
+
+        models = payload.get("models")
+        if models is not None:
+            lr_data[OPTION_CASE_MODELS] = str(models).strip()
+
+        out_root = payload.get("out_root")
+        if out_root is not None:
+            lr_data[OPTION_OUTPUT_DIR] = str(out_root).strip()
+
+        selected_sheets = payload.get("selected_sheets")
+        if selected_sheets is not None:
+            lr_data[OPTION_SELECTED_SHEETS] = str(selected_sheets).strip()
+
+        log_level = str(payload.get("log_level") or "").strip().lower()
+        if log_level in VALID_LOG_LEVELS:
+            lr_data[OPTION_LOG_LEVEL_MIN] = log_level
+
+        can_input = payload.get("can_input")
+        if can_input is not None:
+            lr_data[OPTION_INPUT_EXCEL] = str(can_input).strip()
+
+        didinfo_excel = payload.get("didinfo_excel")
+        if didinfo_excel is not None and str(didinfo_excel).strip():
+            lr_data[OPTION_DIDINFO_INPUTS] = f"{str(didinfo_excel).strip()} | *"
+
+        cin_excel = payload.get("cin_excel")
+        if cin_excel is not None and str(cin_excel).strip():
+            lr_data[OPTION_CIN_INPUT_EXCEL] = str(cin_excel).strip()
+
+        return lr_data
 
     def get_paths(self) -> Dict[str, str]:
         """读取 [PATHS] 节内容为字典。"""
         cfg = self.load_main_config()
-        return self.get_section_dict(cfg, "PATHS")
+        return self.get_section_dict(cfg, SECTION_PATHS)
 
     # ------------------------------------------------------------------
     # 从 app.py 迁移的 LR_REAR 相关更新逻辑（第一阶段：仅封装 LR_REAR / PATHS 等）
@@ -134,8 +219,8 @@ class ConfigService:
         """levels 空则写 ALL。"""
         if v is None:
             return "ALL"
-        s = str(v).strip()
-        return s if s else "ALL"
+        level_text = str(v).strip()
+        return level_text if level_text else "ALL"
 
     @staticmethod
     def _normalize_selected_sheets_str(sheets_str: Any) -> str:
@@ -147,15 +232,15 @@ class ConfigService:
             return ""
         parts: list[str] = []
         normalized_str = unicodedata.normalize("NFC", str(sheets_str).strip())
-        for p in normalized_str.split(","):
-            p = p.strip()
-            if "|" in p:
-                table, sheet = p.split("|", 1)
+        for item in normalized_str.split(","):
+            item = item.strip()
+            if "|" in item:
+                table, sheet = item.split("|", 1)
                 key = unicodedata.normalize("NFC", os.path.basename(str(table).strip()))
                 sheet_name = unicodedata.normalize("NFC", str(sheet).strip())
                 parts.append(f"{key}|{sheet_name}")
-            elif p:
-                parts.append(p)
+            elif item:
+                parts.append(item)
         return ",".join(parts)
 
     def update_lr_rear_and_related(self, cfg: configparser.ConfigParser, preset_data: Dict[str, Any]) -> None:
@@ -171,80 +256,80 @@ class ConfigService:
         - cfg 为已经加载并做过重复节清理的 ConfigParser 实例。
         """
         # 确保节存在
-        if not cfg.has_section("LR_REAR"):
-            cfg.add_section("LR_REAR")
+        if not cfg.has_section(SECTION_LR_REAR):
+            cfg.add_section(SECTION_LR_REAR)
 
         # 筛选器：levels 空则 ALL；平台/车型/Target Version 选什么写什么，空表示全部生成
-        cfg.set("LR_REAR", "case_levels", self._normalize_level(preset_data.get("levels", "ALL")))
-        cfg.set("LR_REAR", "case_platforms", (preset_data.get("platforms") or "").strip())
-        cfg.set("LR_REAR", "case_models", (preset_data.get("models") or "").strip())
-        cfg.set("LR_REAR", "case_target_versions", (preset_data.get("target_versions") or "").strip())
+        cfg.set(SECTION_LR_REAR, OPTION_CASE_LEVELS, self._normalize_level(preset_data.get("levels", "ALL")))
+        cfg.set(SECTION_LR_REAR, OPTION_CASE_PLATFORMS, (preset_data.get("platforms") or "").strip())
+        cfg.set(SECTION_LR_REAR, OPTION_CASE_MODELS, (preset_data.get("models") or "").strip())
+        cfg.set(SECTION_LR_REAR, OPTION_CASE_TARGET_VERSIONS, (preset_data.get("target_versions") or "").strip())
 
         # 输出目录：仅写 LR_REAR，自此不再把各页面业务配置回写到 PATHS
         out_root = preset_data.get("out_root", "")
         if out_root:
-            cfg.set("LR_REAR", "output_dir", out_root)
+            cfg.set(SECTION_LR_REAR, OPTION_OUTPUT_DIR, out_root)
 
         # CAN 输入路径：仅写 LR_REAR
         can_input = preset_data.get("can_input")
         if can_input:
             val = can_input
-            for sec in ["LR_REAR"]:
+            for sec in [SECTION_LR_REAR]:
                 if cfg.has_section(sec):
                     cfg.remove_option(sec, "input_excel_dir")
                     cfg.remove_option(sec, "Input_Excel_Dir")
-            if not cfg.has_section("LR_REAR"):
-                cfg.add_section("LR_REAR")
-            cfg.set("LR_REAR", "input_excel", val)
+            if not cfg.has_section(SECTION_LR_REAR):
+                cfg.add_section(SECTION_LR_REAR)
+            cfg.set(SECTION_LR_REAR, OPTION_INPUT_EXCEL, val)
 
         # IO_MAPPING
         if preset_data.get("io_excel"):
-            if not cfg.has_section("IOMAPPING"):
-                cfg.add_section("IOMAPPING")
-            cfg.set("IOMAPPING", "inputs", f"{preset_data['io_excel']} | *")
+            if not cfg.has_section(SECTION_IOMAPPING):
+                cfg.add_section(SECTION_IOMAPPING)
+            cfg.set(SECTION_IOMAPPING, OPTION_INPUTS, f"{preset_data['io_excel']} | *")
 
         # DID_CONFIG + CONFIG_ENUM
         if preset_data.get("didconfig_excel"):
-            if not cfg.has_section("DID_CONFIG"):
-                cfg.add_section("DID_CONFIG")
-            cfg.set("DID_CONFIG", "input_excel", preset_data["didconfig_excel"])
+            if not cfg.has_section(SECTION_DID_CONFIG):
+                cfg.add_section(SECTION_DID_CONFIG)
+            cfg.set(SECTION_DID_CONFIG, OPTION_INPUT_EXCEL, preset_data["didconfig_excel"])
             if out_root:
-                cfg.set("DID_CONFIG", "output_dir", out_root)
-            if not cfg.has_option("DID_CONFIG", "output_filename"):
-                cfg.set("DID_CONFIG", "output_filename", "DIDConfig.txt")
+                cfg.set(SECTION_DID_CONFIG, OPTION_OUTPUT_DIR, out_root)
+            if not cfg.has_option(SECTION_DID_CONFIG, OPTION_OUTPUT_FILENAME):
+                cfg.set(SECTION_DID_CONFIG, OPTION_OUTPUT_FILENAME, DEFAULT_DID_CONFIG_FILENAME)
 
-            if not cfg.has_section("CONFIG_ENUM"):
-                cfg.add_section("CONFIG_ENUM")
-            cfg.set("CONFIG_ENUM", "inputs", f"{preset_data['didconfig_excel']} | *")
+            if not cfg.has_section(SECTION_CONFIG_ENUM):
+                cfg.add_section(SECTION_CONFIG_ENUM)
+            cfg.set(SECTION_CONFIG_ENUM, OPTION_INPUTS, f"{preset_data['didconfig_excel']} | *")
 
         # ResetDid_Value 配置表（didinfo_inputs）
         didinfo_excel = preset_data.get("didinfo_excel", "")
         if didinfo_excel and didinfo_excel.strip():
-            if not cfg.has_section("LR_REAR"):
-                cfg.add_section("LR_REAR")
-            cfg.set("LR_REAR", "didinfo_inputs", f"{didinfo_excel} | *")
+            if not cfg.has_section(SECTION_LR_REAR):
+                cfg.add_section(SECTION_LR_REAR)
+            cfg.set(SECTION_LR_REAR, OPTION_DIDINFO_INPUTS, f"{didinfo_excel} | *")
 
         # Clib 配置表（cin_input_excel）
         cin_excel = preset_data.get("cin_excel", "")
         if cin_excel and cin_excel.strip():
-            if not cfg.has_section("LR_REAR"):
-                cfg.add_section("LR_REAR")
-            cfg.set("LR_REAR", "cin_input_excel", cin_excel)
+            if not cfg.has_section(SECTION_LR_REAR):
+                cfg.add_section(SECTION_LR_REAR)
+            cfg.set(SECTION_LR_REAR, OPTION_CIN_INPUT_EXCEL, cin_excel)
 
         # 勾选的 sheet 与日志生成选择
         lr_sheets = self._normalize_selected_sheets_str(preset_data.get("selected_sheets") or "")
         if lr_sheets:
-            cfg.set("LR_REAR", "selected_sheets", lr_sheets)
-        elif cfg.has_option("LR_REAR", "selected_sheets"):
-            cfg.remove_option("LR_REAR", "selected_sheets")
+            cfg.set(SECTION_LR_REAR, OPTION_SELECTED_SHEETS, lr_sheets)
+        elif cfg.has_option(SECTION_LR_REAR, OPTION_SELECTED_SHEETS):
+            cfg.remove_option(SECTION_LR_REAR, OPTION_SELECTED_SHEETS)
 
         log_level = (
             (preset_data.get("log_level") or preset_data.get("c_log_level") or preset_data.get("d_log_level") or "info")
             .strip()
             .lower()
         )
-        if log_level in ("info", "warning", "error"):
-            cfg.set("LR_REAR", "log_level_min", log_level)
+        if log_level in VALID_LOG_LEVELS:
+            cfg.set(SECTION_LR_REAR, OPTION_LOG_LEVEL_MIN, log_level)
 
     # ------------------------------------------------------------------
     # 预留：去重 / 清理 / 导入导出（从 app.py 迁移）

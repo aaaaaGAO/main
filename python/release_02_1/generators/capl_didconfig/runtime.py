@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from core.excel_header import find_header_row_and_col_indices
 from utils.excel_io import merged_cell_value, norm_str
-from utils.path_utils import resolve_target_subdir
+from infra.filesystem import resolve_target_subdir
 
 from .runtime_io import (
     get_progress_level,

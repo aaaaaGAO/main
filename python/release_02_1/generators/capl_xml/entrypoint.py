@@ -12,6 +12,8 @@ from __future__ import annotations
 import os
 import sys
 
+from services.config_constants import DEFAULT_DOMAIN_LR_REAR
+
 # 无控制台（如 --noconsole 打包）时 stdout/stderr 可能为 None，子模块 print 会报错，此处做防护
 if sys.stdout is None:
     sys.stdout = open(os.devnull, "w")
@@ -24,7 +26,7 @@ from .service import XMLGeneratorService
 def main(
     config_path: str | None = None,
     base_dir: str | None = None,
-    domain: str = "LR_REAR",
+    domain: str = DEFAULT_DOMAIN_LR_REAR,
 ) -> None:
     """XML 生成统一入口，供 TaskService 与命令行调用。
 
@@ -32,7 +34,7 @@ def main(
     查找 Excel、解析分组、写 XML、汇总。
 
     形参：
-        config_path：配置文件路径；None 时在 base_dir 下查找 Configuration.txt。
+        config_path：配置文件路径；None 时按主配置默认解析规则查找 `Configuration.ini`。
         base_dir：工程根目录；None 时由 Service 内部解析。
         domain：业务域，用于读取对应域的输入输出路径等配置。
 

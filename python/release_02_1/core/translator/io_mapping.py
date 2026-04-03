@@ -4,7 +4,7 @@
 IO Mapping 解析与替换（供 CAN/CIN 生成器复用）
 
 功能概览：
-  1. 从 Configuration.txt 的 [IOMAPPING] 段读取 Inputs，解析「Excel 路径 | Sheet 列表」。
+  1. 从当前主配置文件的 [IOMAPPING] 段读取 Inputs，解析「Excel 路径 | Sheet 列表」。
   2. 打开一个或多个 IO_mapping Excel，支持指定 sheet 或全部 sheet（*）。
   3. 表头定位 Name/Path/Values；Name/Path/Values 均使用当前行单元格原始值，不做向下填充（不受合并单元格影响）。
   4. 将 Name -> Path 做替换；将 Values 中的「翻译前(右侧)」->「翻译后(左侧)」做枚举翻译（大小写不敏感）。
@@ -22,12 +22,12 @@ IO Mapping 解析与替换（供 CAN/CIN 生成器复用）
   - ② 读配置相关：get_base_dir、get_log_level_from_config、split_input_lines（来自 utils）。
   - ③ 日志相关：_IOProgressFormatter、_setup_logging、_log。
   - ④ 表头与列定位：_norm_header、_find_header_row_and_indices。
-  - ⑤ 字符串/枚举工具：_find_colon、_is_numeric、_norm_key、_norm_enum_key、_has_expr_chars。
-  - ⑥ Values 解析：_parse_values_cell。
+  - ⑤ 字符串/枚举工具：find_colon、is_numeric_value、normalize_name_key、normalize_enum_key、has_expression_chars。
+  - ⑥ Values 解析：parse_values_cell。
   - ⑦ 上下文类：IOMappingContext（_maybe_invert_ls_enum、_is_j_di_ls、_process_inverted_token、transform_args）。
   - ⑧ 主加载入口：load_io_mapping_from_config。
 
-配置建议（Configuration.txt）：
+配置建议（主配置文件 `Configuration.ini`）：
   [IOMAPPING]
   Inputs =
     input/xxx.xlsx | *
@@ -48,6 +48,12 @@ from typing import Dict, List, Optional
 from openpyxl import load_workbook
 
 from core.caseid_log_dedup import DedupOnceFilter
+from core.log_run_context import ensure_run_log_dirs
+from services.config_constants import (
+    DEFAULT_DOMAIN_LR_REAR,
+    OPTION_INPUTS_CANDIDATES,
+    get_io_mapping_section_candidates,
+)
 from utils.excel_io import split_input_lines
 from utils.logger import (
     ExcludeProgressFilter as _ExcludeProgressFilter_Shared,
@@ -55,7 +61,7 @@ from utils.logger import (
     ProgressOnlyFilter as _ProgressOnlyFilter_Shared,
     get_log_level_from_config,
 )
-from utils.path_utils import get_base_dir
+from infra.filesystem import get_base_dir
 
 # ==================== ① 常量与异常 ====================
 
@@ -112,8 +118,6 @@ def _setup_logging(base_dir: Optional[str], section: Optional[str] = None) -> lo
     global _LOGGER
     base_dir = base_dir or get_base_dir()
     user_level = get_log_level_from_config(base_dir, section=section)
-
-    from core.log_run_context import ensure_run_log_dirs
 
     run_dirs = ensure_run_log_dirs(base_dir)
     log_dir = run_dirs.parse_dir
@@ -242,7 +246,7 @@ def _find_header_row_and_indices(ws, *, max_scan_rows: int = 30) -> tuple[int, d
 # ==================== ⑤ 字符串/枚举工具 ====================
 
 
-def _find_colon(s: str, start: int) -> int:
+def find_colon(s: str, start: int) -> int:
     """
     返回 s[start:] 中第一个冒号（英文或中文）的位置。
     形参：s - 传入待查字符串；start - 传入起始下标。
@@ -253,7 +257,7 @@ def _find_colon(s: str, start: int) -> int:
     return min(candidates) if candidates else -1
 
 
-def _is_numeric(s: str) -> bool:
+def is_numeric_value(s: str) -> bool:
     """
     判断字符串是否为数值（十进制或十六进制如 0x1）。
     形参：s - 传入待判断字符串（可为 None）。
@@ -265,7 +269,7 @@ def _is_numeric(s: str) -> bool:
     return bool(_RE_NUMERIC.match(s_str) or _RE_HEX.match(s_str))
 
 
-def _norm_key(s: str) -> str:
+def normalize_name_key(s: str) -> str:
     """
     Name/Path 等键的规范化：去首尾空白、转小写，用于字典查找。
     形参：s - 传入原始键字符串。
@@ -274,7 +278,7 @@ def _norm_key(s: str) -> str:
     return str(s).strip().casefold()
 
 
-def _norm_enum_key(s: str) -> str:
+def normalize_enum_key(s: str) -> str:
     """
     Values/枚举专用 key 规范化：去首尾空白、折叠内部空白、移除不可见字符、转小写。
     形参：s - 传入枚举显示值（如 "AUTO DOWN"）。
@@ -282,13 +286,13 @@ def _norm_enum_key(s: str) -> str:
     """
     if s is None:
         return ""
-    t = str(s).strip()
-    t = "".join(ch for ch in t if unicodedata.category(ch) != "Cf")
-    t = re.sub(r"\s+", " ", t)
-    return t.casefold()
+    normalized = str(s).strip()
+    normalized = "".join(ch for ch in normalized if unicodedata.category(ch) != "Cf")
+    normalized = re.sub(r"\s+", " ", normalized)
+    return normalized.casefold()
 
 
-def _has_expr_chars(s: str) -> bool:
+def has_expression_chars(s: str) -> bool:
     """
     判断是否包含表达式符号 ><=()，此类字符串不做枚举翻译、直接透传。
     形参：s - 传入待判断字符串（可为 None）。
@@ -302,12 +306,12 @@ def _has_expr_chars(s: str) -> bool:
 # ==================== ⑥ Values 解析 ====================
 
 
-def _parse_values_cell(values_cell: str) -> Dict[str, str]:
+def parse_values_cell(values_cell: str) -> Dict[str, str]:
     """
     解析 Values 单元格，得到 翻译前(右侧) -> 翻译后(左侧) 的映射。
     支持多行、一行多对（如 1:ON 0:OFF）、数值 key 紧挨（如 0:AUTO DOWN2.2:AUTO UP）的强容错切分。
     形参：values_cell - 传入 Values 列单元格的原始字符串（可为 None）。
-    返回：Dict[str, str]。key 为 _norm_enum_key(翻译前)，value 为翻译后（如 "1"、"0"）。
+    返回：Dict[str, str]。key 为 normalize_enum_key(翻译前)，value 为翻译后（如 "1"、"0"）。
     """
     if values_cell is None:
         return {}
@@ -345,13 +349,13 @@ def _parse_values_cell(values_cell: str) -> Dict[str, str]:
                 right = line[start:end].strip()
                 if not left or not right:
                     continue
-                mapping[_norm_enum_key(right)] = left
+                mapping[normalize_enum_key(right)] = left
             continue
 
         i = 0
         n = len(line)
         while i < n:
-            j = _find_colon(line, i)
+            j = find_colon(line, i)
             if j < 0:
                 break
             left = line[i:j].strip()
@@ -374,7 +378,7 @@ def _parse_values_cell(values_cell: str) -> Dict[str, str]:
                     i += 1
             if not right:
                 continue
-            mapping[_norm_enum_key(right)] = left.strip()
+            mapping[normalize_enum_key(right)] = left.strip()
     return mapping
 
 
@@ -400,18 +404,18 @@ class IOMappingContext:
         """
         if not name or not value_token or not values_map:
             return value_token
-        n = str(name).strip().upper()
-        if not (n.startswith("J_DI") and n.endswith("LS")):
+        upper_name = str(name).strip().upper()
+        if not (upper_name.startswith("J_DI") and upper_name.endswith("LS")):
             return value_token
-        v = str(value_token).strip()
-        if not v:
+        token_text = str(value_token).strip()
+        if not token_text:
             return value_token
         keys = list(values_map.keys())
-        cur = _norm_enum_key(v)
+        current_key = normalize_enum_key(token_text)
         if len(keys) != 2:
-            if len(keys) > 2 and cur in values_map:
-                if n not in _LS_INVERT_WARNED:
-                    _LS_INVERT_WARNED.add(n)
+            if len(keys) > 2 and current_key in values_map:
+                if upper_name not in _LS_INVERT_WARNED:
+                    _LS_INVERT_WARNED.add(upper_name)
                     enum_preview = ", ".join(sorted(keys)[:20])
                     more = "" if len(keys) <= 20 else f" ...(+{len(keys)-20})"
                     _log(
@@ -420,9 +424,9 @@ class IOMappingContext:
                         f"{len(keys)} 值：name={name!r} enums=[{enum_preview}{more}] 当前输入={value_token!r}（本次将不反转）",
                     )
             return value_token
-        if cur not in values_map:
+        if current_key not in values_map:
             return value_token
-        return keys[0] if keys[1] == cur else keys[1]
+        return keys[0] if keys[1] == current_key else keys[1]
 
     @staticmethod
     def _is_j_di_ls(name: str) -> bool:
@@ -433,8 +437,8 @@ class IOMappingContext:
         """
         if not name:
             return False
-        n = str(name).strip().upper()
-        return n.startswith("J_DI") and n.endswith("LS")
+        upper_name = str(name).strip().upper()
+        return upper_name.startswith("J_DI") and upper_name.endswith("LS")
 
     def _process_inverted_token(
         self,
@@ -452,9 +456,9 @@ class IOMappingContext:
         token = str(value_token).strip()
         if not token:
             return token
-        if _has_expr_chars(token):
+        if has_expression_chars(token):
             return token
-        if _is_numeric(token):
+        if is_numeric_value(token):
             try:
                 num_val = int(token, 16) if _RE_HEX.match(token) else int(float(token))
             except (ValueError, OverflowError):
@@ -467,9 +471,9 @@ class IOMappingContext:
         if not values_map:
             raise IOMappingParseError(f"Values 为空，无法翻译: {token}")
         phrase2 = self._maybe_invert_ls_enum(raw_name, token, values_map)
-        k = _norm_enum_key(phrase2)
-        if k in values_map:
-            return values_map[k]
+        enum_key = normalize_enum_key(phrase2)
+        if enum_key in values_map:
+            return values_map[enum_key]
         raise IOMappingParseError(
             f"J_DI*LS 名称 {raw_name!r} 的值必须是 0、1 或 Values 中的枚举值，"
             f"但收到 {token!r}。Values 中的有效枚举值: {list(values_map.keys())}"
@@ -486,7 +490,7 @@ class IOMappingContext:
         raw_name = str(args[0]).strip()
         if not raw_name.upper().startswith("J_"):
             return args
-        name_key = _norm_key(raw_name)
+        name_key = normalize_name_key(raw_name)
         if name_key not in self.name_to_path and name_key not in self.name_to_values:
             raise IOMappingParseError(f"Name 未找到: {raw_name}")
         path = self.name_to_path.get(name_key, "")
@@ -501,7 +505,7 @@ class IOMappingContext:
             return out
         if not values_map:
             first = rest_tokens[0]
-            if _is_numeric(first) or _has_expr_chars(first):
+            if is_numeric_value(first) or has_expression_chars(first):
                 out.extend(rest_tokens)
                 return out
             raise IOMappingParseError(f"Values 为空: Name={raw_name}, Value={' '.join(rest_tokens)}")
@@ -512,25 +516,25 @@ class IOMappingContext:
                 return out
             group_strs = re.split(r"[;；]", rest_str)
             new_groups: List[str] = []
-            for g in group_strs:
-                g = g.strip()
-                if not g:
+            for group_text in group_strs:
+                group_text = group_text.strip()
+                if not group_text:
                     continue
-                seg_tokens = g.split()
+                seg_tokens = group_text.split()
                 if len(seg_tokens) == 1:
                     new_groups.append(self._process_inverted_token(raw_name, seg_tokens[0], values_map))
                 else:
-                    inv = self._process_inverted_token(raw_name, seg_tokens[1], values_map)
-                    new_groups.append(" ".join([seg_tokens[0], inv] + seg_tokens[2:]))
+                    inverted_value = self._process_inverted_token(raw_name, seg_tokens[1], values_map)
+                    new_groups.append(" ".join([seg_tokens[0], inverted_value] + seg_tokens[2:]))
             new_rest_str = ";".join(new_groups)
             out.extend([tok for tok in new_rest_str.split() if tok])
             return out
 
         first = rest_tokens[0]
-        if _has_expr_chars(first):
+        if has_expression_chars(first):
             out.extend(rest_tokens)
             return out
-        if _is_numeric(first):
+        if is_numeric_value(first):
             if self._is_j_di_ls(raw_name):
                 try:
                     num_val = (
@@ -555,25 +559,25 @@ class IOMappingContext:
             return out
 
         max_n = 0
-        for t in rest_tokens:
-            if not t:
+        for token in rest_tokens:
+            if not token:
                 continue
-            if _is_numeric(t) or _has_expr_chars(t):
+            if is_numeric_value(token) or has_expression_chars(token):
                 break
             max_n += 1
         if max_n <= 0:
             out.extend(rest_tokens)
             return out
         matched = False
-        for n in range(max_n, 0, -1):
-            phrase = " ".join(rest_tokens[:n]).strip()
+        for token_count in range(max_n, 0, -1):
+            phrase = " ".join(rest_tokens[:token_count]).strip()
             if not phrase:
                 continue
             phrase2 = self._maybe_invert_ls_enum(raw_name, phrase, values_map)
-            k = _norm_enum_key(phrase2)
-            if k in values_map:
-                out.append(values_map[k])
-                out.extend(rest_tokens[n:])
+            enum_key = normalize_enum_key(phrase2)
+            if enum_key in values_map:
+                out.append(values_map[enum_key])
+                out.extend(rest_tokens[token_count:])
                 matched = True
                 break
         if not matched:
@@ -588,15 +592,17 @@ class IOMappingContext:
 # ==================== ⑧ 主加载入口 ====================
 
 
-def _get_io_mapping_inputs_text(config, domain: str) -> str:
+def get_io_mapping_inputs_text(config, domain: str) -> str:
     """从配置中按域读取 [IOMAPPING] 的 Inputs 文本。参数: config — 配置对象；domain — 域（LR_REAR 兼容全局 IOMAPPING）。返回: Inputs 字符串。"""
-    section_candidates = [f"{domain}_IOMAPPING"] if domain and domain != "LR_REAR" else ["IOMAPPING"]
+    section_candidates = get_io_mapping_section_candidates(domain)
     for section in section_candidates:
         if not config.has_section(section):
             continue
-        inputs_text = config.get(section, "Inputs", fallback="") or config.get(
-            section, "inputs", fallback=""
-        )
+        inputs_text = ""
+        for option_name in OPTION_INPUTS_CANDIDATES:
+            inputs_text = config.get(section, option_name, fallback="")
+            if inputs_text:
+                break
         if inputs_text and str(inputs_text).strip():
             return str(inputs_text)
     return ""
@@ -606,22 +612,22 @@ def load_io_mapping_from_config(
     config,
     base_dir: Optional[str] = None,
     config_path: Optional[str] = None,
-    domain: str = "LR_REAR",
+    domain: str = DEFAULT_DOMAIN_LR_REAR,
 ) -> Optional[IOMappingContext]:
     """
     从 config 的 [IOMAPPING] 段加载 IO mapping；未配置 Inputs 则返回 None。
     形参：
-      config - 传入 ConfigParser 对象（已读入 Configuration.txt）。
+      config - 传入 ConfigParser 对象（已读入当前主配置文件）。
       base_dir - 传入工程根目录，用于日志与相对路径；可选。
       config_path - 传入配置文件路径，用于解析 Inputs 中相对路径的基准目录；可选，优先于 base_dir。
     返回：IOMappingContext 或 None。有 Inputs 时返回上下文，供 transform_args 使用。
     """
-    inputs_text = _get_io_mapping_inputs_text(config, domain)
+    inputs_text = get_io_mapping_inputs_text(config, domain)
     input_lines = split_input_lines(inputs_text)
     if not input_lines:
         return None
 
-    # 日志需从工程根目录读取 config/Configuration.txt 的 log_level_min，此处传入工程根
+    # 日志需从工程根目录读取当前主配置的 log_level_min，此处传入工程根
     if base_dir:
         logger_base = base_dir
     elif config_path:
@@ -681,12 +687,12 @@ def load_io_mapping_from_config(
             raise IOMappingParseError(f"找不到文件: {excel_path_to_open}")
         except PermissionError:
             raise IOMappingParseError(f"没有权限读取: {excel_path_to_open}")
-        except Exception as e:
-            err = str(e).lower()
+        except Exception as error:
+            error_message = str(error).lower()
             if (
-                "decompressing" in err
-                or "incorrect header" in err
-                or "badzipfile" in err
+                "decompressing" in error_message
+                or "incorrect header" in error_message
+                or "badzipfile" in error_message
                 or "not a zip file" in err
             ):
                 raise IOMappingParseError(
@@ -745,7 +751,7 @@ def load_io_mapping_from_config(
                     continue
                 if not name_s:
                     continue
-                k = _norm_key(name_s)
+                k = normalize_name_key(name_s)
                 src = f"{os.path.basename(excel_path)}/{sheet_name}"
                 if path_s:
                     if k in local_name_to_path and local_name_to_path[k] != path_s:
@@ -766,7 +772,7 @@ def load_io_mapping_from_config(
                         if k not in name_to_path:
                             name_to_path[k] = path_s
                 if values_s:
-                    vm = _parse_values_cell(values_s)
+                    vm = parse_values_cell(values_s)
                     if vm:
                         cur_local = local_name_to_values.get(k)
                         if cur_local is None:

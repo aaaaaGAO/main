@@ -1,7 +1,0 @@
-2026-03-24 10:49:16,085  解析 Excel 文件: MQB_20260318_修改.xlsx
-2026-03-24 10:50:14,374 INFO   处理表=T8-Standby-Abnormal
-2026-03-24 10:50:14,376 INFO 生成 XML 文件...
-2026-03-24 10:50:14,378 INFO 文件已使用 UTF-8 编码保存
-2026-03-24 10:50:14,378 INFO XML 文件已生成: C:\Users\高登兰\Desktop\python开发合肥\zhongyang\TESTmode\Generated_Testcase.xml
-2026-03-24 10:50:14,379 INFO ============================================================
-2026-03-24 10:50:14,380  所有文件生成完成！XML 文件已生成: C:\Users\高登兰\Desktop\python开发合肥\zhongyang\TESTmode\Generated_Testcase.xml

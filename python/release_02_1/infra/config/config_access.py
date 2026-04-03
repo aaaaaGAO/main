@@ -3,7 +3,7 @@
 """
 配置聚合读取层（底层 I/O）
 
-统一 Configuration.txt + FixedConfig.txt 的读取能力，避免多套配置逻辑并存。
+统一主配置文件 + 固定配置文件的读取能力，避免多套配置逻辑并存。
 """
 
 from __future__ import annotations
@@ -11,6 +11,8 @@ from __future__ import annotations
 import configparser
 import os
 from typing import List, Optional
+
+from infra.filesystem import resolve_fixed_config_path
 
 _FIXED_KEYS = [
     "unified_mapping_excel",
@@ -30,7 +32,7 @@ _FIXED_KEYS = [
 
 
 def read_config(config_path: str) -> configparser.ConfigParser:
-    """读取 Configuration.txt，保留选项名大小写。参数: config_path — 配置文件路径。返回: ConfigParser。"""
+    """读取主配置文件，保留选项名大小写。参数: config_path — 配置文件路径。返回: ConfigParser。"""
     cfg = configparser.ConfigParser()
     cfg.optionxform = str
     with open(config_path, "r", encoding="utf-8", errors="replace") as f:
@@ -38,8 +40,23 @@ def read_config(config_path: str) -> configparser.ConfigParser:
     return cfg
 
 
+def read_config_if_exists(config_path: str) -> configparser.ConfigParser:
+    """读取存在的主配置文件；文件不存在时返回空 ConfigParser。"""
+    config = configparser.ConfigParser()
+    config.optionxform = str
+    if not config_path or not os.path.exists(config_path):
+        return config
+
+    try:
+        config.read(config_path, encoding="utf-8")
+    except Exception:
+        with open(config_path, "r", encoding="utf-8", errors="replace") as config_file:
+            config.read_file(config_file)
+    return config
+
+
 def read_config_tolerant_duplicates(config_path: str) -> configparser.ConfigParser:
-    """读取 Configuration.txt，同节内重复选项去重后解析。参数: config_path — 配置文件路径。返回: ConfigParser。"""
+    """读取主配置文件，同节内重复选项去重后解析。参数: config_path — 配置文件路径。返回: ConfigParser。"""
     config = configparser.ConfigParser()
     config.optionxform = str
     with open(config_path, "r", encoding="utf-8", errors="replace") as f:
@@ -74,8 +91,8 @@ def read_config_tolerant_duplicates(config_path: str) -> configparser.ConfigPars
 
 
 def read_fixed_config(base_dir: str) -> dict[str, str]:
-    """从 base_dir/config 下 FixedConfig.txt 的 [PATHS] 节读取固定配置项。参数: base_dir — 工程根目录。返回: {key: value} 字典。"""
-    fixed_config_path = os.path.join(base_dir, "config", "FixedConfig.txt")
+    """从 base_dir/config 下固定配置文件的 [PATHS] 节读取固定配置项。参数: base_dir — 工程根目录。返回: {key: value} 字典。"""
+    fixed_config_path = resolve_fixed_config_path(base_dir)
     fixed_config: dict[str, str] = {}
 
     if not os.path.exists(fixed_config_path):
@@ -90,8 +107,8 @@ def read_fixed_config(base_dir: str) -> dict[str, str]:
             for key in _FIXED_KEYS:
                 if fixed_cfg.has_option("PATHS", key):
                     fixed_config[key] = fixed_cfg.get("PATHS", key)
-    except Exception as e:
-        print(f"警告: 读取固定配置文件失败: {e}")
+    except Exception as error:
+        print(f"警告: 读取固定配置文件失败: {error}")
 
     return fixed_config
 

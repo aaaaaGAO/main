@@ -24,9 +24,10 @@ import traceback
 from abc import ABC, abstractmethod
 from typing import Any, Optional
 
-from infra.filesystem import find_config_path, get_base_dir
+from infra.filesystem import get_base_dir, resolve_main_config_path
 from infra.logger import PROGRESS_LEVEL, TeeToLogger
-from infra.config import read_config, read_fixed_config
+from infra.config import read_config_if_exists, read_fixed_config
+from core.run_context import clear_run_logger
 
 
 class BaseGeneratorTask(ABC):
@@ -54,7 +55,7 @@ class BaseGeneratorTask(ABC):
             reference_file: 用于推断根目录的参考文件路径
         """
         self.base_dir = base_dir or get_base_dir(reference_file or __file__)
-        self.config_path = find_config_path(self.base_dir)
+        self.config_path = resolve_main_config_path(self.base_dir)
         self.config = None
         self.fixed_config: dict[str, str] = {}
         self.logger: Optional[logging.Logger] = None
@@ -116,7 +117,6 @@ class BaseGeneratorTask(ABC):
 
     def cleanup(self) -> None:
         """子类可覆盖，做额外清理；默认调用 clear_run_logger。参数：无。返回：无返回值。"""
-        from core.run_context import clear_run_logger
         clear_run_logger(self.logger)
 
     # ------------------------------------------------------------------
@@ -141,8 +141,8 @@ class BaseGeneratorTask(ABC):
             print(f"任务完成: {self.task_name}")
             if self.logger:
                 self.logger.log(PROGRESS_LEVEL, "任务完成: %s", self.task_name)
-        except Exception as e:
-            error_msg = str(e)
+        except Exception as error:
+            error_msg = str(error)
             print(f"错误: {error_msg}")
             if self.logger:
                 self.logger.exception("任务异常: %s", self.task_name)
@@ -156,9 +156,9 @@ class BaseGeneratorTask(ABC):
     # ------------------------------------------------------------------
 
     def _load_config(self) -> None:
-        """加载 Configuration.txt 和 FixedConfig.txt 到 self.config / self.fixed_config。参数：无。返回：无返回值。"""
+        """加载主配置文件和固定配置文件到 self.config / self.fixed_config。参数：无。返回：无返回值。"""
         if self.config_path and os.path.exists(self.config_path):
-            self.config = read_config(self.config_path)
+            self.config = read_config_if_exists(self.config_path)
         self.fixed_config = read_fixed_config(self.base_dir)
 
     def _redirect_stdout(self) -> None:
@@ -195,7 +195,7 @@ class BaseGeneratorTask(ABC):
         self._old_stderr = None
 
     def get_config_value(self, section: str, key: str, fallback: str = "") -> str:
-        """获取配置值：优先从 FixedConfig.txt 读取，其次从 Configuration.txt 读取。参数：section — 节名；key — 配置项键名；fallback — 未找到时的默认值。返回：对应的配置值字符串。"""
+        """获取配置值：优先从固定配置文件读取，其次从主配置文件读取。参数：section — 节名；key — 配置项键名；fallback — 未找到时的默认值。返回：对应的配置值字符串。"""
         fixed_val = self.fixed_config.get(key)
         if fixed_val is not None:
             return fixed_val

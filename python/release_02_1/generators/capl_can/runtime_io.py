@@ -14,6 +14,7 @@ import os
 import re
 from dataclasses import dataclass
 from datetime import datetime
+from functools import partial
 from typing import Any, Callable, Optional, Tuple
 
 from core.common.generation_summary import build_ungenerated_reason as _build_common_ungenerated_reason
@@ -22,6 +23,7 @@ from core.generator_config import GeneratorConfig
 from core.generator_logging import GeneratorLogger
 from core.mapping_context import MappingContext
 from core.translator import load_keyword_specs_from_excel
+from services.config_constants import DEFAULT_DOMAIN_LR_REAR, SECTION_CENTRAL
 
 from .excel_repo import CANExcelRepository
 from .runtime import CANEntrypointSupport
@@ -47,28 +49,28 @@ def write_can_text(path: str, content: str) -> None:
             f.write(text.encode("cp936", errors="replace"))
 
 
-def _contains_chinese(text: str) -> bool:
+def contains_chinese(text: str) -> bool:
     return bool(re.search(r"[\u4e00-\u9fff]", text or ""))
 
 
-def _to_pinyin_if_needed(text: str) -> str:
-    s = str(text or "").strip()
-    if not s or not _contains_chinese(s):
-        return s
+def to_pinyin_if_needed(text: str) -> str:
+    text_value = str(text or "").strip()
+    if not text_value or not contains_chinese(text_value):
+        return text_value
     if not _HAS_PYPINYIN or lazy_pinyin is None:
-        return s
+        return text_value
     try:
-        return "".join(lazy_pinyin(s, errors=lambda x: list(x)))
+        return "".join(lazy_pinyin(text_value, errors=lambda x: list(x)))
     except Exception:
-        return s
+        return text_value
 
 
 def sanitize_filename_part(text: str) -> str:
     """把 Excel 文件名或 Sheet 名转成可做 .can/.log 文件名的安全片段。"""
-    s = _to_pinyin_if_needed(str(text or "").strip())
-    s = re.sub(r"[^\w\u4e00-\u9fff-]+", "_", s)
-    s = re.sub(r"_+", "_", s).strip("_")
-    return s or "unknown"
+    safe_text = to_pinyin_if_needed(str(text or "").strip())
+    safe_text = re.sub(r"[^\w\u4e00-\u9fff-]+", "_", safe_text)
+    safe_text = re.sub(r"_+", "_", safe_text).strip("_")
+    return safe_text or "unknown"
 
 
 def build_ungenerated_reason(stats: dict) -> str:
@@ -85,15 +87,15 @@ def load_keyword_specs(excel_path: str, sheet_names: list[str]) -> dict:
     )
 
 
+def _validate_clib_name(clib_names_set: set[str], clib_name: str) -> bool:
+    return bool(clib_name) and clib_name.strip().lower() in clib_names_set
+
+
 def create_clib_validator(clib_names_set: Optional[set[str]]) -> Optional[Callable[[str], bool]]:
     """根据 Clib 名称集合生成校验函数；集合为空则返回 None。"""
     if not clib_names_set:
         return None
-
-    def validate_clib_name(clib_name: str) -> bool:
-        return bool(clib_name) and clib_name.strip().lower() in clib_names_set
-
-    return validate_clib_name
+    return partial(_validate_clib_name, clib_names_set)
 
 
 def _sheet_log_ts() -> str:
@@ -219,13 +221,13 @@ def load_mapping_context(
     gconfig: GeneratorConfig,
     base_dir: str,
     *,
-    domain: str = "LR_REAR",
+    domain: str = DEFAULT_DOMAIN_LR_REAR,
 ) -> Tuple[Any, Any]:
     """加载 IO 映射与配置枚举上下文并返回，由调用方注入到 CANRuntimeContext 或传入 Service。
     参数: gconfig — 生成器配置；base_dir — 工程根目录；domain — 域。
     返回: (io_mapping_ctx, config_enum_ctx)，CENTRAL 时为 (None, None)。
     """
-    if domain == "CENTRAL":
+    if domain == SECTION_CENTRAL:
         return None, None
     mapping_ctx = MappingContext.from_config(
         gconfig.raw_config,
@@ -240,7 +242,7 @@ def load_clib_context(
     gconfig: GeneratorConfig,
     base_dir: str,
     *,
-    domain: str = "LR_REAR",
+    domain: str = DEFAULT_DOMAIN_LR_REAR,
 ) -> set:
     """从 CIN Excel 加载 Clib 名称集合并返回，由调用方注入到 CANRuntimeContext 或传入 Service。
     参数: gconfig — 生成器配置；base_dir — 工程根目录；domain — 域。

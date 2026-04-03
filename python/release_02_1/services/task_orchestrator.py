@@ -14,6 +14,20 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Tuple
 
 from services.config_manager import ConfigManager
+from services.config_constants import (
+    OPTION_CIN_INPUT_EXCEL,
+    OPTION_DIDINFO_INPUTS,
+    OPTION_INPUT_EXCEL,
+    OPTION_INPUTS,
+    OPTION_OUTPUT_DIR,
+    SECTION_CENTRAL,
+    SECTION_DID_CONFIG,
+    SECTION_DTC,
+    SECTION_DTC_CONFIG_ENUM,
+    SECTION_LR_REAR,
+    SECTION_PATHS,
+)
+from services.run_validator import validate_for_domain
 from services.task_service import TaskService, TaskResult
 from core.log_run_context import reset_run_context, set_run_domain
 
@@ -29,9 +43,9 @@ class OrchestratorResult:
 
 # 各域编排步骤顺序（与第一界面一致时，DTC 也执行 DID/CIN → CAN → XML）
 _BUNDLE_SPEC: Dict[str, List[str]] = {
-    "LR_REAR": ["did_config", "did_info", "cin", "uart", "can", "xml"],
-    "CENTRAL": ["uart", "can", "xml"],
-    "DTC": ["did_config", "did_info", "cin", "can", "xml"],
+    SECTION_LR_REAR: ["did_config", "did_info", "cin", "uart", "can", "xml"],
+    SECTION_CENTRAL: ["uart", "can", "xml"],
+    SECTION_DTC: ["did_config", "did_info", "cin", "can", "xml"],
 }
 
 
@@ -69,68 +83,91 @@ class TaskOrchestrator:
     def task_service(self) -> TaskService:
         return self._task_service
 
+    def build_result_message(
+        self,
+        result: OrchestratorResult,
+        *,
+        config: Optional[Any],
+        section: str,
+        prefix: str = "",
+        separator: str = " | ",
+    ) -> str:
+        """构建给路由层展示的结果消息，并在存在时追加 UDS 完成提示。"""
+        body = separator.join(result.messages)
+        message = f"{prefix}{body}" if prefix else body
+        if config is None:
+            return message
+        uds_path = self._config_manager.resolve_uds_output_path(config, section)
+        if uds_path and os.path.isfile(uds_path):
+            message += f"{separator}UDS.txt 生成完成"
+        return message
+
     def _patch_config_for_dtc_did_cin(self) -> Optional[Dict[str, Dict[str, str]]]:
         """
         运行 DTC 的 DID/CIN 前：把 [DTC] / [DTC_CONFIG_ENUM] 的路径临时写入 [DID_CONFIG] / [LR_REAR]，
         以便现有生成器（只读 DID_CONFIG/LR_REAR）能用到 DTC 的表。返回 backup 供 _restore_config_after_dtc_did_cin 恢复。
         """
-        cfg = self._config_manager._reload()
-        if not cfg.has_section("DTC"):
+        config = self._config_manager.load_config()
+        if not config.has_section(SECTION_DTC):
             return None
         backup: Dict[str, Dict[str, str]] = {}
-        if cfg.has_section("DID_CONFIG"):
-            backup["DID_CONFIG"] = dict(cfg.items("DID_CONFIG"))
-        if cfg.has_section("LR_REAR"):
-            backup["LR_REAR"] = dict(cfg.items("LR_REAR"))
+        if config.has_section(SECTION_DID_CONFIG):
+            backup[SECTION_DID_CONFIG] = dict(config.items(SECTION_DID_CONFIG))
+        if config.has_section(SECTION_LR_REAR):
+            backup[SECTION_LR_REAR] = dict(config.items(SECTION_LR_REAR))
 
-        d = dict(cfg.items("DTC"))
-        out_dir = (d.get("output_dir") or "").strip()
-        didinfo = (d.get("didinfo_inputs") or "").strip()
-        cin_excel = (d.get("cin_input_excel") or "").strip()
+        dtc_section = dict(config.items(SECTION_DTC))
+        output_dir = (dtc_section.get(OPTION_OUTPUT_DIR) or "").strip()
+        didinfo_inputs = (dtc_section.get(OPTION_DIDINFO_INPUTS) or "").strip()
+        cin_excel = (dtc_section.get(OPTION_CIN_INPUT_EXCEL) or "").strip()
 
         # 判断 DTC 界面是否“真正配置了自己专用的 DID/DIDInfo/Clib 表”
-        dtc_cfg_enum_inputs_raw = ""
-        if cfg.has_section("DTC_CONFIG_ENUM"):
-            dtc_cfg_enum_inputs_raw = (cfg.get("DTC_CONFIG_ENUM", "inputs", fallback="") or "").strip()
+        dtc_config_enum_inputs_raw = ""
+        if config.has_section(SECTION_DTC_CONFIG_ENUM):
+            dtc_config_enum_inputs_raw = (
+                config.get(SECTION_DTC_CONFIG_ENUM, OPTION_INPUTS, fallback="") or ""
+            ).strip()
         dtc_cfg_enum_first = (
-            dtc_cfg_enum_inputs_raw.replace(";", "|").split("|")[0].strip()
-            if dtc_cfg_enum_inputs_raw
+            dtc_config_enum_inputs_raw.replace(";", "|").split("|")[0].strip()
+            if dtc_config_enum_inputs_raw
             else ""
         )
-        has_any_dtc_tables = bool(dtc_cfg_enum_first or didinfo or cin_excel)
+        has_any_dtc_tables = bool(dtc_cfg_enum_first or didinfo_inputs or cin_excel)
 
         # 如果第三个界面根本没配这些表，就认为本次应“按要求跳过 DID/DIDInfo”，
         # 因此要临时隐藏全局 [DID_CONFIG]/[LR_REAR] 中与 DID 相关的路径，避免误用第一个界面的配置。
         if not has_any_dtc_tables:
-            if cfg.has_section("DID_CONFIG") and cfg.has_option("DID_CONFIG", "input_excel"):
-                cfg.remove_option("DID_CONFIG", "input_excel")
-            if cfg.has_section("LR_REAR"):
-                for opt in ("didinfo_inputs", "cin_input_excel"):
-                    if cfg.has_option("LR_REAR", opt):
-                        cfg.remove_option("LR_REAR", opt)
+            if config.has_section(SECTION_DID_CONFIG) and config.has_option(
+                SECTION_DID_CONFIG, OPTION_INPUT_EXCEL
+            ):
+                config.remove_option(SECTION_DID_CONFIG, OPTION_INPUT_EXCEL)
+            if config.has_section(SECTION_LR_REAR):
+                for option_name in (OPTION_DIDINFO_INPUTS, OPTION_CIN_INPUT_EXCEL):
+                    if config.has_option(SECTION_LR_REAR, option_name):
+                        config.remove_option(SECTION_LR_REAR, option_name)
             # 仅针对 DTC 域相关配置做 patch，因此附带生成的 uds 也只限定在 DTC
-            self._config_manager._write_formatted_config(cfg, uds_domains=["DTC"])
+            self._config_manager.save_formatted_config(config, uds_domains=[SECTION_DTC])
             return backup
 
-        if not cfg.has_section("DID_CONFIG"):
-            cfg.add_section("DID_CONFIG")
-        if cfg.has_section("DTC_CONFIG_ENUM"):
+        if not config.has_section(SECTION_DID_CONFIG):
+            config.add_section(SECTION_DID_CONFIG)
+        if config.has_section(SECTION_DTC_CONFIG_ENUM):
             if dtc_cfg_enum_first:
-                cfg.set("DID_CONFIG", "input_excel", dtc_cfg_enum_first)
-        if out_dir:
-            cfg.set("DID_CONFIG", "output_dir", out_dir)
+                config.set(SECTION_DID_CONFIG, OPTION_INPUT_EXCEL, dtc_cfg_enum_first)
+        if output_dir:
+            config.set(SECTION_DID_CONFIG, OPTION_OUTPUT_DIR, output_dir)
 
-        if not cfg.has_section("LR_REAR"):
-            cfg.add_section("LR_REAR")
-        if out_dir:
-            cfg.set("LR_REAR", "output_dir", out_dir)
-        if didinfo:
-            cfg.set("LR_REAR", "didinfo_inputs", didinfo)
+        if not config.has_section(SECTION_LR_REAR):
+            config.add_section(SECTION_LR_REAR)
+        if output_dir:
+            config.set(SECTION_LR_REAR, OPTION_OUTPUT_DIR, output_dir)
+        if didinfo_inputs:
+            config.set(SECTION_LR_REAR, OPTION_DIDINFO_INPUTS, didinfo_inputs)
         if cin_excel:
-            cfg.set("LR_REAR", "cin_input_excel", cin_excel)
+            config.set(SECTION_LR_REAR, OPTION_CIN_INPUT_EXCEL, cin_excel)
 
         # 仅针对 DTC 域相关配置做 patch，因此附带生成的 uds 也只限定在 DTC
-        self._config_manager._write_formatted_config(cfg, uds_domains=["DTC"])
+        self._config_manager.save_formatted_config(config, uds_domains=[SECTION_DTC])
         return backup
 
     def _restore_config_after_dtc_did_cin(
@@ -142,16 +179,16 @@ class TaskOrchestrator:
         """DTC 的 DID/CIN 跑完后恢复 [DID_CONFIG] / [LR_REAR]，避免覆盖第一界面配置。"""
         if not backup:
             return
-        cfg = self._config_manager._reload()
+        config = self._config_manager.load_config()
         for section, items in backup.items():
-            if not cfg.has_section(section):
-                cfg.add_section(section)
-            for key in list(cfg.options(section)):
-                cfg.remove_option(section, key)
-            for key, value in items.items():
-                cfg.set(section, key, value)
+            if not config.has_section(section):
+                config.add_section(section)
+            for option_name in list(config.options(section)):
+                config.remove_option(section, option_name)
+            for option_name, option_value in items.items():
+                config.set(section, option_name, option_value)
         # 恢复后只刷当前任务域的 uds，避免其它域被连带覆盖
-        self._config_manager._write_formatted_config(cfg, uds_domains=[uds_domain])
+        self._config_manager.save_formatted_config(config, uds_domains=[uds_domain])
 
     def _patch_did_config_output_dir_for_domain(
         self,
@@ -162,18 +199,20 @@ class TaskOrchestrator:
         使「在哪个界面运行就生成到哪里」。返回 DID_CONFIG 备份供结束后恢复。
         仅当 [DID_CONFIG] 已存在时才 patch，避免新建只有 output_dir 的节导致生成器因缺 input_excel 直接不生成。
         """
-        cfg = self._config_manager._reload()
-        if not cfg.has_section(config_section):
+        config = self._config_manager.load_config()
+        if not config.has_section(config_section):
             return None
-        out_dir = (cfg.get(config_section, "output_dir", fallback="") or "").strip()
-        if not out_dir:
+        output_dir = (config.get(config_section, OPTION_OUTPUT_DIR, fallback="") or "").strip()
+        if not output_dir:
             return None
-        if not cfg.has_section("DID_CONFIG"):
+        if not config.has_section(SECTION_DID_CONFIG):
             return None
-        backup: Dict[str, Dict[str, str]] = {"DID_CONFIG": dict(cfg.items("DID_CONFIG"))}
-        cfg.set("DID_CONFIG", "output_dir", out_dir)
+        backup: Dict[str, Dict[str, str]] = {
+            SECTION_DID_CONFIG: dict(config.items(SECTION_DID_CONFIG))
+        }
+        config.set(SECTION_DID_CONFIG, OPTION_OUTPUT_DIR, output_dir)
         # 仅针对当前域的 DIDConfig 输出目录做 patch，对应 uds 也只生成当前域
-        self._config_manager._write_formatted_config(cfg, uds_domains=[config_section])
+        self._config_manager.save_formatted_config(config, uds_domains=[config_section])
         return backup
 
     def _restore_did_config(
@@ -189,20 +228,24 @@ class TaskOrchestrator:
 
     def _resolve_uart_path(self) -> Optional[str]:
         """解析 UART 矩阵文件路径；不存在则返回 None。"""
-        cfg = self._config_manager._reload()
+        config = self._config_manager.load_config()
         base_dir = self._task_service.base_dir
         uart_excel_raw = ""
-        if cfg.has_section("CENTRAL"):
-            uart_excel_raw = (cfg.get("CENTRAL", "uart_excel", fallback="") or "").strip()
-        if not uart_excel_raw and cfg.has_section("PATHS"):
-            uart_excel_raw = (cfg.get("PATHS", "Uart_Input_Excel", fallback="") or "").strip()
+        if config.has_section(SECTION_CENTRAL):
+            uart_excel_raw = (
+                config.get(SECTION_CENTRAL, "uart_excel", fallback="") or ""
+            ).strip()
+        if not uart_excel_raw and config.has_section(SECTION_PATHS):
+            uart_excel_raw = (
+                config.get(SECTION_PATHS, "Uart_Input_Excel", fallback="") or ""
+            ).strip()
         if not uart_excel_raw:
             uart_excel_raw = "input/MCU_CDCU_CommunicationMatrix.xlsx"
-        path = uart_excel_raw.replace("/", os.sep)
-        if not os.path.isabs(path):
-            path = os.path.join(base_dir, path)
-        path = os.path.normpath(path)
-        return path if os.path.isfile(path) else None
+        uart_excel_path = uart_excel_raw.replace("/", os.sep)
+        if not os.path.isabs(uart_excel_path):
+            uart_excel_path = os.path.join(base_dir, uart_excel_path)
+        uart_excel_path = os.path.normpath(uart_excel_path)
+        return uart_excel_path if os.path.isfile(uart_excel_path) else None
 
     def _run_generic_bundle(
         self,
@@ -219,8 +262,6 @@ class TaskOrchestrator:
         通用域编排：按 _BUNDLE_SPEC 顺序执行 did_config → did_info → cin → uart(可选) → can → xml。
         config_section 为 "LR_REAR" | "CENTRAL" | "DTC"。
         """
-        from services.run_validator import validate_for_domain
-
         reset_run_context()
         set_run_domain(config_section)
         messages: List[str] = []
@@ -228,13 +269,13 @@ class TaskOrchestrator:
         results: Dict[str, TaskResult] = {}
 
         if validate_before_run:
-            ok, errors = validate_for_domain(
+            is_valid, errors = validate_for_domain(
                 config_section,
                 self._task_service.base_dir,
                 self._task_service.config_path,
                 self._config_manager,
             )
-            if not ok:
+            if not is_valid:
                 return OrchestratorResult(
                     success=False,
                     messages=["校验未通过"],
@@ -242,23 +283,23 @@ class TaskOrchestrator:
                     extra=None,
                 )
 
-        steps = _BUNDLE_SPEC.get(config_section, [])
+        bundle_steps = _BUNDLE_SPEC.get(config_section, [])
         dtc_did_cin_backup: Optional[Dict[str, Dict[str, str]]] = None
-        if config_section == "DTC":
+        if config_section == SECTION_DTC:
             dtc_did_cin_backup = self._patch_config_for_dtc_did_cin()
         # 只要当前任务流包含 did_config，就先把 [DID_CONFIG].output_dir 同步为当前域的输出目录，避免路径“写死”
         did_config_output_backup: Optional[Dict[str, Dict[str, str]]] = None
-        if "did_config" in steps and run_did:
+        if "did_config" in bundle_steps and run_did:
             did_config_output_backup = self._patch_did_config_output_dir_for_domain(config_section)
 
-        for step in steps:
-            if step == "did_config":
+        for bundle_step in bundle_steps:
+            if bundle_step == "did_config":
                 if not run_did:
                     continue
-                r = self._task_service.run_did_config()
-                results["did_config"] = r
-                messages.append(r.message)
-                if not r.success:
+                task_result = self._task_service.run_did_config()
+                results["did_config"] = task_result
+                messages.append(task_result.message)
+                if not task_result.success:
                     if dtc_did_cin_backup is not None:
                         self._restore_config_after_dtc_did_cin(
                             dtc_did_cin_backup, uds_domain=config_section
@@ -267,17 +308,17 @@ class TaskOrchestrator:
                         self._restore_did_config(
                             did_config_output_backup, uds_domain=config_section
                         )
-                    return OrchestratorResult(success=False, messages=messages, detail=r.detail or "", extra=results)
-                if r.detail:
-                    detail_parts.append(r.detail)
+                    return OrchestratorResult(success=False, messages=messages, detail=task_result.detail or "", extra=results)
+                if task_result.detail:
+                    detail_parts.append(task_result.detail)
 
-            elif step == "did_info":
+            elif bundle_step == "did_info":
                 if not run_did:
                     continue
-                r = self._task_service.run_did_info()
-                results["did_info"] = r
-                messages.append(r.message)
-                if not r.success:
+                task_result = self._task_service.run_did_info()
+                results["did_info"] = task_result
+                messages.append(task_result.message)
+                if not task_result.success:
                     if dtc_did_cin_backup is not None:
                         self._restore_config_after_dtc_did_cin(
                             dtc_did_cin_backup, uds_domain=config_section
@@ -286,17 +327,17 @@ class TaskOrchestrator:
                         self._restore_did_config(
                             did_config_output_backup, uds_domain=config_section
                         )
-                    return OrchestratorResult(success=False, messages=messages, detail=r.detail or "", extra=results)
-                if r.detail:
-                    detail_parts.append(r.detail)
+                    return OrchestratorResult(success=False, messages=messages, detail=task_result.detail or "", extra=results)
+                if task_result.detail:
+                    detail_parts.append(task_result.detail)
 
-            elif step == "cin":
+            elif bundle_step == "cin":
                 if not run_cin:
                     continue
-                r = self._task_service.run_cin(domain=config_section)
-                results["cin"] = r
-                messages.append(r.message)
-                if not r.success:
+                task_result = self._task_service.run_cin(domain=config_section)
+                results["cin"] = task_result
+                messages.append(task_result.message)
+                if not task_result.success:
                     if dtc_did_cin_backup is not None:
                         self._restore_config_after_dtc_did_cin(
                             dtc_did_cin_backup, uds_domain=config_section
@@ -305,50 +346,52 @@ class TaskOrchestrator:
                         self._restore_did_config(
                             did_config_output_backup, uds_domain=config_section
                         )
-                    return OrchestratorResult(success=False, messages=messages, detail=r.detail or "", extra=results)
-                if r.detail:
-                    detail_parts.append(r.detail)
+                    return OrchestratorResult(success=False, messages=messages, detail=task_result.detail or "", extra=results)
+                if task_result.detail:
+                    detail_parts.append(task_result.detail)
 
-            elif step == "uart":
+            elif bundle_step == "uart":
                 # 仅中央域执行 UART 生成并创建 generate_uart_from_config.log；左右后域/DTC 不涉及 UART 则不生成该日志
-                if not run_uart or config_section != "CENTRAL":
+                if not run_uart or config_section != SECTION_CENTRAL:
                     continue
-                uart_path = self._resolve_uart_path()
-                if uart_path:
-                    r = self._task_service.run_uart()
-                    results["uart"] = r
-                    messages.append(r.message)
-                    if not r.success:
+                uart_matrix_path = self._resolve_uart_path()
+                if uart_matrix_path:
+                    task_result = self._task_service.run_uart()
+                    results["uart"] = task_result
+                    messages.append(task_result.message)
+                    if not task_result.success:
                         if did_config_output_backup is not None:
-                            self._restore_did_config(did_config_output_backup)
-                        return OrchestratorResult(success=False, messages=messages, detail=r.detail or "", extra=results)
-                    if r.detail:
-                        detail_parts.append(r.detail)
+                            self._restore_did_config(
+                                did_config_output_backup, uds_domain=config_section
+                            )
+                        return OrchestratorResult(success=False, messages=messages, detail=task_result.detail or "", extra=results)
+                    if task_result.detail:
+                        detail_parts.append(task_result.detail)
                 else:
                     messages.append("跳过 UART 生成（未配置有效矩阵文件）")
 
-            elif step == "can":
+            elif bundle_step == "can":
                 if not run_can:
                     continue
-                r = self._task_service.run_can(domain=config_section)
-                results["can"] = r
-                messages.append(r.message)
-                if not r.success:
+                task_result = self._task_service.run_can(domain=config_section)
+                results["can"] = task_result
+                messages.append(task_result.message)
+                if not task_result.success:
                     if did_config_output_backup is not None:
                         self._restore_did_config(
                             did_config_output_backup, uds_domain=config_section
                         )
-                    return OrchestratorResult(success=False, messages=messages, detail=r.detail or "", extra=results)
-                if r.detail:
-                    detail_parts.append(r.detail)
+                    return OrchestratorResult(success=False, messages=messages, detail=task_result.detail or "", extra=results)
+                if task_result.detail:
+                    detail_parts.append(task_result.detail)
 
-            elif step == "xml":
+            elif bundle_step == "xml":
                 if not run_xml:
                     continue
-                r = self._task_service.run_xml(domain=config_section)
-                results["xml"] = r
-                messages.append(r.message)
-                if not r.success:
+                task_result = self._task_service.run_xml(domain=config_section)
+                results["xml"] = task_result
+                messages.append(task_result.message)
+                if not task_result.success:
                     if dtc_did_cin_backup is not None:
                         self._restore_config_after_dtc_did_cin(
                             dtc_did_cin_backup, uds_domain=config_section
@@ -357,9 +400,9 @@ class TaskOrchestrator:
                         self._restore_did_config(
                             did_config_output_backup, uds_domain=config_section
                         )
-                    return OrchestratorResult(success=False, messages=messages, detail=r.detail or "", extra=results)
-                if r.detail:
-                    detail_parts.append(r.detail)
+                    return OrchestratorResult(success=False, messages=messages, detail=task_result.detail or "", extra=results)
+                if task_result.detail:
+                    detail_parts.append(task_result.detail)
 
         if dtc_did_cin_backup is not None:
             self._restore_config_after_dtc_did_cin(
@@ -389,7 +432,7 @@ class TaskOrchestrator:
         返回: OrchestratorResult（success、messages、detail）。
         """
         return self._run_generic_bundle(
-            "LR_REAR",
+            SECTION_LR_REAR,
             run_can=run_can,
             run_xml=run_xml,
             run_cin=run_cin,
@@ -410,7 +453,7 @@ class TaskOrchestrator:
         返回: OrchestratorResult。
         """
         return self._run_generic_bundle(
-            "CENTRAL",
+            SECTION_CENTRAL,
             run_can=run_can,
             run_xml=run_xml,
             run_cin=False,
@@ -432,7 +475,7 @@ class TaskOrchestrator:
         返回: OrchestratorResult。
         """
         return self._run_generic_bundle(
-            "DTC",
+            SECTION_DTC,
             run_can=run_can,
             run_xml=run_xml,
             run_cin=run_cin,

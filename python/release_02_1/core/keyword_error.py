@@ -21,19 +21,19 @@ class KeywordErrorDescriber:
 
     def _build_index(self, keyword_specs: dict) -> Dict[str, Dict[str, Any]]:
         """根据 keyword_specs 构建「函数名 -> 关键字 token 列表」索引。参数: keyword_specs — 关键字规格字典。返回: 索引字典。"""
-        idx: Dict[str, Dict[str, Any]] = {}
+        index_map: Dict[str, Dict[str, Any]] = {}
         for spec in keyword_specs.values():
             func = str(getattr(spec, "func_name", "") or "").strip()
             if not func:
                 continue
-            func_k = func.casefold()
-            rec = idx.setdefault(func_k, {"has_func_only": False, "keyword_tokens_list": []})
+            func_key = func.casefold()
+            func_record = index_map.setdefault(func_key, {"has_func_only": False, "keyword_tokens_list": []})
             kw = str(getattr(spec, "keyword", "") or "").strip()
             if kw:
-                rec["keyword_tokens_list"].append([t for t in kw.split() if t])
+                func_record["keyword_tokens_list"].append([token for token in kw.split() if token])
             else:
-                rec["has_func_only"] = True
-        return idx
+                func_record["has_func_only"] = True
+        return index_map
 
     def _get_index(self, keyword_specs: dict) -> Dict[str, Dict[str, Any]]:
         """获取或构建 keyword_specs 的索引（带缓存）。参数: keyword_specs — 关键字规格字典。返回: 索引字典。"""
@@ -56,22 +56,27 @@ class KeywordErrorDescriber:
 
         func = tokens[0]
         rest = tokens[1:]
-        idx = self._get_index(keyword_specs)
-        rec = idx.get(func.casefold())
-        if rec is None:
+        index_map = self._get_index(keyword_specs)
+        func_record = index_map.get(func.casefold())
+        if func_record is None:
             return f"{func}关键字不存在"
 
-        kw_tokens_list: List[List[str]] = rec.get("keyword_tokens_list") or []
+        kw_tokens_list: List[List[str]] = func_record.get("keyword_tokens_list") or []
         if not kw_tokens_list:
             return "写入错误"
         if not rest:
             return "关键字不存在"
 
         candidates = list(kw_tokens_list)
-        for j, tok in enumerate(rest):
-            new_candidates = [kwtoks for kwtoks in candidates if len(kwtoks) > j and kwtoks[j].casefold() == tok.casefold()]
+        for token_index, token_text in enumerate(rest):
+            new_candidates = [
+                keyword_tokens
+                for keyword_tokens in candidates
+                if len(keyword_tokens) > token_index
+                and keyword_tokens[token_index].casefold() == token_text.casefold()
+            ]
             if not new_candidates:
-                return f"{tok}关键字不存在"
+                return f"{token_text}关键字不存在"
             candidates = new_candidates
         return f"{' '.join(rest)}关键字不存在"
 

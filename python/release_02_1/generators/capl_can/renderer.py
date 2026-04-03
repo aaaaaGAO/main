@@ -11,6 +11,66 @@ from typing import Iterable, Sequence
 from .models import CANTestCase
 
 
+def split_capl_comment_parts(line: str) -> tuple[str, str]:
+    if "//" not in line:
+        return line, ""
+    code, comment = line.split("//", 1)
+    return code, comment
+
+
+def _is_test_step_line(line: str) -> bool:
+    _, comment = split_capl_comment_parts(line)
+    return "测试步骤" in comment or "\u6d4b\u8bd5\u6b65\u9aa4" in comment
+
+
+def _is_expect_line(line: str) -> bool:
+    _, comment = split_capl_comment_parts(line)
+    return "预期结果" in comment or "\u9884\u671f\u7ed3\u679c" in comment
+
+
+def _is_soa_expect_check_line(line: str) -> bool:
+    """判断是否为 SOA CHECK / CHECKREQ 的预期结果行（排除已带 _Prepare）。"""
+    if "_Prepare" in line or "_PREPARE" in line:
+        return False
+    code_part, _ = split_capl_comment_parts(line)
+    code_upper = code_part.upper()
+    if "SOA" not in code_upper:
+        return False
+    return "SOA_CHECK(" in code_upper or "CHECKREQ(" in code_upper
+
+
+def _is_wait_or_sleep_test_step(line: str) -> bool:
+    """仅看注释里的测试步骤语义，不看生成后的 CAPL 函数名。"""
+    _, comment = split_capl_comment_parts(line)
+    if not comment.strip():
+        return False
+    return bool(
+        re.search(
+            r"\b(?:wait|TC_4G_Time_Delay_Second|TC_Sleep)\b",
+            comment,
+            re.IGNORECASE,
+        )
+    )
+
+
+def _add_prepare_suffix_to_line(line: str) -> str:
+    """生成带 _Prepare 后缀的副本。"""
+    parts = line.split("//", 1)
+    code_part = parts[0]
+    comment_part = "//" + parts[1] if len(parts) > 1 else ""
+    match = re.search(r"(\b\w+)(\s*\()", code_part)
+    if match:
+        func_name = match.group(1)
+        new_code = (
+            code_part[: match.start(1)]
+            + func_name
+            + "_Prepare"
+            + code_part[match.end(1) :]
+        )
+        return new_code + comment_part
+    return line
+
+
 class CANFileRenderer:
     """负责把 `CANTestCase` 集合渲染成 `.can` 文本。"""
 
@@ -100,71 +160,6 @@ class CANFileRenderer:
         if not lines:
             return lines
 
-        def _split_parts(s: str) -> tuple[str, str]:
-            if "//" not in s:
-                return s, ""
-            code, comment = s.split("//", 1)
-            return code, comment
-
-        def _is_test_step(s: str) -> bool:
-            _, comment = _split_parts(s)
-            return "测试步骤" in comment or "\u6d4b\u8bd5\u6b65\u9aa4" in comment
-
-        def _is_expect(s: str) -> bool:
-            _, comment = _split_parts(s)
-            return "预期结果" in comment or "\u9884\u671f\u7ed3\u679c" in comment
-
-        def _is_soa_expect_check(s: str) -> bool:
-            """判断是否为 SOA CHECK / CHECKREQ 的预期结果行（排除已带 _Prepare）。
-
-            仅匹配函数调用中显式出现的：
-            - SOA_CHECK(
-            - CHECKREQ(
-
-            例如：
-            - g_EM_SOAClient_Swc_SOA_CHECK("...")         -> 匹配
-            - gTC_CANTest_SOA_CheckReq("...")             -> 匹配
-            - g_EM_SOAClient_Swc_SOA_CHECKNotRec("...")   -> 不匹配
-            """
-            if "_Prepare" in s or "_PREPARE" in s:
-                return False
-            code_part, _ = _split_parts(s)
-            code_upper = code_part.upper()
-            if "SOA" not in code_upper:
-                return False
-            # 只对真正的 SOA_CHECK / CHECKREQ 加 Prepare，排除类似 SOA_CHECKNotRec
-            return "SOA_CHECK(" in code_upper or "CHECKREQ(" in code_upper
-
-        def _is_wait_or_sleep_step(s: str) -> bool:
-            # 仅看 // 后「测试步骤」侧语义（如「测试步骤 wait 15」「测试步骤 TC_Sleep 15」），不看生成后的 CAPL 函数名
-            _, comment = _split_parts(s)
-            if not comment.strip():
-                return False
-            return bool(
-                re.search(
-                    r"\b(?:wait|TC_4G_Time_Delay_Second|TC_Sleep)\b",
-                    comment,
-                    re.IGNORECASE,
-                )
-            )
-
-        def _add_prepare_suffix(src: str) -> str:
-            """生成带 _Prepare 后缀的副本。"""
-            parts = src.split("//", 1)
-            code_part = parts[0]
-            comment_part = "//" + parts[1] if len(parts) > 1 else ""
-            match = re.search(r"(\b\w+)(\s*\()", code_part)
-            if match:
-                func_name = match.group(1)
-                new_code = (
-                    code_part[: match.start(1)]
-                    + func_name
-                    + "_Prepare"
-                    + code_part[match.end(1) :]
-                )
-                return new_code + comment_part
-            return src
-
         n = len(lines)
         # 记录每个“节点首行测试步骤”前/后需要插入的 Prepare 行
         prepare_before: dict[int, list[str]] = {}
@@ -172,24 +167,24 @@ class CANFileRenderer:
 
         i = 0
         while i < n:
-            if not _is_test_step(lines[i]):
+            if not _is_test_step_line(lines[i]):
                 i += 1
                 continue
 
             node_start = i
             j = i + 1
             # 节点范围：[node_start, j) —— 直到下一个测试步骤或结尾
-            while j < n and not _is_test_step(lines[j]):
+            while j < n and not _is_test_step_line(lines[j]):
                 j += 1
 
             # 在该节点范围内查找 SOA CHECK / CHECKREQ 预期结果行
             prepare_lines: list[str] = []
             for k in range(node_start, j):
-                if _is_expect(lines[k]) and _is_soa_expect_check(lines[k]):
-                    prepare_lines.append(_add_prepare_suffix(lines[k]))
+                if _is_expect_line(lines[k]) and _is_soa_expect_check_line(lines[k]):
+                    prepare_lines.append(_add_prepare_suffix_to_line(lines[k]))
 
             if prepare_lines:
-                if _is_wait_or_sleep_step(lines[node_start]):
+                if _is_wait_or_sleep_test_step(lines[node_start]):
                     prepare_after.setdefault(node_start, []).extend(prepare_lines)
                 else:
                     prepare_before.setdefault(node_start, []).extend(prepare_lines)

@@ -7,7 +7,7 @@ core.translator：领域层翻译器（门面）
 
 导出符号说明：
 - load_io_mapping_from_config(cfg, base_dir) -> IOMappingContext
-  从 Configuration.txt 加载 IO 映射表；解析失败抛出 IOMappingParseError。
+  从主配置文件加载 IO 映射表；解析失败抛出 IOMappingParseError。
 - IOMappingContext : 按 Name 查 Path 等，供步骤翻译使用。
 - load_config_enum_from_config(cfg, base_dir) -> ConfigEnumContext
   从配置加载 configuration 枚举；解析失败抛出 ConfigEnumParseError。

@@ -15,8 +15,24 @@ from typing import Any
 from core.base_task import BaseGeneratorTask
 from core.case_filter import CaseFilter
 from core.error_module import ErrorModuleResolver
+from core.log_run_context import ensure_run_log_dirs
 from core.mapping_context import MappingContext
+from services.config_constants import (
+    DEFAULT_DOMAIN_LR_REAR,
+    OPTION_CASE_LEVELS,
+    OPTION_CASE_MODELS,
+    OPTION_CASE_PLATFORMS,
+    OPTION_CASE_TARGET_VERSIONS,
+    OPTION_INPUT_EXCEL,
+    OPTION_OUTPUT_DIR,
+    OPTION_SELECTED_SHEETS,
+    SECTION_LR_REAR,
+    SECTION_PATH,
+    get_domain_filter_candidates,
+)
 from utils.sheet_filter import parse_selected_sheets
+
+from services.filter_service import parse_shaixuan_config
 
 from .excel_repo import CANExcelRepository
 from .logging import log_progress_or_info
@@ -39,11 +55,11 @@ class TaskLogBuffer:
     infos: list[str]
     errors: list[str]
 
-    def add_info(self, msg: str) -> None:
-        self.infos.append(msg)
+    def add_info(self, message: str) -> None:
+        self.infos.append(message)
 
-    def add_error(self, msg: str) -> None:
-        self.errors.append(msg)
+    def add_error(self, message: str) -> None:
+        self.errors.append(message)
 
 
 class CANGeneratorService(BaseGeneratorTask):
@@ -82,25 +98,25 @@ class CANGeneratorService(BaseGeneratorTask):
         logger.setLevel(logging.INFO)
         logger.propagate = False
         if not logger.handlers:
-            fmt = logging.Formatter("%(asctime)s %(levelname)s %(message)s")
-            sh = logging.StreamHandler()
-            sh.setFormatter(fmt)
-            logger.addHandler(sh)
+            formatter = logging.Formatter("%(asctime)s %(levelname)s %(message)s")
+            stream_handler = logging.StreamHandler()
+            stream_handler.setFormatter(formatter)
+            logger.addHandler(stream_handler)
         return logger
 
     def extract_data(self) -> list[CANTestCase]:
         """从配置的 input_excel 加载用例并做等级/平台/车型筛选。返回: CANTestCase 列表。"""
         self._ensure_runtime_paths()
-        ctx = MappingContext.from_config(
+        mapping_context = MappingContext.from_config(
             self.config, base_dir=self.base_dir, config_path=self.config_path
         )
-        self._io_ctx = ctx.io_mapping
-        self._enum_ctx = ctx.config_enum
-        repo = CANExcelRepository(self.base_dir, self.config)
-        sheet_cases, stats = repo.load_cases(self.input_path)
+        self._io_ctx = mapping_context.io_mapping
+        self._enum_ctx = mapping_context.config_enum
+        repository = CANExcelRepository(self.base_dir, self.config)
+        sheet_cases, repository_stats = repository.load_cases(self.input_path)
         cases = [case for group in sheet_cases.values() for case in group]
         self.log_buffer.add_info(f"读取完成：{len(cases)} 条用例")
-        self.log_buffer.add_info(f"过滤统计：{stats}")
+        self.log_buffer.add_info(f"过滤统计：{repository_stats}")
         return cases
 
     def transform(self, data: list[CANTestCase]) -> list[CANTestCase]:
@@ -112,9 +128,9 @@ class CANGeneratorService(BaseGeneratorTask):
         )
         for case in data:
             for raw_step in case.raw_steps:
-                res = translator.translate(raw_step)
-                case.steps.extend(res.code_lines)
-                case.error_records.extend(res.errors)
+                translate_result = translator.translate(raw_step)
+                case.steps.extend(translate_result.code_lines)
+                case.error_records.extend(translate_result.errors)
             # SOA REQ / CHECK / CHECKREQ 顺序调整与 _Prepare 后缀由 renderer 渲染阶段统一处理
         self.log_buffer.add_info("步骤翻译完成")
         return data
@@ -136,36 +152,36 @@ class CANGeneratorService(BaseGeneratorTask):
         self.log_buffer.add_info(f"生成完成：{len(content)} 个 .can + Master.can")
 
         if self.logger:
-            for msg in self.log_buffer.infos:
-                self.logger.info(msg)
-            for msg in self.log_buffer.errors:
-                self.logger.error(msg)
+            for info_message in self.log_buffer.infos:
+                self.logger.info(info_message)
+            for error_message in self.log_buffer.errors:
+                self.logger.error(error_message)
 
     def _ensure_runtime_paths(self) -> None:
         if not self.input_path:
-            self.input_path = self.get_config_value("LR_REAR", "input_excel", fallback="")
+            self.input_path = self.get_config_value(SECTION_LR_REAR, OPTION_INPUT_EXCEL, fallback="")
         if not self.output_dir:
-            self.output_dir = self.get_config_value("PATH", "output_dir_can", fallback="")
+            self.output_dir = self.get_config_value(SECTION_PATH, "output_dir_can", fallback="")
             if not self.output_dir:
-                self.output_dir = self.get_config_value("LR_REAR", "output_dir", fallback="")
+                self.output_dir = self.get_config_value(SECTION_LR_REAR, OPTION_OUTPUT_DIR, fallback="")
         if not self.input_path:
-            raise ValueError("未配置 input_excel（可传参或配置 [LR_REAR] input_excel）")
+            raise ValueError(f"未配置 {OPTION_INPUT_EXCEL}（可传参或配置 [{SECTION_LR_REAR}] {OPTION_INPUT_EXCEL}）")
         if not self.output_dir:
-            raise ValueError("未配置 output_dir（可传参或配置 [PATH]/[LR_REAR]）")
+            raise ValueError(f"未配置 {OPTION_OUTPUT_DIR}（可传参或配置 [{SECTION_PATH}]/[{SECTION_LR_REAR}]）")
 
     @staticmethod
     def _write_gbk(path: str, content: str) -> None:
         """以 gbk、\\r\\n 写入 CAPL 文件。参数: path — 文件路径；content — 文本内容。无返回值。"""
         os.makedirs(os.path.dirname(path), exist_ok=True)
-        with open(path, "w", encoding="gbk", newline="\r\n", errors="replace") as f:
-            f.write(content)
+        with open(path, "w", encoding="gbk", newline="\r\n", errors="replace") as file_obj:
+            file_obj.write(content)
 
     def run_legacy_pipeline(
         self,
         gconfig,
         *,
         base_dir: str,
-        domain: str = "LR_REAR",
+        domain: str = DEFAULT_DOMAIN_LR_REAR,
         run_dirs=None,
         io_mapping_ctx=None,
         config_enum_ctx=None,
@@ -178,14 +194,12 @@ class CANGeneratorService(BaseGeneratorTask):
         runtime_io 与 CANEntrypointSupport 完成。
         """
         if run_dirs is None:
-            from core.log_run_context import ensure_run_log_dirs
-
             run_dirs = ensure_run_log_dirs(base_dir)
 
         if main_log_path is None:
             main_log_path = os.path.join(run_dirs.gen_dir, "generate_can_from_excel.log")
 
-        rt = CANEntrypointSupport.build_runtime_paths(gconfig, domain)
+        runtime_paths = CANEntrypointSupport.build_runtime_paths(gconfig, domain)
 
         can_log_root = os.path.join(run_dirs.gen_dir, "can")
         os.makedirs(can_log_root, exist_ok=True)
@@ -195,61 +209,32 @@ class CANGeneratorService(BaseGeneratorTask):
         allowed_models = None
         allowed_levels = CaseFilter.parse_levels(
             gconfig.get_first(
-                [
-                    (domain, "Case_Levels"),
-                    (domain, "case_levels"),
-                    ("FILTER", "Case_Levels"),
-                    ("FILTER", "case_levels"),
-                    ("LR_REAR", "Case_Levels"),
-                    ("LR_REAR", "case_levels"),
-                ],
+                list(get_domain_filter_candidates(domain, OPTION_CASE_LEVELS)),
                 fallback=None,
             )
         )
         allowed_platforms = CaseFilter.parse_platforms_or_models(
             gconfig.get_first(
-                [
-                    (domain, "Case_Platforms"),
-                    (domain, "case_platforms"),
-                    ("FILTER", "Case_Platforms"),
-                    ("FILTER", "case_platforms"),
-                    ("LR_REAR", "Case_Platforms"),
-                    ("LR_REAR", "case_platforms"),
-                ],
+                list(get_domain_filter_candidates(domain, OPTION_CASE_PLATFORMS)),
                 fallback=None,
             )
         )
         allowed_models = CaseFilter.parse_platforms_or_models(
             gconfig.get_first(
-                [
-                    (domain, "Case_Models"),
-                    (domain, "case_models"),
-                    ("FILTER", "Case_Models"),
-                    ("FILTER", "case_models"),
-                    ("LR_REAR", "Case_Models"),
-                    ("LR_REAR", "case_models"),
-                ],
+                list(get_domain_filter_candidates(domain, OPTION_CASE_MODELS)),
                 fallback=None,
             )
         )
         case_target_versions_value = (
             gconfig.get_first(
-                [
-                    (domain, "Case_Target_Versions"),
-                    (domain, "case_target_versions"),
-                    ("FILTER", "Case_Target_Versions"),
-                    ("FILTER", "case_target_versions"),
-                    ("LR_REAR", "Case_Target_Versions"),
-                    ("LR_REAR", "case_target_versions"),
-                ],
+                list(get_domain_filter_candidates(domain, OPTION_CASE_TARGET_VERSIONS)),
                 fallback="",
             )
             or ""
         )
         try:
-            from services.filter_service import parse_shaixuan_config
-            fopts = parse_shaixuan_config(base_dir)
-            all_target_versions = fopts.get("target_versions") or []
+            filter_options = parse_shaixuan_config(base_dir)
+            all_target_versions = filter_options.get("target_versions") or []
         except Exception:
             all_target_versions = []
         allowed_target_versions = CaseFilter.parse_target_versions(
@@ -258,15 +243,15 @@ class CANGeneratorService(BaseGeneratorTask):
 
         selected_sheets_str = gconfig.get_first(
             [
-                (domain, "selected_sheets"),
-                ("LR_REAR", "selected_sheets"),
+                (domain, OPTION_SELECTED_SHEETS),
+                (SECTION_LR_REAR, OPTION_SELECTED_SHEETS),
             ]
         ).strip()
         selected_filter = parse_selected_sheets(selected_sheets_str)
 
-        keyword_specs = io_load_keyword_specs(rt["mapping_excel_path"], rt["sheet_names"])
+        keyword_specs = io_load_keyword_specs(runtime_paths["mapping_excel_path"], runtime_paths["sheet_names"])
         if not keyword_specs:
-            raise ValueError(f"未加载到关键字映射，请检查配置：{rt['mapping_excel_path']}")
+            raise ValueError(f"未加载到关键字映射，请检查配置：{runtime_paths['mapping_excel_path']}")
 
         cin_excel_path = CANEntrypointSupport.resolve_cin_excel_path(
             gconfig, base_dir, domain=domain
@@ -288,12 +273,12 @@ class CANGeneratorService(BaseGeneratorTask):
         excel_stats_map: dict[str, dict] = {}
         logger = logging.getLogger("can_generator")
 
-        for excel_path in rt["excel_files"]:
+        for excel_path in runtime_paths["excel_files"]:
             excel_name = os.path.basename(excel_path)
             log_progress_or_info(logger, f"解析 Excel 文件: {excel_name}")
             log_progress_or_info(logger, f"处理Excel={excel_name}")
 
-            repo = CANExcelRepository(
+            repository = CANExcelRepository(
                 base_dir=base_dir,
                 allowed_levels=allowed_levels,
                 allowed_platforms=allowed_platforms,
@@ -301,64 +286,66 @@ class CANGeneratorService(BaseGeneratorTask):
                 allowed_target_versions=allowed_target_versions,
                 selected_filter=selected_filter,
             )
-            sheet_cases_map, stats = repo.load_cases(excel_path)
-            excel_stats_map[excel_path] = stats
+            sheet_cases_map, repository_stats = repository.load_cases(excel_path)
+            excel_stats_map[excel_path] = repository_stats
             if not sheet_cases_map:
-                reason = io_build_ungenerated_reason(stats)
+                reason = io_build_ungenerated_reason(repository_stats)
                 logger.info(f"  警告: 文件 '{excel_name}' 中未找到任何测试用例（{reason}）")
                 continue
 
-            skip_events_map = getattr(repo, "skip_events_map", {})
+            skip_events_map = getattr(repository, "skip_events_map", {})
 
-            for (fp, sheet_name), cases in sheet_cases_map.items():
-                events: list[tuple[int | None, int, str, dict]] = []
-                for se in skip_events_map.get((fp, sheet_name), []) or []:
-                    events.append((se.get("excel_row"), 0, "skip", se))
+            for (excel_file_path, sheet_name), cases in sheet_cases_map.items():
+                sheet_events: list[tuple[int | None, int, str, dict]] = []
+                for skip_event in skip_events_map.get((excel_file_path, sheet_name), []) or []:
+                    sheet_events.append((skip_event.get("excel_row"), 0, "skip", skip_event))
 
                 for case in cases:
                     for raw_step in case.raw_steps:
-                        res = translator.translate(raw_step)
-                        case.steps.extend(res.code_lines)
-                        case.error_records.extend(res.errors)
+                        translate_result = translator.translate(raw_step)
+                        case.steps.extend(translate_result.code_lines)
+                        case.error_records.extend(translate_result.errors)
 
                     # SOA REQ / CHECK / CHECKREQ 相关顺序调整与 _Prepare 后缀由 renderer 渲染阶段统一处理
-                    for err in case.error_records:
+                    for error_record in case.error_records:
                         row_for_sort = (
-                            err.excel_row
-                            if err.excel_row is not None
+                            error_record.excel_row
+                            if error_record.excel_row is not None
                             else getattr(case, "excel_row", 0)
                         )
-                        payload = {
+                        error_payload = {
                             "case_id": case.case_id,
                             "excel_row": row_for_sort,
-                            "raw_step": err.raw_step,
-                            "message": err.message,
+                            "raw_step": error_record.raw_step,
+                            "message": error_record.message,
                         }
-                        events.append((row_for_sort, 1, "error", payload))
+                        sheet_events.append((row_for_sort, 1, "error", error_payload))
 
-                events.sort(key=lambda e: ((e[0] if e[0] is not None else 10**9), e[1]))
+                sheet_events.sort(
+                    key=lambda event: ((event[0] if event[0] is not None else 10**9), event[1])
+                )
                 log_progress_or_info(logger, f"  处理Sheet={sheet_name}")
-                for excel_row, _prio, kind, payload in events:
-                    if kind == "skip":
+                for excel_row, event_priority, event_kind, event_payload in sheet_events:
+                    if event_kind == "skip":
                         logger.info(
-                            f"[跳过] 用例ID={payload['case_id']}, 功能模块={payload['group']}, 用例类型='{payload['case_type']}'（{payload['reason']}）"
+                            f"[跳过] 用例ID={event_payload['case_id']}, 功能模块={event_payload['group']}, 用例类型='{event_payload['case_type']}'（{event_payload['reason']}）"
                         )
-                    elif kind == "error":
-                        err_mod = ErrorModuleResolver.resolve(payload["message"])
+                    elif event_kind == "error":
+                        error_module = ErrorModuleResolver.resolve(event_payload["message"])
                         logger.error(
-                            f"错误模块【{err_mod}】 用例ID={payload['case_id']} 行号：{excel_row}  用例步骤：{payload['raw_step']}  原因：{payload['message']}"
+                            f"错误模块【{error_module}】 用例ID={event_payload['case_id']} 行号：{excel_row}  用例步骤：{event_payload['raw_step']}  原因：{event_payload['message']}"
                         )
 
-                excel_name = os.path.basename(fp)
+                excel_name = os.path.basename(excel_file_path)
                 excel_basename = os.path.splitext(excel_name)[0]
                 can_filename = (
                     f"generated_from_cases_{io_sanitize_filename_part(excel_basename)}_"
                     f"{io_sanitize_filename_part(sheet_name)}.can"
                 )
                 log_progress_or_info(logger, f"生成文件: {can_filename} (用例数={len(cases)})")
-                for h in logger.handlers:
+                for handler in logger.handlers:
                     try:
-                        h.flush()
+                        handler.flush()
                     except Exception:
                         pass
 
@@ -380,11 +367,11 @@ class CANGeneratorService(BaseGeneratorTask):
                     pass
 
                 if cases:
-                    can_filepath = os.path.join(rt["testcases_dir"], can_filename)
+                    can_filepath = os.path.join(runtime_paths["testcases_dir"], can_filename)
                     can_content = renderer.render_sheet_file(cases)
                     io_write_can_text(can_filepath, can_content)
                     generated_can_files.append(can_filename)
-                    excel_can_map.setdefault(fp, []).append(can_filename)
+                    excel_can_map.setdefault(excel_file_path, []).append(can_filename)
 
         if not generated_can_files:
             logger.info("没有生成任何.can文件")
@@ -395,10 +382,10 @@ class CANGeneratorService(BaseGeneratorTask):
                     expected,
                 )
             log_progress_or_info(logger, "未生成 .can 的 Excel 汇总")
-            for fp in rt["excel_files"]:
-                excel_name_only = os.path.basename(fp)
-                stats = excel_stats_map.get(fp, {})
-                reason = io_build_ungenerated_reason(stats)
+            for excel_file_path in runtime_paths["excel_files"]:
+                excel_name_only = os.path.basename(excel_file_path)
+                excel_stats = excel_stats_map.get(excel_file_path, {})
+                reason = io_build_ungenerated_reason(excel_stats)
                 log_progress_or_info(
                     logger, f"  Excel={excel_name_only} → 未生成 .can，原因：{reason}"
                 )
@@ -411,19 +398,19 @@ class CANGeneratorService(BaseGeneratorTask):
             "{",
             '  #include "TestMoudleControl\\TestMoudleControl_Swc.can"',
         ]
-        secoc_qualifier = (rt.get("secoc_qualifier") or "").strip()
+        secoc_qualifier = (runtime_paths.get("secoc_qualifier") or "").strip()
         if secoc_qualifier:
             master_lines.append(
                 f'  #include "..\\ILNode\\SecOc\\CAN\\{secoc_qualifier}.cin"'
             )
         # 是否包含 .cin 由「是否选择了关键字集 Clib 配置表」决定
-        if rt.get("has_keyword_clib") and rt.get("cin_output_filename"):
-            master_lines.append(f'  #include "{rt["cin_output_filename"]}"')
+        if runtime_paths.get("has_keyword_clib") and runtime_paths.get("cin_output_filename"):
+            master_lines.append(f'  #include "{runtime_paths["cin_output_filename"]}"')
         for can_filename in sorted(generated_can_files):
             master_lines.append(f'  #include "Testcases\\{can_filename}"')
         master_lines.append("}")
-        master_dir = os.path.dirname(rt["master_output_path"])
-        current_master_name = os.path.basename(rt["master_output_path"])
+        master_dir = os.path.dirname(runtime_paths["master_output_path"])
+        current_master_name = os.path.basename(runtime_paths["master_output_path"])
         for stale_path in glob(os.path.join(master_dir, "*.can")):
             if os.path.basename(stale_path).lower() == current_master_name.lower():
                 continue
@@ -431,47 +418,51 @@ class CANGeneratorService(BaseGeneratorTask):
                 os.remove(stale_path)
             except Exception:
                 pass
-        io_write_can_text(rt["master_output_path"], "\n".join(master_lines))
+        io_write_can_text(runtime_paths["master_output_path"], "\n".join(master_lines))
 
-        log_progress_or_info(logger, f"Master .can 文件已生成: {rt['master_output_path']}")
+        log_progress_or_info(logger, f"Master .can 文件已生成: {runtime_paths['master_output_path']}")
         log_progress_or_info(
             logger,
             f"所有文件生成完成！共生成 {len(generated_can_files)} 个小文件和 1 个Master文件",
         )
 
-        if len(rt["excel_files"]) > 1:
+        if len(runtime_paths["excel_files"]) > 1:
             log_progress_or_info(logger, "目录模式 CAN 生成汇总开始")
-            for fp in rt["excel_files"]:
-                excel_name_only = os.path.basename(fp)
-                can_list = excel_can_map.get(fp, [])
+            for excel_file_path in runtime_paths["excel_files"]:
+                excel_name_only = os.path.basename(excel_file_path)
+                can_list = excel_can_map.get(excel_file_path, [])
                 if can_list:
                     log_progress_or_info(
                         logger,
                         f"  Excel={excel_name_only} → 生成 {len(can_list)} 个 .can：{', '.join(can_list)}",
                     )
-            ungenerated = [fp for fp in rt["excel_files"] if not excel_can_map.get(fp)]
+            ungenerated = [
+                excel_file_path
+                for excel_file_path in runtime_paths["excel_files"]
+                if not excel_can_map.get(excel_file_path)
+            ]
             if ungenerated:
                 log_progress_or_info(logger, "未生成 .can 的 Excel 汇总")
-                for fp in ungenerated:
-                    excel_name_only = os.path.basename(fp)
-                    stats = excel_stats_map.get(fp, {})
-                    reason = io_build_ungenerated_reason(stats)
+                for excel_file_path in ungenerated:
+                    excel_name_only = os.path.basename(excel_file_path)
+                    excel_stats = excel_stats_map.get(excel_file_path, {})
+                    reason = io_build_ungenerated_reason(excel_stats)
                     log_progress_or_info(
                         logger, f"  Excel={excel_name_only} → 未生成 .can，原因：{reason}"
                     )
             log_progress_or_info(logger, "目录模式 CAN 生成汇总结束")
-        elif len(rt["excel_files"]) == 1:
-            fp = rt["excel_files"][0]
-            excel_name_only = os.path.basename(fp)
-            can_list = excel_can_map.get(fp, [])
+        elif len(runtime_paths["excel_files"]) == 1:
+            excel_file_path = runtime_paths["excel_files"][0]
+            excel_name_only = os.path.basename(excel_file_path)
+            can_list = excel_can_map.get(excel_file_path, [])
             if can_list:
                 log_progress_or_info(
                     logger,
                     f"  Excel={excel_name_only} → 生成 {len(can_list)} 个 .can：{', '.join(can_list)}",
                 )
             else:
-                stats = excel_stats_map.get(fp, {})
-                reason = io_build_ungenerated_reason(stats)
+                excel_stats = excel_stats_map.get(excel_file_path, {})
+                reason = io_build_ungenerated_reason(excel_stats)
                 log_progress_or_info(
                     logger, f"  Excel={excel_name_only} → 未生成 .can，原因：{reason}"
                 )

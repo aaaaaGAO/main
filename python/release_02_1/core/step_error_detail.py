@@ -12,6 +12,8 @@ from __future__ import annotations
 import re
 from typing import Any, Dict, List
 
+from core.keyword_error import describe_keyword_error
+
 
 class StepErrorDetailBuilder:
     """
@@ -20,21 +22,21 @@ class StepErrorDetailBuilder:
     """
 
     @staticmethod
-    def _parse_io_name_value_from_line(original_line: str) -> tuple[str, str]:
+    def parse_io_name_value_from_line(original_line: str) -> tuple[str, str]:
         """从步骤行中解析首个 J_ 开头的 token 作为 name_tok，后续作为 value_tok。参数: original_line — 原始步骤行。返回: (name_tok, value_tok)。"""
         tokens = original_line.split()
         name_tok = ""
         value_tok = ""
-        for idx, t in enumerate(tokens):
-            if t.upper().startswith("J_"):
-                name_tok = t
-                if idx + 1 < len(tokens):
-                    value_tok = " ".join(tokens[idx + 1 :]).strip()
+        for token_index, token_text in enumerate(tokens):
+            if token_text.upper().startswith("J_"):
+                name_tok = token_text
+                if token_index + 1 < len(tokens):
+                    value_tok = " ".join(tokens[token_index + 1 :]).strip()
                 break
         return name_tok, value_tok
 
     @staticmethod
-    def _parse_name_value_from_reason(reason: str) -> tuple[str, str]:
+    def parse_name_value_from_reason(reason: str) -> tuple[str, str]:
         """从 reason 中解析 Name=... 与 Value=...。参数: reason — 错误原因字符串。返回: (name_val, value_val)。"""
         name_val = ""
         value_val = ""
@@ -62,7 +64,7 @@ class StepErrorDetailBuilder:
         original_line = (original_line or "").strip()
 
         if error_type == "iomapping":
-            name_tok, value_tok = cls._parse_io_name_value_from_line(original_line)
+            name_tok, value_tok = cls.parse_io_name_value_from_line(original_line)
             if reason.startswith("Name 未找到"):
                 return f"IO_mapping 表中Name 未找到: {name_tok or reason.split(':', 1)[-1].strip()}"
             if "Name 找不到" in reason:
@@ -70,7 +72,7 @@ class StepErrorDetailBuilder:
             if reason.startswith("Path 为空"):
                 return f"IO_mapping 表中{reason}"
             if reason.startswith("Values 为空"):
-                name_val, value_val = cls._parse_name_value_from_reason(reason)
+                name_val, value_val = cls.parse_name_value_from_reason(reason)
                 name_show = name_tok or name_val
                 value_show = value_val or value_tok
                 if name_show and value_show:
@@ -89,7 +91,7 @@ class StepErrorDetailBuilder:
         if error_type == "config_enum":
             line_lower = original_line.lower()
             table_prefix = "DID Configuration 表中" if ("set_cf" in line_lower or "set_config" in line_lower) else "Configuration 表中"
-            name_val, value_val = cls._parse_name_value_from_reason(reason)
+            name_val, value_val = cls.parse_name_value_from_reason(reason)
             if reason.startswith("Name 未找到"):
                 return f"{table_prefix}{reason}"
             if reason.startswith("Values 为空"):
@@ -122,7 +124,6 @@ class StepErrorDetailBuilder:
                     is_format_error = True
             if is_format_error:
                 return "写入错误"
-            from core.keyword_error import describe_keyword_error
             return describe_keyword_error(original_line, keyword_specs)
 
         if error_type == "syntax":

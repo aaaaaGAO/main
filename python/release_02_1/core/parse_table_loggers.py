@@ -21,7 +21,7 @@ from core.log_run_context import ensure_run_log_dirs
 from utils.logger import get_log_level_from_config
 
 
-def _get_parse_file_logger(base_dir: str, *, filename: str, logger_name: str) -> logging.Logger:
+def get_parse_file_logger(base_dir: str, *, filename: str, logger_name: str) -> logging.Logger:
     """获取或创建「解析表格日志」目录下的文件 Logger，同进程复用同一路径的 handler。
     参数: base_dir — 项目根；filename — 日志文件名；logger_name — Logger 名称。
     返回: 配置好的 Logger，写入 base_dir/log/.../解析表格日志/filename。
@@ -68,24 +68,24 @@ def _get_parse_file_logger(base_dir: str, *, filename: str, logger_name: str) ->
 
 def get_clib_matrix_logger(base_dir: str) -> logging.Logger:
     """获取 Clib 矩阵表解析日志 Logger。参数: base_dir — 项目根。返回: Logger，写入 Clib_Matrix.log。"""
-    return _get_parse_file_logger(base_dir, filename="Clib_Matrix.log", logger_name="parse.Clib_Matrix")
+    return get_parse_file_logger(base_dir, filename="Clib_Matrix.log", logger_name="parse.Clib_Matrix")
 
 
 def get_testcases_parse_logger(base_dir: str) -> logging.Logger:
     """获取测试用例表解析日志 Logger。参数: base_dir — 项目根。返回: Logger，写入 TestCases.log。"""
-    return _get_parse_file_logger(base_dir, filename="TestCases.log", logger_name="parse.TestCases")
+    return get_parse_file_logger(base_dir, filename="TestCases.log", logger_name="parse.TestCases")
 
 
 def get_uart_matrix_logger(base_dir: str) -> logging.Logger:
     """获取 UART 通信矩阵表解析日志 Logger（IVIToMCU/MCUToIVI）。参数: base_dir — 项目根。返回: Logger。"""
-    return _get_parse_file_logger(base_dir, filename="Uart_Matrix.log", logger_name="parse.Uart_Matrix")
+    return get_parse_file_logger(base_dir, filename="Uart_Matrix.log", logger_name="parse.Uart_Matrix")
 
 
 def get_caseid_clean_dup_logger(base_dir: str) -> logging.Logger:
     """获取用例 ID 清洗/重复专用 Logger（caseid_clean_dup.log），带 DedupOnceFilter 同进程去重。
     参数: base_dir — 项目根。返回: Logger。
     """
-    logger = _get_parse_file_logger(base_dir, filename="caseid_clean_dup.log", logger_name="parse.caseid_clean_dup")
+    logger = get_parse_file_logger(base_dir, filename="caseid_clean_dup.log", logger_name="parse.caseid_clean_dup")
     # 为 caseid 专用 logger 添加同进程去重
     for h in logger.handlers:
         if not any(isinstance(f, DedupOnceFilter) for f in getattr(h, "filters", [])):

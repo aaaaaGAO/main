@@ -116,17 +116,21 @@ class CaseFilter:
         """
         if text is None:
             return None
-        s = str(text).strip()
-        if not s:
+        normalized_text = str(text).strip()
+        if not normalized_text:
             return None
-        parts_raw = [p.strip() for p in s.replace("，", ",").replace(" ", ",").split(",") if p.strip()]
+        parts_raw = [
+            item.strip()
+            for item in normalized_text.replace("，", ",").replace(" ", ",").split(",")
+            if item.strip()
+        ]
         parts: list[str] = []
-        for p in parts_raw:
-            up = p.upper()
-            if len(up) > 1 and all(ch in {"S", "A", "B", "C"} for ch in up):
-                parts.extend(list(up))
+        for part in parts_raw:
+            upper_part = part.upper()
+            if len(upper_part) > 1 and all(ch in {"S", "A", "B", "C"} for ch in upper_part):
+                parts.extend(list(upper_part))
             else:
-                parts.append(up)
+                parts.append(upper_part)
         if not parts or "ALL" in parts:
             return None
         return set(parts)
@@ -136,10 +140,14 @@ class CaseFilter:
         """解析 Case_Platforms 或 Case_Models 配置字符串为集合。参数：text — 配置字符串，空或仅 ALL 表示不过滤；逗号/空格分隔。返回：允许的平台或车型集合；None 表示不过滤。"""
         if text is None:
             return None
-        s = str(text).strip()
-        if not s:
+        normalized_text = str(text).strip()
+        if not normalized_text:
             return None
-        parts = [p.strip().upper() for p in s.replace("，", ",").replace(" ", ",").split(",") if p.strip()]
+        parts = [
+            item.strip().upper()
+            for item in normalized_text.replace("，", ",").replace(" ", ",").split(",")
+            if item.strip()
+        ]
         if not parts:
             return None
         if "ALL" in parts and len(parts) == 1:
@@ -151,8 +159,8 @@ class CaseFilter:
     @classmethod
     def _extract_ipdt_number(cls, option: str) -> Optional[int]:
         """从选项字符串中提取 IPDT 编号（如 CEA2.x_IPDT4.0 -> 4，CEA2.x_VP1.1(IPDT1.0) -> 1）。"""
-        m = cls._IPDT_NUMBER_RE.search(option)
-        return int(m.group(1)) if m else None
+        match = cls._IPDT_NUMBER_RE.search(option)
+        return int(match.group(1)) if match else None
 
     @classmethod
     def parse_target_versions(
@@ -166,10 +174,14 @@ class CaseFilter:
         """
         if selected_text is None:
             return None
-        s = str(selected_text).strip()
-        if not s:
+        normalized_text = str(selected_text).strip()
+        if not normalized_text:
             return None
-        selected = [p.strip() for p in s.replace("，", ",").replace(" ", ",").split(",") if p.strip()]
+        selected = [
+            item.strip()
+            for item in normalized_text.replace("，", ",").replace(" ", ",").split(",")
+            if item.strip()
+        ]
         if not selected:
             return None
         if "ALL" in selected and len(selected) == 1:
@@ -179,16 +191,16 @@ class CaseFilter:
         all_opts = list(all_options or [])
         # 含 IPDT 的选项：取选中项中的最大 IPDT 编号 N，将 all_options 中所有 IPDT 编号 <= N 的项加入 allowed
         max_ipdt: Optional[int] = None
-        for opt in selected:
-            n = cls._extract_ipdt_number(opt)
-            if n is not None:
-                max_ipdt = n if max_ipdt is None else max(max_ipdt, n)
+        for selected_option in selected:
+            ipdt_number = cls._extract_ipdt_number(selected_option)
+            if ipdt_number is not None:
+                max_ipdt = ipdt_number if max_ipdt is None else max(max_ipdt, ipdt_number)
         if max_ipdt is not None and all_opts:
-            for opt in all_opts:
-                opt_stripped = opt.strip()
-                if not opt_stripped or opt_stripped in allowed:
+            for available_option in all_opts:
+                option_text = available_option.strip()
+                if not option_text or option_text in allowed:
                     continue
-                nn = cls._extract_ipdt_number(opt_stripped)
-                if nn is not None and nn <= max_ipdt:
-                    allowed.add(opt_stripped)
+                candidate_ipdt_number = cls._extract_ipdt_number(option_text)
+                if candidate_ipdt_number is not None and candidate_ipdt_number <= max_ipdt:
+                    allowed.add(option_text)
         return allowed if allowed else None

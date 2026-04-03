@@ -13,18 +13,18 @@ import unicodedata
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 
-def _norm_str(v: Any) -> str:
-    """单元格值规范化：None 转空串，否则去首尾空白。参数: v — 任意值。返回: str。"""
-    if v is None:
+def normalize_cell_text(value: Any) -> str:
+    """单元格值规范化：None 转空串，否则去首尾空白。参数: value — 任意值。返回: str。"""
+    if value is None:
         return ""
-    return str(v).strip()
+    return str(value).strip()
 
 
-def _nfc_normalize(s: str) -> str:
-    """Unicode NFC 规范化。参数: s — 字符串。返回: 规范化后字符串。"""
-    if not s:
-        return s
-    return unicodedata.normalize("NFC", s)
+def normalize_nfc_text(text: str) -> str:
+    """Unicode NFC 规范化。参数: text — 字符串。返回: 规范化后字符串。"""
+    if not text:
+        return text
+    return unicodedata.normalize("NFC", text)
 
 
 class ColumnMapper:
@@ -42,20 +42,20 @@ class ColumnMapper:
         self.mapping: dict[str, int] = {}
 
     @staticmethod
-    def _normalize_header(v: object) -> str:
-        """表头单元格规范化：去空白、NFC、去空格与下划线、小写。参数: v — 单元格值。返回: str。"""
-        s = _norm_str(v)
-        s = _nfc_normalize(s)
-        s = re.sub(r"\s+", "", s.replace("　", " "))
-        return s.replace("_", "").lower()
+    def normalize_header(value: object) -> str:
+        """表头单元格规范化：去空白、NFC、去空格与下划线、小写。参数: value — 单元格值。返回: str。"""
+        normalized_text = normalize_cell_text(value)
+        normalized_text = normalize_nfc_text(normalized_text)
+        normalized_text = re.sub(r"\s+", "", normalized_text.replace("　", " "))
+        return normalized_text.replace("_", "").lower()
 
     def scan(self, header_row: Iterable[object]) -> bool:
         """扫描一行表头，填充 mapping。参数: header_row — 表头行单元格迭代器。返回: 是否所有 required 列均匹配。"""
         self.mapping.clear()
-        normalized = [self._normalize_header(x) for x in header_row]
+        normalized = [self.normalize_header(x) for x in header_row]
         for field, alias_group in self.aliases.items():
             for alias in alias_group:
-                target = self._normalize_header(alias)
+                target = self.normalize_header(alias)
                 if not target:
                     continue
                 for idx, hv in enumerate(normalized):
@@ -77,11 +77,11 @@ class ColumnMapper:
         return self.mapping[field]
 
 
-def _norm_cell_for_header(v: Any) -> str:
-    """表头单元格规范化：去空白、去空格与全角空格、小写。参数: v — 单元格值。返回: str。"""
-    if v is None:
+def normalize_header_cell(value: Any) -> str:
+    """表头单元格规范化：去空白、去空格与全角空格、小写。参数: value — 单元格值。返回: str。"""
+    if value is None:
         return ""
-    return str(v).strip().replace(" ", "").replace("　", "").lower()
+    return str(value).strip().replace(" ", "").replace("　", "").lower()
 
 
 def find_header_row_and_col_indices(
@@ -100,7 +100,7 @@ def find_header_row_and_col_indices(
     alias_sets: Dict[str, set] = {}
     display_names: Dict[str, str] = {}
     for key, aliases in column_aliases.items():
-        alias_sets[key] = set(_norm_cell_for_header(a) for a in aliases if a)
+        alias_sets[key] = set(normalize_header_cell(a) for a in aliases if a)
         display_names[key] = aliases[0] if aliases else key
 
     for r in range(1, min(ws.max_row, max_scan_rows) + 1):
@@ -110,7 +110,7 @@ def find_header_row_and_col_indices(
                 cell_val = ws.cell(row=r, column=c).value
             except Exception:
                 continue
-            key_norm = _norm_cell_for_header(cell_val)
+            key_norm = normalize_header_cell(cell_val)
             if not key_norm:
                 continue
             for logical_key, norm_set in alias_sets.items():
@@ -131,13 +131,13 @@ class TestCaseHeaderResolver:
     CASE_TYPE_ALIASES = ("用例类型", "测试类型", "类型")
 
     @staticmethod
-    def _normalize_header_for_match(s: str) -> str:
+    def normalize_header_for_match(text: str) -> str:
         """表头/关键字规范化以便匹配：去首尾空白、去所有空格与全角空格、小写。"""
-        if not s:
+        if not text:
             return ""
-        t = str(s).strip().replace("　", " ")
-        t = re.sub(r"\s+", "", t)
-        return t.lower()
+        normalized_text = str(text).strip().replace("　", " ")
+        normalized_text = re.sub(r"\s+", "", normalized_text)
+        return normalized_text.lower()
 
     @staticmethod
     def find_col_index(header_vals: List[Any], search_keywords: Tuple[str, ...]) -> Optional[int]:
@@ -148,13 +148,13 @@ class TestCaseHeaderResolver:
         for idx, cell_value in enumerate(header_vals):
             if cell_value is None:
                 continue
-            header_norm = TestCaseHeaderResolver._normalize_header_for_match(cell_value)
+            header_norm = TestCaseHeaderResolver.normalize_header_for_match(cell_value)
             if not header_norm:
                 continue
             for keyword in search_keywords:
                 if not keyword:
                     continue
-                kw_norm = TestCaseHeaderResolver._normalize_header_for_match(keyword)
+                kw_norm = TestCaseHeaderResolver.normalize_header_for_match(keyword)
                 if kw_norm and (kw_norm in header_norm or header_norm in kw_norm):
                     return idx
         return None

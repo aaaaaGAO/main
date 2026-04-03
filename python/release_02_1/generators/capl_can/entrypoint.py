@@ -12,6 +12,7 @@ from __future__ import annotations
 import argparse
 
 from core.run_context import tee_stdout_stderr, restore_stdout_stderr
+from services.config_constants import DEFAULT_DOMAIN_LR_REAR
 from .runtime import CANEntrypointSupport
 from .service import CANGeneratorService
 from .runtime_io import (
@@ -25,7 +26,7 @@ from .runtime_io import (
 )
 
 
-def execute_workflow(config_path=None, base_dir=None, domain="LR_REAR"):
+def execute_workflow(config_path=None, base_dir=None, domain=DEFAULT_DOMAIN_LR_REAR):
     """将 CAN 生成的各原子步骤串联为完整流水线并执行。
 
     功能：重置运行时状态 → 解析工程根目录 → 读配置 → 初始化日志并劫持 stdout/stderr
@@ -33,7 +34,7 @@ def execute_workflow(config_path=None, base_dir=None, domain="LR_REAR"):
     → 调用 CANGeneratorService.run_legacy_pipeline 完成读表、翻译、写 .can 与 Master.can。
 
     形参：
-        config_path：配置文件路径；None 时在 base_dir 下查找 config/Configuration.txt。
+        config_path：配置文件路径；None 时按主配置默认解析规则查找 `Configuration.ini`。
         base_dir：工程根目录；None 时由 resolve_base_dir 自动解析（打包为 exe 所在目录）。
         domain：业务域，如 "LR_REAR" / "CENTRAL" / "DTC"，用于读取对应域的配置节与映射。
 
@@ -72,13 +73,13 @@ def execute_workflow(config_path=None, base_dir=None, domain="LR_REAR"):
         log_mgr.clear()
 
 
-def main(config_path=None, base_dir=None, domain="LR_REAR"):
+def main(config_path=None, base_dir=None, domain=DEFAULT_DOMAIN_LR_REAR):
     """CAN 生成统一入口，供 TaskService 与命令行调用。
 
     功能：接收可选配置路径、工程根目录与业务域，调用 execute_workflow 完成整条流水线。
 
     形参：
-        config_path：配置文件路径；None 时在 base_dir/config 下使用 Configuration.txt。
+        config_path：配置文件路径；None 时按主配置默认解析规则查找 `Configuration.ini`。
         base_dir：工程根目录；None 时自动解析。
         domain：业务域，默认 "LR_REAR"。
 
@@ -102,6 +103,6 @@ def read_cases_from_excel_for_can(*args, **kwargs):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="CAN 生成工具：从 Excel 用例表生成 CAPL .can 文件。")
     parser.add_argument("--config", help="配置文件路径")
-    parser.add_argument("--domain", default="LR_REAR", help="业务域：LR_REAR / CENTRAL / DTC")
+    parser.add_argument("--domain", default=DEFAULT_DOMAIN_LR_REAR, help="业务域：LR_REAR / CENTRAL / DTC")
     args = parser.parse_args()
     main(config_path=args.config, domain=args.domain)

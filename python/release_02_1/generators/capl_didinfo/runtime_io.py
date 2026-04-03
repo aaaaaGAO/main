@@ -172,6 +172,41 @@ def compute_positions_and_length(
     return byte_pos, bit_pos, length_bits
 
 
+def _flush_did_header(
+    out_lines: list[str],
+    *,
+    sheet_name: str,
+    variant_name: str,
+    current_did: Optional[str],
+    current_len: Optional[int],
+    last_written_sheet: Optional[str],
+    last_written_variant: Optional[str],
+    last_written_did: Optional[str],
+    last_written_len: Optional[int],
+) -> Tuple[Optional[str], Optional[str], Optional[str], Optional[int]]:
+    if current_did is None or current_len is None:
+        return last_written_sheet, last_written_variant, last_written_did, last_written_len
+
+    need_write = (
+        last_written_sheet is None
+        or last_written_variant is None
+        or last_written_did is None
+        or last_written_len is None
+        or sheet_name != last_written_sheet
+        or variant_name != last_written_variant
+        or current_did != last_written_did
+        or current_len != last_written_len
+    )
+    if need_write:
+        out_lines.append(f"{{{sheet_name}}}")
+        out_lines.append(f"[{variant_name}]")
+        out_lines.append(f"[{current_did}]")
+        out_lines.append(f"DIDLength:{current_len};//DID数据长度BYTE")
+        return sheet_name, variant_name, current_did, current_len
+
+    return last_written_sheet, last_written_variant, last_written_did, last_written_len
+
+
 def generate_from_sheet(
     ws: Any,
     *,
@@ -201,26 +236,6 @@ def generate_from_sheet(
     last_written_did = last_did
     last_written_len = last_len
 
-    def flush_did_header() -> None:
-        nonlocal last_written_sheet, last_written_variant, last_written_did, last_written_len
-        if current_did is None or current_len is None:
-            return
-        need_write = (
-            last_written_sheet is None or last_written_variant is None
-            or last_written_did is None or last_written_len is None
-            or sheet_name != last_written_sheet or variant_name != last_written_variant
-            or current_did != last_written_did or current_len != last_written_len
-        )
-        if need_write:
-            out_lines.append(f"{{{sheet_name}}}")
-            out_lines.append(f"[{variant_name}]")
-            out_lines.append(f"[{current_did}]")
-            out_lines.append(f"DIDLength:{current_len};//DID数据长度BYTE")
-            last_written_sheet = sheet_name
-            last_written_variant = variant_name
-            last_written_did = current_did
-            last_written_len = current_len
-
     started = False
     for r in range(header_row + 1, ws.max_row + 1):
         did_cell = norm_str(merged_cell_value(ws, r, col_did))
@@ -233,7 +248,22 @@ def generate_from_sheet(
             except Exception:
                 current_len = None
             started = True
-            flush_did_header()
+            (
+                last_written_sheet,
+                last_written_variant,
+                last_written_did,
+                last_written_len,
+            ) = _flush_did_header(
+                out_lines,
+                sheet_name=sheet_name,
+                variant_name=variant_name,
+                current_did=current_did,
+                current_len=current_len,
+                last_written_sheet=last_written_sheet,
+                last_written_variant=last_written_variant,
+                last_written_did=last_written_did,
+                last_written_len=last_written_len,
+            )
 
         if not started:
             continue

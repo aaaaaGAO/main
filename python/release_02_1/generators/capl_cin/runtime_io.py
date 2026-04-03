@@ -17,6 +17,7 @@ from openpyxl import load_workbook
 
 from core.generator_logging import GeneratorLogger
 from core.mapping_context import MappingContext
+from services.config_constants import DEFAULT_DOMAIN_LR_REAR
 
 from .constants import CASEID_LOG_PATTERNS
 from .runtime import CINEntrypointSupport
@@ -30,6 +31,11 @@ from core.translator import (
     load_keyword_specs_from_excel,
 )
 from core.common.name_sanitize import sanitize_clib_name
+
+try:
+    from infra.logger import ProgressFormatter, SubstringFilter
+except ImportError:  # pragma: no cover
+    from utils.logger import ProgressFormatter, SubstringFilter  # type: ignore[no-redef]
 
 
 def load_keyword_specs(
@@ -56,9 +62,9 @@ def read_clib_steps(excel_path: str, clib_sheet: Optional[str] = None) -> tuple[
 
     try:
         wb = load_workbook(excel_path, data_only=True)
-    except Exception as e:
-        err = str(e).lower()
-        if "decompressing" in err or "incorrect header" in err or "badzipfile" in err:
+    except Exception as error:
+        error_message = str(error).lower()
+        if "decompressing" in error_message or "incorrect header" in error_message or "badzipfile" in error_message:
             raise ValueError(
                 f"Excel 文件格式错误或文件已损坏: {excel_path}\n错误详情: {e}\n"
                 "请检查文件是否是有效的 Excel 文件（.xlsx 格式）"
@@ -105,14 +111,14 @@ def read_clib_steps(excel_path: str, clib_sheet: Optional[str] = None) -> tuple[
         else:
             steps = seen[name_str]
         for raw_line in str(step_block).splitlines():
-            s = str(raw_line).rstrip("\n")
-            if s.strip():
-                steps.append((s, row_idx))
+            step_line_text = str(raw_line).rstrip("\n")
+            if step_line_text.strip():
+                steps.append((step_line_text, row_idx))
 
     return ws.title, ordered
 
 
-def _is_numeric(s: str) -> bool:
+def is_numeric_value(s: str) -> bool:
     try:
         float(s)
         return True
@@ -120,10 +126,10 @@ def _is_numeric(s: str) -> bool:
         return False
 
 
-def _apply_default_param_parsing(args: list[str]) -> list[str]:
+def apply_default_param_parsing(args: list[str]) -> list[str]:
     parsed = []
     for arg in args:
-        parsed.append(arg if _is_numeric(arg) else f'"{arg}"')
+        parsed.append(arg if is_numeric_value(arg) else f'"{arg}"')
     return parsed
 
 
@@ -131,7 +137,7 @@ def _apply_default_param_parsing(args: list[str]) -> list[str]:
 _last_parse_error: dict = {"type": None, "reason": ""}
 
 
-def _parse_step_line_cin(
+def parse_step_line_cin(
     line: str,
     keyword_specs: dict,
     *,
@@ -156,7 +162,7 @@ def _parse_step_line_cin(
             io_mapping_ctx=io_mapping_ctx,
             config_enum_ctx=config_enum_ctx,
             sanitize_clib_name=sanitize_clib_name,
-            default_param_parser=_apply_default_param_parsing,
+            default_param_parser=apply_default_param_parsing,
         )
         if result is None:
             return None
@@ -216,7 +222,7 @@ def render_step_lines(
     if original_line.startswith("//"):
         return None
 
-    result = _parse_step_line_cin(
+    result = parse_step_line_cin(
         original_line,
         keyword_specs,
         io_mapping_ctx=io_mapping_ctx,
@@ -307,10 +313,6 @@ def reset_runtime_state() -> None:
 
 def setup_generator_logger(base_dir: str) -> GeneratorLogger:
     """步骤 ①：初始化 CIN 主日志管理器（generate_cin_from_excel.log），含 CASEID 过滤。"""
-    try:
-        from infra.logger import ProgressFormatter, SubstringFilter
-    except ImportError:
-        from utils.logger import ProgressFormatter, SubstringFilter
     return GeneratorLogger(
         base_dir,
         log_basename="generate_cin_from_excel.log",
@@ -321,7 +323,7 @@ def setup_generator_logger(base_dir: str) -> GeneratorLogger:
 
 
 def load_mapping_context(
-    cfg: Any, base_dir: str, config_path: str, domain: str = "LR_REAR"
+    cfg: Any, base_dir: str, config_path: str, domain: str = DEFAULT_DOMAIN_LR_REAR
 ) -> Tuple[Any, Any]:
     """步骤 ②：按 domain 加载 io_mapping 与 Configuration 枚举上下文；写入模块级供 legacy 使用。"""
     global _io_mapping_ctx, _config_enum_ctx

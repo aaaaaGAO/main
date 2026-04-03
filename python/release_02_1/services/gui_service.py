@@ -11,11 +11,22 @@ from __future__ import annotations
 
 import gc
 import os
+import re
 import threading
 import traceback
+import xml.etree.ElementTree as ET
 from typing import Any, Dict, List, Literal, Optional
 
-# 延迟导入 Tk，避免无 GUI 环境报错
+from openpyxl import load_workbook
+
+try:
+    import tkinter as tk
+    from tkinter import filedialog
+except ImportError:  # pragma: no cover - headless / minimal Python
+    tk = None  # type: ignore[assignment]
+    filedialog = None  # type: ignore[assignment]
+
+# 线程锁：无 GUI 环境仍可通过 try/except 导入本模块
 tk_lock = threading.Lock()
 
 
@@ -27,13 +38,12 @@ def _parse_excel_sheets(path: str) -> Dict[str, Any]:
     if os.path.basename(path).startswith("~$"):
         return {"type": "excel", "sheets": []}
     try:
-        from openpyxl import load_workbook
         wb = load_workbook(path, read_only=True)
         sheets = list(wb.sheetnames)
         wb.close()
         return {"type": "excel", "sheets": sheets}
-    except Exception as e:
-        return {"type": "excel", "error": str(e)}
+    except Exception as error:
+        return {"type": "excel", "error": str(error)}
 
 
 def _parse_can_testcases(path: str) -> Dict[str, Any]:
@@ -41,15 +51,14 @@ def _parse_can_testcases(path: str) -> Dict[str, Any]:
     参数：path — .can 文件路径。
     返回：{"type": "can", "testcases": [...]} 或 {"type": "can", "error": str}。
     """
-    import re
     try:
         with open(path, "r", encoding="utf-8", errors="ignore") as f:
             content = f.read()
         pattern = re.compile(r"testcase\s+(\w+)\s*\(", re.IGNORECASE)
         names = pattern.findall(content)
         return {"type": "can", "testcases": list(dict.fromkeys(names))}
-    except Exception as e:
-        return {"type": "can", "error": str(e)}
+    except Exception as error:
+        return {"type": "can", "error": str(error)}
 
 
 def _parse_xml_structure(path: str) -> Dict[str, Any]:
@@ -57,7 +66,6 @@ def _parse_xml_structure(path: str) -> Dict[str, Any]:
     参数：path — XML 文件路径。
     返回：{"type": "xml", "testgroups": [...], "capltestcases": [...]} 或 {"type": "xml", "error": str}。
     """
-    import xml.etree.ElementTree as ET
     try:
         tree = ET.parse(path)
         root = tree.getroot()
@@ -72,8 +80,8 @@ def _parse_xml_structure(path: str) -> Dict[str, Any]:
                 if name:
                     result["capltestcases"].append(name)
         return result
-    except Exception as e:
-        return {"type": "xml", "error": str(e)}
+    except Exception as error:
+        return {"type": "xml", "error": str(error)}
 
 
 def _parse_file_structure_single(path: str) -> Dict[str, Any]:
@@ -98,6 +106,14 @@ class GuiService:
     """
 
     @staticmethod
+    def config_filetypes() -> List[tuple[str, str]]:
+        """配置文件选择器：仅 INI。"""
+        return [
+            ("INI 配置", "*.ini"),
+            ("所有文件", "*.*"),
+        ]
+
+    @staticmethod
     def select_path(
         file_type: Literal["file", "folder"] = "file",
     ) -> Optional[str]:
@@ -105,9 +121,9 @@ class GuiService:
         参数：file_type — "file" 选文件（Excel），"folder" 选文件夹。
         返回：选中路径；取消或异常返回 None。
         """
-        import tkinter as tk
-        from tkinter import filedialog
-
+        if tk is None or filedialog is None:
+            print("当前环境无 tkinter，无法弹出选择框。")
+            return None
         with tk_lock:
             root = None
             try:
@@ -125,8 +141,8 @@ class GuiService:
                         filetypes=[("Excel files", "*.xlsx;*.xlsm"), ("All files", "*.*")],
                     )
                 return path or None
-            except Exception as e:
-                print(f"弹出选择框出错: {e}\n{traceback.format_exc()}")
+            except Exception as error:
+                print(f"弹出选择框出错: {error}\n{traceback.format_exc()}")
                 return None
             finally:
                 if root:
@@ -143,17 +159,16 @@ class GuiService:
     @staticmethod
     def ask_saveas_filename(
         title: str = "保存配置文件",
-        defaultextension: str = ".txt",
+        defaultextension: str = ".ini",
         initialfile: Optional[str] = None,
     ) -> Optional[str]:
         """弹出“另存为”对话框，返回用户选择的保存路径。
         参数：title — 窗口标题；defaultextension — 默认扩展名；initialfile — 初始文件名。
         返回：选中路径；取消或异常返回 None。
         """
-        import tkinter as tk
-        from tkinter import filedialog
-        import time
-
+        if tk is None or filedialog is None:
+            print("当前环境无 tkinter，无法弹出另存为对话框。")
+            return None
         with tk_lock:
             root = None
             try:
@@ -165,12 +180,12 @@ class GuiService:
                     parent=root,
                     title=title,
                     defaultextension=defaultextension,
-                    filetypes=[("配置文件", "*.txt"), ("所有文件", "*.*")],
+                    filetypes=GuiService.config_filetypes(),
                     initialfile=initialfile,
                 )
                 return path or None
-            except Exception as e:
-                print(f"另存为弹窗出错: {e}\n{traceback.format_exc()}")
+            except Exception as error:
+                print(f"另存为弹窗出错: {error}\n{traceback.format_exc()}")
                 return None
             finally:
                 if root:
@@ -189,15 +204,15 @@ class GuiService:
         title: str = "选择要导入的配置文件",
         filetypes: Optional[List[tuple]] = None,
     ) -> Optional[str]:
-        """弹出“打开文件”对话框，用于选择配置文件（.txt）。
-        参数：title — 窗口标题；filetypes — 可选，文件类型列表，默认仅 .txt。
+        """弹出“打开文件”对话框，用于选择配置文件（.ini）。
+        参数：title — 窗口标题；filetypes — 可选，文件类型列表，默认仅 .ini。
         返回：选中路径；取消或异常返回 None。
         """
-        import tkinter as tk
-        from tkinter import filedialog
-
+        if tk is None or filedialog is None:
+            print("当前环境无 tkinter，无法弹出打开文件对话框。")
+            return None
         if filetypes is None:
-            filetypes = [("配置文件", "*.txt"), ("所有文件", "*.*")]
+            filetypes = GuiService.config_filetypes()
         with tk_lock:
             root = None
             try:
@@ -211,8 +226,8 @@ class GuiService:
                     filetypes=filetypes,
                 )
                 return path or None
-            except Exception as e:
-                print(f"打开文件弹窗出错: {e}\n{traceback.format_exc()}")
+            except Exception as error:
+                print(f"打开文件弹窗出错: {error}\n{traceback.format_exc()}")
                 return None
             finally:
                 if root:
@@ -257,5 +272,5 @@ class GuiService:
                             item["relpath"] = os.path.relpath(fp, path)
                             results.append(item)
             return {"success": True, "data": results}
-        except Exception as e:
-            return {"success": False, "message": str(e)}
+        except Exception as error:
+            return {"success": False, "message": str(error)}

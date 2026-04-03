@@ -17,9 +17,9 @@ from openpyxl import load_workbook
 from core.common.sanitizer import sanitize_case_id
 from core.case_filter import CaseFilter
 from core.excel_header import (
-    _find_case_type_column_index_in_values,
-    _find_col_index_by_name_in_values,
-    _find_testcase_header_row,
+    find_case_type_column_index_in_values,
+    find_col_index_by_name_in_values,
+    find_testcase_header_row,
 )
 
 # 拼音支持（用于 XML testcase name 转拼音）
@@ -76,7 +76,7 @@ def escape_xml(text: Any) -> str:
     return text
 
 
-def _dump_sheet_head(ws: Any, *, max_rows: int = 10, max_cols: int = 20) -> str:
+def dump_sheet_head_preview(ws: Any, *, max_rows: int = 10, max_cols: int = 20) -> str:
     """打印/记录 sheet 前几行内容，便于定位“为什么被判定为无效表”。"""
     lines = []
     try:
@@ -88,20 +88,20 @@ def _dump_sheet_head(ws: Any, *, max_rows: int = 10, max_cols: int = 20) -> str:
                 if v is None:
                     vals.append("")
                 else:
-                    s = str(v).replace("\r\n", "\\n").replace("\n", "\\n").replace("\r", "\\n").strip()
-                    vals.append(s)
+                    cell_text = str(v).replace("\r\n", "\\n").replace("\n", "\\n").replace("\r", "\\n").strip()
+                    vals.append(cell_text)
             lines.append(f"    row{row_idx}: {vals}")
-    except Exception as e:
-        lines.append(f"    <读取失败>: {e}")
+    except Exception as error:
+        lines.append(f"    <读取失败>: {error}")
     return "\n".join(lines)
 
 
-def _contains_chinese(text: str) -> bool:
+def contains_chinese(text: str) -> bool:
     """判断字符串是否包含中文字符。"""
     return bool(text and _RE_HAS_CHINESE.search(text))
 
 
-def _to_pinyin_if_needed(
+def to_pinyin_if_needed(
     text: str,
     *,
     logger: Optional[logging.Logger] = None,
@@ -109,17 +109,17 @@ def _to_pinyin_if_needed(
     """
     若包含中文则转拼音（供 XML capltestcase name 使用）；否则原样返回。
     """
-    s = str(text) if text is not None else ""
-    if not _contains_chinese(s):
-        return s
+    text_value = str(text) if text is not None else ""
+    if not contains_chinese(text_value):
+        return text_value
     if not _HAS_PYPINYIN or lazy_pinyin is None:
-        if s not in _PINYIN_WARNED:
-            _PINYIN_WARNED.add(s)
-            print(f"[警告] 发现中文但未安装 pypinyin，无法转拼音：{s!r}")
+        if text_value not in _PINYIN_WARNED:
+            _PINYIN_WARNED.add(text_value)
+            print(f"[警告] 发现中文但未安装 pypinyin，无法转拼音：{text_value!r}")
             if logger:
-                logger.warning("发现中文但未安装 pypinyin，无法转拼音：%r", s)
-        return s
-    out = "".join(lazy_pinyin(s, errors=lambda x: list(x)))
+                logger.warning("发现中文但未安装 pypinyin，无法转拼音：%r", text_value)
+        return text_value
+    out = "".join(lazy_pinyin(text_value, errors=lambda x: list(x)))
     out = re.sub(r"\s+", "_", out).strip()
     return out
 
@@ -163,7 +163,7 @@ def parse_testcases_from_sheet(
     )
 
     if header_vals is None:
-        header_row_idx2, header_vals2, _ = _find_testcase_header_row(
+        header_row_idx2, header_vals2, _ = find_testcase_header_row(
             ws, scan_rows=50, debug_sheet_name=display_name
         )
         if header_row_idx2 is None or not header_vals2:
@@ -178,13 +178,13 @@ def parse_testcases_from_sheet(
         header_row_idx = header_row_idx2
         header_vals = header_vals2
 
-    case_type_col_idx = _find_case_type_column_index_in_values(header_vals)
-    case_id_col_idx = _find_col_index_by_name_in_values(header_vals, ["用例ID", "用例id", "用例编号"])
-    group_col_idx = _find_col_index_by_name_in_values(header_vals, ["功能模块", "模块"])
-    level_col_idx = _find_col_index_by_name_in_values(header_vals, ["等级", "用例等级"])
-    platform_col_idx = _find_col_index_by_name_in_values(header_vals, ["平台", "Platform"])
-    model_col_idx = _find_col_index_by_name_in_values(header_vals, ["车型", "Model"])
-    target_version_col_idx = _find_col_index_by_name_in_values(
+    case_type_col_idx = find_case_type_column_index_in_values(header_vals)
+    case_id_col_idx = find_col_index_by_name_in_values(header_vals, ["用例ID", "用例id", "用例编号"])
+    group_col_idx = find_col_index_by_name_in_values(header_vals, ["功能模块", "模块"])
+    level_col_idx = find_col_index_by_name_in_values(header_vals, ["等级", "用例等级"])
+    platform_col_idx = find_col_index_by_name_in_values(header_vals, ["平台", "Platform"])
+    model_col_idx = find_col_index_by_name_in_values(header_vals, ["车型", "Model"])
+    target_version_col_idx = find_col_index_by_name_in_values(
         header_vals, ["Target Version", "目标版本"]
     )
     # Target Version 缺列时不在此打 warning，仅 CAN 解析路径打一次，避免 CAN+XML 重复
@@ -376,8 +376,8 @@ def parse_testcases_from_excel(
         pass
     try:
         wb = load_workbook(excel_path, data_only=True, read_only=False, keep_links=False)
-    except Exception as e:
-        error_msg = str(e)
+    except Exception as error:
+        error_msg = str(error)
         if 'decompressing' in error_msg.lower() or 'incorrect header' in error_msg.lower() or 'badzipfile' in error_msg.lower():
             raise ValueError(
                 f"Excel 文件格式错误或文件已损坏: {excel_path}\n"
@@ -441,7 +441,7 @@ def parse_testcases_from_excel(
         except Exception:
             pass
 
-        header_row_idx, header_vals, found_group_col = _find_testcase_header_row(
+        header_row_idx, header_vals, found_group_col = find_testcase_header_row(
             ws, scan_rows=50, debug_sheet_name=sheet_name_str
         )
         if header_row_idx is None or not header_vals:
@@ -450,7 +450,7 @@ def parse_testcases_from_excel(
                 'sheet': sheet_name,
                 'details': ["未在前50行内识别到表头（至少需包含'用例ID'列）"],
             })
-            dump = _dump_sheet_head(ws, max_rows=10, max_cols=25)
+            dump = dump_sheet_head_preview(ws, max_rows=10, max_cols=25)
             msg = f"\n跳过工作表 '{sheet_name}'（未找到有效的测试用例表头：用例ID列未识别）\n{dump}"
             print(msg)
             if logger:
@@ -469,10 +469,10 @@ def parse_testcases_from_excel(
                 if v is None:
                     header_preview.append("")
                 else:
-                    s = str(v).replace("\r\n", "\\n").replace("\n", "\\n").replace("\r", "\\n").strip()
-                    header_preview.append(s)
-            case_id_idx = _find_col_index_by_name_in_values(header_vals, ["用例ID", "用例id", "用例编号"])
-            group_idx = _find_col_index_by_name_in_values(header_vals, ["功能模块", "模块", "模块名称"])
+                    cell_text = str(v).replace("\r\n", "\\n").replace("\n", "\\n").replace("\r", "\\n").strip()
+                    header_preview.append(cell_text)
+            case_id_idx = find_col_index_by_name_in_values(header_vals, ["用例ID", "用例id", "用例编号"])
+            group_idx = find_col_index_by_name_in_values(header_vals, ["功能模块", "模块", "模块名称"])
             warn_msg = (
                 f"[提示] 工作表 '{sheet_name}'：已识别到表头行=第{header_row_idx}行（用例ID列已识别），"
                 f"但未识别到'功能模块/模块'列名，将回退到固定第3列读取功能模块。\n"
@@ -571,7 +571,7 @@ def generate_xml_content(
                 lines.append(f'\t\t\t<testgroup ident="{inner_group_idx}.0" title="{escape_xml(group_name)}">')
                 for tc in testcases:
                     tc_name = tc["name"] if tc.get("name") and tc["name"].strip() else " "
-                    tc_name_pinyin = _to_pinyin_if_needed(tc_name, logger=logger)
+                    tc_name_pinyin = to_pinyin_if_needed(tc_name, logger=logger)
                     lines.append(f'\t\t\t\t<capltestcase name="{escape_xml(tc_name_pinyin)}">\t')
                     lines.append('\t\t\t\t</capltestcase>\t')
                 lines.append('\t\t\t</testgroup>')

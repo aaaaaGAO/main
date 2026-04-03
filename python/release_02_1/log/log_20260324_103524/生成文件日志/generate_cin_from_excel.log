@@ -1,8 +1,0 @@
-2026-03-24 10:35:25,799 INFO >>> 开始执行 CIN 生成任务...
-2026-03-24 10:35:25,823  处理Excel=VEEA_LDCU_Clib_GZ_MQB_0127 (1).xlsx sheet名=clib
-2026-03-24 10:35:26,030 ERROR 错误模块【Configuration】 Clib_Name：Init 用例步骤：Step Set_Config PhysicalKeyTypeConfig open  原因：CONFIG_ENUM 表中Values 未匹配: Name=PhysicalKeyTypeConfig, Value=open
-2026-03-24 10:35:26,031 ERROR 错误模块【Configuration】 Clib_Name：Init 用例步骤：Step Set_Config abc 123  原因：CONFIG_ENUM 表中Name 未找到: abc
-2026-03-24 10:35:26,062 ERROR 错误模块【写入错误】 Clib_Name：Init 用例步骤：Step Set_Config PhysicalKeyTypeConfig open  原因：DID Configuration 表中 name PhysicalKeyTypeConfig 的Values 未匹配: open
-2026-03-24 10:35:26,064 ERROR 错误模块【写入错误】 Clib_Name：Init 用例步骤：Step Set_Config abc 123  原因：DID Configuration 表中Name 未找到: abc
-2026-03-24 10:35:26,065 INFO [cin] .cin 文件已生成: C:\Users\高登兰\Desktop\python开发合肥\zhongyang\TESTmode\generated_from_keyword.cin
-2026-03-24 10:35:26,065 INFO >>> 任务完成！已生成: C:\Users\高登兰\Desktop\python开发合肥\zhongyang\TESTmode\generated_from_keyword.cin

@@ -12,6 +12,7 @@ from dataclasses import dataclass
 from typing import Callable
 
 from openpyxl import load_workbook
+from infra.excel.header import normalize_cell_text
 
 
 @dataclass(slots=True)
@@ -34,12 +35,6 @@ class KeywordSpec:
             return f"::{self.keyword}"
         return ""
 
-
-def _norm_cell(value) -> str:
-    """单元格值规范化：None 转空串，否则去首尾空白。参数: value — 单元格原始值。返回: str。"""
-    return "" if value is None else str(value).strip()
-
-
 def load_keyword_specs_from_excel(
     excel_path: str,
     sheet_names: list[str],
@@ -60,8 +55,8 @@ def load_keyword_specs_from_excel(
         if warn:
             warn(f"未找到映射表: {excel_path}")
         return specs
-    except Exception as e:
-        error_msg = str(e)
+    except Exception as error:
+        error_msg = str(error)
         if (
             "decompressing" in error_msg.lower()
             or "incorrect header" in error_msg.lower()
@@ -71,10 +66,10 @@ def load_keyword_specs_from_excel(
                 f"映射表 Excel 文件格式错误或文件已损坏: {excel_path}\n"
                 f"错误详情: {error_msg}\n"
                 "请检查文件是否是有效的 Excel 文件（.xlsx 格式）"
-            ) from e
+            ) from error
         raise ValueError(
             f"无法读取映射表 Excel 文件: {excel_path}\n错误详情: {error_msg}"
-        ) from e
+        ) from error
 
     try:
         for sheet_name in sheet_names:
@@ -85,7 +80,7 @@ def load_keyword_specs_from_excel(
 
             ws = wb[sheet_name]
             header = next(ws.iter_rows(min_row=1, max_row=1, values_only=True), ())
-            header_norm = [_norm_cell(x).replace(" ", "").lower() for x in header]
+            header_norm = [normalize_cell_text(x).replace(" ", "").lower() for x in header]
 
             func_idx = None
             kw_idx = None
@@ -113,22 +108,22 @@ def load_keyword_specs_from_excel(
 
             for row_idx, row in enumerate(ws.iter_rows(min_row=2, values_only=True), start=2):
                 func_name = (
-                    _norm_cell(row[func_idx])
+                    normalize_cell_text(row[func_idx])
                     if func_idx is not None and func_idx < len(row)
                     else ""
                 )
                 keyword = (
-                    _norm_cell(row[kw_idx])
+                    normalize_cell_text(row[kw_idx])
                     if kw_idx is not None and kw_idx < len(row)
                     else ""
                 )
                 capl_func = (
-                    _norm_cell(row[capl_idx])
+                    normalize_cell_text(row[capl_idx])
                     if capl_idx is not None and capl_idx < len(row)
                     else ""
                 )
                 remark = (
-                    _norm_cell(row[remark_idx])
+                    normalize_cell_text(row[remark_idx])
                     if remark_idx is not None and remark_idx < len(row)
                     else ""
                 )

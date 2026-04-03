@@ -3,7 +3,7 @@
 """
 配置管理器（ConfigManager）— 基础设施层
 
-目标：收纳所有对 Configuration.txt 的读、写、去重、格式化逻辑。
+目标：收纳所有对主配置文件的读、写、去重、格式化逻辑。
 职责：提供 load_ui_data()（给前端显示）、save_ui_data()（保存预设）、
       update_domain_config()、save_formatted()、sync_to_file()。
 线程安全：使用实例锁防止多线程同时写配置导致文件损坏。
@@ -18,8 +18,42 @@ import threading
 import json
 from typing import Any, Dict, List, Optional
 
-from infra.config import read_fixed_config
-from utils.path_utils import resolve_target_subdir
+from infra.config import read_config_if_exists, read_fixed_config
+from infra.filesystem import (
+    ProjectPaths,
+    resolve_fixed_config_path,
+    resolve_fixed_config_write_path,
+    resolve_main_config_path,
+    resolve_main_config_write_path,
+    resolve_named_subdir,
+)
+from services.config_constants import (
+    CENTRAL_MANAGED_KEYS,
+    CENTRAL_UART_UI_KEY_MAP,
+    CONFIG_KEY_SECTIONS,
+    FILTER_OPTION_KEYS,
+    OPTION_CASE_LEVELS,
+    OPTION_CIN_INPUT_EXCEL,
+    OPTION_DIDINFO_INPUTS,
+    OPTION_INPUT_EXCEL,
+    OPTION_INPUTS,
+    OPTION_LOG_LEVEL_MIN,
+    OPTION_OUTPUT_DIR,
+    OPTION_SELECTED_SHEETS,
+    OPTION_UDS_ECU_QUALIFIER,
+    SECTION_CENTRAL,
+    SECTION_CONFIG_ENUM,
+    SECTION_DID_CONFIG,
+    SECTION_DTC,
+    SECTION_DTC_CONFIG_ENUM,
+    SECTION_DTC_IOMAPPING,
+    SECTION_IGNITION_CYCLE,
+    SECTION_IOMAPPING,
+    SECTION_LR_REAR,
+    SECTION_PATHS,
+    UDS_DOMAIN_SECTIONS,
+    VALID_LOG_LEVELS,
+)
 
 
 def _clean_duplicate_sections(config_path: str) -> List[str]:
@@ -31,10 +65,10 @@ def _clean_duplicate_sections(config_path: str) -> List[str]:
         return []
 
     try:
-        with open(config_path, "r", encoding="utf-8") as f:
-            lines = f.readlines()
-    except Exception as e:
-        print(f"读取配置文件失败: {e}")
+        with open(config_path, "r", encoding="utf-8") as config_file:
+            lines = config_file.readlines()
+    except Exception as error:
+        print(f"读取配置文件失败: {error}")
         return []
 
     seen_sections: set = set()
@@ -87,7 +121,7 @@ def _clean_duplicate_sections(config_path: str) -> List[str]:
                     # 节内的非注释行做更严格过滤，避免诸如 "CU1.0" 这类裸字符串残留到配置中
                     if stripped.startswith(","):
                         continue
-                    _key_sections = ("LR_REAR", "DTC", "CENTRAL", "PATHS")
+                    _key_sections = CONFIG_KEY_SECTIONS
                     if (
                         "=" not in stripped
                         and current_section not in _key_sections
@@ -95,7 +129,7 @@ def _clean_duplicate_sections(config_path: str) -> List[str]:
                     ):
                         continue
                     # DTC_CONFIG_ENUM 节只允许标准 key = value 行，其他裸字符串一律丢弃
-                    if current_section == "DTC_CONFIG_ENUM" and "=" not in stripped:
+                    if current_section == SECTION_DTC_CONFIG_ENUM and "=" not in stripped:
                         continue
                     if (stripped.startswith(",") or stripped.endswith(",")) and "=" not in stripped:
                         continue
@@ -116,18 +150,19 @@ def _remove_invalid_config_options(config: configparser.ConfigParser) -> None:
     """从 config 中移除无效选项（如 LL、QB 等 2–3 个纯大写字母的残留）。"""
     invalid_pattern = re.compile(r"^[A-Z]{2,3}$")
     for section in config.sections():
-        to_remove = [
-            k for k in config.options(section)
-            if invalid_pattern.match(k.strip())
+        invalid_option_names = [
+            option_name
+            for option_name in config.options(section)
+            if invalid_pattern.match(option_name.strip())
         ]
-        for key in to_remove:
-            config.remove_option(section, key)
-            print(f"已移除无效配置项 [{section}] {key}")
+        for option_name in invalid_option_names:
+            config.remove_option(section, option_name)
+            print(f"已移除无效配置项 [{section}] {option_name}")
 
 
 class ConfigManager:
     """
-    配置管理器：统一 Configuration.txt / FixedConfig.txt 的读、写、去重、格式化。
+    配置管理器：统一主配置 / 固定配置的读、写、去重、格式化。
     使用方式：
         manager = ConfigManager.from_base_dir(base_dir)
         manager.update_domain_config("LR_REAR", {"input_excel": "a.xlsx"})
@@ -140,40 +175,47 @@ class ConfigManager:
         """初始化配置管理器，绑定主配置所在目录与配置文件路径。
         参数:
             base_dir: 项目根目录，用于解析相对路径与 FixedConfig 位置。
-            config_path: 主配置文件路径；为 None 时使用 base_dir/config/Configuration.txt。
+            config_path: 主配置文件路径；为 None 时解析 `config/Configuration.ini`，写回同路径。
         """
         self.base_dir = os.path.abspath(base_dir)
+        self.paths = ProjectPaths.from_base_dir(self.base_dir)
         if config_path is None:
-            p = os.path.join(self.base_dir, "config", "Configuration.txt")
-            self.config_path = p
+            self._main_config_read_path = resolve_main_config_path(self.base_dir)
+            self.config_path = resolve_main_config_write_path(self.base_dir)
         else:
-            self.config_path = os.path.abspath(config_path)
+            explicit = os.path.abspath(config_path)
+            self._main_config_read_path = explicit
+            self.config_path = explicit
 
     @classmethod
-    def from_base_dir(cls, base_dir: str, config_filename: str = "Configuration.txt") -> "ConfigManager":
+    def from_base_dir(cls, base_dir: str, config_filename: str = "Configuration.ini") -> "ConfigManager":
         """从项目根目录创建 ConfigManager 实例，自动解析主配置文件路径。
         参数:
             base_dir: 项目根目录。
-            config_filename: 主配置文件名，默认 Configuration.txt。
+            config_filename: 非标准文件名时按该名解析单一文件；标准名 `Configuration.ini` 时使用默认解析与写回路径。
         返回: ConfigManager 实例。
         """
         base_dir = os.path.abspath(base_dir)
-        cfg_path = os.path.join(base_dir, "config", config_filename)
-        return cls(base_dir, cfg_path)
+        if config_filename not in (None, "Configuration.ini"):
+            return cls(
+                base_dir,
+                resolve_main_config_path(base_dir, config_filename=config_filename),
+            )
+        return cls(base_dir, config_path=None)
 
     def _get_fixed_config_path(self) -> str:
-        return os.path.join(self.base_dir, "config", "FixedConfig.txt")
+        return resolve_fixed_config_path(self.base_dir)
 
     def _read_fixed_config(self) -> Dict[str, str]:
         return read_fixed_config(self.base_dir)
 
     def _write_fixed_config(self, fixed_config: Dict[str, str]) -> None:
-        """将固定配置字典写入 FixedConfig.txt（PATHS 节：映射表、输出文件名等）。
+        """将固定配置字典写入固定配置文件（PATHS 节：映射表、输出文件名等）。
         参数:
             fixed_config: 键为配置项名、值为字符串的字典，仅写入存在且非空的键。
         无返回值。
         """
-        path = self._get_fixed_config_path()
+        fixed_config_path = resolve_fixed_config_write_path(self.base_dir)
         lines = [
             "# ============================================================\n",
             "# 固定配置（映射表和输出文件名）\n",
@@ -185,22 +227,22 @@ class ConfigManager:
             "unified_mapping_excel", "mapping_sheets", "cin_mapping_sheet",
             "mapping_excel", "cin_mapping_excel",
         ]
-        for key in mapping_keys:
-            if fixed_config.get(key):
-                lines.append(f"{key} = {fixed_config[key]}\n")
+        for option_name in mapping_keys:
+            if fixed_config.get(option_name):
+                lines.append(f"{option_name} = {fixed_config[option_name]}\n")
         lines.append("\n")
         output_keys = [
             "output_filename", "cin_output_filename", "xml_output_filename",
             "didinfo_output_filename", "didconfig_output_filename",
             "uart_output_filename", "uds_output_filename", "didinfo_variants",
         ]
-        for key in output_keys:
-            if fixed_config.get(key):
-                lines.append(f"{key} = {fixed_config[key]}\n")
+        for option_name in output_keys:
+            if fixed_config.get(option_name):
+                lines.append(f"{option_name} = {fixed_config[option_name]}\n")
         while lines and not lines[-1].strip():
             lines.pop()
-        with open(path, "w", encoding="utf-8") as f:
-            f.writelines(lines)
+        with open(fixed_config_path, "w", encoding="utf-8") as fixed_config_file:
+            fixed_config_file.writelines(lines)
 
     def _write_uds_files(
         self, config: configparser.ConfigParser, only_domains: Optional[List[str]] = None
@@ -211,54 +253,26 @@ class ConfigManager:
             only_domains: 仅对这些域（如 ["LR_REAR"]）写入；None 表示三域都写，避免共用 output_dir 时覆盖。
         无返回值。文件内容为 [UDS] 与 ECU_qualifier=...
         """
-        fixed = self._read_fixed_config()
-        uds_filename = (fixed.get("uds_output_filename") or "uds.txt").strip() or "uds.txt"
         all_domains = [
-            ("LR_REAR", "output_dir", "uds_ecu_qualifier"),
-            ("CENTRAL", "output_dir", "uds_ecu_qualifier"),
-            ("DTC", "output_dir", "uds_ecu_qualifier"),
+            (section_name, OPTION_OUTPUT_DIR, OPTION_UDS_ECU_QUALIFIER)
+            for section_name in UDS_DOMAIN_SECTIONS
         ]
         domains = (
-            [d for d in all_domains if d[0] in only_domains]
+            [domain_config for domain_config in all_domains if domain_config[0] in only_domains]
             if only_domains
             else all_domains
         )
 
-        for section, out_key, uds_key in domains:
+        for section, _output_option_name, uds_option_name in domains:
             if not config.has_section(section):
                 continue
-            out_dir = config.get(section, out_key, fallback="").strip()
-            uds_val = config.get(section, uds_key, fallback="").strip()
-            if not out_dir or not uds_val:
+            uds_qualifier = config.get(section, uds_option_name, fallback="").strip()
+            uds_path = self.resolve_uds_output_path(config, section, create_dir=True)
+            if not uds_path or not uds_qualifier:
                 continue
 
-            # 解析用户选择的输出根目录（相对路径以 base_dir 为准）
-            if not os.path.isabs(out_dir):
-                root = os.path.abspath(os.path.join(self.base_dir, out_dir))
-            else:
-                root = os.path.abspath(out_dir)
-
-            # 在输出根目录下寻找/创建名为 Configuration 的子目录（大小写不敏感）
-            config_dir = None
-            if os.path.basename(root).lower() == "configuration":
-                config_dir = root
-            else:
-                if os.path.isdir(root):
-                    for name in os.listdir(root):
-                        if name.lower() == "configuration":
-                            cand = os.path.join(root, name)
-                            if os.path.isdir(cand):
-                                config_dir = cand
-                                break
-                if config_dir is None:
-                    config_dir = os.path.join(root, "Configuration")
-            try:
-                os.makedirs(config_dir, exist_ok=True)
-            except Exception:
-                continue
-
+            config_dir = os.path.dirname(uds_path)
             legacy_uds_path = os.path.join(config_dir, "uds.txt")
-            uds_path = os.path.join(config_dir, uds_filename)
             try:
                 if (
                     os.path.normcase(os.path.abspath(legacy_uds_path))
@@ -266,33 +280,62 @@ class ConfigManager:
                     and os.path.exists(legacy_uds_path)
                 ):
                     os.remove(legacy_uds_path)
-                with open(uds_path, "w", encoding="utf-8") as f:
-                    f.write("[UDS]\n")
-                    f.write(f"ECU_qualifier={uds_val}\n")
-            except Exception as e:
-                print(f"写入 uds.txt 失败 ({section}): {e}")
+                with open(uds_path, "w", encoding="utf-8") as uds_file:
+                    uds_file.write("[UDS]\n")
+                    uds_file.write(f"ECU_qualifier={uds_qualifier}\n")
+            except Exception as error:
+                print(f"写入 uds.txt 失败 ({section}): {error}")
+
+    def _resolve_output_subdir(
+        self,
+        output_dir: str,
+        subdir_name: str,
+        *,
+        create_dir: bool = False,
+    ) -> Optional[str]:
+        return resolve_named_subdir(
+            self.base_dir,
+            output_dir,
+            subdir_name,
+            create_dir=create_dir,
+        )
+
+    def resolve_uds_output_path(
+        self,
+        config: configparser.ConfigParser,
+        section: str,
+        *,
+        create_dir: bool = False,
+    ) -> str:
+        """统一解析各域 uds 输出路径，供写文件与路由预览共用。"""
+        if not config.has_section(section):
+            return ""
+
+        output_dir = config.get(section, OPTION_OUTPUT_DIR, fallback="").strip()
+        uds_qualifier = config.get(section, OPTION_UDS_ECU_QUALIFIER, fallback="").strip()
+        if not output_dir or not uds_qualifier:
+            return ""
+
+        config_dir = self._resolve_output_subdir(
+            output_dir,
+            "Configuration",
+            create_dir=create_dir,
+        )
+        if not config_dir:
+            return ""
+
+        fixed = self._read_fixed_config()
+        uds_filename = (fixed.get("uds_output_filename") or "uds.txt").strip() or "uds.txt"
+        return os.path.join(config_dir, uds_filename)
 
     def _get_central_config_dir(self, config: configparser.ConfigParser) -> Optional[str]:
-        """获取中央域 output_dir 下的 Configuration 目录（与 UART/DIDConfig 等一致，使用 resolve_target_subdir）。"""
-        if not config.has_section("CENTRAL"):
+        """获取中央域 output_dir 下的 Configuration 目录。"""
+        if not config.has_section(SECTION_CENTRAL):
             return None
-        out_dir = (config.get("CENTRAL", "output_dir", fallback="") or "").strip()
-        if not out_dir:
+        output_dir = (config.get(SECTION_CENTRAL, OPTION_OUTPUT_DIR, fallback="") or "").strip()
+        if not output_dir:
             return None
-        try:
-            return resolve_target_subdir(self.base_dir, out_dir, "Configuration")
-        except Exception:
-            # 若 Configuration 子目录不存在，则创建并返回（与 UART 要求目录存在时的行为兼容）
-            if not os.path.isabs(out_dir):
-                root = os.path.abspath(os.path.join(self.base_dir, out_dir))
-            else:
-                root = os.path.abspath(out_dir)
-            config_dir = os.path.join(root, "Configuration")
-            try:
-                os.makedirs(config_dir, exist_ok=True)
-                return config_dir
-            except Exception:
-                return None
+        return self._resolve_output_subdir(output_dir, "Configuration", create_dir=True)
 
     @staticmethod
     def _extract_port_number(port_str: str) -> str:
@@ -307,6 +350,190 @@ class ConfigManager:
             return port_str
         digits = re.findall(r"\d+", port_str)
         return digits[0] if digits else port_str
+
+    @staticmethod
+    def _parse_json_config_option(
+        config: configparser.ConfigParser,
+        section: str,
+        option_name: str,
+        default: Any,
+    ) -> Any:
+        """读取并解析指定配置项中的 JSON；缺失、空值或解析失败时返回默认值。"""
+        if not config.has_option(section, option_name):
+            return default
+        raw = config.get(section, option_name, fallback="").strip()
+        if not raw:
+            return default
+        try:
+            return json.loads(raw)
+        except Exception:
+            return default
+
+    @staticmethod
+    def _parse_json_value(raw: Any, default: Any) -> Any:
+        """解析字符串形式的 JSON 值；空值或解析失败时返回默认值。"""
+        raw_text = str(raw or "").strip()
+        if not raw_text:
+            return default
+        try:
+            return json.loads(raw_text)
+        except Exception:
+            return default
+
+    @staticmethod
+    def _has_relay_config(relay: Any) -> bool:
+        """判断单个继电器是否算已配置：须填写串口 port 或 relayID。
+
+        仅含 relayType / 默认 coilStatuses（UI 渲染时自动补全）不算，否则用户未选串口
+        或 ini 中残留骨架仍会触发生成 PowerRelayConfig.txt。
+        """
+        if not isinstance(relay, dict):
+            return False
+        port = str(relay.get("port") or "").strip()
+        if port:
+            return True
+        relay_id = relay.get("relayID")
+        if relay_id is not None and str(relay_id).strip() != "":
+            return True
+        return False
+
+    @classmethod
+    def _has_power_relay_config(
+        cls,
+        power_config: Any,
+        relay_configs: Any,
+        ig_config: Any,
+        pw_config: Any,
+    ) -> bool:
+        """判断是否配置了任一程控电源/继电器/IG/PW 项。"""
+        if isinstance(power_config, dict) and str(power_config.get("port") or "").strip():
+            return True
+        if isinstance(relay_configs, list):
+            for relay in relay_configs:
+                if cls._has_relay_config(relay):
+                    return True
+        if isinstance(ig_config, dict) and str(ig_config.get("equipmentType") or "").strip():
+            return True
+        if isinstance(pw_config, dict) and str(pw_config.get("equipmentType") or "").strip():
+            return True
+        return False
+
+    @staticmethod
+    def _write_config_lines(file_obj: Any, lines: List[str]) -> None:
+        for line in lines:
+            file_obj.write(f"{line}\n")
+
+    def _write_power_block(self, file_obj: Any, power_config: Any) -> None:
+        power = power_config if (power_config and power_config.get("port")) else {}
+        port_val = self._extract_port_number(power.get("port", "")) if power.get("port") else "0"
+        lines: List[str] = ["[Power]//电源", f"port={port_val}//端口号"]
+        baud = str(power.get("baudrate") or "").strip()
+        if baud:
+            lines.append(f"baudrate={baud}//波特率")
+        # UI 已隐藏以下项，不再写入 PowerRelayConfig.txt（保留原条件写入代码便于恢复）
+        # data_bits = str(power.get("dataBits") or "").strip()
+        # if data_bits:
+        #     lines.append(f"dataBits={data_bits}//数据位")
+        # stop_bits = str(power.get("stopBits") or "").strip()
+        # if stop_bits:
+        #     lines.append(f"stopBits={stop_bits}//停止位")
+        # handshake = str(power.get("kHANDSHAKE_DISABLED") or "").strip()
+        # if handshake:
+        #     lines.append(f"kHANDSHAKE_DISABLED={handshake}//握手")
+        # parity = str(power.get("parity") or "").strip()
+        # if parity:
+        #     lines.append(f"parity={parity}//校验")
+        channel = str(power.get("channel") or "").strip()
+        if channel:
+            lines.append(f"channel={channel}//电源通道")
+        lines.append("")
+        self._write_config_lines(file_obj, lines)
+
+    def _write_relay_blocks(self, file_obj: Any, relay_configs: Any) -> None:
+        if not relay_configs:
+            return
+        for idx, relay in enumerate(relay_configs, 1):
+            if not self._has_relay_config(relay):
+                continue
+            lines = [f"[Relay{idx}]//继电器"]
+            if relay.get("port"):
+                lines.append(f"port={self._extract_port_number(relay.get('port', ''))}//端口号")
+            baud = str(relay.get("baudrate") or "").strip()
+            if baud:
+                lines.append(f"baudrate={baud}//波特率")
+            # UI 已隐藏以下项，不再写入 PowerRelayConfig.txt（保留原条件写入代码便于恢复）
+            # data_bits = str(relay.get("dataBits") or "").strip()
+            # if data_bits:
+            #     lines.append(f"dataBits={data_bits}//数据位")
+            # stop_bits = str(relay.get("stopBits") or "").strip()
+            # if stop_bits:
+            #     lines.append(f"stopBits={stop_bits}//停止位")
+            # handshake = str(relay.get("kHANDSHAKE_DISABLED") or "").strip()
+            # if handshake:
+            #     lines.append(f"kHANDSHAKE_DISABLED={handshake}//握手")
+            # parity = str(relay.get("parity") or "").strip()
+            # if parity:
+            #     lines.append(f"parity={parity}//校验")
+            # relay_id = str(relay.get("relayID") or "").strip()
+            # if relay_id:
+            #     lines.append(f"relayID={relay_id}//继电器设备地址")
+            relay_type = str(relay.get("relayType") or "").strip()
+            if relay_type:
+                lines.append(f"RelayType={relay_type}")
+            for coil_idx, status in enumerate(relay.get("coilStatuses", []), 1):
+                lines.append(f"RelayCoil{coil_idx}Status={status}")
+            lines.append("")
+            self._write_config_lines(file_obj, lines)
+
+    def _write_equipment_block(
+        self,
+        file_obj: Any,
+        *,
+        title: str,
+        config_data: Any,
+        default_values: Dict[str, str],
+        include_init_comment: bool = False,
+    ) -> None:
+        data = config_data if (config_data and config_data.get("equipmentType")) else {}
+        lines = [
+            f"[{title}]",
+            "//Equipment_Type设备类型：Power/Relay",
+            "//ChannelNumber如果类型是Power,此含义是电源通道号，如果类型是Relay,此含义是线圈号",
+        ]
+        if include_init_comment:
+            lines.append("//initStatus初始状态，如果设备类型是Power:1代表上电，0代表下电，如果类型是Relay:17代表常开，18代表常关")
+        lines.extend(
+            [
+                "//eqPosition设备位置",
+                f"Equipment_Type={data.get('equipmentType', default_values['equipmentType'])}",
+                f"ChannelNumber={data.get('channelNumber', default_values['channelNumber'])}",
+                f"initStatus={data.get('initStatus', default_values['initStatus'])}",
+                f"eqPosition={data.get('eqPosition', default_values['eqPosition'])}",
+                "",
+            ]
+        )
+        self._write_config_lines(file_obj, lines)
+
+    def _load_central_ui_json_fields(self, out: Dict[str, Any], section_data: Dict[str, Any]) -> None:
+        power = self._parse_json_value(section_data.get("c_pwr", ""), {})
+        if isinstance(power, dict) and (power.get("port") or "").strip():
+            out["c_pwr"] = power
+
+        relays = self._parse_json_value(section_data.get("c_rly", ""), [])
+        if isinstance(relays, list) and any(self._has_relay_config(relay) for relay in relays):
+            out["c_rly"] = relays
+
+        for option_name in ("c_ig", "c_pw"):
+            equipment_config = self._parse_json_value(section_data.get(option_name, ""), {})
+            if (
+                equipment_config
+                and isinstance(equipment_config, dict)
+                and (
+                    equipment_config.get("equipmentType")
+                    or equipment_config.get("channelNumber")
+                )
+            ):
+                out[option_name] = equipment_config
 
     def _write_central_config_files(self, config: configparser.ConfigParser) -> None:
         """
@@ -323,115 +550,68 @@ class ConfigManager:
         except Exception:
             return
 
-        def _parse_json(key: str, default: Any):
-            if not config.has_option("CENTRAL", key):
-                return default
-            raw = config.get("CENTRAL", key, fallback="").strip()
-            if not raw:
-                return default
-            try:
-                return json.loads(raw)
-            except Exception:
-                return default
-
-        power_config = _parse_json("c_pwr", {})
-        relay_configs = _parse_json("c_rly", [])
-        ig_config = _parse_json("c_ig", {})
-        pw_config = _parse_json("c_pw", {})
+        power_config = self._parse_json_config_option(config, SECTION_CENTRAL, "c_pwr", {})
+        relay_configs = self._parse_json_config_option(config, SECTION_CENTRAL, "c_rly", [])
+        ig_config = self._parse_json_config_option(config, SECTION_CENTRAL, "c_ig", {})
+        pw_config = self._parse_json_config_option(config, SECTION_CENTRAL, "c_pw", {})
         # 点火循环：与副本一致，优先从 [IgnitionCycle] 读，再回退到 [CENTRAL]
         ign_waittime = ""
         ign_current = ""
-        if config.has_section("IgnitionCycle"):
-            ign_waittime = (config.get("IgnitionCycle", "waitTime", fallback="") or "").strip()
-            ign_current = (config.get("IgnitionCycle", "current", fallback="") or "").strip()
-        if (not ign_waittime and not ign_current) and config.has_section("CENTRAL"):
-            ign_waittime = (config.get("CENTRAL", "ign_waittime", fallback="") or "").strip()
-            ign_current = (config.get("CENTRAL", "ign_current", fallback="") or "").strip()
+        if config.has_section(SECTION_IGNITION_CYCLE):
+            ign_waittime = (config.get(SECTION_IGNITION_CYCLE, "waitTime", fallback="") or "").strip()
+            ign_current = (config.get(SECTION_IGNITION_CYCLE, "current", fallback="") or "").strip()
+        if (not ign_waittime and not ign_current) and config.has_section(SECTION_CENTRAL):
+            ign_waittime = (config.get(SECTION_CENTRAL, "ign_waittime", fallback="") or "").strip()
+            ign_current = (config.get(SECTION_CENTRAL, "ign_current", fallback="") or "").strip()
 
         # 仅当用户实际配置了程控电源/继电器/IG/PW 之一时才生成 PowerRelayConfig.txt；未配置则不生成并删除已有文件
-        def _has_power_relay_config() -> bool:
-            if power_config and power_config.get("port"):
-                return True
-            if relay_configs:
-                for r in relay_configs:
-                    if r.get("relayID") or r.get("relayType") or (r.get("coilStatuses") and len(r.get("coilStatuses", [])) > 0) or r.get("port"):
-                        return True
-            if ig_config and ig_config.get("equipmentType"):
-                return True
-            if pw_config and pw_config.get("equipmentType"):
-                return True
-            return False
-
         power_path = os.path.join(config_dir, "PowerRelayConfig.txt")
-        if not _has_power_relay_config():
+        if not self._has_power_relay_config(power_config, relay_configs, ig_config, pw_config):
             if os.path.exists(power_path):
                 try:
                     os.remove(power_path)
-                except Exception as e:
-                    print(f"移除未配置的 PowerRelayConfig.txt 失败: {e}")
+                except Exception as error:
+                    print(f"移除未配置的 PowerRelayConfig.txt 失败: {error}")
         else:
             try:
-                with open(power_path, "w", encoding="utf-8") as f:
-                    # [Power]//电源（程控电源）
-                    p = power_config if (power_config and power_config.get("port")) else {}
-                    port_val = self._extract_port_number(p.get("port", "")) if p.get("port") else "0"
-                    f.write("[Power]//电源\n")
-                    f.write(f"port={port_val}//端口号\n")
-                    f.write(f"baudrate={p.get('baudrate', '115200')}//波特率\n")
-                    f.write(f"dataBits={p.get('dataBits', '8')}//数据位\n")
-                    f.write(f"stopBits={p.get('stopBits', '1')}//停止位\n")
-                    f.write(f"kHANDSHAKE_DISABLED={p.get('kHANDSHAKE_DISABLED', '0')}//握手\n")
-                    f.write(f"parity={p.get('parity', '0')}//校验\n")
-                    f.write(f"channel={p.get('channel', '1')}//默认读取电流通道\n")
-                    f.write("\n")
-                    # [RelayN]//继电器：仅当有“有效配置”时才写入，不再写默认占位 [Relay1]
-                    if relay_configs and len(relay_configs) > 0:
-                        for idx, relay in enumerate(relay_configs, 1):
-                            has_valid = (
-                                relay.get("relayID")
-                                or relay.get("relayType")
-                                or (relay.get("coilStatuses") and len(relay.get("coilStatuses", [])) > 0)
-                                or relay.get("port")
-                            )
-                            if not has_valid:
-                                continue
-                            f.write(f"[Relay{idx}]//继电器\n")
-                            if relay.get("port"):
-                                f.write(f"port={self._extract_port_number(relay.get('port', ''))}//端口号\n")
-                            f.write(f"baudrate={relay.get('baudrate', '9600')}//波特率\n")
-                            f.write(f"dataBits={relay.get('dataBits', '8')}//数据位\n")
-                            f.write(f"stopBits={relay.get('stopBits', '1')}//停止位\n")
-                            f.write(f"kHANDSHAKE_DISABLED={relay.get('kHANDSHAKE_DISABLED', '0')}//握手\n")
-                            f.write(f"parity={relay.get('parity', '0')}//校验\n")
-                            f.write(f"relayID={relay.get('relayID', '1')}//继电器设备地址\n")
-                            f.write(f"RelayType={relay.get('relayType', 'RS232_8')}\n")
-                            for coil_idx, status in enumerate(relay.get("coilStatuses", []), 1):
-                                f.write(f"RelayCoil{coil_idx}Status={status}\n")
-                            f.write("\n")
-                    # [IG] 点火装置
-                    ig = ig_config if (ig_config and ig_config.get("equipmentType")) else {}
-                    f.write("[IG]\n")
-                    f.write("//Equipment_Type设备类型：Power/Relay\n")
-                    f.write("//ChannelNumber如果类型是Power,此含义是电源通道号，如果类型是Relay,此含义是线圈号\n")
-                    f.write("//initStatus初始状态，如果设备类型是Power:1代表上电，0代表下电，如果类型是Relay:17代表常开，18代表常关\n")
-                    f.write("//eqPosition设备位置\n")
-                    f.write(f"Equipment_Type={ig.get('equipmentType', 'Power')}\n")
-                    f.write(f"ChannelNumber={ig.get('channelNumber', '1')}\n")
-                    f.write(f"initStatus={ig.get('initStatus', '1')}\n")
-                    f.write(f"eqPosition={ig.get('eqPosition', '1')}\n")
-                    f.write("\n")
-                    # [PW] 程控电源/继电器装置
-                    pw = pw_config if (pw_config and pw_config.get("equipmentType")) else {}
-                    f.write("[PW]\n")
-                    f.write("//Equipment_Type设备类型：Power/Relay\n")
-                    f.write("//ChannelNumber如果类型是Power,此含义是电源通道号，如果类型是Relay,此含义是线圈号\n")
-                    f.write(f"Equipment_Type={pw.get('equipmentType', 'Relay')}\n")
-                    f.write(f"ChannelNumber={pw.get('channelNumber', '1')}\n")
-                    f.write(f"initStatus={pw.get('initStatus', '17')}\n")
-                    f.write(f"eqPosition={pw.get('eqPosition', '1')}\n")
-                    f.write("\n")
-            except Exception as e:
-                print(f"生成 PowerRelayConfig.txt 失败: {e}")
+                with open(power_path, "w", encoding="utf-8") as power_file:
+                    # 仅输出用户实际填过的块，避免「只配了继电器」却带上 port=0 的 [Power] 或默认 [IG]/[PW]
+                    if isinstance(power_config, dict) and str(
+                        power_config.get("port") or ""
+                    ).strip():
+                        self._write_power_block(power_file, power_config)
+                    self._write_relay_blocks(power_file, relay_configs)
+                    if isinstance(ig_config, dict) and str(
+                        ig_config.get("equipmentType") or ""
+                    ).strip():
+                        self._write_equipment_block(
+                            power_file,
+                            title="IG",
+                            config_data=ig_config,
+                            default_values={
+                                "equipmentType": "Power",
+                                "channelNumber": "1",
+                                "initStatus": "1",
+                                "eqPosition": "1",
+                            },
+                            include_init_comment=True,
+                        )
+                    if isinstance(pw_config, dict) and str(
+                        pw_config.get("equipmentType") or ""
+                    ).strip():
+                        self._write_equipment_block(
+                            power_file,
+                            title="PW",
+                            config_data=pw_config,
+                            default_values={
+                                "equipmentType": "Relay",
+                                "channelNumber": "1",
+                                "initStatus": "17",
+                                "eqPosition": "1",
+                            },
+                        )
+            except Exception as error:
+                print(f"生成 PowerRelayConfig.txt 失败: {error}")
 
         # 仅当用户实际配置了点火循环（waitTime/current 有值）时才生成 IgnitionCycle.txt；未配置则不生成并删除已有文件
         ign_path = os.path.join(config_dir, "IgnitionCycle.txt")
@@ -439,201 +619,262 @@ class ConfigManager:
             if os.path.exists(ign_path):
                 try:
                     os.remove(ign_path)
-                except Exception as e:
-                    print(f"移除未配置的 IgnitionCycle.txt 失败: {e}")
+                except Exception as error:
+                    print(f"移除未配置的 IgnitionCycle.txt 失败: {error}")
         else:
             try:
-                with open(ign_path, "w", encoding="utf-8") as f:
-                    f.write("[IgnitionCycle]\n")
+                with open(ign_path, "w", encoding="utf-8") as ignition_file:
+                    ignition_file.write("[IgnitionCycle]\n")
                     if ign_waittime:
-                        f.write(f"waitTime={ign_waittime}\n")
+                        ignition_file.write(f"waitTime={ign_waittime}\n")
                     if ign_current:
-                        f.write(f"current={ign_current}\n")
-            except Exception as e:
-                print(f"生成 IgnitionCycle.txt 失败: {e}")
+                        ignition_file.write(f"current={ign_current}\n")
+            except Exception as error:
+                print(f"生成 IgnitionCycle.txt 失败: {error}")
 
         # 运行账号：生成 login.txt，有账号密码则写入，无则仅写 [login]
-        login_username = (config.get("CENTRAL", "login_username", fallback="") or "").strip()
-        login_password = (config.get("CENTRAL", "login_password", fallback="") or "").strip()
+        login_username = (config.get(SECTION_CENTRAL, "login_username", fallback="") or "").strip()
+        login_password = (config.get(SECTION_CENTRAL, "login_password", fallback="") or "").strip()
         login_path = os.path.join(config_dir, "login.txt")
         try:
-            with open(login_path, "w", encoding="utf-8") as f:
-                f.write("[login]\n")
+            with open(login_path, "w", encoding="utf-8") as login_file:
+                login_file.write("[login]\n")
                 if login_username or login_password:
-                    f.write(f"username={login_username}\n")
-                    f.write(f"password={login_password}\n")
-        except Exception as e:
-            print(f"生成 login.txt 失败: {e}")
+                    login_file.write(f"username={login_username}\n")
+                    login_file.write(f"password={login_password}\n")
+        except Exception as error:
+            print(f"生成 login.txt 失败: {error}")
 
     def _init_fixed_config_from_main_config(self) -> None:
-        if os.path.exists(self._get_fixed_config_path()) or not os.path.exists(self.config_path):
+        if os.path.exists(self._get_fixed_config_path()) or not os.path.exists(self._main_config_read_path):
             return
         try:
-            cfg = configparser.ConfigParser()
-            cfg.optionxform = str
-            cfg.read(self.config_path, encoding="utf-8")
-            fixed = {}
-            if cfg.has_section("PATHS"):
+            main_config = read_config_if_exists(self._main_config_read_path)
+            fixed_config_values = {}
+            if main_config.has_section(SECTION_PATHS):
                 keys = [
                     "unified_mapping_excel", "mapping_sheets", "cin_mapping_sheet",
                     "output_filename", "cin_output_filename", "xml_output_filename",
                     "didinfo_output_filename", "didconfig_output_filename", "didinfo_variants",
                     "mapping_excel", "cin_mapping_excel",
                 ]
-                for key in keys:
-                    if cfg.has_option("PATHS", key):
-                        fixed[key] = cfg.get("PATHS", key)
-            if fixed:
-                self._write_fixed_config(fixed)
-        except Exception as e:
-            print(f"从主配置初始化固定配置失败: {e}")
+                for option_name in keys:
+                    if main_config.has_option(SECTION_PATHS, option_name):
+                        fixed_config_values[option_name] = main_config.get(
+                            SECTION_PATHS, option_name
+                        )
+            if fixed_config_values:
+                self._write_fixed_config(fixed_config_values)
+        except Exception as error:
+            print(f"从主配置初始化固定配置失败: {error}")
 
     def _reload(self) -> configparser.ConfigParser:
         """读入配置并做去重后写回，再解析返回 ConfigParser。"""
         with self._lock:
-            cleaned = _clean_duplicate_sections(self.config_path)
+            cleaned = _clean_duplicate_sections(self._main_config_read_path)
             if cleaned:
-                with open(self.config_path, "w", encoding="utf-8") as f:
-                    f.writelines(cleaned)
-            config = configparser.ConfigParser()
-            config.optionxform = str
-            if os.path.exists(self.config_path):
-                try:
-                    config.read(self.config_path, encoding="utf-8")
-                except Exception:
-                    with open(self.config_path, "r", encoding="utf-8", errors="replace") as f:
-                        config.read_file(f)
-            return config
+                with open(self._main_config_read_path, "w", encoding="utf-8") as config_file:
+                    config_file.writelines(cleaned)
+            return read_config_if_exists(self._main_config_read_path)
+
+    def load_config(self) -> configparser.ConfigParser:
+        """公开配置读取入口，供外部模块获取最新配置。"""
+        return self._reload()
+
+    @staticmethod
+    def _ui_state_key(prefix: str, option_name: str) -> str:
+        return f"{prefix}_{option_name}" if prefix else option_name
+
+    @classmethod
+    def _load_standard_domain_ui_fields(
+        cls,
+        out: Dict[str, Any],
+        section_data: Dict[str, Any],
+        *,
+        prefix: str,
+        include_didinfo: bool = False,
+        include_cin: bool = False,
+        include_uds: bool = True,
+    ) -> None:
+        out[cls._ui_state_key(prefix, "input")] = section_data.get(OPTION_INPUT_EXCEL, "")
+        out[cls._ui_state_key(prefix, "out_root")] = section_data.get(OPTION_OUTPUT_DIR, "")
+        out[cls._ui_state_key(prefix, "levels")] = section_data.get(OPTION_CASE_LEVELS, "ALL")
+        out[cls._ui_state_key(prefix, "platforms")] = section_data.get("case_platforms", "")
+        out[cls._ui_state_key(prefix, "models")] = section_data.get("case_models", "")
+        out[cls._ui_state_key(prefix, "target_versions")] = section_data.get("case_target_versions", "")
+        out[cls._ui_state_key(prefix, "selected_sheets")] = section_data.get(OPTION_SELECTED_SHEETS, "")
+        out[cls._ui_state_key(prefix, "log_level")] = section_data.get(OPTION_LOG_LEVEL_MIN, "info")
+        if include_uds:
+            out[cls._ui_state_key(prefix, "uds_ecu_qualifier")] = section_data.get(
+                OPTION_UDS_ECU_QUALIFIER,
+                "",
+            )
+        if include_didinfo:
+            didinfo_raw = section_data.get(OPTION_DIDINFO_INPUTS, "")
+            out[cls._ui_state_key(prefix, "didinfo_excel")] = didinfo_raw.split(" | ")[0] if didinfo_raw else ""
+        if include_cin:
+            out[cls._ui_state_key(prefix, "cin_excel")] = section_data.get(OPTION_CIN_INPUT_EXCEL, "")
+
+    @staticmethod
+    def _append_option_line(
+        lines: List[str],
+        config: configparser.ConfigParser,
+        section: str,
+        option: str,
+        *,
+        fallback: str = "",
+    ) -> bool:
+        if not config.has_option(section, option):
+            return False
+        lines.append(f"{option} = {config.get(section, option, fallback=fallback) or ''}\n")
+        return True
+
+    @classmethod
+    def _append_options_if_present(
+        cls,
+        lines: List[str],
+        config: configparser.ConfigParser,
+        section: str,
+        options: List[str],
+    ) -> bool:
+        appended_any_option = False
+        for option_name in options:
+            appended_any_option = (
+                cls._append_option_line(lines, config, section, option_name)
+                or appended_any_option
+            )
+        return appended_any_option
+
+    @classmethod
+    def _append_filter_options(
+        cls,
+        lines: List[str],
+        config: configparser.ConfigParser,
+        section: str,
+    ) -> bool:
+        return cls._append_options_if_present(lines, config, section, list(FILTER_OPTION_KEYS))
+
+    @staticmethod
+    def _append_valid_log_level(
+        lines: List[str],
+        config: configparser.ConfigParser,
+        section: str,
+    ) -> bool:
+        if not config.has_option(section, OPTION_LOG_LEVEL_MIN):
+            return False
+        normalized_log_level = (
+            config.get(section, OPTION_LOG_LEVEL_MIN, fallback="info").strip().lower()
+        )
+        if normalized_log_level not in VALID_LOG_LEVELS:
+            return False
+        lines.append(f"{OPTION_LOG_LEVEL_MIN} = {normalized_log_level}\n")
+        return True
+
+    @staticmethod
+    def _append_nonempty_option(
+        lines: List[str],
+        config: configparser.ConfigParser,
+        section: str,
+        option: str,
+    ) -> bool:
+        if not config.has_option(section, option):
+            return False
+        option_value = config.get(section, option, fallback="").strip()
+        if not option_value:
+            return False
+        lines.append(f"{option} = {option_value}\n")
+        return True
 
     def load_ui_data(self) -> Dict[str, Any]:
         """加载主配置并平铺为前端 collectCurrentState 所需字段格式。
-        无参数。从 Configuration.txt 与 FixedConfig 读入，按节映射为 can_input、out_root、c_rly 等键。
+        无参数。从当前主配置与固定配置读入，按节映射为 can_input、out_root、c_rly 等键。
         返回: 平铺字典，键为前端 state 字段名，值为配置值（字符串/列表/字典等）。
         """
         config = self._reload()
         out: Dict[str, Any] = {}
 
         # 1. LR_REAR -> 左右后域基础配置
-        if config.has_section("LR_REAR"):
-            lr = dict(config.items("LR_REAR"))
-            out["can_input"] = lr.get("input_excel", "")
-            out["out_root"] = lr.get("output_dir", "")
-            out["levels"] = lr.get("case_levels", "ALL")
-            out["platforms"] = lr.get("case_platforms", "")
-            out["models"] = lr.get("case_models", "")
-            out["target_versions"] = lr.get("case_target_versions", "")
-            out["selected_sheets"] = lr.get("selected_sheets", "")
-            out["log_level"] = lr.get("log_level_min", "info")
-            didinfo_raw = lr.get("didinfo_inputs", "")
-            out["didinfo_excel"] = didinfo_raw.split(" | ")[0] if didinfo_raw else ""
-            out["cin_excel"] = lr.get("cin_input_excel", "")
-            out["uds_ecu_qualifier"] = lr.get("uds_ecu_qualifier", "")
+        if config.has_section(SECTION_LR_REAR):
+            lr_section = dict(config.items(SECTION_LR_REAR))
+            self._load_standard_domain_ui_fields(
+                out,
+                lr_section,
+                prefix="",
+                include_didinfo=True,
+                include_cin=True,
+            )
+            out["can_input"] = out.pop("input")
 
         # 2. IOMAPPING / DID_CONFIG
-        if config.has_section("IOMAPPING"):
-            io_raw = config.get("IOMAPPING", "inputs", fallback="")
-            out["io_excel"] = io_raw.split(" | ")[0] if io_raw else ""
-        if config.has_section("DID_CONFIG"):
-            out["didconfig_excel"] = config.get("DID_CONFIG", "input_excel", fallback="")
+        if config.has_section(SECTION_IOMAPPING):
+            io_mapping_inputs = config.get(SECTION_IOMAPPING, OPTION_INPUTS, fallback="")
+            out["io_excel"] = (
+                io_mapping_inputs.split(" | ")[0] if io_mapping_inputs else ""
+            )
+        if config.has_section(SECTION_DID_CONFIG):
+            out["didconfig_excel"] = config.get(SECTION_DID_CONFIG, OPTION_INPUT_EXCEL, fallback="")
 
         # 3. CENTRAL -> c_* 字段
-        if config.has_section("CENTRAL"):
-            c = dict(config.items("CENTRAL"))
-            out["c_input"] = c.get("input_excel", "")
-            out["c_out_root"] = c.get("output_dir", "")
-            out["c_levels"] = c.get("case_levels", "ALL")
-            out["c_platforms"] = c.get("case_platforms", "")
-            out["c_models"] = c.get("case_models", "")
-            out["c_target_versions"] = c.get("case_target_versions", "")
-            out["c_selected_sheets"] = c.get("selected_sheets", "")
-            out["c_log_level"] = c.get("log_level_min", "info")
-            out["c_uds_ecu_qualifier"] = c.get("uds_ecu_qualifier", "")
+        if config.has_section(SECTION_CENTRAL):
+            central_section = dict(config.items(SECTION_CENTRAL))
+            self._load_standard_domain_ui_fields(out, central_section, prefix="c")
             # 点火循环：仅当有非空值时才返回，避免未配置时前端显示“已配置”或写入默认值
-            _ign_wt = (c.get("ign_waittime", "") or "").strip()
-            _ign_cur = (c.get("ign_current", "") or "").strip()
-            if not _ign_wt and config.has_section("IgnitionCycle"):
-                _ign_wt = (config.get("IgnitionCycle", "waitTime", fallback="") or "").strip()
-            if not _ign_cur and config.has_section("IgnitionCycle"):
-                _ign_cur = (config.get("IgnitionCycle", "current", fallback="") or "").strip()
-            if _ign_wt or _ign_cur:
-                out["c_ign_waitTime"] = _ign_wt
-                out["c_ign_current"] = _ign_cur
-            out["c_uart"] = c.get("uart_excel", "")
+            ign_waittime = (central_section.get("ign_waittime", "") or "").strip()
+            ign_current = (central_section.get("ign_current", "") or "").strip()
+            if not ign_waittime and config.has_section(SECTION_IGNITION_CYCLE):
+                ign_waittime = (
+                    config.get(SECTION_IGNITION_CYCLE, "waitTime", fallback="") or ""
+                ).strip()
+            if not ign_current and config.has_section(SECTION_IGNITION_CYCLE):
+                ign_current = (
+                    config.get(SECTION_IGNITION_CYCLE, "current", fallback="") or ""
+                ).strip()
+            if ign_waittime or ign_current:
+                out["c_ign_waitTime"] = ign_waittime
+                out["c_ign_current"] = ign_current
+            out["c_uart"] = central_section.get("uart_excel", "")
             uart_comm = {}
-            for cfg_key, ui_key in [
-                ("uart_comm_port", "port"),
-                ("uart_comm_baudrate", "baudrate"),
-                ("uart_comm_dataBits", "dataBits"),
-                ("uart_comm_stopBits", "stopBits"),
-                ("uart_comm_kHANDSHAKE_DISABLED", "kHANDSHAKE_DISABLED"),
-                ("uart_comm_parity", "parity"),
-                ("uart_comm_frameTypeIs8676", "frameTypeIs8676"),
-            ]:
-                val = c.get(cfg_key, "")
-                if val != "":
-                    uart_comm[ui_key] = val
+            for cfg_key, ui_key in CENTRAL_UART_UI_KEY_MAP.items():
+                config_value = central_section.get(cfg_key, "")
+                if config_value != "":
+                    uart_comm[ui_key] = config_value
             out["c_uart_comm"] = uart_comm
 
-            # 程控电源 / 继电器 / IG / PW：仅当配置中有且为“有意义”内容时才返回，避免未配置时回写默认值到 Configuration.txt
-            def _parse_json_field(key: str, default):
-                raw = c.get(key, "").strip()
-                if not raw:
-                    return default
-                try:
-                    return json.loads(raw)
-                except Exception:
-                    return default
-
-            _c_pwr = _parse_json_field("c_pwr", {})
-            if isinstance(_c_pwr, dict) and (_c_pwr.get("port") or "").strip():
-                out["c_pwr"] = _c_pwr
-            _c_rly = _parse_json_field("c_rly", [])
-            if isinstance(_c_rly, list) and len(_c_rly) > 0:
-                has_rly = any(
-                    r.get("relayID") or r.get("relayType") or (r.get("coilStatuses") and len(r.get("coilStatuses", [])) > 0) or r.get("port")
-                    for r in _c_rly
-                )
-                if has_rly:
-                    out["c_rly"] = _c_rly
-            # IG/PW：仅当配置中确有内容时才返回
-            _c_ig = _parse_json_field("c_ig", {})
-            _c_pw = _parse_json_field("c_pw", {})
-            if _c_ig and isinstance(_c_ig, dict) and (_c_ig.get("equipmentType") or _c_ig.get("channelNumber")):
-                out["c_ig"] = _c_ig
-            if _c_pw and isinstance(_c_pw, dict) and (_c_pw.get("equipmentType") or _c_pw.get("channelNumber")):
-                out["c_pw"] = _c_pw
-            out["c_login_username"] = c.get("login_username", "")
-            out["c_login_password"] = c.get("login_password", "")
+            # 程控电源 / 继电器 / IG / PW：仅当配置中有且为“有意义”内容时才返回，避免未配置时回写默认值到主配置文件
+            self._load_central_ui_json_fields(out, central_section)
+            out["c_login_username"] = central_section.get("login_username", "")
+            out["c_login_password"] = central_section.get("login_password", "")
 
         # 4. DTC -> d_* 字段
-        if config.has_section("DTC"):
-            d = dict(config.items("DTC"))
-            out["d_input"] = d.get("input_excel", "")
-            out["d_out_root"] = d.get("output_dir", "")
-            out["d_levels"] = d.get("case_levels", "ALL")
-            out["d_platforms"] = d.get("case_platforms", "")
-            out["d_models"] = d.get("case_models", "")
-            out["d_target_versions"] = d.get("case_target_versions", "")
-            out["d_selected_sheets"] = d.get("selected_sheets", "")
-            out["d_log_level"] = d.get("log_level_min", "info")
-            out["d_uds_ecu_qualifier"] = d.get("uds_ecu_qualifier", "")
-            didinfo_raw = d.get("didinfo_inputs", "")
-            out["d_didinfo_excel"] = didinfo_raw.split(" | ")[0] if didinfo_raw else ""
-            out["d_cin_excel"] = d.get("cin_input_excel", "")
-        if config.has_section("DTC_IOMAPPING"):
-            io_raw = (config.get("DTC_IOMAPPING", "inputs", fallback="") or "").strip()
-            if io_raw and "|" in io_raw:
-                path_part, sheets_part = io_raw.split("|", 1)
+        if config.has_section(SECTION_DTC):
+            dtc_section = dict(config.items(SECTION_DTC))
+            self._load_standard_domain_ui_fields(
+                out,
+                dtc_section,
+                prefix="d",
+                include_didinfo=True,
+                include_cin=True,
+            )
+        if config.has_section(SECTION_DTC_IOMAPPING):
+            dtc_io_mapping_inputs = (
+                config.get(SECTION_DTC_IOMAPPING, OPTION_INPUTS, fallback="") or ""
+            ).strip()
+            if dtc_io_mapping_inputs and "|" in dtc_io_mapping_inputs:
+                path_part, sheets_part = dtc_io_mapping_inputs.split("|", 1)
                 out["d_io_excel"] = path_part.strip()
                 sheets_str = (sheets_part or "").strip()
                 # 若为 * 或空串，表示全选，前端用空串表示“全选/不做过滤”
                 out["d_io_selected_sheets"] = "" if sheets_str in ("", "*") else sheets_str
             else:
-                out["d_io_excel"] = io_raw
+                out["d_io_excel"] = dtc_io_mapping_inputs
                 out["d_io_selected_sheets"] = ""
-        if config.has_section("DTC_CONFIG_ENUM"):
-            didcfg_raw = config.get("DTC_CONFIG_ENUM", "inputs", fallback="")
-            out["d_didconfig_excel"] = didcfg_raw.split(" | ")[0] if didcfg_raw else ""
+        if config.has_section(SECTION_DTC_CONFIG_ENUM):
+            did_config_inputs = config.get(
+                SECTION_DTC_CONFIG_ENUM, OPTION_INPUTS, fallback=""
+            )
+            out["d_didconfig_excel"] = (
+                did_config_inputs.split(" | ")[0] if did_config_inputs else ""
+            )
 
         return out
 
@@ -648,9 +889,9 @@ class ConfigManager:
             config = self._reload()
             if not config.has_section(domain):
                 config.add_section(domain)
-            for key, val in data.items():
-                config.set(domain, key, str(val) if val is not None else "")
-            self._write_formatted_config(config)
+            for option_name, option_value in data.items():
+                config.set(domain, option_name, str(option_value) if option_value is not None else "")
+            self.save_formatted_config(config)
 
     def save_formatted(self) -> None:
         """重新加载配置、移除无效项、按固定格式写回。"""
@@ -658,35 +899,65 @@ class ConfigManager:
             config = self._reload()
             _remove_invalid_config_options(config)
             self._init_fixed_config_from_main_config()
-            self._write_formatted_config(config)
+            self.save_formatted_config(config)
 
     @staticmethod
-    def _is_relay_list_effectively_empty(val: Any) -> bool:
-        """判断继电器列表是否为“有效空”：空列表，或所有项均未填 port/relayID 等核心项（含前端残留的多条空槽）。"""
-        if val is None or val == "" or val == [] or val == {}:
+    def _is_relay_list_effectively_empty(relay_list_value: Any) -> bool:
+        """判断继电器列表是否为“有效空”：空列表，或所有项均未构成有效继电器配置（与 _has_relay_config 对齐，避免仅靠 relayID 判定）。"""
+        if relay_list_value is None or relay_list_value == "" or relay_list_value == [] or relay_list_value == {}:
             return True
         # 前端可能传回已解析的 list 或 JSON 字符串
-        if isinstance(val, str):
-            val = val.strip()
-            if val in ("", "[]", "[{}]"):
+        if isinstance(relay_list_value, str):
+            relay_list_value = relay_list_value.strip()
+            if relay_list_value in ("", "[]", "[{}]"):
                 return True
             try:
-                val = json.loads(val)
+                relay_list_value = json.loads(relay_list_value)
             except Exception:
                 return False
-        if not isinstance(val, list):
+        if not isinstance(relay_list_value, list):
             return False
-        if len(val) == 0:
+        if len(relay_list_value) == 0:
             return True
-        # 任意一项只要填了 port 或 relayID 即视为“有内容”；全部未填则视为有效空
-        for item in val:
+        for item in relay_list_value:
             if not isinstance(item, dict):
                 continue
-            port = str(item.get("port", "") or "").strip()
-            relay_id = str(item.get("relayID", "") or "").strip()
-            if port or relay_id:
+            if ConfigManager._has_relay_config(item):
                 return False
         return True
+
+    @classmethod
+    def _is_effectively_empty_value(cls, option: str, value: Any) -> bool:
+        if value in (None, "", [], {}):
+            return True
+        return option == "c_rly" and cls._is_relay_list_effectively_empty(value)
+
+    def _remove_central_managed_options(
+        self,
+        config: configparser.ConfigParser,
+        section: str,
+        section_values: Dict[str, Any],
+        managed_keys: List[str],
+    ) -> None:
+        for managed_key in managed_keys:
+            value = section_values.get(managed_key)
+            if managed_key not in section_values or self._is_effectively_empty_value(managed_key, value):
+                if config.has_option(section, managed_key):
+                    config.remove_option(section, managed_key)
+
+    def _write_section_values(
+        self,
+        config: configparser.ConfigParser,
+        section: str,
+        section_values: Dict[str, Any],
+    ) -> None:
+        for option_name, option_value in section_values.items():
+            normalized_option_name = str(option_name)
+            if self._is_effectively_empty_value(normalized_option_name, option_value):
+                if config.has_option(section, normalized_option_name):
+                    config.remove_option(section, normalized_option_name)
+            else:
+                config.set(section, normalized_option_name, str(option_value))
 
     def save_ui_data(self, data: Dict[str, Dict[str, Any]]) -> None:
         """将前端按节提交的 data 写回主配置并格式化写回文件。
@@ -706,55 +977,26 @@ class ConfigManager:
             updated_sections: List[str] = list(data.keys())
 
             # 中央域由前端 UI 统一托管的配置键：当前端未提供或提供的是“空值/有效空”时，应主动从配置文件中移除
-            central_managed_keys = {
-                "c_pwr",
-                "c_rly",
-                "c_ig",
-                "c_pw",
-                "ign_waittime",
-                "ign_current",
-                "login_username",
-                "login_password",
-                "uart_comm_port",
-                "uart_comm_baudrate",
-                "uart_comm_dataBits",
-                "uart_comm_stopBits",
-                "uart_comm_kHANDSHAKE_DISABLED",
-                "uart_comm_parity",
-                "uart_comm_frameTypeIs8676",
-            }
+            central_managed_keys = CENTRAL_MANAGED_KEYS
 
-            for section, kv in data.items():
+            for section, section_values in data.items():
                 if not config.has_section(section):
                     config.add_section(section)
 
                 # 1) CENTRAL 段：先对托管键做“缺失/空值/有效空即删除”的处理
-                if section == "CENTRAL":
-                    for m_key in central_managed_keys:
-                        val = kv.get(m_key)
-                        is_effectively_empty = False
-                        if val in (None, "", [], {}):
-                            is_effectively_empty = True
-                        elif m_key == "c_rly":
-                            is_effectively_empty = self._is_relay_list_effectively_empty(val)
-                        if m_key not in kv or is_effectively_empty:
-                            if config.has_option(section, m_key):
-                                config.remove_option(section, m_key)
+                if section == SECTION_CENTRAL:
+                    self._remove_central_managed_options(
+                        config,
+                        section,
+                        section_values,
+                        central_managed_keys,
+                    )
 
                 # 2) 通用写入逻辑：有值则 set，空值则删；继电器列表为“有效空”时也按删除处理，避免脏数据回流
-                for key, val in kv.items():
-                    opt = str(key)
-                    if val in (None, "", [], {}):
-                        if config.has_option(section, opt):
-                            config.remove_option(section, opt)
-                    elif opt == "c_rly" and self._is_relay_list_effectively_empty(val):
-                        if config.has_option(section, opt):
-                            config.remove_option(section, opt)
-                    else:
-                        config.set(section, opt, str(val))
+                self._write_section_values(config, section, section_values)
 
             # 仅针对本次更新涉及到的节生成对应的 UDS 与中央域附属文件，避免无关域被“全量刷新”
-            self._write_formatted_config(config, uds_domains=updated_sections)
+            self.save_formatted_config(config, uds_domains=updated_sections)
 
     def sync_to_file(self, target_path: Optional[str] = None) -> None:
         """将当前内存中的配置（去重后）同步写入指定文件。
@@ -762,11 +1004,11 @@ class ConfigManager:
             target_path: 目标配置文件路径；为 None 时写回 self.config_path。
         无返回值。
         """
-        path = target_path or self.config_path
+        output_config_path = target_path or self.config_path
         with self._lock:
             config = self._reload()
             _remove_invalid_config_options(config)
-            self._write_formatted_config(config, path)
+            self.save_formatted_config(config, config_path=output_config_path)
 
     def _write_formatted_config(
         self,
@@ -781,14 +1023,12 @@ class ConfigManager:
             uds_domains: 仅对这些域（如 ["LR_REAR"]）写入 UDS.txt；None 表示三域都写，避免多域共用 output_dir 时覆盖。
         无返回值。
         """
-        path = config_path or self.config_path
+        output_config_path = config_path or self.config_path
         fixed_config_backup = self._read_fixed_config()
-        if not fixed_config_backup and os.path.exists(path):
+        if not fixed_config_backup and os.path.exists(output_config_path):
             try:
-                backup = configparser.ConfigParser()
-                backup.optionxform = str
-                backup.read(path, encoding="utf-8")
-                if backup.has_section("PATHS"):
+                backup_config = read_config_if_exists(output_config_path)
+                if backup_config.has_section(SECTION_PATHS):
                     fixed_keys = [
                         "unified_mapping_excel", "mapping_sheets", "cin_mapping_sheet",
                         "output_filename", "cin_output_filename", "xml_output_filename",
@@ -796,87 +1036,93 @@ class ConfigManager:
                         "uart_output_filename", "uds_output_filename", "didinfo_variants",
                         "mapping_excel", "cin_mapping_excel",
                     ]
-                    for key in fixed_keys:
-                        if backup.has_option("PATHS", key):
-                            fixed_config_backup[key] = backup.get("PATHS", key)
+                    for option_name in fixed_keys:
+                        if backup_config.has_option(SECTION_PATHS, option_name):
+                            fixed_config_backup[option_name] = backup_config.get(
+                                SECTION_PATHS, option_name
+                            )
                     if fixed_config_backup:
                         self._write_fixed_config(fixed_config_backup)
-            except Exception as e:
-                print(f"从主配置读取固定配置时出错: {e}")
+            except Exception as error:
+                print(f"从主配置读取固定配置时出错: {error}")
 
-        fixed_paths_keys = [
+        fixed_path_option_names = [
             "unified_mapping_excel", "mapping_sheets", "cin_mapping_sheet",
             "output_filename", "cin_output_filename", "xml_output_filename",
             "didinfo_output_filename", "didconfig_output_filename",
             "uart_output_filename", "uds_output_filename", "didinfo_variants",
         ]
-        dynamic_paths_keys = ["mapping_excel", "cin_mapping_excel"]
+        dynamic_path_option_names = ["mapping_excel", "cin_mapping_excel"]
 
         lines: List[str] = []
 
         lines.append("# ============================================================\n")
         lines.append("# 左右后域配置\n")
         lines.append("# ============================================================\n")
-        lines.append("[LR_REAR]\n")
-        lr_written = set()
-        if config.has_section("LR_REAR"):
-            for key in ["input_excel", "input_excel_dir"]:
-                if config.has_option("LR_REAR", key):
-                    lines.append(f"{key} = {config.get('LR_REAR', key) or ''}\n")
-                    lr_written.add(key.lower())
+        lines.append(f"[{SECTION_LR_REAR}]\n")
+        written_lr_options = set()
+        if config.has_section(SECTION_LR_REAR):
+            for option_name in ["input_excel", "input_excel_dir"]:
+                if config.has_option(SECTION_LR_REAR, option_name):
+                    lines.append(
+                        f"{option_name} = {config.get(SECTION_LR_REAR, option_name) or ''}\n"
+                    )
+                    written_lr_options.add(option_name.lower())
             lines.append("\n")
-            if config.has_option("LR_REAR", "output_dir"):
-                lines.append(f"output_dir = {config.get('LR_REAR', 'output_dir') or ''}\n")
-                lr_written.add("output_dir")
+            if self._append_option_line(lines, config, SECTION_LR_REAR, OPTION_OUTPUT_DIR):
+                written_lr_options.add(OPTION_OUTPUT_DIR)
             lines.append("\n")
-            for key in ["case_levels", "case_platforms", "case_models", "case_target_versions"]:
-                if config.has_option("LR_REAR", key):
-                    lines.append(f"{key} = {config.get('LR_REAR', key) or ''}\n")
-                    lr_written.add(key.lower())
+            for option_name in FILTER_OPTION_KEYS:
+                if config.has_option(SECTION_LR_REAR, option_name):
+                    lines.append(
+                        f"{option_name} = {config.get(SECTION_LR_REAR, option_name) or ''}\n"
+                    )
+                    written_lr_options.add(option_name.lower())
             lines.append("\n")
-            if config.has_option("LR_REAR", "selected_sheets"):
+            if config.has_option(SECTION_LR_REAR, OPTION_SELECTED_SHEETS):
                 lines.append("# 勾选的工作表\n")
-                lines.append(f"selected_sheets = {config.get('LR_REAR', 'selected_sheets', fallback='') or ''}\n")
-                lr_written.add("selected_sheets")
+                lines.append(f"{OPTION_SELECTED_SHEETS} = {config.get(SECTION_LR_REAR, OPTION_SELECTED_SHEETS, fallback='') or ''}\n")
+                written_lr_options.add(OPTION_SELECTED_SHEETS)
                 lines.append("\n")
-            if config.has_option("LR_REAR", "log_level_min"):
-                val = config.get("LR_REAR", "log_level_min", fallback="info").strip().lower()
-                if val in ("info", "warning", "error"):
-                    lines.append("log_level_min = " + val + "\n")
-                    lr_written.add("log_level_min")
-                    lines.append("\n")
-            if config.has_option("LR_REAR", "didinfo_inputs"):
-                lines.append(f"didinfo_inputs = {config.get('LR_REAR', 'didinfo_inputs') or ''}\n")
-                lr_written.add("didinfo_inputs")
-            if config.has_option("LR_REAR", "cin_input_excel"):
-                lines.append(f"cin_input_excel = {config.get('LR_REAR', 'cin_input_excel') or ''}\n")
-                lr_written.add("cin_input_excel")
+            if self._append_valid_log_level(lines, config, SECTION_LR_REAR):
+                written_lr_options.add(OPTION_LOG_LEVEL_MIN)
+                lines.append("\n")
+            if self._append_option_line(lines, config, SECTION_LR_REAR, OPTION_DIDINFO_INPUTS):
+                written_lr_options.add(OPTION_DIDINFO_INPUTS)
+            if self._append_option_line(lines, config, SECTION_LR_REAR, OPTION_CIN_INPUT_EXCEL):
+                written_lr_options.add(OPTION_CIN_INPUT_EXCEL)
 
-        if config.has_section("IOMAPPING"):
-            lines.append("[IOMAPPING]\n")
-            for key in config.options("IOMAPPING"):
-                if key.lower() != "enabled":
-                    lines.append(f"{key} = {config.get('IOMAPPING', key) or ''}\n")
+        if config.has_section(SECTION_IOMAPPING):
+            lines.append(f"[{SECTION_IOMAPPING}]\n")
+            for option_name in config.options(SECTION_IOMAPPING):
+                if option_name.lower() != "enabled":
+                    lines.append(
+                        f"{option_name} = {config.get(SECTION_IOMAPPING, option_name) or ''}\n"
+                    )
             lines.append("\n")
-        if config.has_section("DID_CONFIG"):
-            lines.append("[DID_CONFIG]\n")
-            for key in config.options("DID_CONFIG"):
-                lines.append(f"{key} = {config.get('DID_CONFIG', key) or ''}\n")
+        if config.has_section(SECTION_DID_CONFIG):
+            lines.append(f"[{SECTION_DID_CONFIG}]\n")
+            for option_name in config.options(SECTION_DID_CONFIG):
+                lines.append(
+                    f"{option_name} = {config.get(SECTION_DID_CONFIG, option_name) or ''}\n"
+                )
             lines.append("\n")
-        if config.has_section("CONFIG_ENUM"):
-            lines.append("[CONFIG_ENUM]\n")
-            for key in config.options("CONFIG_ENUM"):
-                if key.lower() != "enabled":
-                    lines.append(f"{key} = {config.get('CONFIG_ENUM', key) or ''}\n")
+        if config.has_section(SECTION_CONFIG_ENUM):
+            lines.append(f"[{SECTION_CONFIG_ENUM}]\n")
+            for option_name in config.options(SECTION_CONFIG_ENUM):
+                if option_name.lower() != "enabled":
+                    lines.append(
+                        f"{option_name} = {config.get(SECTION_CONFIG_ENUM, option_name) or ''}\n"
+                    )
             lines.append("\n")
 
         lines.append("# ============================================================\n")
         lines.append("# 中央域配置\n")
         lines.append("# ============================================================\n")
-        lines.append("[CENTRAL]\n")
-        if config.has_section("CENTRAL"):
+        lines.append(f"[{SECTION_CENTRAL}]\n")
+        if config.has_section(SECTION_CENTRAL):
             # 基础与表格
-            for key in [
+            self._append_options_if_present(lines, config, SECTION_CENTRAL, [
                 "input_excel",
                 "input_excel_dir",
                 "uart_excel",
@@ -884,11 +1130,9 @@ class ConfigManager:
                 "pwr_excel",
                 "rly_excel",
                 "selected_sheets",
-            ]:
-                if config.has_option("CENTRAL", key):
-                    lines.append(f"{key} = {config.get('CENTRAL', key) or ''}\n")
+            ])
             # 串口通信配置
-            _uart_keys = [
+            uart_option_names = [
                 "uart_comm_port",
                 "uart_comm_baudrate",
                 "uart_comm_dataBits",
@@ -897,130 +1141,105 @@ class ConfigManager:
                 "uart_comm_parity",
                 "uart_comm_frameTypeIs8676",
             ]
-            if any(config.has_option("CENTRAL", k) for k in _uart_keys):
+            if any(config.has_option(SECTION_CENTRAL, option_name) for option_name in uart_option_names):
                 lines.append("\n# 串口通信配置\n")
-                for key in _uart_keys:
-                    if config.has_option("CENTRAL", key):
-                        lines.append(f"{key} = {config.get('CENTRAL', key) or ''}\n")
+                self._append_options_if_present(lines, config, SECTION_CENTRAL, uart_option_names)
             # 点火循环（中央域，兼容从 CENTRAL 读取）
-            if config.has_option("CENTRAL", "ign_waittime") or config.has_option("CENTRAL", "ign_current"):
+            if config.has_option(SECTION_CENTRAL, "ign_waittime") or config.has_option(SECTION_CENTRAL, "ign_current"):
                 lines.append("\n# 点火循环配置（中央域，兼容从本段读取）\n")
-                if config.has_option("CENTRAL", "ign_waittime"):
-                    lines.append(f"ign_waittime = {config.get('CENTRAL', 'ign_waittime') or ''}\n")
-                if config.has_option("CENTRAL", "ign_current"):
-                    lines.append(f"ign_current = {config.get('CENTRAL', 'ign_current') or ''}\n")
+                self._append_options_if_present(lines, config, SECTION_CENTRAL, ["ign_waittime", "ign_current"])
             # 程控电源/继电器/IG/PW：与点火循环一致，仅当配置中有该选项时才写入，避免写空覆盖
-            if config.has_option("CENTRAL", "c_pwr"):
+            if config.has_option(SECTION_CENTRAL, "c_pwr"):
                 lines.append("\n# 程控电源配置（c_pwr）\n")
-                lines.append(f"c_pwr = {config.get('CENTRAL', 'c_pwr') or ''}\n")
-            if config.has_option("CENTRAL", "c_rly"):
+                self._append_option_line(lines, config, SECTION_CENTRAL, "c_pwr")
+            if config.has_option(SECTION_CENTRAL, "c_rly"):
                 lines.append("\n# 继电器配置（c_rly）\n")
-                lines.append(f"c_rly = {config.get('CENTRAL', 'c_rly') or ''}\n")
-            if config.has_option("CENTRAL", "c_ig"):
+                self._append_option_line(lines, config, SECTION_CENTRAL, "c_rly")
+            if config.has_option(SECTION_CENTRAL, "c_ig"):
                 lines.append("\n# IG 配置（点火装置）\n")
-                lines.append(f"c_ig = {config.get('CENTRAL', 'c_ig') or ''}\n")
-            if config.has_option("CENTRAL", "c_pw"):
+                self._append_option_line(lines, config, SECTION_CENTRAL, "c_ig")
+            if config.has_option(SECTION_CENTRAL, "c_pw"):
                 lines.append("\n# PW 配置（程控电源/继电器装置）\n")
-                lines.append(f"c_pw = {config.get('CENTRAL', 'c_pw') or ''}\n")
+                self._append_option_line(lines, config, SECTION_CENTRAL, "c_pw")
             lines.append("\n")
-            if config.has_option("CENTRAL", "output_dir"):
-                lines.append(f"output_dir = {config.get('CENTRAL', 'output_dir') or ''}\n")
+            self._append_option_line(lines, config, SECTION_CENTRAL, OPTION_OUTPUT_DIR)
             lines.append("\n")
-            for key in ["case_levels", "case_platforms", "case_models", "case_target_versions"]:
-                if config.has_option("CENTRAL", key):
-                    lines.append(f"{key} = {config.get('CENTRAL', key) or ''}\n")
-            if config.has_option("CENTRAL", "log_level_min"):
-                val = config.get("CENTRAL", "log_level_min", fallback="info").strip().lower()
-                if val in ("info", "warning", "error"):
-                    lines.append(f"log_level_min = {val}\n")
-            if config.has_option("CENTRAL", "uds_ecu_qualifier"):
-                val = config.get("CENTRAL", "uds_ecu_qualifier", fallback="").strip()
-                if val:
-                    lines.append(f"uds_ecu_qualifier = {val}\n")
+            self._append_filter_options(lines, config, SECTION_CENTRAL)
+            self._append_valid_log_level(lines, config, SECTION_CENTRAL)
+            self._append_nonempty_option(lines, config, SECTION_CENTRAL, OPTION_UDS_ECU_QUALIFIER)
             # 运行账号（中央域，写入 Configuration/login.txt）
-            if config.has_option("CENTRAL", "login_username") or config.has_option("CENTRAL", "login_password"):
+            if config.has_option(SECTION_CENTRAL, "login_username") or config.has_option(SECTION_CENTRAL, "login_password"):
                 lines.append("\n# 运行账号（生成至 output_dir/Configuration/login.txt）\n")
-                if config.has_option("CENTRAL", "login_username"):
-                    lines.append(f"login_username = {config.get('CENTRAL', 'login_username') or ''}\n")
-                if config.has_option("CENTRAL", "login_password"):
-                    lines.append(f"login_password = {config.get('CENTRAL', 'login_password') or ''}\n")
+                self._append_options_if_present(lines, config, SECTION_CENTRAL, ["login_username", "login_password"])
 
         # 点火循环配置（中央域相关，写在 [CENTRAL] 之后）
-        if config.has_section("IgnitionCycle") or config.has_section("CENTRAL"):
+        if config.has_section(SECTION_IGNITION_CYCLE) or config.has_section(SECTION_CENTRAL):
             # 兼容老配置中 [IgnitionCycle] 里使用 ign_waittime/ign_current 的写法
-            wait_val = ""
-            if config.has_section("IgnitionCycle"):
-                wait_val = (
-                    config.get("IgnitionCycle", "waitTime", fallback="")
-                    or config.get("IgnitionCycle", "ign_waittime", fallback="")
+            ignition_wait_time = ""
+            if config.has_section(SECTION_IGNITION_CYCLE):
+                ignition_wait_time = (
+                    config.get(SECTION_IGNITION_CYCLE, "waitTime", fallback="")
+                    or config.get(SECTION_IGNITION_CYCLE, "ign_waittime", fallback="")
                     or ""
                 ).strip()
-            if not wait_val and config.has_section("CENTRAL"):
-                wait_val = (config.get("CENTRAL", "ign_waittime", fallback="") or "").strip()
+            if not ignition_wait_time and config.has_section(SECTION_CENTRAL):
+                ignition_wait_time = (
+                    config.get(SECTION_CENTRAL, "ign_waittime", fallback="") or ""
+                ).strip()
 
-            cur_val = ""
-            if config.has_section("IgnitionCycle"):
-                cur_val = (
-                    config.get("IgnitionCycle", "current", fallback="")
-                    or config.get("IgnitionCycle", "ign_current", fallback="")
+            ignition_current = ""
+            if config.has_section(SECTION_IGNITION_CYCLE):
+                ignition_current = (
+                    config.get(SECTION_IGNITION_CYCLE, "current", fallback="")
+                    or config.get(SECTION_IGNITION_CYCLE, "ign_current", fallback="")
                     or ""
                 ).strip()
-            if not cur_val and config.has_section("CENTRAL"):
-                cur_val = (config.get("CENTRAL", "ign_current", fallback="") or "").strip()
+            if not ignition_current and config.has_section(SECTION_CENTRAL):
+                ignition_current = (
+                    config.get(SECTION_CENTRAL, "ign_current", fallback="") or ""
+                ).strip()
 
             # 只要原文件里存在 [IgnitionCycle]，即使值为空也不要把整个节删掉
-            if wait_val or cur_val or config.has_section("IgnitionCycle"):
-                lines.append("\n[IgnitionCycle]\n")
-                lines.append(f"waitTime = {wait_val}\n")
-                lines.append(f"current = {cur_val}\n")
+            if ignition_wait_time or ignition_current or config.has_section(SECTION_IGNITION_CYCLE):
+                lines.append(f"\n[{SECTION_IGNITION_CYCLE}]\n")
+                lines.append(f"waitTime = {ignition_wait_time}\n")
+                lines.append(f"current = {ignition_current}\n")
 
         lines.append("\n# ============================================================\n")
         lines.append("# DTC配置\n")
         lines.append("# ============================================================\n")
-        lines.append("[DTC]\n")
-        if config.has_section("DTC"):
-            for key in ["input_excel", "input_excel_dir"]:
-                if config.has_option("DTC", key):
-                    lines.append(f"{key} = {config.get('DTC', key) or ''}\n")
-            if config.has_option("DTC", "selected_sheets"):
-                lines.append(f"selected_sheets = {config.get('DTC', 'selected_sheets') or ''}\n")
+        lines.append(f"[{SECTION_DTC}]\n")
+        if config.has_section(SECTION_DTC):
+            self._append_options_if_present(lines, config, SECTION_DTC, ["input_excel", "input_excel_dir"])
+            self._append_option_line(lines, config, SECTION_DTC, OPTION_SELECTED_SHEETS)
             lines.append("\n")
-            if config.has_option("DTC", "output_dir"):
-                lines.append(f"output_dir = {config.get('DTC', 'output_dir') or ''}\n")
+            self._append_option_line(lines, config, SECTION_DTC, OPTION_OUTPUT_DIR)
             lines.append("\n")
-            for key in ["case_levels", "case_platforms", "case_models", "case_target_versions"]:
-                if config.has_option("DTC", key):
-                    lines.append(f"{key} = {config.get('DTC', key) or ''}\n")
-            if config.has_option("DTC", "log_level_min"):
-                val = config.get("DTC", "log_level_min", fallback="info").strip().lower()
-                if val in ("info", "warning", "error"):
-                    lines.append(f"log_level_min = {val}\n")
-            if config.has_option("DTC", "didinfo_inputs"):
-                lines.append(f"didinfo_inputs = {config.get('DTC', 'didinfo_inputs') or ''}\n")
-            if config.has_option("DTC", "cin_input_excel"):
-                lines.append(f"cin_input_excel = {config.get('DTC', 'cin_input_excel') or ''}\n")
-            if config.has_option("DTC", "uds_ecu_qualifier"):
-                val = config.get("DTC", "uds_ecu_qualifier", fallback="").strip()
-                if val:
-                    lines.append(f"uds_ecu_qualifier = {val}\n")
+            self._append_filter_options(lines, config, SECTION_DTC)
+            self._append_valid_log_level(lines, config, SECTION_DTC)
+            self._append_option_line(lines, config, SECTION_DTC, OPTION_DIDINFO_INPUTS)
+            self._append_option_line(lines, config, SECTION_DTC, OPTION_CIN_INPUT_EXCEL)
+            self._append_nonempty_option(lines, config, SECTION_DTC, OPTION_UDS_ECU_QUALIFIER)
 
-        if config.has_section("DTC_IOMAPPING"):
-            lines.append("\n[DTC_IOMAPPING]\n")
-            for key in config.options("DTC_IOMAPPING"):
-                if key.lower() != "enabled":
-                    lines.append(f"{key} = {config.get('DTC_IOMAPPING', key) or ''}\n")
+        if config.has_section(SECTION_DTC_IOMAPPING):
+            lines.append(f"\n[{SECTION_DTC_IOMAPPING}]\n")
+            for option_name in config.options(SECTION_DTC_IOMAPPING):
+                if option_name.lower() != "enabled":
+                    lines.append(
+                        f"{option_name} = {config.get(SECTION_DTC_IOMAPPING, option_name) or ''}\n"
+                    )
         # [DTC_CONFIG_ENUM] 仅保留 inputs（DID 配置表路径），等级/平台/车型/日志/UDS 等由 [DTC] 统一提供，此处不写入
-        if config.has_section("DTC_CONFIG_ENUM"):
-            lines.append("\n[DTC_CONFIG_ENUM]\n")
-            if config.has_option("DTC_CONFIG_ENUM", "inputs"):
-                lines.append(f"inputs = {config.get('DTC_CONFIG_ENUM', 'inputs') or ''}\n")
+        if config.has_section(SECTION_DTC_CONFIG_ENUM):
+            lines.append(f"\n[{SECTION_DTC_CONFIG_ENUM}]\n")
+            if config.has_option(SECTION_DTC_CONFIG_ENUM, OPTION_INPUTS):
+                lines.append(f"{OPTION_INPUTS} = {config.get(SECTION_DTC_CONFIG_ENUM, OPTION_INPUTS) or ''}\n")
 
         if fixed_config_backup:
             current_fixed = {}
-            fixed_keys = fixed_paths_keys + dynamic_paths_keys
-            for key in fixed_keys:
-                if key in fixed_config_backup:
-                    current_fixed[key] = fixed_config_backup[key]
+            fixed_option_names = fixed_path_option_names + dynamic_path_option_names
+            for option_name in fixed_option_names:
+                if option_name in fixed_config_backup:
+                    current_fixed[option_name] = fixed_config_backup[option_name]
             if current_fixed:
                 self._write_fixed_config(current_fixed)
 
@@ -1029,7 +1248,7 @@ class ConfigManager:
                 "# ============================================================\n",
                 "# 左右后域配置\n",
                 "# ============================================================\n",
-                "[LR_REAR]\n",
+                f"[{SECTION_LR_REAR}]\n",
                 "\n",
             ]
 
@@ -1046,8 +1265,8 @@ class ConfigManager:
                 continue
             if "=" in stripped:
                 parts = stripped.split("=", 1)
-                opt = parts[0].strip()
-                if not opt or opt.startswith(","):
+                option_name = parts[0].strip()
+                if not option_name or option_name.startswith(","):
                     continue
                 cleaned_lines.append(line if line.endswith("\n") else line + "\n")
                 continue
@@ -1058,8 +1277,8 @@ class ConfigManager:
         while cleaned_lines and not cleaned_lines[-1].strip():
             cleaned_lines.pop()
 
-        with open(path, "w", encoding="utf-8") as f:
-            f.writelines(cleaned_lines)
+        with open(output_config_path, "w", encoding="utf-8") as config_file:
+            config_file.writelines(cleaned_lines)
         # 强制同步到磁盘，确保后续 DIDConfig 等生成器 load() 时能读到最新配置（Windows 无 os.sync，忽略）
         try:
             if hasattr(os, "sync"):
@@ -1070,11 +1289,24 @@ class ConfigManager:
         # 根据最新配置生成 uds.txt（若配置了 uds_ecu_qualifier 和 output_dir）
         try:
             self._write_uds_files(config, only_domains=uds_domains)
-        except Exception as e:
-            print(f"根据配置生成 uds.txt 失败: {e}")
+        except Exception as error:
+            print(f"根据配置生成 uds.txt 失败: {error}")
         # 中央域：生成 PowerRelayConfig.txt、IgnitionCycle.txt 到 output_dir/Configuration/
         try:
-            if uds_domains is None or "CENTRAL" in (uds_domains or []):
+            if uds_domains is None or SECTION_CENTRAL in (uds_domains or []):
                 self._write_central_config_files(config)
-        except Exception as e:
-            print(f"根据配置生成中央域配置文件失败: {e}")
+        except Exception as error:
+            print(f"根据配置生成中央域配置文件失败: {error}")
+
+    def save_formatted_config(
+        self,
+        config: configparser.ConfigParser,
+        config_path: Optional[str] = None,
+        uds_domains: Optional[List[str]] = None,
+    ) -> None:
+        """公开格式化写回入口，供外部模块保存配置。"""
+        self._write_formatted_config(
+            config,
+            config_path=config_path,
+            uds_domains=uds_domains,
+        )

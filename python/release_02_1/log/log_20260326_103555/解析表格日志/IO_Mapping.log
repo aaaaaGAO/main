@@ -1,7 +1,0 @@
-2026-03-26 10:35:56,717  [io_mapping] 日志已启用：C:\Users\高登兰\Desktop\所有完整代码2026_3_10_重构版\python\release_02_1\log\log_20260326_103555\解析表格日志\IO_Mapping.log
-2026-03-26 10:35:56,814  [io_mapping] 处理Excel=CARIAD MQB LDCU-RDCU HiL_IO_mapping0209 (1).xlsx sheet名=LZCU1.0
-2026-03-26 10:35:56,830 WARNING [io_mapping] Name 同表多 Path，保留首次：来源=CARIAD MQB LDCU-RDCU HiL_IO_mapping0209 (1).xlsx/LZCU1.0 name='J_DO_HS_HallPower' path_first='VTS::VT2516_2_Ch6::CurBit' path_ignored=['VTS::VT2516_4_Ch3::CurBit', 'VTS::VT2516_4_Ch4::CurBit'] 行=151,166
-2026-03-26 10:35:56,834 WARNING [io_mapping] Name 同表多 Path，保留首次：来源=CARIAD MQB LDCU-RDCU HiL_IO_mapping0209 (1).xlsx/LZCU1.0 name='J_DO_HS_IntLgthPower' path_first='VTS::VT2848_2_Ch28::CurBit' path_ignored=['VTS::VT2516_4_Ch5::CurBit', 'VTS::VT2516_4_Ch6::CurBit'] 行=167,182
-2026-03-26 10:35:56,834 WARNING [io_mapping] Name 同表多 Path，保留首次：来源=CARIAD MQB LDCU-RDCU HiL_IO_mapping0209 (1).xlsx/LZCU1.0 name='J_DO_HS_ATLPower' path_first='VTS::VT2516_4_Ch14::CurBit' path_ignored=['VTS::VT2516_4_Ch15::CurBit', 'VTS::VT2516_4_Ch16::CurBit'] 行=171,189
-2026-03-26 10:35:56,836 WARNING [io_mapping] Name 同表多 Path，保留首次：来源=CARIAD MQB LDCU-RDCU HiL_IO_mapping0209 (1).xlsx/LZCU1.0 name='J_DO_HS_Backlight' path_first='VTS::VT2516_4_Ch2::CurBit' path_ignored=['VTS::VT2848_3_Ch11::CurBit'] 行=194
-2026-03-26 10:35:56,836 ERROR [io_mapping] 跳过sheet: Excel=CARIAD MQB LDCU-RDCU HiL_IO_mapping0209 (1).xlsx sheet=变更记录 表头缺少必须列: Name, Path, Values

@@ -1,7 +1,0 @@
-2026-03-18 13:40:03,129  解析 Excel 文件: python工具转译校验_V1.0.xlsx
-2026-03-18 13:40:03,329 INFO   处理表=TC
-2026-03-18 13:40:03,334 INFO 生成 XML 文件...
-2026-03-18 13:40:03,337 INFO 文件已使用 UTF-8 编码保存
-2026-03-18 13:40:03,338 INFO XML 文件已生成: C:\Users\高登兰\Desktop\python开发合肥\zhongyang\TESTmode\Generated_Testcase.xml
-2026-03-18 13:40:03,339 INFO ============================================================
-2026-03-18 13:40:03,341  所有文件生成完成！XML 文件已生成: C:\Users\高登兰\Desktop\python开发合肥\zhongyang\TESTmode\Generated_Testcase.xml

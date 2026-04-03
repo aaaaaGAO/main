@@ -17,7 +17,7 @@ def execute_workflow():
 
     功能：创建 DIDInfoGeneratorService 并执行 run_legacy_pipeline，内部完成所有步骤。
 
-    形参：无（配置与路径均从 Configuration.txt 及当前工作目录解析）。
+    形参：无（配置与路径均从当前主配置文件及当前工作目录解析）。
 
     返回：Service 内部可能返回输出路径等；本入口不向外返回该值。
     """

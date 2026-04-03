@@ -21,20 +21,16 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Callable, List, Optional, Sequence
+from typing import Any, Callable, List, Optional, Sequence
 
-if TYPE_CHECKING:
-    from core.translator.config_enum import ConfigEnumParseError
+try:
     from core.translator.io_mapping import IOMappingParseError
-else:
-    try:
-        from core.translator.io_mapping import IOMappingParseError
-    except ImportError:  # pragma: no cover - 兼容兜底
-        IOMappingParseError = Exception
-    try:
-        from core.translator.config_enum import ConfigEnumParseError
-    except ImportError:  # pragma: no cover - 兼容兜底
-        ConfigEnumParseError = Exception
+except ImportError:  # pragma: no cover - 兼容兜底
+    IOMappingParseError = Exception  # type: ignore[misc, assignment]
+try:
+    from core.translator.config_enum import ConfigEnumParseError
+except ImportError:  # pragma: no cover - 兼容兜底
+    ConfigEnumParseError = Exception  # type: ignore[misc, assignment]
 
 
 class KeywordMatchError(Exception):
@@ -70,40 +66,159 @@ class ParseResult:
     original_line_full: str
 
 
-def _strip_inline_comment(s: str) -> str:
-    """去掉行内 // 及其后的注释。参数: s — 一行字符串。返回: 去掉注释并 strip 后的字符串。"""
-    if "//" in s:
-        return s.split("//", 1)[0].strip()
-    return s.strip()
+def strip_inline_comment(line_text: str) -> str:
+    """去掉行内 // 及其后的注释。参数: line_text — 一行字符串。返回: 去掉注释并 strip 后的字符串。"""
+    if "//" in line_text:
+        return line_text.split("//", 1)[0].strip()
+    return line_text.strip()
 
 
-def _iter_inclusive(start: float, end: float, step: float) -> List[float]:
+def iter_inclusive_values(start: float, end: float, step: float) -> List[float]:
     """生成 [start, end] 步长为 step 的数列（含端点）。参数: start/end/step — 起止与步长。返回: 数值列表。"""
     if step == 0:
         return []
-    vals: List[float] = []
+    values: List[float] = []
     cur = start
     if step > 0:
         while cur <= end + 1e-12:
-            vals.append(cur)
+            values.append(cur)
             cur += step
     else:
         while cur >= end - 1e-12:
-            vals.append(cur)
+            values.append(cur)
             cur += step
-    return vals
+    return values
 
 
-def _format_num(x: float) -> str:
-    """浮点数格式化为字符串，整数则去掉小数部分。参数: x — 数值。返回: 字符串。"""
-    if abs(x - int(x)) < 1e-12:
-        return str(int(x))
-    return str(x)
+def format_numeric_value(value: float) -> str:
+    """浮点数格式化为字符串，整数则去掉小数部分。参数: value — 数值。返回: 字符串。"""
+    if abs(value - int(value)) < 1e-12:
+        return str(int(value))
+    return str(value)
 
 
-def _escape_c_string(s: str) -> str:
-    """对 CAPL/类 C 字符串做反斜杠与双引号转义。参数: s — 原始字符串。返回: 转义后字符串。"""
-    return s.replace("\\", "\\\\").replace('"', '\\"')
+def escape_c_string(text: str) -> str:
+    """对 CAPL/类 C 字符串做反斜杠与双引号转义。参数: text — 原始字符串。返回: 转义后字符串。"""
+    return text.replace("\\", "\\\\").replace('"', '\\"')
+
+
+def is_literal_token(token: str) -> bool:
+    """判断 token 是否为字面量（数字、单位等），不参与 IO 映射替换。"""
+    if not token:
+        return True
+    text = str(token).strip()
+    if not text:
+        return True
+    if text.replace(".", "", 1).replace("-", "", 1).replace("+", "", 1).isdigit():
+        return True
+    if text[0] in "-+" and text[1:].replace(".", "", 1).isdigit():
+        return True
+    return text.lower() in ("ms", "s", "us", "ns", "v", "mv", "a", "ma")
+
+
+def looks_like_config_name(token: str) -> bool:
+    """判断 token 是否像配置名，便于在未命中 IO_mapping 时给出更明确错误。"""
+    if not token or len(token) < 2:
+        return False
+    normalized = token.strip()
+    if "Configure" in normalized or "Enable" in normalized or "Config" in normalized:
+        return True
+    return normalized[0].isupper() and any(char.isupper() for char in normalized[1:])
+
+
+def extract_two_line_path_lines(text: str) -> tuple[str, str] | None:
+    """提取恰好两行的 Path 文本，返回首行与次行；不满足条件时返回 None。"""
+    if "\n" not in text and "\r" not in text:
+        return None
+    raw_lines = text.replace("\r\n", "\n").replace("\r", "\n").split("\n")
+    path_lines = [line.strip() for line in raw_lines if line.strip()]
+    if len(path_lines) != 2:
+        return None
+    return path_lines[0], path_lines[1]
+
+
+def build_inner_set_lines(
+    first_line: str,
+    keyword_specs: dict,
+    mode_l: str,
+    config_enum_ctx: Any,
+    sanitize_clib_name: Optional[Callable[[str], str]],
+    default_param_parser: Optional[Callable[[Sequence[str]], Sequence[str]]],
+    clib_validator: Optional[Callable[[str], bool]],
+) -> List[str]:
+    """将两行 Path 的第一行按普通 Step Set 规则转换为额外 CAPL 行。"""
+    inner_step_line = f"Step Set {first_line}"
+    try:
+        inner_res = parse_step_line(
+            inner_step_line,
+            keyword_specs,
+            mode=mode_l,
+            io_mapping_ctx=None,
+            config_enum_ctx=config_enum_ctx,
+            sanitize_clib_name=sanitize_clib_name,
+            default_param_parser=default_param_parser,
+            clib_validator=clib_validator,
+        )
+    except Exception:
+        inner_res = None
+    return list(inner_res.code_lines) if inner_res and inner_res.code_lines else []
+
+
+def emit_set_for_two_line_keep_time(
+    one_arg_raw: str,
+    keyword_specs: dict,
+    mode_l: str,
+    config_enum_ctx: Any,
+    sanitize_clib_name: Optional[Callable[[str], str]],
+    default_param_parser: Optional[Callable[[Sequence[str]], Sequence[str]]],
+    clib_validator: Optional[Callable[[str], bool]],
+) -> tuple[str, List[str]]:
+    """处理 KeepOpenWithTime 等关键字的两行 Path 规则。"""
+    if not one_arg_raw:
+        return one_arg_raw, []
+    path_lines = extract_two_line_path_lines(str(one_arg_raw))
+    if not path_lines:
+        return one_arg_raw, []
+    first_line, second_line = path_lines
+    extra_lines = build_inner_set_lines(
+        first_line,
+        keyword_specs,
+        mode_l,
+        config_enum_ctx,
+        sanitize_clib_name,
+        default_param_parser,
+        clib_validator,
+    )
+    return second_line, extra_lines
+
+
+def emit_set_for_two_line_path(
+    args: List[str],
+    keyword_specs: dict,
+    mode_l: str,
+    config_enum_ctx: Any,
+    sanitize_clib_name: Optional[Callable[[str], str]],
+    default_param_parser: Optional[Callable[[Sequence[str]], Sequence[str]]],
+    clib_validator: Optional[Callable[[str], bool]],
+) -> tuple[List[str], List[str]]:
+    """处理普通关键字首参数为两行 Path 的规则。"""
+    if not args:
+        return args, []
+    first_arg = str(args[0]).strip()
+    path_lines = extract_two_line_path_lines(first_arg)
+    if not path_lines:
+        return args, []
+    first_line, second_line = path_lines
+    extra_lines = build_inner_set_lines(
+        first_line,
+        keyword_specs,
+        mode_l,
+        config_enum_ctx,
+        sanitize_clib_name,
+        default_param_parser,
+        clib_validator,
+    )
+    return [second_line] + list(args[1:]), extra_lines
 
 
 def parse_step_line(
@@ -135,7 +250,7 @@ def parse_step_line(
     if original_line_full.startswith("//"):
         return None
 
-    line_without_comment = _strip_inline_comment(original_line_full)
+    line_without_comment = strip_inline_comment(original_line_full)
     if not line_without_comment:
         return None
 
@@ -211,12 +326,12 @@ def parse_step_line(
         if not inner_cmd_tokens:
             raise StepSyntaxError(f"AutoIncreaseInVal 缺少内部命令: {original_line_full}")
 
-        vals = _iter_inclusive(start_v, end_v, step_v)
+        generated_values = iter_inclusive_values(start_v, end_v, step_v)
         out_lines: List[str] = []
-        for v in vals:
-            v_str = _format_num(v)
+        for generated_value in generated_values:
+            value_text = format_numeric_value(generated_value)
             temp_tokens = list(inner_cmd_tokens)
-            temp_tokens.append(v_str)
+            temp_tokens.append(value_text)
             new_inner_line = " ".join(temp_tokens)
             new_inner_tokens = new_inner_line.strip().split()
             if new_inner_tokens and new_inner_tokens[0].lower() != "step":
@@ -268,21 +383,6 @@ def parse_step_line(
         "keepovercurwithtime",
     }
 
-    def _is_literal_token(t: str) -> bool:
-        """判断 token 是否为字面量（数字、单位如 ms/s 等），不参与 IO 映射替换。参数: t — 单个 token。返回: bool。"""
-        if not t:
-            return True
-        s = str(t).strip()
-        if not s:
-            return True
-        if s.replace(".", "", 1).replace("-", "", 1).replace("+", "", 1).isdigit():
-            return True
-        if s[0] in "-+" and s[1:].replace(".", "", 1).isdigit():
-            return True
-        if s.lower() in ("ms", "s", "us", "ns", "v", "mv", "a", "ma"):
-            return True
-        return False
-
     if first_cmd in _KEEP_TIME_CMDS:
         spec_kt = (
             keyword_specs.get("step::" + first_cmd)
@@ -313,19 +413,9 @@ def parse_step_line(
                     )
                 except IOMappingParseError:
                     raise IOMappingParseError(f"IO_mapping 表中 Name 找不到: {first_tok}")
-        elif _is_literal_token(first_tok):
+        elif is_literal_token(first_tok):
             one_arg_raw = " ".join(args_kt).strip()
         else:
-
-            def _looks_like_config_name(t: str) -> bool:
-                if not t or len(t) < 2:
-                    return False
-                u = t.strip()
-                if "Configure" in u or "Enable" in u or "Config" in u:
-                    return True
-                if u[0].isupper() and any(c.isupper() for c in u[1:]):
-                    return True
-                return False
 
             if io_mapping_ctx is not None:
                 name_key_kt = first_tok.casefold().strip()
@@ -346,7 +436,7 @@ def parse_step_line(
                         raise IOMappingParseError(
                             f"IO_mapping 表中 Name 找不到: {first_tok}"
                         )
-                elif _looks_like_config_name(first_tok):
+                elif looks_like_config_name(first_tok):
                     raise IOMappingParseError(f"IO_mapping 表中 Name 找不到: {first_tok}")
                 else:
                     one_arg_raw = " ".join(args_kt).strip()
@@ -354,52 +444,17 @@ def parse_step_line(
                 # 未配置 io_mapping 时，全部透传为参数，不报错
                 one_arg_raw = " ".join(args_kt).strip()
 
-        extra_lines_kt: List[str] = []
+        one_arg_raw, extra_lines_kt = emit_set_for_two_line_keep_time(
+            one_arg_raw,
+            keyword_specs,
+            mode_l,
+            config_enum_ctx,
+            sanitize_clib_name,
+            default_param_parser,
+            clib_validator,
+        )
 
-        # 对 KeepOpenWithTime 等特殊关键字，同样支持“两行 Path”规则：
-        # 若 one_arg_raw 以两行 Path 开头，则：
-        #   - 第 1 行按 Set 关键字生成一条额外 Set CAPL 行；
-        #   - 第 2 行及其后续内容作为当前关键字的参数。
-        def _maybe_emit_set_for_two_line_in_keep_time() -> None:
-            nonlocal one_arg_raw, extra_lines_kt
-            if not one_arg_raw:
-                return
-            text = str(one_arg_raw)
-            if "\n" not in text and "\r" not in text:
-                return
-            raw_lines = text.replace("\r\n", "\n").replace("\r", "\n").split("\n")
-            path_lines = [ln.strip() for ln in raw_lines if ln.strip()]
-            if len(path_lines) != 2:
-                return
-            first_line, second_line = path_lines
-
-            # 将第 1 行当作“普通 Step Set”来处理：
-            # 直接构造一行 Step Set + 第一行的文本，不再拆分 "=" 号或去掉分号，
-            # 交给关键字-函数映射表按正常规则解析成 CAPL 函数。
-            inner_step_line = f"Step Set {first_line}"
-            try:
-                inner_res = parse_step_line(
-                    inner_step_line,
-                    keyword_specs,
-                    mode=mode_l,
-                    io_mapping_ctx=None,  # 这里 Path 已是 IO 映射后的结果，无需再次做 IO_mapping
-                    config_enum_ctx=config_enum_ctx,
-                    sanitize_clib_name=sanitize_clib_name,
-                    default_param_parser=default_param_parser,
-                    clib_validator=clib_validator,
-                )
-            except Exception:
-                inner_res = None
-
-            if inner_res and inner_res.code_lines:
-                extra_lines_kt.extend(inner_res.code_lines)
-
-            # 将第 2 行作为当前关键字参数的开头，后续保持原样
-            one_arg_raw = second_line
-
-        _maybe_emit_set_for_two_line_in_keep_time()
-
-        one_arg = _escape_c_string(one_arg_raw or "")
+        one_arg = escape_c_string(one_arg_raw or "")
         all_lines_kt = extra_lines_kt + [f'  {capl_func}("{one_arg}");']
         return ParseResult(all_lines_kt, original_line_full)
 
@@ -500,70 +555,20 @@ def parse_step_line(
             if first_arg.upper().startswith("J_"):
                 args = list(io_mapping_ctx.transform_args(args))
 
-    extra_lines: List[str] = []
-
-    # 特殊规则：当经 IO_mapping 后首参数 Path 为两行时：
-    # - 第 1 行按 Set 关键字生成一条额外的 Set CAPL 行（仅处理“两行 Path”的情况）；
-    # - 第 2 行作为当前关键字的 Path，走原有逻辑。
-    def _maybe_emit_set_for_two_line_path() -> None:
-        nonlocal args, extra_lines
-        if not args:
-            return
-        first_arg = str(args[0]).strip()
-        if "\n" not in first_arg and "\r" not in first_arg:
-            return
-        # 按行拆分，仅保留非空行；只处理恰好两行的情况
-        raw_lines = first_arg.replace("\r\n", "\n").replace("\r", "\n").split("\n")
-        path_lines = [ln.strip() for ln in raw_lines if ln.strip()]
-        if len(path_lines) != 2:
-            return
-        first_line, second_line = path_lines
-
-        # 将第 1 行当作“普通 Step Set”来处理：
-        # 直接构造一行 Step Set + 第一行的文本，不再拆分 "=" 号或去掉分号，
-        # 交给关键字-函数映射表按正常规则解析成 CAPL 函数。
-        inner_step_line = f"Step Set {first_line}"
-        try:
-            inner_res = parse_step_line(
-                inner_step_line,
-                keyword_specs,
-                mode=mode_l,
-                io_mapping_ctx=None,  # 这里 Path 已是 IO 映射后的结果，无需再次做 IO_mapping
-                config_enum_ctx=config_enum_ctx,
-                sanitize_clib_name=sanitize_clib_name,
-                default_param_parser=default_param_parser,
-                clib_validator=clib_validator,
-            )
-        except Exception:
-            inner_res = None
-
-        if inner_res and inner_res.code_lines:
-            extra_lines.extend(inner_res.code_lines)
-
-        # 将第 2 行作为当前关键字的 Path，后续按原有逻辑生成主 CAPL 行
-        args = [second_line] + list(args[1:])
-
-    _maybe_emit_set_for_two_line_path()
+    args, extra_lines = emit_set_for_two_line_path(
+        args,
+        keyword_specs,
+        mode_l,
+        config_enum_ctx,
+        sanitize_clib_name,
+        default_param_parser,
+        clib_validator,
+    )
 
     if args:
         one_arg = " ".join([str(a) for a in args]).strip()
 
-        # 兼容 IO_mapping / Path 中带有“= …;”这类写法：
-        # - 不关心右边具体是什么值（1、0、枚举等），原样跟在 Path 后面；
-        # - 仅去掉中间的 "=" 和末尾可选的分号 ";"；
-        # - 若原本就是 "Path 1" 或不含 "="，则保持不变。
-        text = one_arg
-        if "=" in text and "\n" not in text and "\r" not in text:
-            # 只处理单行、单个 "=" 的简单形式
-            left, right = text.split("=", 1)
-            left = left.strip()
-            right = right.strip()
-            if right.endswith(";"):
-                right = right[:-1].strip()
-            if left and right:
-                one_arg = f"{left} {right}"
-
-        one_arg = _escape_c_string(one_arg)
+        one_arg = escape_c_string(one_arg)
         main_code = f'  {spec.capl_func}("{one_arg}");'
     else:
         main_code = f"  {spec.capl_func}();"

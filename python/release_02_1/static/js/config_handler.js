@@ -30,7 +30,23 @@
     var relayConfigs = [];
     var relayCounter = 1;
     var relayCoilModes = {};
-    // IG / PW / 点火循环不再带默认值，避免在用户未配置时写入 Configuration.txt
+    /** UI 已隐藏的继电器字段：写入主配置/API 前剥离（与 PowerRelayConfig.txt 不再输出的项一致） */
+    var RELAY_KEYS_STRIPPED_FOR_SAVE = ['dataBits', 'stopBits', 'kHANDSHAKE_DISABLED', 'parity', 'relayID'];
+
+    function relayFromPersisted(r) {
+        var o = {};
+        if (!r || typeof r !== 'object') return o;
+        Object.keys(r).forEach(function (k) {
+            if (RELAY_KEYS_STRIPPED_FOR_SAVE.indexOf(k) === -1) o[k] = r[k];
+        });
+        return o;
+    }
+
+    function relayConfigsForSave(list) {
+        if (!Array.isArray(list)) return list;
+        return list.map(function (r) { return relayFromPersisted(r); });
+    }
+    // IG / PW / 点火循环不再带默认值，避免在用户未配置时写入当前主配置文件
     var igConfig = { equipmentType: '', channelNumber: '', initStatus: '', eqPosition: '' };
     var pwConfig = { equipmentType: '', channelNumber: '', initStatus: '', eqPosition: '' };
     var ignConfig = { waitTime: '', current: '' };
@@ -84,7 +100,7 @@
             c_uart_comm: uartCommConfig,
             c_srv: selection.c_srv || '',
             c_pwr: powerConfig,
-            c_rly: relayConfigs,
+            c_rly: relayConfigsForSave(relayConfigs),
             c_ig: igConfig,
             c_pw: pwConfig,
             c_out_root: document.getElementById('c_out_root') ? document.getElementById('c_out_root').value || '' : '',
@@ -259,8 +275,7 @@
             if (cfg.c_rly && Array.isArray(cfg.c_rly)) {
                 relayConfigs.length = 0;
                 cfg.c_rly.forEach(function (r, idx) {
-                    var o = {};
-                    Object.keys(r).forEach(function (k) { o[k] = r[k]; });
+                    var o = relayFromPersisted(r);
                     o.id = idx + 1;
                     relayConfigs.push(o);
                 });
@@ -351,8 +366,7 @@
             }
             if (cfg.c_rly && Array.isArray(cfg.c_rly)) {
                 relayConfigs = cfg.c_rly.map(function (r, idx) {
-                    var o = {};
-                    Object.keys(r).forEach(function (k) { o[k] = r[k]; });
+                    var o = relayFromPersisted(r);
                     o.id = idx + 1;
                     return o;
                 });
@@ -488,8 +502,7 @@
         if (data.c_rly) {
             if (Array.isArray(data.c_rly)) {
                 relayConfigs = data.c_rly.map(function (r, idx) {
-                    var o = {};
-                    Object.keys(r).forEach(function (k) { o[k] = r[k]; });
+                    var o = relayFromPersisted(r);
                     o.id = idx + 1;
                     return o;
                 });
@@ -658,6 +671,7 @@
     global.getSelectedSheets = getSelectedSheets;
     global.getDtcIoSelectedSheets = getDtcIoSelectedSheets;
     global.collectCurrentState = collectCurrentState;
+    global.relayConfigsForSave = relayConfigsForSave;
     global.restoreChecks = restoreChecks;
     global.restoreCaseCheckboxes = restoreCaseCheckboxes;
     global.renderFilters = renderFilters;

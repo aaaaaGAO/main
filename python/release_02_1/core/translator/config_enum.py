@@ -4,7 +4,7 @@
 configuration.xlsx 枚举翻译（供 CAN/CIN 生成器复用）
 
 功能概览：
-  1. 从 Configuration.txt 的 [CONFIG_ENUM] 段读取 Inputs，解析 configuration.xlsx 路径及 Sheet 列表。
+  1. 从主配置文件的 [CONFIG_ENUM] 段读取 Inputs，解析 configuration.xlsx 路径及 Sheet 列表。
   2. 打开 configuration.xlsx，按 Name / Values 列构建「Name -> 枚举文本->数值」映射（不做 Name->Path 替换）。
   3. 专用于关键字 Set_Config：对步骤参数 [name, value...] 做枚举翻译（value 文本 -> Values 中左侧数值），name 不替换。
   4. 纯数值、含表达式符号 '><=()' 的 value 不翻译，直接透传；与 IOMAPPING 一致：只要配置了 Inputs 就启用（不检查 Enabled）。
@@ -19,6 +19,11 @@ from typing import Dict, List, Optional
 
 from openpyxl import load_workbook
 
+from services.config_constants import (
+    DEFAULT_DOMAIN_LR_REAR,
+    OPTION_INPUTS_CANDIDATES,
+    get_config_enum_section_candidates,
+)
 from utils.excel_io import split_input_lines
 
 
@@ -32,31 +37,31 @@ _EXPR_CHARS = set("><=()")
 _COLON_CHARS = (":", "\uFF1A")
 
 
-def _find_colon(s: str, start: int) -> int:
+def find_colon(s: str, start: int) -> int:
     """在 s[start:] 中查找第一个冒号（半角/全角）位置。参数: s — 字符串；start — 起始下标。返回: 索引，无则 -1。"""
     candidates = [s.find(c, start) for c in _COLON_CHARS]
     candidates = [p for p in candidates if p >= 0]
     return min(candidates) if candidates else -1
 
 
-def _norm_key(s: str) -> str:
+def normalize_enum_name_key(s: str) -> str:
     """Name/键规范化：去首尾空白、转小写。参数: s — 原始字符串。返回: str。"""
     return str(s).strip().casefold()
 
 
-def _is_numeric(s: str) -> bool:
+def is_numeric_value(s: str) -> bool:
     """判断是否为十进制数值。参数: s — 待判断字符串。返回: bool。"""
     return bool(s is not None and _RE_NUMERIC.match(str(s)))
 
 
-def _has_expr_chars(s: str) -> bool:
+def has_expression_chars(s: str) -> bool:
     """判断是否含表达式符号 ><=()，此类值不翻译。参数: s — 待判断字符串。返回: bool。"""
     if s is None:
         return False
     return any((ch in _EXPR_CHARS) for ch in str(s))
 
 
-def _parse_values_cell(values_cell: str) -> Dict[str, str]:
+def parse_values_cell(values_cell: str) -> Dict[str, str]:
     """解析 Values 单元格为「翻译前(右)->翻译后(左)」映射。参数: values_cell — 单元格字符串。返回: 规范 key -> 左侧值。"""
     if values_cell is None:
         return {}
@@ -73,21 +78,21 @@ def _parse_values_cell(values_cell: str) -> Dict[str, str]:
         i = 0
         n = len(line)
         while i < n:
-            j = _find_colon(line, i)
+            j = find_colon(line, i)
             if j < 0:
                 break
             left = line[i:j].strip()
             if not left:
                 i = j + 1
                 continue
-            k = j + 1
-            while k < n and line[k].isspace():
-                k += 1
-            start_right = k
+            right_start = j + 1
+            while right_start < n and line[right_start].isspace():
+                right_start += 1
+            start_right = right_start
             next_pair_pos = None
-            m = re.search(r"\s+\S+\s*[:\uFF1A]", line[start_right:])
-            if m:
-                next_pair_pos = start_right + m.start()
+            next_pair_match = re.search(r"\s+\S+\s*[:\uFF1A]", line[start_right:])
+            if next_pair_match:
+                next_pair_pos = start_right + next_pair_match.start()
             if next_pair_pos is None:
                 right = line[start_right:].strip()
                 i = n
@@ -98,7 +103,7 @@ def _parse_values_cell(values_cell: str) -> Dict[str, str]:
                     i += 1
             if not right:
                 continue
-            mapping[_norm_key(right)] = left.strip()
+            mapping[normalize_enum_name_key(right)] = left.strip()
 
     return mapping
 
@@ -117,7 +122,7 @@ class ConfigEnumContext:
         if not raw_name:
             raise ConfigEnumParseError("Name 为空")
 
-        name_key = _norm_key(raw_name)
+        name_key = normalize_enum_name_key(raw_name)
         values_map = self.name_to_values.get(name_key)
         values_empty = False
         if not values_map:
@@ -132,26 +137,26 @@ class ConfigEnumContext:
 
         rest_tokens: List[str] = []
         for raw in args[1:]:
-            t = str(raw).strip()
-            if t:
-                rest_tokens.append(t)
+            token_text = str(raw).strip()
+            if token_text:
+                rest_tokens.append(token_text)
         rest_str = " ".join(rest_tokens).strip()
         if rest_str:
-            if _is_numeric(rest_str):
+            if is_numeric_value(rest_str):
                 out.append(rest_str)
                 return out
-            if _has_expr_chars(rest_str):
+            if has_expression_chars(rest_str):
                 out.append(rest_str)
                 return out
             if values_empty:
                 raise ConfigEnumParseError(f"Values 为空: Name={raw_name}, Value={rest_str}")
             if _RE_ENGLISH_PHRASE.match(rest_str):
-                k_all = _norm_key(rest_str)
+                k_all = normalize_enum_name_key(rest_str)
                 if k_all in values_map:
                     out.append(values_map[k_all])
                     return out
                 raise ConfigEnumParseError(f"Values 未匹配: Name={raw_name}, Value={rest_str}")
-            k_all = _norm_key(rest_str)
+            k_all = normalize_enum_name_key(rest_str)
             if k_all in values_map:
                 out.append(values_map[k_all])
                 return out
@@ -163,7 +168,7 @@ class ConfigEnumContext:
                 i += 1
                 continue
 
-            if _is_numeric(tok):
+            if is_numeric_value(tok):
                 out.append(tok)
                 i += 1
                 continue
@@ -171,13 +176,13 @@ class ConfigEnumContext:
             if i + 1 < len(args):
                 tok2 = str(args[i + 1]).strip()
                 two = f"{tok} {tok2}".strip()
-                two_key = _norm_key(two)
+                two_key = normalize_enum_name_key(two)
                 if two_key in values_map:
                     out.append(values_map[two_key])
                     i += 2
                     continue
 
-            one_key = _norm_key(tok)
+            one_key = normalize_enum_name_key(tok)
             if one_key in values_map:
                 out.append(values_map[one_key])
                 i += 1
@@ -190,14 +195,16 @@ class ConfigEnumContext:
 
 def _get_config_enum_inputs_text(config, domain: str) -> str:
     """从配置中按域读取 CONFIG_ENUM 的 Inputs 文本。参数: config — 配置对象；domain — 域（如 LR_REAR，兼容全局 CONFIG_ENUM）。返回: Inputs 字符串。"""
-    section_candidates = [f"{domain}_CONFIG_ENUM"] if domain and domain != "LR_REAR" else ["CONFIG_ENUM"]
+    section_candidates = get_config_enum_section_candidates(domain)
     for section in section_candidates:
         if not config.has_section(section):
             continue
-        inputs_text = (
-            config.get(section, "Inputs", fallback="")
-            or config.get(section, "inputs", fallback="")
-        ).strip("\n")
+        inputs_text = ""
+        for option_name in OPTION_INPUTS_CANDIDATES:
+            inputs_text = config.get(section, option_name, fallback="")
+            if inputs_text:
+                break
+        inputs_text = inputs_text.strip("\n")
         if inputs_text.strip():
             return inputs_text
     return ""
@@ -207,9 +214,9 @@ def load_config_enum_from_config(
     config,
     base_dir: Optional[str] = None,
     config_path: Optional[str] = None,
-    domain: str = "LR_REAR",
+    domain: str = DEFAULT_DOMAIN_LR_REAR,
 ) -> Optional[ConfigEnumContext]:
-    """从 Configuration.txt 的 [CONFIG_ENUM] 段加载 configuration.xlsx，构建 Name->Values 枚举上下文。
+    """从主配置文件的 [CONFIG_ENUM] 段加载 configuration.xlsx，构建 Name->Values 枚举上下文。
     参数: config — 配置对象；base_dir — 工程根目录；config_path — 配置文件路径；domain — 域。
     返回: ConfigEnumContext 或 None（未配置 Inputs 时）。
     """
@@ -248,8 +255,8 @@ def load_config_enum_from_config(
 
         try:
             wb = load_workbook(excel_path, data_only=True, read_only=True)
-        except Exception as e:
-            error_msg = str(e)
+        except Exception as error:
+            error_msg = str(error)
             if (
                 "decompressing" in error_msg.lower()
                 or "incorrect header" in error_msg.lower()
@@ -299,8 +306,8 @@ def load_config_enum_from_config(
 
                 if not name_s:
                     continue
-                enum_map = _parse_values_cell(values_s) if values_s else {}
-                name_to_values[_norm_key(name_s)] = enum_map
+                enum_map = parse_values_cell(values_s) if values_s else {}
+                name_to_values[normalize_enum_name_key(name_s)] = enum_map
 
     if not name_to_values:
         return None

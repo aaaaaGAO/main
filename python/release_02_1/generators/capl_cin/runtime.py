@@ -6,44 +6,47 @@ from __future__ import annotations
 
 import os
 
-from infra.filesystem.pathing import get_project_root
+from infra.filesystem.pathing import RuntimePathResolver, resolve_target_subdir
 from openpyxl import load_workbook
 
 from core.generator_config import GeneratorConfig
 from core.mapping_context import MappingContext
-from utils.path_utils import resolve_target_subdir_smart
-
-
+from services.config_constants import (
+    DEFAULT_DOMAIN_LR_REAR,
+    OPTION_CIN_INPUT_EXCEL_CANDIDATES,
+    OPTION_OUTPUT_DIR_CANDIDATES,
+    SECTION_LR_REAR,
+    SECTION_PATHS,
+)
 class CINEntrypointSupport:
     """收拢 CIN 入口阶段的路径、配置与上下文初始化。"""
 
     @staticmethod
     def resolve_base_dir() -> str:
-        """返回项目根目录（Configuration.txt 所在目录），统一使用 infra.filesystem.pathing.get_project_root。"""
-        return get_project_root(__file__)
+        """返回项目根目录（含主配置 / 固定配置标记文件的目录）。"""
+        return RuntimePathResolver.resolve_base_dir(__file__)
 
     @staticmethod
     def load_runtime_config(base_dir: str) -> dict:
         gconfig = GeneratorConfig(base_dir).load()
-        config_path = gconfig.config_path or os.path.join(base_dir, "config", "Configuration.txt")
+        config_path = RuntimePathResolver.resolve_config_path(base_dir, gconfig.config_path)
         if not os.path.exists(config_path):
             raise FileNotFoundError(f"未找到配置文件: {config_path}")
 
         cfg = gconfig.raw_config
         input_excel_file = gconfig.get_first(
             [
-                ("LR_REAR", "cin_input_excel"),
-                ("LR_REAR", "Cin_Input_Excel"),
-                ("PATHS", "Cin_Input_Excel"),
-                ("PATHS", "cin_input_excel"),
+                (SECTION_LR_REAR, option_name) for option_name in OPTION_CIN_INPUT_EXCEL_CANDIDATES
+            ] + [
+                (SECTION_PATHS, option_name) for option_name in reversed(OPTION_CIN_INPUT_EXCEL_CANDIDATES)
             ]
         )
         input_sheet = gconfig.get_first(
             [
-                ("LR_REAR", "Cin_Input_Sheet"),
-                ("LR_REAR", "cin_input_sheet"),
-                ("PATHS", "Cin_Input_Sheet"),
-                ("PATHS", "cin_input_sheet"),
+                (SECTION_LR_REAR, "Cin_Input_Sheet"),
+                (SECTION_LR_REAR, "cin_input_sheet"),
+                (SECTION_PATHS, "Cin_Input_Sheet"),
+                (SECTION_PATHS, "cin_input_sheet"),
             ],
             fallback="",
         )
@@ -52,16 +55,16 @@ class CINEntrypointSupport:
         )
         if not mapping_excel_file:
             mapping_excel_file = gconfig.get(
-                "PATHS",
+                SECTION_PATHS,
                 "Cin_Mapping_Excel",
                 fallback="input/关键字-CAPL函数映射表.xlsx",
             )
 
         cin_mapping_sheet = gconfig.get_fixed("cin_mapping_sheet") or gconfig.get(
-            "PATHS", "Cin_Mapping_Sheet", fallback=""
+            SECTION_PATHS, "Cin_Mapping_Sheet", fallback=""
         )
         sheet_names_str = gconfig.get_fixed("mapping_sheets") or gconfig.get(
-            "PATHS",
+            SECTION_PATHS,
             "Mapping_Sheets",
             fallback="HIL用例关键字说明,EM_CAN&Uart&LIN,EM_SOA,EM_总线测试专用,EM_设备&其他",
         )
@@ -74,18 +77,17 @@ class CINEntrypointSupport:
 
         output_dir_cin = gconfig.get_first(
             [
-                ("LR_REAR", "Output_Dir_Cin"),
-                ("LR_REAR", "output_dir_cin"),
-                ("PATHS", "Output_Dir_Cin"),
-                ("PATHS", "output_dir_cin"),
+                (SECTION_LR_REAR, "Output_Dir_Cin"),
+                (SECTION_LR_REAR, "output_dir_cin"),
+                (SECTION_PATHS, "Output_Dir_Cin"),
+                (SECTION_PATHS, "output_dir_cin"),
             ]
         )
         output_dir = gconfig.get_first(
             [
-                ("LR_REAR", "Output_Dir"),
-                ("LR_REAR", "output_dir"),
-                ("PATHS", "Output_Dir"),
-                ("PATHS", "output_dir"),
+                (SECTION_LR_REAR, option_name) for option_name in OPTION_OUTPUT_DIR_CANDIDATES
+            ] + [
+                (SECTION_PATHS, option_name) for option_name in OPTION_OUTPUT_DIR_CANDIDATES
             ]
         )
         if output_dir_cin and str(output_dir_cin).strip():
@@ -111,7 +113,7 @@ class CINEntrypointSupport:
             if os.path.isabs(mapping_excel_file)
             else os.path.join(base_dir, mapping_excel_file)
         )
-        output_dir = resolve_target_subdir_smart(base_dir, output_dir, "TESTmode")
+        output_dir = resolve_target_subdir(base_dir, output_dir, "TESTmode")
 
         return {
             "config_path": config_path,
@@ -140,7 +142,7 @@ class CINEntrypointSupport:
             return input_sheet if input_sheet else "未知"
 
     @staticmethod
-    def load_mapping_context(cfg, base_dir: str, config_path: str, domain: str = "LR_REAR"):
+    def load_mapping_context(cfg, base_dir: str, config_path: str, domain: str = DEFAULT_DOMAIN_LR_REAR):
         mapping_ctx = MappingContext.from_config(
             cfg,
             base_dir=base_dir,

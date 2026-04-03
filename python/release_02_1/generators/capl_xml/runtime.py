@@ -11,16 +11,21 @@ from __future__ import annotations
 
 import logging
 import os
+import re
 import sys
 from typing import Any, Optional
 
 from core.case_filter import CaseFilter
+from core.parse_table_loggers import get_testcases_parse_logger
 from core.generator_config import GeneratorConfig
 from core.generator_logging import GeneratorLogger
 from core.run_context import clear_run_logger as _clear_run_logger_impl
+from services.config_constants import DEFAULT_DOMAIN_LR_REAR, SECTION_FILTER, SECTION_LR_REAR, SECTION_PATHS
 from utils.logger import PROGRESS_LEVEL
-from utils.path_utils import resolve_target_subdir_smart
 from utils.sheet_filter import parse_selected_sheets
+
+from infra.filesystem.pathing import RuntimePathResolver, resolve_target_subdir
+from services.filter_service import parse_shaixuan_config
 
 from . import runtime_io as _io
 
@@ -50,6 +55,23 @@ class _BlankLineFriendlyFormatter(logging.Formatter):
             if idx != -1:
                 formatted = formatted.replace(token, " ", 1)
         return formatted
+
+
+class _SafeStreamHandler(logging.StreamHandler):
+    """控制台编码异常时降级为 gbk replace 输出，避免日志写控制台失败。"""
+
+    def emit(self, record: logging.LogRecord) -> None:
+        try:
+            super().emit(record)
+        except UnicodeEncodeError:
+            try:
+                msg = self.format(record)
+                msg_safe = msg.encode("gbk", errors="replace").decode("gbk", errors="replace")
+                if self.stream:
+                    self.stream.write(msg_safe + self.terminator)
+                    self.flush()
+            except Exception:
+                pass
 
 
 class _TeeToLogger:
@@ -82,8 +104,7 @@ class _TeeToLogger:
             if not msg:
                 continue
             stripped = msg.lstrip()
-            import re as _re
-            if _re.match(r'^\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2},\d{3}', msg):
+            if re.match(r'^\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2},\d{3}', msg):
                 continue
             if (
                 stripped.startswith("所有文件生成完成！XML 文件已生成:")
@@ -114,18 +135,25 @@ class _TeeToLogger:
             pass
 
 
+def build_xml_domain_candidates(domain: str, *options: str) -> list[tuple[str, str]]:
+    """按 XML 域规则返回配置候选项顺序。"""
+    pairs = [(domain, option) for option in options]
+    if domain == DEFAULT_DOMAIN_LR_REAR:
+        pairs.extend([(SECTION_FILTER, option) for option in options])
+        pairs.extend([(SECTION_PATHS, option) for option in options])
+        pairs.extend([(SECTION_LR_REAR, option) for option in options])
+    return pairs
+
+
 def resolve_base_dir(base_dir: Optional[str]) -> str:
-    """解析 XML 生成所用的工程根目录，统一使用 infra.filesystem.pathing.get_project_root。"""
-    if base_dir is not None:
-        return os.path.abspath(base_dir)
-    from infra.filesystem.pathing import get_project_root
-    return get_project_root(__file__)
+    """解析 XML 生成所用的工程根目录。"""
+    return RuntimePathResolver.resolve_base_dir(__file__, base_dir)
 
 
 def load_runtime_config(
     config_path: Optional[str],
     base_dir: str,
-    domain: str = "LR_REAR",
+    domain: str = DEFAULT_DOMAIN_LR_REAR,
 ) -> dict:
     """读取配置并解析输入/输出路径、过滤条件与勾选 sheet。"""
     gconfig = GeneratorConfig(
@@ -133,22 +161,15 @@ def load_runtime_config(
         config_path=config_path,
         tolerant_duplicates=True,
     ).load()
-    config_path_str = gconfig.config_path or os.path.join(base_dir, "config", "Configuration.txt")
+    config_path_str = RuntimePathResolver.resolve_config_path(base_dir, gconfig.config_path)
     if not os.path.exists(config_path_str):
         raise FileNotFoundError(f"未找到配置文件: {config_path_str}")
 
     config = gconfig.raw_config
 
-    def domain_candidates(*options: str) -> list:
-        pairs = [(domain, option) for option in options]
-        if domain == "LR_REAR":
-            pairs.extend([("FILTER", option) for option in options])
-            pairs.extend([("PATHS", option) for option in options])
-            pairs.extend([("LR_REAR", option) for option in options])
-        return pairs
-
     case_excel_file = gconfig.get_first(
-        domain_candidates(
+        build_xml_domain_candidates(
+            domain,
             "xml_input_excel",
             "Xml_Input_Excel",
             "input_excel",
@@ -160,13 +181,14 @@ def load_runtime_config(
     if not case_excel_file:
         raise ValueError(
             "未配置 Xml_Input_Excel 或 xml_input_excel。\n"
-            "请在 Configuration.txt 的当前域节中配置以下选项之一：\n"
+            "请在当前主配置文件的当前域节中配置以下选项之一：\n"
             "  - Xml_Input_Excel 或 xml_input_excel：Excel 文件或文件夹路径"
         )
 
     output_xml_file = gconfig.get_fixed("xml_output_filename") or "Generated_Testcase.xml"
     output_dir = gconfig.get_first(
-        domain_candidates(
+        build_xml_domain_candidates(
+            domain,
             "Output_Dir_Xml",
             "output_dir_xml",
             "Output_Dir",
@@ -175,7 +197,7 @@ def load_runtime_config(
     )
     if not output_dir:
         raise ValueError(
-            "未在 Configuration.txt 的当前域节中找到 Output_Dir / output_dir 或 Output_Dir_Xml / output_dir_xml，"
+            "未在当前主配置文件的当前域节中找到 Output_Dir / output_dir 或 Output_Dir_Xml / output_dir_xml，"
             "请补充其中任意一个以指定 XML 输出目录。"
         )
 
@@ -184,9 +206,9 @@ def load_runtime_config(
     allowed_models = None
     allowed_target_versions = None
     if config.has_section(domain) or (
-        domain == "LR_REAR" and (config.has_section("FILTER") or config.has_section("LR_REAR"))
+        domain == DEFAULT_DOMAIN_LR_REAR and (config.has_section(SECTION_FILTER) or config.has_section(SECTION_LR_REAR))
     ):
-        case_levels_value = gconfig.get_first(domain_candidates("Case_Levels", "case_levels"))
+        case_levels_value = gconfig.get_first(build_xml_domain_candidates(domain, "Case_Levels", "case_levels"))
         allowed_levels = CaseFilter.parse_levels(case_levels_value)
         if allowed_levels is not None:
             print(f"[xml] 等级过滤已启用: {sorted(allowed_levels)}")
@@ -194,7 +216,7 @@ def load_runtime_config(
             print(f"[xml] 等级过滤: 不过滤（ALL 或未配置，原始值={case_levels_value!r}）")
 
         case_platforms_value = gconfig.get_first(
-            domain_candidates("Case_Platforms", "case_platforms")
+            build_xml_domain_candidates(domain, "Case_Platforms", "case_platforms")
         )
         allowed_platforms = CaseFilter.parse_platforms_or_models(case_platforms_value)
         if allowed_platforms is not None:
@@ -202,7 +224,7 @@ def load_runtime_config(
         else:
             print(f"[xml] 平台过滤: 不过滤（ALL 或未配置，原始值={case_platforms_value!r}）")
 
-        case_models_value = gconfig.get_first(domain_candidates("Case_Models", "case_models"))
+        case_models_value = gconfig.get_first(build_xml_domain_candidates(domain, "Case_Models", "case_models"))
         allowed_models = CaseFilter.parse_platforms_or_models(case_models_value)
         if allowed_models is not None:
             print(f"[xml] 车型过滤已启用: {sorted(allowed_models)}")
@@ -210,10 +232,9 @@ def load_runtime_config(
             print(f"[xml] 车型过滤: 不过滤（未配置，原始值={case_models_value!r}）")
 
         case_target_versions_value = (
-            gconfig.get_first(domain_candidates("Case_Target_Versions", "case_target_versions")) or ""
+            gconfig.get_first(build_xml_domain_candidates(domain, "Case_Target_Versions", "case_target_versions")) or ""
         )
         try:
-            from services.filter_service import parse_shaixuan_config
             fopts = parse_shaixuan_config(base_dir)
             all_target_versions = fopts.get("target_versions") or []
         except Exception:
@@ -229,14 +250,14 @@ def load_runtime_config(
         print("[xml] 等级过滤: 未找到当前域 / [FILTER] / [LR_REAR] 配置，不过滤")
         allowed_target_versions = None
 
-    selected_sheets_str = gconfig.get_first(domain_candidates("selected_sheets"), fallback="")
+    selected_sheets_str = gconfig.get_first(build_xml_domain_candidates(domain, "selected_sheets"), fallback="")
     selected_filter = parse_selected_sheets(selected_sheets_str)
 
     if not os.path.isabs(case_excel_file):
         excel_path = os.path.join(base_dir, case_excel_file)
     else:
         excel_path = case_excel_file
-    output_dir = resolve_target_subdir_smart(base_dir, output_dir, "TESTmode")
+    output_dir = resolve_target_subdir(base_dir, output_dir, "TESTmode")
     output_xml_path = os.path.join(output_dir, output_xml_file)
 
     return {
@@ -265,29 +286,14 @@ def init_runtime_logging(base_dir: str) -> tuple:
     )
     logger = _LOG_MANAGER.setup()
 
-    class SafeStreamHandler(logging.StreamHandler):
-        def emit(self, record: logging.LogRecord) -> None:
-            try:
-                super().emit(record)
-            except UnicodeEncodeError:
-                try:
-                    msg = self.format(record)
-                    msg_safe = msg.encode("gbk", errors="replace").decode("gbk", errors="replace")
-                    if self.stream:
-                        self.stream.write(msg_safe + self.terminator)
-                        self.flush()
-                except Exception:
-                    pass
-
     fmt = _BlankLineFriendlyFormatter("%(asctime)s %(levelname)s %(message)s")
-    ch = SafeStreamHandler()
+    ch = _SafeStreamHandler()
     ch.setLevel(logging.INFO)
     ch.setFormatter(fmt)
     logger.addHandler(ch)
 
     _logger = logger
     try:
-        from core.parse_table_loggers import get_testcases_parse_logger
         _parse_logger = get_testcases_parse_logger(base_dir)
     except Exception:
         _parse_logger = None

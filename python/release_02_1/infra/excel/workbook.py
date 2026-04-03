@@ -84,8 +84,8 @@ class ExcelService:
             raise FileNotFoundError(f"找不到文件: {path}")
         except PermissionError:
             raise PermissionError(f"没有权限读取文件: {path}\n请确认文件未被其他程序打开")
-        except Exception as e:
-            error_msg = str(e).lower()
+        except Exception as error:
+            error_msg = str(error).lower()
             if any(
                 kw in error_msg
                 for kw in ("decompressing", "incorrect header", "badzipfile", "not a zip file")

@@ -19,18 +19,19 @@ from core.run_context import tee_stdout_stderr, restore_stdout_stderr
 
 from utils.logger import PROGRESS_LEVEL, ExcludeSubstringsFilter
 
+from infra.filesystem.pathing import RuntimePathResolver
+
 
 def resolve_base_dir() -> str:
-    """解析 DIDConfig 运行根目录（项目根），统一使用 infra.filesystem.pathing.get_project_root。"""
-    from infra.filesystem.pathing import get_project_root
-    return get_project_root(__file__)
+    """解析 DIDConfig 运行根目录（项目根）。"""
+    return RuntimePathResolver.resolve_base_dir(__file__)
 
 
 def load_runtime(base_dir: str) -> Optional[GeneratorConfig]:
     """阶段 ①：读取 DIDConfig 配置（GeneratorConfig）。"""
     gconfig = GeneratorConfig(base_dir).load()
     if not gconfig.config_path or not os.path.exists(gconfig.config_path):
-        print("错误: 找不到配置文件 Configuration.txt")
+        print(f"错误: 找不到配置文件 {gconfig.config_path or 'Configuration.ini'}")
         return None
     return gconfig
 

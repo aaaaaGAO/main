@@ -9,7 +9,14 @@ import sys
 
 from openpyxl import load_workbook
 
-from utils.path_utils import resolve_target_subdir
+from services.config_constants import (
+    DEFAULT_DID_CONFIG_FILENAME,
+    OPTION_INPUT_EXCEL_CANDIDATES,
+    OPTION_OUTPUT_DIR_CANDIDATES,
+    OPTION_OUTPUT_FILENAME_CANDIDATES,
+    SECTION_DID_CONFIG,
+)
+from infra.filesystem import resolve_target_subdir
 
 from . import runtime as _rt
 
@@ -27,18 +34,20 @@ class DIDConfigGeneratorService:
         progress_level = _rt.get_progress_level()
         try:
             cfg = gconfig.raw_config
-            if not cfg.has_section("DID_CONFIG"):
-                msg = "未配置 DID_Config 配置节 [DID_CONFIG]"
+            if not cfg.has_section(SECTION_DID_CONFIG):
+                msg = f"未配置 DID_Config 配置节 [{SECTION_DID_CONFIG}]"
                 print(f"错误: {msg}")
                 logger.error(msg)
                 # 抛异常，交由 TaskService 决定是“跳过”还是失败，避免前端误认为已生成
                 raise ValueError(msg)
 
-            excel_rel_path = cfg.get("DID_CONFIG", "input_excel", fallback=None) or cfg.get(
-                "DID_CONFIG", "Input_Excel", fallback=None
-            )
+            excel_rel_path = ""
+            for option_name in OPTION_INPUT_EXCEL_CANDIDATES:
+                excel_rel_path = cfg.get(SECTION_DID_CONFIG, option_name, fallback=None) or ""
+                if excel_rel_path:
+                    break
             if not excel_rel_path:
-                msg = "未配置 DID_Config 配置表：配置文件中未找到 DID_CONFIG.input_excel 或 DID_CONFIG.Input_Excel"
+                msg = f"未配置 DID_Config 配置表：配置文件中未找到 {SECTION_DID_CONFIG}.input_excel 或 {SECTION_DID_CONFIG}.Input_Excel"
                 print(f"错误: {msg}")
                 logger.error(msg)
                 # 抛异常以便上层按“未配置时跳过”处理，而不是静默 return
@@ -46,14 +55,22 @@ class DIDConfigGeneratorService:
 
             output_name = (
                 gconfig.get_fixed("didconfig_output_filename")
-                or cfg.get("DID_CONFIG", "output_filename", fallback=None)
-                or cfg.get("DID_CONFIG", "Output_FileName", fallback="DIDConfig.txt")
+                or next(
+                    (
+                        value
+                        for option_name in OPTION_OUTPUT_FILENAME_CANDIDATES
+                        if (value := cfg.get(SECTION_DID_CONFIG, option_name, fallback=None))
+                    ),
+                    DEFAULT_DID_CONFIG_FILENAME,
+                )
             )
-            output_dir_rel = cfg.get("DID_CONFIG", "output_dir", fallback=None) or cfg.get(
-                "DID_CONFIG", "Output_Dir", fallback=None
-            )
+            output_dir_rel = ""
+            for option_name in OPTION_OUTPUT_DIR_CANDIDATES:
+                output_dir_rel = cfg.get(SECTION_DID_CONFIG, option_name, fallback=None) or ""
+                if output_dir_rel:
+                    break
             if not output_dir_rel:
-                msg = "配置文件中未找到 DID_CONFIG.output_dir 或 DID_CONFIG.Output_Dir"
+                msg = f"配置文件中未找到 {SECTION_DID_CONFIG}.output_dir 或 {SECTION_DID_CONFIG}.Output_Dir"
                 print(f"错误: {msg}")
                 logger.error(msg)
                 raise ValueError(msg)
@@ -76,8 +93,8 @@ class DIDConfigGeneratorService:
             # 自动寻找或创建 Configuration 文件夹（与 DIDInfo、UART 等模块一致）
             try:
                 output_dir = resolve_target_subdir(base_dir, raw_output_dir, "Configuration")
-            except Exception as e:
-                logger.error(f"无法定位输出目录: {e}")
+            except Exception as error:
+                logger.error(f"无法定位输出目录: {error}")
                 return
             output_path = os.path.join(output_dir, output_name)
 
@@ -87,8 +104,8 @@ class DIDConfigGeneratorService:
 
             try:
                 wb = load_workbook(excel_path, data_only=True)
-            except Exception as e:
-                error_msg = str(e)
+            except Exception as error:
+                error_msg = str(error)
                 if (
                     "decompressing" in error_msg.lower()
                     or "incorrect header" in error_msg.lower()

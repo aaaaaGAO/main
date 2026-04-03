@@ -1,3 +1,0 @@
-2026-03-20 09:50:57,802 INFO   处理Sheet=座椅按摩+通风+加热+舒缓
-2026-03-20 09:50:57,803 ERROR 错误模块【关键字映射表】 用例ID=SYS-CDCU-zhujiazuoyianmo-0002 行号：20  用例步骤：TC_Sleepabc 885  原因：关键字匹配失败: TC_Sleepabc
-2026-03-20 09:50:57,804  生成文件: generated_from_cases_MQB_20260303_zuoyianmo_tongfeng_jiare_shuhuan.can (用例数=204)

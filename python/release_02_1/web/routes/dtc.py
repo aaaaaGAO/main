@@ -13,11 +13,10 @@ DTC 业务路由（dtc_bp）
 
 from __future__ import annotations
 
-import os
-
 from flask import Blueprint, current_app, jsonify, request
 
 from services.task_orchestrator import TaskOrchestrator
+from .route_helpers import get_base_dir, jsonify_orchestrator_result
 
 dtc_bp = Blueprint("dtc", __name__)
 
@@ -27,9 +26,7 @@ def _base_dir() -> str:
     参数：无。
     返回：工程根目录绝对路径。
     """
-    return current_app.config.get("BASE_DIR", "") or os.path.dirname(
-        os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    )
+    return get_base_dir(__file__)
 
 
 @dtc_bp.route("/generate", methods=["POST"])
@@ -45,12 +42,5 @@ def generate_dtc():
 
     orch = TaskOrchestrator.from_base_dir(base_dir)
     result = orch.run_dtc_bundle(run_can=run_can, run_xml=run_xml)
-
-    if not result.success:
-        return jsonify({
-            "success": False,
-            "message": " / ".join(result.messages),
-            "detail": result.detail,
-        }), 500
-    return jsonify({"success": True, "message": " / ".join(result.messages)})
+    return jsonify_orchestrator_result(result, success_separator=" / ", failure_message=None, failure_separator=" / ")
 

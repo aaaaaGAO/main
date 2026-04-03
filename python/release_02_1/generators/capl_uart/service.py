@@ -7,6 +7,8 @@ from __future__ import annotations
 import sys
 import traceback
 
+from services.config_constants import SECTION_CENTRAL, SECTION_PATHS, UART_COMM_CFG_KEYS
+
 from . import runtime as _rt
 
 
@@ -18,7 +20,7 @@ class UARTGeneratorService:
         base_dir, config_path = _rt.resolve_runtime_paths()
 
         print("=" * 60, flush=True)
-        print("从 Configuration.txt 生成 Uart.txt 文件", flush=True)
+        print("从当前主配置文件生成 Uart.txt 文件", flush=True)
         print("=" * 60, flush=True)
 
         logger = _rt.setup_logging(base_dir)
@@ -36,7 +38,7 @@ class UARTGeneratorService:
 
         try:
             config = _rt.load_config_with_repair(config_path, logger)
-            if not config.has_section("CENTRAL") and not config.has_section("PATHS"):
+            if not config.has_section(SECTION_CENTRAL) and not config.has_section(SECTION_PATHS):
                 raise ValueError("配置文件缺少 [CENTRAL] 节")
 
             uart_rs232_config = _rt.read_uart_rs232_config(config)
@@ -46,17 +48,8 @@ class UARTGeneratorService:
                     f" 找到 {len(uart_rs232_config)} 个有效配置项，将生成[UARTRS232]节",
                     flush=True,
                 )
-            elif config.has_section("CENTRAL") and any(
-                config.has_option("CENTRAL", k)
-                for k in (
-                    "uart_comm_port",
-                    "uart_comm_baudrate",
-                    "uart_comm_dataBits",
-                    "uart_comm_stopBits",
-                    "uart_comm_kHANDSHAKE_DISABLED",
-                    "uart_comm_parity",
-                    "uart_comm_frameTypeIs8676",
-                )
+            elif config.has_section(SECTION_CENTRAL) and any(
+                config.has_option(SECTION_CENTRAL, key) for key in UART_COMM_CFG_KEYS
             ):
                 print("警告: 配置项存在但所有值都为空，跳过[UARTRS232]节生成", flush=True)
             else:
@@ -103,8 +96,8 @@ class UARTGeneratorService:
 
             print(f"\n文件已生成: {output_path}", flush=True)
             print("=" * 60, flush=True)
-        except Exception as e:
-            print(f"错误: {e}")
+        except Exception as error:
+            print(f"错误: {error}")
             print("\n详细错误信息:")
             traceback.print_exc()
             raise

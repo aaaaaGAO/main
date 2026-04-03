@@ -11,7 +11,7 @@
 - ExcludeSubstringsFilter : 排除包含指定子串的消息
 - ProgressFormatter     : PROGRESS 等级隐藏级别名；"解析 Excel 文件" 行去掉 INFO
 - TeeToLogger           : 把 print 输出同步写入 logger（可配置前缀/启动触发）
-- get_log_level_from_config() : 从 Configuration.txt 读取 log_level_min
+- get_log_level_from_config() : 从当前主配置文件读取 log_level_min
 - get_error_module()    : 根据错误文本判断所属模块
 """
 
@@ -22,6 +22,11 @@ import logging
 import os
 import re
 from typing import Callable, Optional, Sequence
+
+from infra.filesystem import resolve_main_config_path
+from services.config_constants import DEFAULT_DOMAIN_LR_REAR
+from core.error_module import ErrorModuleResolver
+from core.log_run_context import get_run_domain
 
 PROGRESS_LEVEL = 25
 logging.addLevelName(PROGRESS_LEVEL, "PROGRESS")
@@ -241,9 +246,9 @@ class TeeToLogger:
 
 def get_log_level_from_config(
     base_dir: str,
-    section: str | None = "LR_REAR",
+    section: str | None = DEFAULT_DOMAIN_LR_REAR,
 ) -> int:
-    """从 base_dir/config/Configuration.txt 指定 section 读取 log_level_min 并转为 logging 级别。
+    """从当前主配置文件的指定 section 读取 log_level_min 并转为 logging 级别。
     参数: base_dir — 工程根目录；section — 配置节名，None 时使用当前运行域（set_run_domain）。
     返回: logging 等级（如 INFO/WARNING/ERROR）。文件不存在或读取失败时返回 INFO。
     """
@@ -255,12 +260,11 @@ def get_log_level_from_config(
     try:
         if section is None:
             try:
-                from core.log_run_context import get_run_domain
-                section = get_run_domain() or "LR_REAR"
+                section = get_run_domain() or DEFAULT_DOMAIN_LR_REAR
             except Exception:
-                section = "LR_REAR"
+                section = DEFAULT_DOMAIN_LR_REAR
         cfg = configparser.ConfigParser()
-        config_path = os.path.join(base_dir, "config", "Configuration.txt")
+        config_path = resolve_main_config_path(base_dir)
         cfg.read(config_path, encoding="utf-8")
         level_str = cfg.get(section, "log_level_min", fallback="info").strip().lower()
         return level_map.get(level_str, logging.INFO)
@@ -270,7 +274,6 @@ def get_log_level_from_config(
 
 def get_error_module(fail_text: str) -> str:
     """根据错误原因返回所属模块名称（用于日志「错误模块【xxx】」）。参数: fail_text — 失败原因文案。返回: 模块名字符串。"""
-    from core.error_module import ErrorModuleResolver
     return ErrorModuleResolver.resolve(fail_text)
 
 

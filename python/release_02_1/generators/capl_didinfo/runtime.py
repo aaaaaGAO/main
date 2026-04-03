@@ -21,112 +21,115 @@ from core.common.input_parser import split_input_lines
 from core.generator_config import GeneratorConfig
 from core.generator_logging import GeneratorLogger, LogSpecConfig
 from core.run_context import clear_run_logger as _clear_run_logger_impl
+from services.config_constants import (
+    OPTION_DIDINFO_INPUTS_CANDIDATES,
+    OPTION_OUTPUT_DIR_CANDIDATES,
+    PATHS_DIDINFO_INPUT_OPTION_CANDIDATES,
+    PATHS_DIDINFO_OUTPUT_DIR_OPTION_CANDIDATES,
+    SECTION_LR_REAR,
+    SECTION_PATHS,
+)
 from utils.excel_io import norm_str
 from utils.logger import (
     PROGRESS_LEVEL,
     ExcludeSubstringsFilter,
     TeeToLogger,
 )
-from utils.path_utils import find_config_path
+from infra.filesystem.pathing import (
+    RuntimePathResolver,
+    resolve_configured_path,
+    resolve_named_subdir,
+)
 
 from . import runtime_io as _io
 
 
 def resolve_base_dir() -> str:
-    """解析 DIDInfo 运行根目录（项目根），统一使用 infra.filesystem.pathing.get_project_root。"""
-    from infra.filesystem.pathing import get_project_root
-    return get_project_root(__file__)
+    """解析 DIDInfo 运行根目录（项目根）。"""
+    return RuntimePathResolver.resolve_base_dir(__file__)
 
 
-def _split_csv(s: str) -> list[str]:
-    return [x.strip() for x in (s or "").split(",") if x.strip()]
+def split_csv_values(csv_text: str) -> list[str]:
+    return [item.strip() for item in (csv_text or "").split(",") if item.strip()]
 
 
-def _iter_inputs(raw: str) -> Iterable[tuple[str, list[str] | None]]:
-    for p, s in split_input_lines(raw):
-        if not s:
-            yield (p, None)
-        elif s.strip() == "*":
-            yield (p, ["*"])
+def iter_input_specs(raw: str) -> Iterable[tuple[str, list[str] | None]]:
+    for path_text, sheet_text in split_input_lines(raw):
+        if not sheet_text:
+            yield (path_text, None)
+        elif sheet_text.strip() == "*":
+            yield (path_text, ["*"])
         else:
-            yield (p, _split_csv(s))
+            yield (path_text, split_csv_values(sheet_text))
+
+
+def get_case_insensitive_path(parent: Any, target_name: str) -> Path | None:
+    """在目录下按大小写不敏感方式查找子目录。"""
+    parent_path = Path(parent)
+    if not parent_path.is_dir():
+        return None
+    for entry in parent_path.iterdir():
+        if entry.is_dir() and entry.name.lower() == target_name.lower():
+            return entry
+    return None
 
 
 def load_runtime_config(base_dir: str) -> tuple:
     """读取 DIDInfo 配置，返回 (config_path, output_path, variant_names, inputs)。"""
     gconfig = GeneratorConfig(base_dir).load()
-    config_path_str = gconfig.config_path or find_config_path(base_dir)
+    config_path_str = RuntimePathResolver.resolve_config_path(base_dir, gconfig.config_path)
     if not config_path_str or not os.path.exists(config_path_str):
-        raise RuntimeError("未找到配置文件: Configuration.txt")
+        raise RuntimeError(
+            f"未找到配置文件: {config_path_str or 'Configuration.ini'}"
+        )
 
     config_path = Path(config_path_str)
     cfg = gconfig.raw_config
 
-    if "LR_REAR" in cfg or "PATHS" in cfg:
+    if SECTION_LR_REAR in cfg or SECTION_PATHS in cfg:
         output_filename = gconfig.get_fixed("didinfo_output_filename") or "DIDInfo.txt"
         output_dir_didinfo = gconfig.get_first(
             [
-                ("LR_REAR", "output_dir_didinfo"),
-                ("LR_REAR", "Output_Dir_Didinfo"),
-                ("LR_REAR", "output_dir"),
-                ("LR_REAR", "Output_Dir"),
-                ("PATHS", "output_dir_didinfo"),
-                ("PATHS", "Output_Dir_Didinfo"),
+                (SECTION_LR_REAR, "output_dir_didinfo"),
+                (SECTION_LR_REAR, "Output_Dir_Didinfo"),
             ]
+            + [(SECTION_LR_REAR, option_name) for option_name in OPTION_OUTPUT_DIR_CANDIDATES]
+            + [(SECTION_PATHS, option_name) for option_name in PATHS_DIDINFO_OUTPUT_DIR_OPTION_CANDIDATES]
         )
         if not output_dir_didinfo:
             output_dir_didinfo = gconfig.get_first(
-                [("PATHS", "output_dir"), ("PATHS", "Output_Dir")],
+                [(SECTION_PATHS, option_name) for option_name in OPTION_OUTPUT_DIR_CANDIDATES],
                 fallback="./output",
             )
-        config_base = config_path.parent
-        output_dir_abs = (
-            Path(output_dir_didinfo)
-            if os.path.isabs(output_dir_didinfo)
-            else (config_base / Path(output_dir_didinfo)).resolve()
-        )
-
-        def _get_case_insensitive_path(parent: Any, target_name: str) -> Path | None:
-            parent_path = Path(parent)
-            if not parent_path.is_dir():
-                return None
-            for entry in parent_path.iterdir():
-                if entry.is_dir() and entry.name.lower() == target_name.lower():
-                    return entry
-            return None
-
-        config_dir = _get_case_insensitive_path(output_dir_abs, "Configuration")
-        if not config_dir:
+        output_dir_abs = Path(resolve_configured_path(base_dir, output_dir_didinfo))
+        config_dir_path = resolve_named_subdir(base_dir, output_dir_didinfo, "Configuration")
+        if not config_dir_path:
             raise RuntimeError(
                 f"错误：输出路径下不存在 Configuration 目录: {output_dir_abs / 'Configuration'}"
             )
-        output_path = config_dir / output_filename
-        variant_names = _split_csv(
+        output_path = Path(config_dir_path) / output_filename
+        variant_names = split_csv_values(
             gconfig.get_fixed("didinfo_variants")
             or gconfig.get_first(
-                [("PATHS", "didinfo_variants"), ("PATHS", "Didinfo_Variants")],
+                [(SECTION_PATHS, "didinfo_variants"), (SECTION_PATHS, "Didinfo_Variants")],
                 fallback="ACOSe,MY26,ID4 PA,CMP21A",
             )
         )
         inputs_raw = gconfig.get_first(
-            [
-                ("LR_REAR", "didinfo_inputs"),
-                ("LR_REAR", "Didinfo_Inputs"),
-                ("PATHS", "didinfo_inputs"),
-                ("PATHS", "Didinfo_Inputs"),
-            ]
+            [(SECTION_LR_REAR, option_name) for option_name in OPTION_DIDINFO_INPUTS_CANDIDATES]
+            + [(SECTION_PATHS, option_name) for option_name in PATHS_DIDINFO_INPUT_OPTION_CANDIDATES[:2]]
         )
         if not inputs_raw:
             didinfo_input_excel = gconfig.get_first(
-                [("PATHS", "didinfo_input_excel"), ("PATHS", "Didinfo_Input_Excel")]
+                [(SECTION_PATHS, option_name) for option_name in PATHS_DIDINFO_INPUT_OPTION_CANDIDATES[2:]]
             )
             if didinfo_input_excel:
                 inputs_raw = f"{didinfo_input_excel} | *"
         # 将 didinfo_inputs / didinfo_input_excel 解析为输入列表；若最终没有任何有效输入，则视为“未配置 ResetDid_Value 配置表”
-        inputs = list(_iter_inputs(inputs_raw))
+        inputs = list(iter_input_specs(inputs_raw))
         if not inputs:
             raise RuntimeError(
-                "未配置 ResetDid_Value 配置表：请在 [LR_REAR].didinfo_inputs 或 [PATHS].didinfo_input_excel 中配置 Excel 路径"
+                f"未配置 ResetDid_Value 配置表：请在 [{SECTION_LR_REAR}].didinfo_inputs 或 [{SECTION_PATHS}].didinfo_input_excel 中配置 Excel 路径"
             )
     elif "DIDINFO" in cfg:
         config_base = config_path.parent
@@ -136,15 +139,15 @@ def load_runtime_config(base_dir: str) -> tuple:
             if os.path.isabs(output_file)
             else (config_base / Path(output_file)).resolve()
         )
-        variant_names = _split_csv(cfg["DIDINFO"].get("Variants", ""))
-        inputs = list(_iter_inputs(cfg["DIDINFO"].get("Inputs", "")))
+        variant_names = split_csv_values(cfg["DIDINFO"].get("Variants", ""))
+        inputs = list(iter_input_specs(cfg["DIDINFO"].get("Inputs", "")))
     else:
-        raise RuntimeError("配置文件缺少 [PATHS] 或 [DIDINFO] 段")
+        raise RuntimeError(f"配置文件缺少 [{SECTION_PATHS}] 或 [DIDINFO] 段")
 
     return config_path, output_path, variant_names, inputs
 
 
-def _strip_didinfo_tee_msg(msg: str) -> str:
+def strip_didinfo_tee_msg(msg: str) -> str:
     msg = re.sub(r"^\[didinfo\]\s*(?:ERROR|INFO)\s*", "", msg, flags=re.I)
     msg = re.sub(r"^\[didinfo\]\s*(?:错误|警告)\s*:\s*", "", msg)
     msg = re.sub(r"^\[(?:错误|警告|error|warn)\]\s*:?\s*", "", msg, flags=re.I)
@@ -199,7 +202,7 @@ def init_runtime(base_dir: str) -> tuple:
             sys.__stdout__,
             error_prefixes=("[didinfo] 错误", "[didinfo] ERROR", "[错误]", "[error]"),
             warning_prefixes=("[didinfo] 警告", "[警告]", "[warn]"),
-            msg_cleaner=_strip_didinfo_tee_msg,
+            msg_cleaner=strip_didinfo_tee_msg,
             use_reentry_guard=True,
         )
         sys.stderr = TeeToLogger(
@@ -208,7 +211,7 @@ def init_runtime(base_dir: str) -> tuple:
             sys.__stderr__,
             error_prefixes=("[didinfo] 错误", "[didinfo] ERROR", "[错误]", "[error]"),
             warning_prefixes=("[didinfo] 警告", "[警告]", "[warn]"),
-            msg_cleaner=_strip_didinfo_tee_msg,
+            msg_cleaner=strip_didinfo_tee_msg,
             use_reentry_guard=True,
         )
     return logger, old_stdout, old_stderr

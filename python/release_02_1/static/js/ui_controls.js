@@ -582,7 +582,7 @@
             c_ign_waitTime: ignConfig.waitTime || '',
             c_ign_current: ignConfig.current || '',
             power_config: powerConfig,
-            relay_configs: relayConfigs,
+            relay_configs: global.relayConfigsForSave ? global.relayConfigsForSave(relayConfigs) : relayConfigs,
             ig_config: igConfig,
             pw_config: pwConfig
         };
@@ -781,11 +781,19 @@
 
     function saveUartCommConfig() {
         uartCommConfig.port = document.getElementById('uart_comm_port') ? document.getElementById('uart_comm_port').value : '';
-        uartCommConfig.baudrate = getSelectWithCustomValue('uart_comm_baudrate', 'uart_comm_baudrate_custom', '115200');
-        uartCommConfig.dataBits = getSelectWithCustomValue('uart_comm_databits', 'uart_comm_databits_custom', '8');
-        uartCommConfig.stopBits = getSelectWithCustomValue('uart_comm_stopbits', 'uart_comm_stopbits_custom', '1');
-        uartCommConfig.kHANDSHAKE_DISABLED = document.getElementById('uart_comm_handshake') ? document.getElementById('uart_comm_handshake').value : '0';
-        uartCommConfig.parity = document.getElementById('uart_comm_parity') ? document.getElementById('uart_comm_parity').value : '0';
+        uartCommConfig.baudrate = document.getElementById('uart_comm_baudrate')
+            ? getSelectWithCustomValue('uart_comm_baudrate', 'uart_comm_baudrate_custom', '115200')
+            : '';
+        uartCommConfig.dataBits = document.getElementById('uart_comm_databits')
+            ? getSelectWithCustomValue('uart_comm_databits', 'uart_comm_databits_custom', '8')
+            : '';
+        uartCommConfig.stopBits = document.getElementById('uart_comm_stopbits')
+            ? getSelectWithCustomValue('uart_comm_stopbits', 'uart_comm_stopbits_custom', '1')
+            : '';
+        var uhs = document.getElementById('uart_comm_handshake');
+        uartCommConfig.kHANDSHAKE_DISABLED = uhs ? uhs.value : '';
+        var upa = document.getElementById('uart_comm_parity');
+        uartCommConfig.parity = upa ? upa.value : '';
         uartCommConfig.frameTypeIs8676 = document.getElementById('uart_comm_frameTypeIs8676') ? document.getElementById('uart_comm_frameTypeIs8676').value : '0';
         var disp = document.getElementById('c_uart_comm_disp');
         if (disp) {
@@ -839,12 +847,21 @@
 
     function savePowerConfig() {
         powerConfig.port = document.getElementById('power_port') ? document.getElementById('power_port').value : '';
-        powerConfig.baudrate = getSelectWithCustomValue('power_baudrate', 'power_baudrate_custom', '115200');
-        powerConfig.dataBits = getSelectWithCustomValue('power_databits', 'power_databits_custom', '8');
-        powerConfig.stopBits = getSelectWithCustomValue('power_stopbits', 'power_stopbits_custom', '1');
-        powerConfig.kHANDSHAKE_DISABLED = document.getElementById('power_handshake') ? document.getElementById('power_handshake').value : '0';
-        powerConfig.parity = document.getElementById('power_parity') ? document.getElementById('power_parity').value : '0';
-        powerConfig.channel = document.getElementById('power_channel') ? document.getElementById('power_channel').value : '1';
+        powerConfig.baudrate = document.getElementById('power_baudrate')
+            ? getSelectWithCustomValue('power_baudrate', 'power_baudrate_custom', '115200')
+            : '';
+        powerConfig.dataBits = document.getElementById('power_databits')
+            ? getSelectWithCustomValue('power_databits', 'power_databits_custom', '8')
+            : '';
+        powerConfig.stopBits = document.getElementById('power_stopbits')
+            ? getSelectWithCustomValue('power_stopbits', 'power_stopbits_custom', '1')
+            : '';
+        var phs = document.getElementById('power_handshake');
+        powerConfig.kHANDSHAKE_DISABLED = phs ? phs.value : '';
+        var ppa = document.getElementById('power_parity');
+        powerConfig.parity = ppa ? ppa.value : '';
+        var pch = document.getElementById('power_channel');
+        powerConfig.channel = pch ? pch.value : '';
         var disp = document.getElementById('c_pwr_disp');
         if (disp) {
             disp.innerText = powerConfig.port ? '√ 已配置' : '未配置';
@@ -892,11 +909,11 @@
             id: relayId,
             port: '',
             baudrate: '9600',
-            dataBits: '8',
-            stopBits: '1',
-            kHANDSHAKE_DISABLED: '0',
-            parity: '0',
-            relayID: '1',
+            // dataBits: '8',
+            // stopBits: '1',
+            // kHANDSHAKE_DISABLED: '0',
+            // parity: '0',
+            // relayID: '1',
             // 默认使用 8 路继电器
             relayType: 'RS232_8',
             coilStatuses: []
@@ -920,8 +937,6 @@
             return;
         }
         var baudStandard = ['9600', '19200', '38400', '57600', '115200'];
-        var dataBitsStandard = ['5', '6', '7', '8'];
-        var stopBitsStandard = ['1', '1.5', '2'];
         // 支持常用 RS232 继电器规格：8 / 16 / 24 / 32 / 64 路
         var typeStandard = ['RS232_8', 'RS232_16', 'RS232_24', 'RS232_32', 'RS232_64'];
         container.innerHTML = relayConfigs.map(function (relay, index) {
@@ -935,8 +950,6 @@
             }
             var coilMode = relayCoilModes[relay.id] || 'open';
             var baudIsStandard = baudStandard.indexOf(relay.baudrate) !== -1;
-            var dataBitsIsStandard = dataBitsStandard.indexOf(relay.dataBits) !== -1;
-            var stopBitsIsStandard = stopBitsStandard.indexOf(relay.stopBits) !== -1;
             var typeIsStandard = typeStandard.indexOf(relay.relayType) !== -1;
             var html = '<div class="relay-item" style="border: 1px solid #dcdfe6; border-radius: 6px; padding: 20px; margin-bottom: 15px; background: #fafafa;">';
             html += '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">';
@@ -953,6 +966,11 @@
             html += '<option value="__custom__"' + (!baudIsStandard && relay.baudrate ? ' selected' : '') + '>其他（自定义）</option>';
             html += '</select>';
             html += '<input type="number" id="relay-baudrate-custom-' + relay.id + '" value="' + (!baudIsStandard ? (relay.baudrate || '') : '') + '" placeholder="自定义波特率" style="margin-top: 6px; width: 100%; padding: 6px; border: 1px solid #dcdfe6; border-radius: 4px; display: ' + (!baudIsStandard && relay.baudrate ? 'block' : 'none') + ';" onchange="handleRelayCustomInputChange(' + relay.id + ', \'baudrate\', this.value)"></div>';
+            /* 以下字段 UI 已隐藏，原生成逻辑保留在注释中便于恢复（需同时恢复 dataBitsStandard / stopBitsStandard 及 isStandard 变量）
+            var dataBitsStandard = ['5', '6', '7', '8'];
+            var stopBitsStandard = ['1', '1.5', '2'];
+            var dataBitsIsStandard = dataBitsStandard.indexOf(relay.dataBits) !== -1;
+            var stopBitsIsStandard = stopBitsStandard.indexOf(relay.stopBits) !== -1;
             html += '<div><label style="display: block; margin-bottom: 5px; font-weight: 600;">数据位 (dataBits):</label>';
             html += '<select id="relay-databits-' + relay.id + '" onchange="handleRelaySelectChange(' + relay.id + ', \'dataBits\', this)" style="width: 100%; padding: 8px; border: 1px solid #dcdfe6; border-radius: 4px;">';
             dataBitsStandard.forEach(function (b) {
@@ -977,6 +995,7 @@
             html += '<option value="0"' + (relay.parity === '0' ? ' selected' : '') + '>无校验</option><option value="1"' + (relay.parity === '1' ? ' selected' : '') + '>奇校验</option><option value="2"' + (relay.parity === '2' ? ' selected' : '') + '>偶校验</option></select></div>';
             html += '<div><label style="display: block; margin-bottom: 5px; font-weight: 600;">继电器设备地址 (relayID):</label>';
             html += '<input type="number" value="' + (relay.relayID || '1') + '" min="1" onchange="updateRelayConfig(' + relay.id + ', \'relayID\', this.value)" style="width: 100%; padding: 8px; border: 1px solid #dcdfe6; border-radius: 4px;"></div>';
+            */
             html += '<div><label style="display: block; margin-bottom: 5px; font-weight: 600;">继电器类型 (RelayType):</label>';
             html += '<select id="relay-type-' + relay.id + '" onchange="handleRelaySelectChange(' + relay.id + ', \'relayType\', this)" style="width: 100%; padding: 8px; border: 1px solid #dcdfe6; border-radius: 4px;">';
             typeStandard.forEach(function (t) {
@@ -1123,9 +1142,11 @@
             disp.innerText = relayConfigs.length > 0 ? '√ 已配置 ' + relayConfigs.length + ' 个继电器' : '未配置';
             if (relayConfigs.length > 0) disp.classList.add('selected'); else disp.classList.remove('selected');
         }
-        // 显式把当前继电器列表带入 state 并请求保存，确保后端写入 Configuration.txt
+        // 显式把当前继电器列表带入 state 并请求保存，确保后端写入当前主配置文件
         var state = (global.collectCurrentState && global.collectCurrentState()) || {};
-        state.c_rly = Array.isArray(relayConfigs) ? relayConfigs.slice() : relayConfigs;
+        state.c_rly = global.relayConfigsForSave
+            ? global.relayConfigsForSave(Array.isArray(relayConfigs) ? relayConfigs.slice() : relayConfigs)
+            : (Array.isArray(relayConfigs) ? relayConfigs.slice() : relayConfigs);
         if (global.API && global.API.autoSaveConfig) {
             global.API.autoSaveConfig(state);
         } else if (global.autoSaveConfig) {

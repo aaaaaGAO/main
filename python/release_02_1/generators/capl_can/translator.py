@@ -79,20 +79,20 @@ class CANStepTranslator:
                     new_lines.append(line)
             return StepTranslateResult(code_lines=new_lines)
         except KeywordMatchError as e:
-            return self._as_error(raw_step, "keyword", f"关键字匹配失败: {getattr(e, 'func_token', line)}")
+            return self.build_error_result(raw_step, "keyword", f"关键字匹配失败: {getattr(e, 'func_token', line)}")
         except IOMappingParseError as e:
-            return self._as_error(raw_step, "iomapping", f"io_mapping 解析失败: {e}")
+            return self.build_error_result(raw_step, "iomapping", f"io_mapping 解析失败: {e}")
         except ConfigEnumParseError as e:
-            return self._as_error(raw_step, "config_enum", f"Configuration 解析失败: {e}")
+            return self.build_error_result(raw_step, "config_enum", f"Configuration 解析失败: {e}")
         except ClibMatchError as e:
             clib_name = getattr(e, "clib_name", "")
-            return self._as_error(raw_step, "clib", f"clib表中没有{clib_name}")
+            return self.build_error_result(raw_step, "clib", f"clib表中没有{clib_name}")
         except StepSyntaxError as e:
-            return self._as_error(raw_step, "syntax", f"步骤语法错误: {e}")
-        except Exception as e:  # pragma: no cover
-            return self._as_error(raw_step, "unknown", f"翻译异常: {e}")
+            return self.build_error_result(raw_step, "syntax", f"步骤语法错误: {e}")
+        except Exception as error:  # pragma: no cover
+            return self.build_error_result(raw_step, "unknown", f"翻译异常: {error}")
 
-    def _as_error(self, raw_step: CANRawStep, error_type: str, message: str) -> StepTranslateResult:
+    def build_error_result(self, raw_step: CANRawStep, error_type: str, message: str) -> StepTranslateResult:
         escaped_step = raw_step.content.replace('"', '\\"')
         escaped_msg = message.replace('"', '\\"')
         # 根据来源标记是测试步骤还是预期结果（默认按测试步骤处理）

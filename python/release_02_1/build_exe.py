@@ -101,8 +101,8 @@ if os.path.exists(exe_file):
     except PermissionError:
         print(f"错误: 无法删除 {exe_file}，请先关闭正在运行的程序。")
         sys.exit(1)
-    except Exception as e:
-        print(f"警告: 删除旧 EXE 文件时出错: {e}，继续打包...")
+    except Exception as error:
+        print(f"警告: 删除旧 EXE 文件时出错: {error}，继续打包...")
 
 print("\n开始打包...")
 try:
@@ -113,16 +113,16 @@ try:
     # 检查外部必需文件/文件夹是否存在
     print("\n--- 运行前检查 ---")
     print(f"提示: --onefile 模式会直接生成单个 EXE 文件在当前目录。")
-    print(f"      EXE 文件会读取同级目录下的 config 子目录中的配置文件（如 config/Configuration.txt、config/FixedConfig.txt 等）。")
+    print(f"      EXE 文件会读取同级目录下的 config 子目录中的配置文件（如 config/Configuration.ini、config/FixedConfig.ini、filter_options.ini 等）。")
     print()
     if not os.path.exists(os.path.join(base_dir, "input")):
         print("提示: 请确保 EXE 同级目录下手动创建了 'input' 文件夹。")
     config_dir = os.path.join(base_dir, "config")
     if not os.path.exists(config_dir):
-        print("提示: 请确保 EXE 同级目录下存在 'config' 文件夹，并将 Configuration.txt、FixedConfig.txt、filter_options.txt 放入其中。")
-    elif not os.path.exists(os.path.join(config_dir, "Configuration.txt")):
-        print("提示: 请确保 EXE 同级目录下的 'config' 文件夹中存在 'Configuration.txt'。")
+        print("提示: 请确保 EXE 同级目录下存在 'config' 文件夹，并将 Configuration.ini、FixedConfig.ini（可选）、filter_options.ini 放入其中。")
+    elif not os.path.exists(os.path.join(config_dir, "Configuration.ini")):
+        print("提示: 请确保 EXE 同级目录下的 'config' 文件夹中存在 'Configuration.ini'。")
 
-except Exception as e:
-    print(f"❌ 打包失败: {e}")
+except Exception as error:
+    print(f"❌ 打包失败: {error}")
     sys.exit(1)

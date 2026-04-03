@@ -12,51 +12,60 @@ from __future__ import annotations
 import os
 from typing import TYPE_CHECKING, List, Tuple
 
+from infra.filesystem import resolve_configured_path
+from services.config_constants import (
+    DEFAULT_DOMAIN_LR_REAR,
+    OPTION_CIN_INPUT_EXCEL,
+    OPTION_DIDINFO_INPUTS,
+    OPTION_INPUT_EXCEL,
+    OPTION_INPUTS,
+    OPTION_OUTPUT_DIR,
+    SECTION_DID_CONFIG,
+    SECTION_DTC,
+    SECTION_DTC_CONFIG_ENUM,
+    SECTION_DTC_IOMAPPING,
+    SECTION_IOMAPPING,
+)
+
 if TYPE_CHECKING:
     from services.config_manager import ConfigManager
 
 
-def _resolve_path(raw: str, base_dir: str) -> str:
+def resolve_config_path(raw: str, base_dir: str) -> str:
     """将配置中的相对路径解析为绝对路径。
     参数：raw — 配置中的路径字符串；base_dir — 工程根目录。
     返回：规范化的绝对路径，空配置返回空串。
     """
-    raw = (raw or "").strip()
-    if not raw:
-        return ""
-    path = raw.replace("/", os.sep)
-    if not os.path.isabs(path):
-        path = os.path.join(base_dir, path)
-    return os.path.normpath(path)
+    return resolve_configured_path(base_dir, raw)
 
 
-def _check_output_dir_writable(out_dir: str) -> Tuple[bool, str]:
+def check_output_dir_writable(output_dir: str) -> Tuple[bool, str]:
     """检查输出目录是否可写：若不存在则尝试创建；若存在则检查是否为目录且可写。
-    参数：out_dir — 输出目录路径（应已为绝对路径）。
+    参数：output_dir — 输出目录路径（应已为绝对路径）。
     返回：(是否通过, 错误信息)；通过时错误信息为空串。
     """
-    if not out_dir or not out_dir.strip():
+    if not output_dir or not output_dir.strip():
         return False, "未配置输出路径（output_dir）。"
-    out_dir = out_dir.strip()
-    if not os.path.isabs(out_dir):
+    output_dir = output_dir.strip()
+    if not os.path.isabs(output_dir):
         return False, "输出路径应为绝对路径或已相对于工程根解析。"
-    if os.path.isfile(out_dir):
-        return False, f"输出路径是文件而非目录：{out_dir}"
+    if os.path.isfile(output_dir):
+        return False, f"输出路径是文件而非目录：{output_dir}"
     try:
-        os.makedirs(out_dir, exist_ok=True)
+        os.makedirs(output_dir, exist_ok=True)
         # 简单可写检测：尝试在该目录创建临时文件
-        test_file = os.path.join(out_dir, ".write_check_tmp")
-        with open(test_file, "w") as f:
-            f.write("")
+        test_file = os.path.join(output_dir, ".write_check_tmp")
+        with open(test_file, "w") as temp_file:
+            temp_file.write("")
         os.remove(test_file)
         return True, ""
     except PermissionError:
-        return False, f"输出目录无写入权限：{out_dir}"
-    except Exception as e:
-        return False, f"输出目录不可用：{out_dir}（{e}）"
+        return False, f"输出目录无写入权限：{output_dir}"
+    except Exception as error:
+        return False, f"输出目录不可用：{output_dir}（{error}）"
 
 
-def _check_path_exists(path: str, label: str) -> Tuple[bool, str]:
+def check_path_exists(path: str, label: str) -> Tuple[bool, str]:
     """检查路径是否存在（文件或目录）。未配置路径时视为通过。
     参数：path — 待检查路径；label — 用于错误信息的标签。
     返回：(是否通过, 错误信息)。
@@ -80,85 +89,85 @@ def validate_for_domain(
     返回：(是否通过, 错误信息列表)。
     """
     errors: List[str] = []
-    config = config_manager._reload()
+    config = config_manager.load_config()
 
     if not config.has_section(domain):
         errors.append(f"配置中缺少 [{domain}] 节。")
         return False, errors
 
     section = dict(config.items(domain))
-    output_dir_raw = section.get("output_dir", "").strip()
-    output_dir = _resolve_path(output_dir_raw, base_dir) if output_dir_raw else ""
+    output_dir_raw = section.get(OPTION_OUTPUT_DIR, "").strip()
+    output_dir = resolve_config_path(output_dir_raw, base_dir) if output_dir_raw else ""
 
     # 1. 输出目录必填且可写
     if not output_dir:
-        errors.append(f"[{domain}] 未配置 output_dir（输出路径）。")
+        errors.append(f"[{domain}] 未配置 {OPTION_OUTPUT_DIR}（输出路径）。")
     else:
-        ok, msg = _check_output_dir_writable(output_dir)
-        if not ok:
-            errors.append(msg)
+        is_valid, validation_message = check_output_dir_writable(output_dir)
+        if not is_valid:
+            errors.append(validation_message)
 
     # 2. 输入路径（用例/Excel）：若已配置则必须存在
-    input_excel_raw = section.get("input_excel", "").strip()
+    input_excel_raw = section.get(OPTION_INPUT_EXCEL, "").strip()
     if input_excel_raw:
-        input_path = _resolve_path(input_excel_raw, base_dir)
-        ok, msg = _check_path_exists(input_path, f"[{domain}] 输入用例路径")
-        if not ok:
-            errors.append(msg)
+        input_path = resolve_config_path(input_excel_raw, base_dir)
+        is_valid, validation_message = check_path_exists(input_path, f"[{domain}] 输入用例路径")
+        if not is_valid:
+            errors.append(validation_message)
 
     # 3. LR_REAR 额外校验：DID/CIN/IO 若配置了则存在
-    if domain == "LR_REAR":
-        if config.has_section("DID_CONFIG"):
-            did_excel = (config.get("DID_CONFIG", "input_excel", fallback="") or "").strip()
+    if domain == DEFAULT_DOMAIN_LR_REAR:
+        if config.has_section(SECTION_DID_CONFIG):
+            did_excel = (config.get(SECTION_DID_CONFIG, OPTION_INPUT_EXCEL, fallback="") or "").strip()
             if did_excel:
-                p = _resolve_path(did_excel, base_dir)
-                ok, msg = _check_path_exists(p, "DID_Config 配置表")
-                if not ok:
-                    errors.append(msg)
-        if config.has_section("IOMAPPING"):
-            io_inputs = (config.get("IOMAPPING", "inputs", fallback="") or "").strip()
+                resolved_path = resolve_config_path(did_excel, base_dir)
+                is_valid, validation_message = check_path_exists(resolved_path, "DID_Config 配置表")
+                if not is_valid:
+                    errors.append(validation_message)
+        if config.has_section(SECTION_IOMAPPING):
+            io_inputs = (config.get(SECTION_IOMAPPING, OPTION_INPUTS, fallback="") or "").strip()
             if io_inputs:
                 # 可能为多个路径用 | 或 ; 分隔，取第一个
-                first = io_inputs.replace(";", "|").split("|")[0].strip()
-                if first:
-                    p = _resolve_path(first, base_dir)
-                    ok, msg = _check_path_exists(p, "IO_Mapping 配置表")
-                    if not ok:
-                        errors.append(msg)
-        didinfo_raw = section.get("didinfo_inputs", "").strip()
+                first_input_path = io_inputs.replace(";", "|").split("|")[0].strip()
+                if first_input_path:
+                    resolved_path = resolve_config_path(first_input_path, base_dir)
+                    is_valid, validation_message = check_path_exists(resolved_path, "IO_Mapping 配置表")
+                    if not is_valid:
+                        errors.append(validation_message)
+        didinfo_raw = section.get(OPTION_DIDINFO_INPUTS, "").strip()
         if didinfo_raw:
-            first = didinfo_raw.split("|")[0].strip() if "|" in didinfo_raw else didinfo_raw
-            if first:
-                p = _resolve_path(first, base_dir)
-                ok, msg = _check_path_exists(p, "ResetDid_Value 配置表")
-                if not ok:
-                    errors.append(msg)
-        cin_excel = section.get("cin_input_excel", "").strip()
+            first_didinfo_path = didinfo_raw.split("|")[0].strip() if "|" in didinfo_raw else didinfo_raw
+            if first_didinfo_path:
+                resolved_path = resolve_config_path(first_didinfo_path, base_dir)
+                is_valid, validation_message = check_path_exists(resolved_path, "ResetDid_Value 配置表")
+                if not is_valid:
+                    errors.append(validation_message)
+        cin_excel = section.get(OPTION_CIN_INPUT_EXCEL, "").strip()
         if cin_excel:
-            p = _resolve_path(cin_excel, base_dir)
-            ok, msg = _check_path_exists(p, "关键字集 Clib 配置表")
-            if not ok:
-                errors.append(msg)
+            resolved_path = resolve_config_path(cin_excel, base_dir)
+            is_valid, validation_message = check_path_exists(resolved_path, "关键字集 Clib 配置表")
+            if not is_valid:
+                errors.append(validation_message)
 
     # 4. DTC 域：DTC 专用 IO/DID 节（若存在）
-    if domain == "DTC":
-        if config.has_section("DTC_IOMAPPING"):
-            io_inputs = (config.get("DTC_IOMAPPING", "inputs", fallback="") or "").strip()
+    if domain == SECTION_DTC:
+        if config.has_section(SECTION_DTC_IOMAPPING):
+            io_inputs = (config.get(SECTION_DTC_IOMAPPING, OPTION_INPUTS, fallback="") or "").strip()
             if io_inputs:
-                first = io_inputs.replace(";", "|").split("|")[0].strip()
-                if first:
-                    p = _resolve_path(first, base_dir)
-                    ok, msg = _check_path_exists(p, "DTC IO_Mapping 配置表")
-                    if not ok:
-                        errors.append(msg)
-        if config.has_section("DTC_CONFIG_ENUM"):
-            didcfg = (config.get("DTC_CONFIG_ENUM", "inputs", fallback="") or "").strip()
-            if didcfg:
-                first = didcfg.replace(";", "|").split("|")[0].strip()
-                if first:
-                    p = _resolve_path(first, base_dir)
-                    ok, msg = _check_path_exists(p, "DTC DID_Config 配置表")
-                    if not ok:
-                        errors.append(msg)
+                first_input_path = io_inputs.replace(";", "|").split("|")[0].strip()
+                if first_input_path:
+                    resolved_path = resolve_config_path(first_input_path, base_dir)
+                    is_valid, validation_message = check_path_exists(resolved_path, "DTC IO_Mapping 配置表")
+                    if not is_valid:
+                        errors.append(validation_message)
+        if config.has_section(SECTION_DTC_CONFIG_ENUM):
+            did_config_inputs = (config.get(SECTION_DTC_CONFIG_ENUM, OPTION_INPUTS, fallback="") or "").strip()
+            if did_config_inputs:
+                first_input_path = did_config_inputs.replace(";", "|").split("|")[0].strip()
+                if first_input_path:
+                    resolved_path = resolve_config_path(first_input_path, base_dir)
+                    is_valid, validation_message = check_path_exists(resolved_path, "DTC DID_Config 配置表")
+                    if not is_valid:
+                        errors.append(validation_message)
 
     return (len(errors) == 0, errors)

@@ -48,8 +48,8 @@ class DIDInfoGeneratorService:
 
                 try:
                     wb = openpyxl.load_workbook(excel_path, data_only=True, rich_text=True)
-                except Exception as e:
-                    print(f"[didinfo] 错误: 无法读取 Excel 文件: {excel_path}, 详情: {e}")
+                except Exception as error:
+                    print(f"[didinfo] 错误: 无法读取 Excel 文件: {excel_path}, 详情: {error}")
                     continue
 
                 target_sheets = (

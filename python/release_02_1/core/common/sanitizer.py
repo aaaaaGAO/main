@@ -11,6 +11,12 @@ from __future__ import annotations
 import re
 from typing import Any, Tuple
 
+try:
+    from pypinyin import Style, lazy_pinyin  # type: ignore
+except ImportError:  # pragma: no cover
+    Style = None  # type: ignore[assignment]
+    lazy_pinyin = None  # type: ignore[assignment]
+
 # 用于从混杂字符串中尽量提取出 SYS-... 片段（宽松，避免误删中间内容）
 _RE_SYS_ID = re.compile(r"(SYS-[^\r\n]+)")
 # 末尾需要剔除的标点符号（只处理尾部）
@@ -24,9 +30,7 @@ _RE_CAPL_SAFE = re.compile(r"[^a-zA-Z0-9_\-]")
 
 def _chinese_to_pinyin(text: str) -> str:
     """将字符串中的中文转为拼音，非中文字符原样保留。参数: text — 原始字符串。返回: 转换后的字符串。"""
-    try:
-        from pypinyin import Style, lazy_pinyin  # type: ignore
-    except ImportError:
+    if lazy_pinyin is None or Style is None:
         return text
 
     result: list[str] = []

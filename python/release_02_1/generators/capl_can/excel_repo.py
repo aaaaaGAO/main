@@ -16,9 +16,9 @@ from utils.excel_io import ExcelService, ColumnMapper, norm_str
 
 from core.case_filter import CaseFilter
 from core.excel_header import (
-    _find_case_type_column_index_in_values,
-    _find_col_index_by_name_in_values,
-    _find_testcase_header_row,
+    find_case_type_column_index_in_values,
+    find_col_index_by_name_in_values,
+    find_testcase_header_row,
 )
 
 from .models import CANRawStep, CANTestCase
@@ -121,8 +121,8 @@ class CANExcelRepository:
         加载单个 sheet 的用例。
 
         表头/列识别复用 core.excel_header：
-        - 使用 _find_testcase_header_row 在前 50 行内找到真正的表头
-        - 使用 _find_col_index_by_name_in_values / _find_case_type_column_index_in_values
+        - 使用 find_testcase_header_row 在前 50 行内找到真正的表头
+        - 使用 find_col_index_by_name_in_values / find_case_type_column_index_in_values
           查找用例ID/用例名称/测试步骤/预期结果（必填）、功能模块/等级/平台/车型/用例类型（可选）
         - 缺失任一本表必填列时记入 header_validation_failed 并返回空列表
 
@@ -133,7 +133,7 @@ class CANExcelRepository:
         sheet_name = str(ws.title)
 
         # 1. 使用 XML 的表头扫描逻辑，在前 50 行内定位真正的表头行
-        header_row_idx, header_vals, _found_group = _find_testcase_header_row(
+        header_row_idx, header_vals, _found_group = find_testcase_header_row(
             ws, scan_rows=50, debug_sheet_name=sheet_name
         )
         if header_row_idx is None or not header_vals:
@@ -148,26 +148,26 @@ class CANExcelRepository:
             return []
 
         # 2. 使用 XML 的列索引发现逻辑，查找各业务列的位置（0-based）
-        case_type_col_idx = _find_case_type_column_index_in_values(header_vals)
-        case_id_col_idx = _find_col_index_by_name_in_values(
+        case_type_col_idx = find_case_type_column_index_in_values(header_vals)
+        case_id_col_idx = find_col_index_by_name_in_values(
             header_vals, ["用例ID", "用例id", "用例编号", "用例 ID"]
         )
-        group_col_idx = _find_col_index_by_name_in_values(header_vals, ["功能模块", "模块", "模块名称"])
-        level_col_idx = _find_col_index_by_name_in_values(header_vals, ["等级", "用例等级"])
-        platform_col_idx = _find_col_index_by_name_in_values(header_vals, ["平台", "Platform"])
-        model_col_idx = _find_col_index_by_name_in_values(header_vals, ["车型", "Model"])
-        target_version_col_idx = _find_col_index_by_name_in_values(
+        group_col_idx = find_col_index_by_name_in_values(header_vals, ["功能模块", "模块", "模块名称"])
+        level_col_idx = find_col_index_by_name_in_values(header_vals, ["等级", "用例等级"])
+        platform_col_idx = find_col_index_by_name_in_values(header_vals, ["平台", "Platform"])
+        model_col_idx = find_col_index_by_name_in_values(header_vals, ["车型", "Model"])
+        target_version_col_idx = find_col_index_by_name_in_values(
             header_vals, ["Target Version", "目标版本"]
         )
 
         # 用例名称/步骤/预期：CAN 生成必填列
-        case_name_col_idx = _find_col_index_by_name_in_values(
+        case_name_col_idx = find_col_index_by_name_in_values(
             header_vals, ["用例名称", "用例名", "name", "标题"]
         )
-        step_col_idx = _find_col_index_by_name_in_values(
+        step_col_idx = find_col_index_by_name_in_values(
             header_vals, ["测试步骤", "步骤", "step", "Step"]
         )
-        expected_col_idx = _find_col_index_by_name_in_values(
+        expected_col_idx = find_col_index_by_name_in_values(
             header_vals, ["预期结果", "预期", "结果", "expect", "expected"]
         )
 
@@ -398,15 +398,15 @@ class CANExcelRepository:
                 expected_lines = expected_text.splitlines() if expected_text else []
 
             for i in range(max(len(step_lines), len(expected_lines))):
-                s = norm_str(step_lines[i]) if i < len(step_lines) else ""
-                e = norm_str(expected_lines[i]) if i < len(expected_lines) else ""
-                if s:
+                step_line = norm_str(step_lines[i]) if i < len(step_lines) else ""
+                expected_line = norm_str(expected_lines[i]) if i < len(expected_lines) else ""
+                if step_line:
                     current_case.raw_steps.append(
-                        CANRawStep(content=s, source="step", excel_row=row_idx)
+                        CANRawStep(content=step_line, source="step", excel_row=row_idx)
                     )
-                if e:
+                if expected_line:
                     current_case.raw_steps.append(
-                        CANRawStep(content=e, source="expected", excel_row=row_idx)
+                        CANRawStep(content=expected_line, source="expected", excel_row=row_idx)
                     )
 
         if current_case is not None:
@@ -459,12 +459,12 @@ class CANExcelRepository:
             expected_lines = expected_text.splitlines() if expected_text else []
 
         for i in range(max(len(step_lines), len(expected_lines))):
-            s = norm_str(step_lines[i]) if i < len(step_lines) else ""
-            e = norm_str(expected_lines[i]) if i < len(expected_lines) else ""
-            if s:
-                items.append(CANRawStep(content=s, source="step", excel_row=row_idx))
-            if e:
-                items.append(CANRawStep(content=e, source="expected", excel_row=row_idx))
+            step_line = norm_str(step_lines[i]) if i < len(step_lines) else ""
+            expected_line = norm_str(expected_lines[i]) if i < len(expected_lines) else ""
+            if step_line:
+                items.append(CANRawStep(content=step_line, source="step", excel_row=row_idx))
+            if expected_line:
+                items.append(CANRawStep(content=expected_line, source="expected", excel_row=row_idx))
         return items
 
     @staticmethod

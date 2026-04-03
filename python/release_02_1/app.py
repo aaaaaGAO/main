@@ -29,13 +29,14 @@ import threading
 import time
 import webbrowser
 
-from flask import Flask, jsonify, render_template
+from flask import Flask, jsonify, render_template, request
+from werkzeug.exceptions import HTTPException
 
-from utils.path_utils import get_base_dir
+from infra.filesystem import get_base_dir
 from web import create_app
 
 # 工具显示名（Web 右上角 + build_exe 打包时的 EXE 文件名，只改此处即可）
-TOOL_DISPLAY_NAME = "测试用例生成工具_2026.3.26"
+TOOL_DISPLAY_NAME = "测试用例生成工具_2026.4.3_V1.0"
 
 # ---------------------------------------------------------------------------
 # 配置
@@ -121,7 +122,6 @@ def make_app() -> Flask:
     @app.errorhandler(Exception)
     def handle_exception(e):
         """全局异常处理：HTTPException 原样返回，其余转 500。参数 e: 触发的异常对象。"""
-        from werkzeug.exceptions import HTTPException
         if isinstance(e, HTTPException):
             return e
         return handle_500(e)
@@ -139,7 +139,6 @@ app = make_app()
 @app.before_request
 def _track_heartbeat():
     global last_heartbeat_time
-    from flask import request
     if request.path == "/api/heartbeat" and request.method == "POST":
         last_heartbeat_time = time.time()
 
@@ -151,8 +150,8 @@ def start_app() -> None:
     """
     try:
         os.chdir(get_app_path())
-    except Exception as e:
-        print(f"切换工作目录失败: {e}")
+    except Exception as error:
+        print(f"切换工作目录失败: {error}")
 
     threading.Thread(target=auto_suicide_monitor, daemon=True).start()
     
@@ -170,8 +169,8 @@ def start_app() -> None:
 
     try:
         app.run(host="127.0.0.1", port=port, debug=False, use_reloader=False)
-    except Exception as e:
-        print(f"程序异常: {e}")
+    except Exception as error:
+        print(f"程序异常: {error}")
     finally:
         os._exit(0)
 

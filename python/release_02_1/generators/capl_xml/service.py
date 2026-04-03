@@ -5,8 +5,11 @@
 from __future__ import annotations
 
 import os
+import sys
+import traceback
 
 from core.common.generation_summary import build_ungenerated_reason
+from services.config_constants import DEFAULT_DOMAIN_LR_REAR
 
 from . import runtime as _rt
 
@@ -15,7 +18,7 @@ class XMLGeneratorService:
     """接管 XML 旧版主编排流程的 service。"""
 
     @staticmethod
-    def _build_ungenerated_reason(stats: dict) -> str:
+    def build_ungenerated_reason(stats: dict) -> str:
         return build_ungenerated_reason(stats, generated_label="XML文件")
 
     def run_legacy_pipeline(
@@ -23,7 +26,7 @@ class XMLGeneratorService:
         *,
         config_path: str | None = None,
         base_dir: str | None = None,
-        domain: str = "LR_REAR",
+        domain: str = DEFAULT_DOMAIN_LR_REAR,
     ):
         resolved_base_dir = _rt.resolve_base_dir(base_dir)
         runtime = _rt.load_runtime_config(config_path, resolved_base_dir, domain)
@@ -54,10 +57,8 @@ class XMLGeneratorService:
                             f" 当前输入路径: {excel_path}；勾选期望的文件名（任选其一需存在）: {expected}"
                         )
                         return
-            except Exception as e:
-                print(f"错误: 无法查找 Excel 文件: {e}")
-                import traceback
-
+            except Exception as error:
+                print(f"错误: 无法查找 Excel 文件: {error}")
                 traceback.print_exc()
                 return
 
@@ -67,8 +68,8 @@ class XMLGeneratorService:
             ungenerated_files = []
 
             try:
-                for idx, excel_file in enumerate(excel_files):
-                    if logger and idx > 0:
+                for excel_index, excel_file in enumerate(excel_files):
+                    if logger and excel_index > 0:
                         logger.info("")
                     if logger:
                         logger.log(
@@ -97,20 +98,16 @@ class XMLGeneratorService:
                     excel_stats_map[excel_file] = stats
 
                     if sheet_testcases_dict:
-                        sheet_groups_dict = _rt.group_testcases_by_sheet_and_group(
-                            sheet_testcases_dict
-                        )
-                        excel_files_dict[excel_file] = sheet_groups_dict
+                        sheet_groups = _rt.group_testcases_by_sheet_and_group(sheet_testcases_dict)
+                        excel_files_dict[excel_file] = sheet_groups
                     else:
                         print(f"  警告: 文件 '{os.path.basename(excel_file)}' 中未找到任何测试用例")
                     try:
                         print("")
                     except Exception:
                         pass
-            except Exception as e:
-                print(f"错误: 无法解析 Excel 文件: {e}")
-                import traceback
-
+            except Exception as error:
+                print(f"错误: 无法解析 Excel 文件: {error}")
                 traceback.print_exc()
                 return
 
@@ -122,8 +119,8 @@ class XMLGeneratorService:
             try:
                 xml_content = _rt.generate_xml_content(excel_files_dict)
                 xml_content = xml_content.replace("\r\n", "\n").replace("\n", "\r\n")
-                with open(output_xml_path, "w", encoding="utf-8") as f:
-                    f.write(xml_content)
+                with open(output_xml_path, "w", encoding="utf-8") as output_file:
+                    output_file.write(xml_content)
                 print("文件已使用 UTF-8 编码保存")
                 print(f"XML 文件已生成: {output_xml_path}")
                 print("=" * 60)
@@ -148,7 +145,7 @@ class XMLGeneratorService:
                             msg = f"  Excel={excel_name_only} → 已生成 XML（包含 {total_testcases} 个测试用例）"
                         else:
                             stats = excel_stats_map.get(excel_file, {})
-                            reason_str = self._build_ungenerated_reason(stats)
+                            reason_str = self.build_ungenerated_reason(stats)
                             msg = f"  Excel={excel_name_only} → 未生成 XML，原因：{reason_str}"
                             ungenerated_files.append((excel_name_only, reason_str))
                         print(msg)
@@ -171,20 +168,18 @@ class XMLGeneratorService:
                     print("")
                     if logger:
                         logger.log(progress_level, "未生成 XML 文件的 Excel 汇总结束")
-            except Exception as e:
-                error_msg = f"错误: 无法生成 XML 文件: {e}"
+            except Exception as error:
+                error_msg = f"错误: 无法生成 XML 文件: {error}"
                 print(error_msg)
                 if logger:
                     try:
-                        logger.error("无法生成 XML 文件: %s", e, exc_info=True)
+                        logger.error("无法生成 XML 文件: %s", error, exc_info=True)
                     except UnicodeEncodeError:
-                        safe_msg = str(e).encode("gbk", errors="replace").decode(
+                        safe_msg = str(error).encode("gbk", errors="replace").decode(
                             "gbk", errors="replace"
                         )
                         print(f"无法生成 XML 文件: {safe_msg}")
                 return
         finally:
-            import sys
-
             sys.stdout, sys.stderr = old_stdout, old_stderr
             _rt.clear_run_logger()

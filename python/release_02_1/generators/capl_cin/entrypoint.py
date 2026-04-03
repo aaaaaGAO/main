@@ -13,6 +13,7 @@ import os
 import sys
 
 from core.run_context import tee_stdout_stderr, restore_stdout_stderr, clear_run_logger
+from services.config_constants import DEFAULT_DOMAIN_LR_REAR
 from .runtime import CINEntrypointSupport
 from .service import CINGeneratorService
 from .runtime_io import (
@@ -29,7 +30,7 @@ except ImportError:
     PROGRESS_LEVEL = 15
 
 
-def execute_workflow(domain: str = "LR_REAR"):
+def execute_workflow(domain: str = DEFAULT_DOMAIN_LR_REAR):
     """将 CIN 生成的各原子步骤串联为完整流水线并执行。
 
     功能：重置状态 → 解析 base_dir → 初始化日志并劫持 stdout/stderr
@@ -78,7 +79,7 @@ def execute_workflow(domain: str = "LR_REAR"):
         log_mgr.clear()
 
 
-def main(domain: str = "LR_REAR"):
+def main(domain: str = DEFAULT_DOMAIN_LR_REAR):
     """CIN 生成主入口，供 TaskService 与命令行调用。
 
     功能：执行 execute_workflow，完成从配置读取到 .cin 写出的整条流水线。
