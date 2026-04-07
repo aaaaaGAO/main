@@ -21,7 +21,7 @@ from .route_helpers import get_base_dir, jsonify_orchestrator_result
 dtc_bp = Blueprint("dtc", __name__)
 
 
-def _base_dir() -> str:
+def current_base_dir() -> str:
     """获取当前请求对应的项目根目录（与 common 一致）。
     参数：无。
     返回：工程根目录绝对路径。
@@ -36,7 +36,7 @@ def generate_dtc():
     返回：200 时 {"success": True, "message": ...}；500 时 {"success": False, "message", "detail"}。
     """
     payload = request.get_json(silent=True) or {}
-    base_dir = payload.get("base_dir") or _base_dir()
+    base_dir = payload.get("base_dir") or current_base_dir()
     run_can = payload.get("run_can", True)
     run_xml = payload.get("run_xml", True)
 

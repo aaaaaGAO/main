@@ -17,15 +17,23 @@ RelayCoil8Status=18
 
 [Relay2]//继电器
 baudrate=9600//波特率
-RelayType=RS232_8
-RelayCoil1Status=18
+RelayType=RS232_16
+RelayCoil1Status=17
 RelayCoil2Status=18
 RelayCoil3Status=18
 RelayCoil4Status=18
-RelayCoil5Status=18
+RelayCoil5Status=17
 RelayCoil6Status=18
 RelayCoil7Status=18
 RelayCoil8Status=18
+RelayCoil9Status=18
+RelayCoil10Status=18
+RelayCoil11Status=18
+RelayCoil12Status=18
+RelayCoil13Status=18
+RelayCoil14Status=18
+RelayCoil15Status=18
+RelayCoil16Status=18
 
 [IG]
 //Equipment_Type设备类型：Power/Relay

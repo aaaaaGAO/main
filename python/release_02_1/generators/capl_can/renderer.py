@@ -39,6 +39,24 @@ def _is_soa_expect_check_line(line: str) -> bool:
     return "SOA_CHECK(" in code_upper or "CHECKREQ(" in code_upper
 
 
+def _is_soa_expect_check_only_line(line: str) -> bool:
+    """仅匹配 SOA_CHECK（不包含 CHECKREQ）的预期结果行。"""
+    if "_Prepare" in line or "_PREPARE" in line:
+        return False
+    code_part, _ = split_capl_comment_parts(line)
+    code_upper = code_part.upper()
+    if "SOA" not in code_upper:
+        return False
+    return "SOA_CHECK(" in code_upper and "CHECKREQ(" not in code_upper
+
+
+def _has_traceback_token(line: str) -> bool:
+    """是否包含 traceback（不区分大小写，允许 traceback7 这类写法）。"""
+    code_part, comment_part = split_capl_comment_parts(line)
+    text = f"{code_part} {comment_part}"
+    return bool(re.search(r"\btraceback\d*\b", text, re.IGNORECASE))
+
+
 def _is_wait_or_sleep_test_step(line: str) -> bool:
     """仅看注释里的测试步骤语义，不看生成后的 CAPL 函数名。"""
     _, comment = split_capl_comment_parts(line)
@@ -51,6 +69,15 @@ def _is_wait_or_sleep_test_step(line: str) -> bool:
             re.IGNORECASE,
         )
     )
+
+
+def _is_soa_req_test_step(line: str) -> bool:
+    """是否为 SOA REQ 测试步骤行（仅看代码部分）。"""
+    if not _is_test_step_line(line):
+        return False
+    code_part, _ = split_capl_comment_parts(line)
+    code_upper = code_part.upper()
+    return "SOA_REQ(" in code_upper or "SOA REQ" in code_upper
 
 
 def _add_prepare_suffix_to_line(line: str) -> str:
@@ -164,6 +191,8 @@ class CANFileRenderer:
         # 记录每个“节点首行测试步骤”前/后需要插入的 Prepare 行
         prepare_before: dict[int, list[str]] = {}
         prepare_after: dict[int, list[str]] = {}
+        # 先记录所有 Prepare 的来源顺序与目标位置，最后统一按来源顺序落位
+        scheduled_prepares: list[tuple[int, int, str, str]] = []
 
         i = 0
         while i < n:
@@ -178,18 +207,47 @@ class CANFileRenderer:
                 j += 1
 
             # 在该节点范围内查找 SOA CHECK / CHECKREQ 预期结果行
-            prepare_lines: list[str] = []
+            node_is_wait_or_sleep = _is_wait_or_sleep_test_step(lines[node_start])
             for k in range(node_start, j):
                 if _is_expect_line(lines[k]) and _is_soa_expect_check_line(lines[k]):
-                    prepare_lines.append(_add_prepare_suffix_to_line(lines[k]))
+                    prepare_line = _add_prepare_suffix_to_line(lines[k])
+                    # 新增规则：
+                    # SOA_CHECK（不含 CHECKREQ）且该行出现 traceback* 时，
+                    # 优先前插到最近的前置 SOA REQ 测试步骤前；
+                    # 若前面没有 SOA REQ，则前插到最近的前置 wait/sleep 测试步骤前。
+                    if _is_soa_expect_check_only_line(lines[k]) and _has_traceback_token(lines[k]):
+                        nearest_soa_req_idx = None
+                        for p in range(k - 1, -1, -1):
+                            if _is_soa_req_test_step(lines[p]):
+                                nearest_soa_req_idx = p
+                                break
 
-            if prepare_lines:
-                if _is_wait_or_sleep_test_step(lines[node_start]):
-                    prepare_after.setdefault(node_start, []).extend(prepare_lines)
-                else:
-                    prepare_before.setdefault(node_start, []).extend(prepare_lines)
+                        if nearest_soa_req_idx is not None:
+                            scheduled_prepares.append((k, nearest_soa_req_idx, "before", prepare_line))
+                            continue
+
+                        nearest_wait_idx = None
+                        for p in range(k - 1, -1, -1):
+                            if _is_test_step_line(lines[p]) and _is_wait_or_sleep_test_step(lines[p]):
+                                nearest_wait_idx = p
+                                break
+
+                        if nearest_wait_idx is not None:
+                            scheduled_prepares.append((k, nearest_wait_idx, "before", prepare_line))
+                            continue
+
+                    default_placement = "after" if node_is_wait_or_sleep else "before"
+                    scheduled_prepares.append((k, node_start, default_placement, prepare_line))
 
             i = j
+
+        # 按预期结果在原文中的出现顺序写入，避免 traceback 分支抢到最前
+        scheduled_prepares.sort(key=lambda item: item[0])
+        for _, target_idx, placement, prepare_line in scheduled_prepares:
+            if placement == "after":
+                prepare_after.setdefault(target_idx, []).append(prepare_line)
+            else:
+                prepare_before.setdefault(target_idx, []).append(prepare_line)
 
         # 第二阶段：根据 before/after 映射无损生成最终行
         final_output: list[str] = []

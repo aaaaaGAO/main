@@ -23,7 +23,7 @@ from .route_helpers import get_base_dir, jsonify_orchestrator_result
 lr_rear_bp = Blueprint("lr_rear", __name__)
 
 
-def _base_dir() -> str:
+def current_base_dir() -> str:
     """获取当前请求对应的项目根目录（与 common 一致）。
     参数：无。
     返回：工程根目录绝对路径。
@@ -38,7 +38,7 @@ def generate_can():
     返回：200 时 {"success": True, "message": ...}；500 时 {"success": False, "message", "detail"}。
     """
     payload = request.get_json(silent=True) or {}
-    base_dir = payload.get("base_dir") or _base_dir()
+    base_dir = payload.get("base_dir") or current_base_dir()
     config_path = payload.get("config_path")
 
     orch = TaskOrchestrator.from_base_dir(base_dir, config_path=config_path)
@@ -62,7 +62,7 @@ def save_lr_rear_config():
         return jsonify({"success": False, "message": "需要 JSON 请求体"}), 400
 
     payload = request.get_json() or {}
-    base_dir = payload.get("base_dir") or _base_dir()
+    base_dir = payload.get("base_dir") or current_base_dir()
 
     svc = ConfigService.from_base_dir(base_dir)
     lr_data = svc.build_lr_rear_section_data(payload)

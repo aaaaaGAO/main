@@ -10,6 +10,7 @@ from typing import Any
 
 from core.translator import ConfigEnumParseError, IOMappingParseError
 from core.common.name_sanitize import sanitize_clib_name
+from core.step_error_detail import StepErrorDetailBuilder
 from core.parser import (
     ClibMatchError,
     KeywordMatchError,
@@ -79,7 +80,14 @@ class CANStepTranslator:
                     new_lines.append(line)
             return StepTranslateResult(code_lines=new_lines)
         except KeywordMatchError as e:
-            return self.build_error_result(raw_step, "keyword", f"关键字匹配失败: {getattr(e, 'func_token', line)}")
+            raw_reason = f"关键字匹配失败: {getattr(e, 'func_token', line)}"
+            detail = StepErrorDetailBuilder.build_detail(
+                "keyword",
+                raw_reason,
+                raw_step.content,
+                self.keyword_specs,
+            )
+            return self.build_error_result(raw_step, "keyword", detail)
         except IOMappingParseError as e:
             return self.build_error_result(raw_step, "iomapping", f"io_mapping 解析失败: {e}")
         except ConfigEnumParseError as e:

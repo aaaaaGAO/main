@@ -30,75 +30,6 @@ except ImportError:  # pragma: no cover - headless / minimal Python
 tk_lock = threading.Lock()
 
 
-def _parse_excel_sheets(path: str) -> Dict[str, Any]:
-    """解析 Excel 文件的 sheet 名称列表。
-    参数：path — Excel 文件路径。
-    返回：{"type": "excel", "sheets": [...]} 或 {"type": "excel", "error": str}。
-    """
-    if os.path.basename(path).startswith("~$"):
-        return {"type": "excel", "sheets": []}
-    try:
-        wb = load_workbook(path, read_only=True)
-        sheets = list(wb.sheetnames)
-        wb.close()
-        return {"type": "excel", "sheets": sheets}
-    except Exception as error:
-        return {"type": "excel", "error": str(error)}
-
-
-def _parse_can_testcases(path: str) -> Dict[str, Any]:
-    """解析 CAN 文件中的 testcase 名称列表。
-    参数：path — .can 文件路径。
-    返回：{"type": "can", "testcases": [...]} 或 {"type": "can", "error": str}。
-    """
-    try:
-        with open(path, "r", encoding="utf-8", errors="ignore") as f:
-            content = f.read()
-        pattern = re.compile(r"testcase\s+(\w+)\s*\(", re.IGNORECASE)
-        names = pattern.findall(content)
-        return {"type": "can", "testcases": list(dict.fromkeys(names))}
-    except Exception as error:
-        return {"type": "can", "error": str(error)}
-
-
-def _parse_xml_structure(path: str) -> Dict[str, Any]:
-    """解析 XML 文件中的 testgroup 与 capltestcase 结构。
-    参数：path — XML 文件路径。
-    返回：{"type": "xml", "testgroups": [...], "capltestcases": [...]} 或 {"type": "xml", "error": str}。
-    """
-    try:
-        tree = ET.parse(path)
-        root = tree.getroot()
-        result = {"type": "xml", "testgroups": [], "capltestcases": []}
-        for elem in root.iter():
-            if elem.tag.endswith("testgroup"):
-                title = elem.get("title") or elem.get("ident") or ""
-                if title:
-                    result["testgroups"].append(title)
-            elif elem.tag.endswith("capltestcase"):
-                name = elem.get("name") or ""
-                if name:
-                    result["capltestcases"].append(name)
-        return result
-    except Exception as error:
-        return {"type": "xml", "error": str(error)}
-
-
-def _parse_file_structure_single(path: str) -> Dict[str, Any]:
-    """解析单个文件的结构（Excel 的 sheet / CAN 的 testcase / XML 的 testgroup）。
-    参数：path — 文件路径。
-    返回：按类型返回 type + sheets|testcases|testgroups 或 error。
-    """
-    path_lower = path.lower()
-    if path_lower.endswith((".xlsx", ".xlsm")):
-        return _parse_excel_sheets(path)
-    if path_lower.endswith(".can"):
-        return _parse_can_testcases(path)
-    if path_lower.endswith(".xml"):
-        return _parse_xml_structure(path)
-    return {"type": "unknown", "error": "不支持的文件格式，仅支持 Excel(.xlsx/.xlsm)、CAN(.can)、XML(.xml)"}
-
-
 class GuiService:
     """
     GUI 交互服务：弹窗选路径、解析文件结构。
@@ -242,7 +173,76 @@ class GuiService:
                 gc.collect()
 
     @staticmethod
-    def parse_file_structure(path: str) -> Dict[str, Any]:
+    def parse_excel_sheets(file_path: str) -> Dict[str, Any]:
+        """解析 Excel 文件的 sheet 名称列表。
+        参数：file_path — Excel 文件路径。
+        返回：{"type": "excel", "sheets": [...]} 或 {"type": "excel", "error": str}。
+        """
+        if os.path.basename(file_path).startswith("~$"):
+            return {"type": "excel", "sheets": []}
+        try:
+            wb = load_workbook(file_path, read_only=True)
+            sheets = list(wb.sheetnames)
+            wb.close()
+            return {"type": "excel", "sheets": sheets}
+        except Exception as error:
+            return {"type": "excel", "error": str(error)}
+
+    @staticmethod
+    def parse_can_testcases(file_path: str) -> Dict[str, Any]:
+        """解析 CAN 文件中的 testcase 名称列表。
+        参数：file_path — .can 文件路径。
+        返回：{"type": "can", "testcases": [...]} 或 {"type": "can", "error": str}。
+        """
+        try:
+            with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
+                content = f.read()
+            pattern = re.compile(r"testcase\s+(\w+)\s*\(", re.IGNORECASE)
+            names = pattern.findall(content)
+            return {"type": "can", "testcases": list(dict.fromkeys(names))}
+        except Exception as error:
+            return {"type": "can", "error": str(error)}
+
+    @staticmethod
+    def parse_xml_structure(file_path: str) -> Dict[str, Any]:
+        """解析 XML 文件中的 testgroup 与 capltestcase 结构。
+        参数：file_path — XML 文件路径。
+        返回：{"type": "xml", "testgroups": [...], "capltestcases": [...]} 或 {"type": "xml", "error": str}。
+        """
+        try:
+            tree = ET.parse(file_path)
+            root = tree.getroot()
+            result = {"type": "xml", "testgroups": [], "capltestcases": []}
+            for elem in root.iter():
+                if elem.tag.endswith("testgroup"):
+                    title = elem.get("title") or elem.get("ident") or ""
+                    if title:
+                        result["testgroups"].append(title)
+                elif elem.tag.endswith("capltestcase"):
+                    name = elem.get("name") or ""
+                    if name:
+                        result["capltestcases"].append(name)
+            return result
+        except Exception as error:
+            return {"type": "xml", "error": str(error)}
+
+    @classmethod
+    def parse_file_structure_single(cls, file_path: str) -> Dict[str, Any]:
+        """解析单个文件的结构（Excel 的 sheet / CAN 的 testcase / XML 的 testgroup）。
+        参数：file_path — 文件路径。
+        返回：按类型返回 type + sheets|testcases|testgroups 或 error。
+        """
+        path_lower = file_path.lower()
+        if path_lower.endswith((".xlsx", ".xlsm")):
+            return cls.parse_excel_sheets(file_path)
+        if path_lower.endswith(".can"):
+            return cls.parse_can_testcases(file_path)
+        if path_lower.endswith(".xml"):
+            return cls.parse_xml_structure(file_path)
+        return {"type": "unknown", "error": "不支持的文件格式，仅支持 Excel(.xlsx/.xlsm)、CAN(.can)、XML(.xml)"}
+
+    @classmethod
+    def parse_file_structure(cls, path: str) -> Dict[str, Any]:
         """解析文件或文件夹下的 Excel/CAN/XML 结构（sheet、testcase、testgroup 等）。
         参数：path — 文件或文件夹路径；文件夹时遍历其下 Excel/CAN/XML。
         返回：{"success": True, "data": [...]} 或 {"success": False, "message": str}。
@@ -256,7 +256,7 @@ class GuiService:
         results: List[Dict[str, Any]] = []
         try:
             if os.path.isfile(path):
-                item = _parse_file_structure_single(path)
+                item = cls.parse_file_structure_single(path)
                 item["filename"] = os.path.basename(path)
                 results.append(item)
             else:
@@ -267,7 +267,7 @@ class GuiService:
                         fp = os.path.join(root_dir, f)
                         fl = f.lower()
                         if fl.endswith((".xlsx", ".xlsm", ".can", ".xml")):
-                            item = _parse_file_structure_single(fp)
+                            item = cls.parse_file_structure_single(fp)
                             item["filename"] = f
                             item["relpath"] = os.path.relpath(fp, path)
                             results.append(item)

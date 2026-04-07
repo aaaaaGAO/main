@@ -16,6 +16,10 @@ from services.config_constants import (
     DTC_STATE_KEYS,
     LR_EMPTY_STATE_OPTION_MAP,
     LR_STATE_KEYS,
+    OPTION_C_IG,
+    OPTION_C_PW,
+    OPTION_C_PWR,
+    OPTION_C_RLY,
     OPTION_CIN_INPUT_EXCEL,
     OPTION_DIDINFO_INPUTS,
     OPTION_INPUT_EXCEL,
@@ -36,11 +40,12 @@ from services.config_constants import (
     SECTION_DTC_CONFIG_ENUM,
     SECTION_DTC_IOMAPPING,
     SECTION_IGNITION_CYCLE,
+    SECTION_LR_REAR,
     UART_COMM_CFG_KEYS,
     UART_COMM_KEY_MAP,
 )
 from services.config_manager import ConfigManager
-from services.config_service import ConfigService
+from services.config_service import ConfigPaths, ConfigService
 
 
 class StateConfigService:
@@ -319,29 +324,29 @@ class StateConfigService:
             self.set_json_option_or_remove(
                 cfg,
                 SECTION_CENTRAL,
-                "c_pwr",
-                state.get("c_pwr"),
+                OPTION_C_PWR,
+                state.get(OPTION_C_PWR),
                 is_configured=self.is_configured_c_pwr,
             )
             self.set_json_option_or_remove(
                 cfg,
                 SECTION_CENTRAL,
-                "c_rly",
-                state.get("c_rly"),
+                OPTION_C_RLY,
+                state.get(OPTION_C_RLY),
                 is_configured=self.is_configured_c_rly,
             )
             self.set_json_option_or_remove(
                 cfg,
                 SECTION_CENTRAL,
-                "c_ig",
-                state.get("c_ig"),
+                OPTION_C_IG,
+                state.get(OPTION_C_IG),
                 is_configured=self.is_configured_ig_pw,
             )
             self.set_json_option_or_remove(
                 cfg,
                 SECTION_CENTRAL,
-                "c_pw",
-                state.get("c_pw"),
+                OPTION_C_PW,
+                state.get(OPTION_C_PW),
                 is_configured=self.is_configured_ig_pw,
             )
 
@@ -372,10 +377,10 @@ class StateConfigService:
             if "d_io_excel" in state or "d_io_selected_sheets" in state:
                 if not cfg.has_section(SECTION_DTC_IOMAPPING):
                     cfg.add_section(SECTION_DTC_IOMAPPING)
-                path = str(state.get("d_io_excel") or "").strip()
-                sheets = str(state.get("d_io_selected_sheets") or "").strip()
-                if path:
-                    cfg.set(SECTION_DTC_IOMAPPING, OPTION_INPUTS, f"{path} | {sheets if sheets else '*'}")
+                io_excel_path = str(state.get("d_io_excel") or "").strip()
+                io_selected_sheets = str(state.get("d_io_selected_sheets") or "").strip()
+                if io_excel_path:
+                    cfg.set(SECTION_DTC_IOMAPPING, OPTION_INPUTS, f"{io_excel_path} | {io_selected_sheets if io_selected_sheets else '*'}")
                 else:
                     if cfg.has_option(SECTION_DTC_IOMAPPING, OPTION_INPUTS):
                         cfg.remove_option(SECTION_DTC_IOMAPPING, OPTION_INPUTS)

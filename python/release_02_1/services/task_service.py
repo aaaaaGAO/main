@@ -12,6 +12,7 @@
 
 from __future__ import annotations
 
+import logging
 import os
 import traceback
 from dataclasses import dataclass
@@ -25,6 +26,8 @@ from generators.capl_didconfig.entrypoint import main as didconfig_main
 from generators.capl_didinfo.entrypoint import main as didinfo_main
 from generators.capl_uart.entrypoint import main as uart_main
 from generators.capl_xml.entrypoint import main as xml_main
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -80,14 +83,12 @@ class TaskService:
     def run_can(self, domain: str = DEFAULT_DOMAIN_LR_REAR) -> TaskResult:
         """运行 CAN 生成任务。
 
-        功能：切换工作目录到 self.base_dir 后调用 generators.capl_can.entrypoint.main；中央域未配置 input_excel 时按“跳过”处理不视为失败。
+        功能：调用 generators.capl_can.entrypoint.main（传入 base_dir 与 config_path）；中央域未配置 input_excel 时按"跳过"处理不视为失败。
 
         形参：domain — 业务域（LR_REAR / CENTRAL / DTC），默认 LR_REAR。
         返回：TaskResult（success、message、detail）。
         """
         try:
-            # 确保工作目录在工程根目录，便于底层脚本按相对路径找到配置/输入文件
-            os.chdir(self.base_dir)
             can_main(
                 config_path=self.config_path,
                 base_dir=self.base_dir,
@@ -102,14 +103,14 @@ class TaskService:
                 domain == SECTION_CENTRAL
                 and "未配置输入路径：请配置 [CENTRAL] 的 input_excel" in error_message
             ):
-                print(f"CAN 执行跳过（中央域未配置 input_excel）: {error}")
+                logger.info("CAN 执行跳过（中央域未配置 input_excel）: %s", error)
                 return TaskResult(
                     success=True,
                     message="CENTRAL CAN 未生成（未配置输入路径，已按要求跳过）",
                     detail=traceback_text,
                 )
             # 其它异常仍按失败处理，便于前端与日志排查
-            print(f"CAN 执行崩溃: {error}")
+            logger.error("CAN 执行崩溃: %s", error)
             return TaskResult(
                 success=False,
                 message=f"{domain} CAN 生成失败: {error}",
@@ -119,18 +120,16 @@ class TaskService:
     def run_xml(self, domain: str = DEFAULT_DOMAIN_LR_REAR) -> TaskResult:
         """运行 XML 生成任务。
 
-        功能：切换工作目录后调用 generators.capl_xml.entrypoint.main；中央域未配置 Xml_Input_Excel 时按“跳过”处理。
+        功能：调用 generators.capl_xml.entrypoint.main（传入 base_dir 与 config_path）；中央域未配置 Xml_Input_Excel 时按"跳过"处理。
 
         形参：domain — 业务域，默认 LR_REAR。
         返回：TaskResult（success、message、detail）。
         """
         try:
-            os.chdir(self.base_dir)
-            print(
-                f"[TaskService.run_xml] cwd={os.getcwd()!r}, config_path={self.config_path!r}, "
-                f"base_dir={self.base_dir!r}, domain={domain!r}"
+            logger.debug(
+                "[TaskService.run_xml] config_path=%r, base_dir=%r, domain=%r",
+                self.config_path, self.base_dir, domain,
             )
-            # 传递 base_dir 和 config_path，保持与 CAN 生成使用同一份配置
             xml_main(
                 config_path=self.config_path,
                 base_dir=self.base_dir,
@@ -145,15 +144,15 @@ class TaskService:
                 domain == SECTION_CENTRAL
                 and "未配置 Xml_Input_Excel 或 xml_input_excel" in error_message
             ):
-                print(
-                    f"[TaskService.run_xml] 中央域未配置 Xml_Input_Excel，按要求跳过 XML 生成: {error}"
+                logger.info(
+                    "[TaskService.run_xml] 中央域未配置 Xml_Input_Excel，按要求跳过 XML 生成: %s", error
                 )
                 return TaskResult(
                     success=True,
                     message="CENTRAL XML 未生成（未配置 Xml_Input_Excel，已按要求跳过）",
                     detail=traceback_text,
                 )
-            print(f"[TaskService.run_xml] XML 生成报错详情:\n{traceback_text}")
+            logger.error("[TaskService.run_xml] XML 生成报错详情:\n%s", traceback_text)
             return TaskResult(
                 success=False,
                 message=f"{domain} XML 生成失败: {error}",
@@ -163,13 +162,12 @@ class TaskService:
     def run_cin(self, domain: str = DEFAULT_DOMAIN_LR_REAR) -> TaskResult:
         """运行 CIN 生成任务。
 
-        功能：切换工作目录后调用 generators.capl_cin.entrypoint.main；domain 用于按域加载 io_mapping 与日志级别。
+        功能：调用 generators.capl_cin.entrypoint.main；domain 用于按域加载 io_mapping 与日志级别。
 
         形参：domain — 业务域（LR_REAR / CENTRAL / DTC），默认 LR_REAR。
         返回：TaskResult（success、message、detail）。
         """
         try:
-            os.chdir(self.base_dir)
             cin_main(domain=domain)
             return TaskResult(success=True, message=f"{domain} CIN 生成完成")
         except Exception as error:
@@ -183,13 +181,12 @@ class TaskService:
     def run_did_info(self) -> TaskResult:
         """运行 DIDInfo 生成任务。
 
-        功能：切换工作目录后调用 generators.capl_didinfo.entrypoint.main；未配置 ResetDid_Value 配置表时按“跳过”处理不视为失败。
+        功能：调用 generators.capl_didinfo.entrypoint.main；未配置 ResetDid_Value 配置表时按"跳过"处理不视为失败。
 
         形参：无。
         返回：TaskResult（success、message、detail）。
         """
         try:
-            os.chdir(self.base_dir)
             didinfo_main()
             return TaskResult(success=True, message="DIDInfo 生成完成")
         except Exception as error:
@@ -197,7 +194,7 @@ class TaskService:
             error_message = str(error)
             # 未配置 ResetDid_Value 配置表时，按“静默跳过”处理，不视为失败，只返回提示信息
             if "未配置 ResetDid_Value 配置表" in error_message:
-                print(f"DIDInfo 执行跳过（未配置 ResetDid_Value 配置表）: {error}")
+                logger.info("DIDInfo 执行跳过（未配置 ResetDid_Value 配置表）: %s", error)
                 return TaskResult(
                     success=True,
                     message="DIDInfo 未生成（未配置 ResetDid_Value 配置表，已按要求跳过）",
@@ -212,13 +209,12 @@ class TaskService:
     def run_did_config(self) -> TaskResult:
         """运行 DIDConfig 生成任务。
 
-        功能：切换工作目录后调用 generators.capl_didconfig.entrypoint.main。
+        功能：调用 generators.capl_didconfig.entrypoint.main。
 
         形参：无。
         返回：TaskResult（success、message、detail）。
         """
         try:
-            os.chdir(self.base_dir)
             didconfig_main()
             return TaskResult(success=True, message="DIDConfig 生成完成")
         except Exception as error:
@@ -226,7 +222,7 @@ class TaskService:
             error_message = str(error)
             # 未配置 DID_Config 配置表/节时，按“静默跳过”处理，不视为失败，只返回提示信息
             if "未配置 DID_Config 配置表" in error_message or "未配置 DID_Config 配置节" in error_message:
-                print(f"DIDConfig 执行跳过（{error_message}）: {error}")
+                logger.info("DIDConfig 执行跳过（%s）: %s", error_message, error)
                 return TaskResult(
                     success=True,
                     message="DIDConfig 未生成（未配置 DID_Config 配置表，已按要求跳过）",
@@ -241,13 +237,12 @@ class TaskService:
     def run_uart(self) -> TaskResult:
         """运行 UART 生成任务。
 
-        功能：切换工作目录后调用 generators.capl_uart.entrypoint.main。
+        功能：调用 generators.capl_uart.entrypoint.main。
 
         形参：无。
         返回：TaskResult（success、message、detail）。
         """
         try:
-            os.chdir(self.base_dir)
             uart_main()
             return TaskResult(success=True, message="UART 生成完成")
         except Exception as error:

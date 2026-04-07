@@ -25,7 +25,7 @@ import logging
 import os
 import socket
 import sys
-import threading
+import threading    
 import time
 import webbrowser
 
@@ -36,7 +36,7 @@ from infra.filesystem import get_base_dir
 from web import create_app
 
 # 工具显示名（Web 右上角 + build_exe 打包时的 EXE 文件名，只改此处即可）
-TOOL_DISPLAY_NAME = "测试用例生成工具_2026.4.3_V2.0"
+TOOL_DISPLAY_NAME = "测试用例生成工具_2026.4.8"
 
 # ---------------------------------------------------------------------------
 # 配置

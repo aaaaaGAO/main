@@ -41,7 +41,7 @@ from .route_helpers import get_base_dir
 common_bp = Blueprint("common", __name__)
 
 
-def _base_dir() -> str:
+def current_base_dir() -> str:
     """获取当前应用的项目根目录（主配置 / filter_options.ini 所在目录）。参数：无。返回：根目录绝对路径。"""
     return get_base_dir(__file__)
 
@@ -61,7 +61,7 @@ def api_heartbeat():
 @common_bp.route("/config/lr_rear", methods=["GET"])
 def get_lr_rear_config():
     """获取 [LR_REAR] 配置供前端使用。参数：无。返回：JSON { success, data }。"""
-    base_dir = _base_dir()
+    base_dir = current_base_dir()
     svc = ConfigService.from_base_dir(base_dir)
     data: Dict[str, Any] = svc.get_lr_rear()
     return jsonify({"success": True, "data": data})
@@ -70,7 +70,7 @@ def get_lr_rear_config():
 @common_bp.route("/get_filter_options", methods=["GET"])
 def get_filter_options():
     """获取筛选框选项（等级/平台/车型/UDS_ECU_qualifier），数据来自 config/filter_options.ini。参数：无。返回：JSON 筛选选项。"""
-    base_dir = _base_dir()
+    base_dir = current_base_dir()
     filters = parse_shaixuan_config(base_dir)
     return jsonify(filters)
 
@@ -78,7 +78,7 @@ def get_filter_options():
 @common_bp.route("/load_config", methods=["GET"])
 def load_config():
     """加载完整配置供前端展示（ConfigManager.load_ui_data）。参数：base_dir — 可选，配置根目录，缺省为当前 BASE_DIR。返回：JSON { success, data }。"""
-    base_dir = request.args.get("base_dir") or _base_dir()
+    base_dir = request.args.get("base_dir") or current_base_dir()
     manager = ConfigManager.from_base_dir(base_dir)
     data = manager.load_ui_data()
     return jsonify({"success": True, "data": data})
@@ -114,7 +114,7 @@ def parse_file_structure():
         return jsonify({"success": False, "message": str(error)})
 
 
-def _jsonify_generation_result(
+def jsonify_generation_result(
     orch: TaskOrchestrator,
     result,
     *,
@@ -185,7 +185,7 @@ def auto_save_config():
     try:
         payload = request.get_json(silent=True) or {}
         state = payload.get("data") or {}
-        base = _base_dir()
+        base = current_base_dir()
         StateConfigService.from_base_dir(base).persist_state_config(state)
         return jsonify({"success": True, "message": "配置已自动保存"})
     except Exception as error:
@@ -196,7 +196,7 @@ def auto_save_config():
 def generate():
     """左右后域一键生成（CAN/XML/CIN/DID/UART 等），请求体含 state 时先写入配置再执行。参数：data — 请求体中可选前端 state。返回：JSON { success, message } 或 500 { success: false, message, detail }。"""
     try:
-        base = _base_dir()
+        base = current_base_dir()
         state_config_service = StateConfigService.from_base_dir(base)
         payload = request.get_json(silent=True) or {}
         state = payload.get("data", payload)
@@ -206,7 +206,7 @@ def generate():
         )
         orch = TaskOrchestrator.from_base_dir(base)
         result = orch.run_lr_bundle(**state_config_service.get_lr_generation_flags(state))
-        return _jsonify_generation_result(
+        return jsonify_generation_result(
             orch,
             result,
             config=config,
@@ -223,7 +223,7 @@ def generate():
 def generate_central():
     """中央域一键生成（CAN/XML/UART），请求体含 state 时先写入配置再执行且 skip_lr_rear。参数：data — 请求体中可选前端 state。返回：JSON { success, message } 或 500。"""
     try:
-        base = _base_dir()
+        base = current_base_dir()
         state_config_service = StateConfigService.from_base_dir(base)
         payload = request.get_json(silent=True) or {}
         state = payload.get("data", payload)
@@ -234,7 +234,7 @@ def generate_central():
         )
         orch = TaskOrchestrator.from_base_dir(base)
         result = orch.run_central_bundle(run_can=True, run_xml=True, run_uart=True)
-        return _jsonify_generation_result(
+        return jsonify_generation_result(
             orch,
             result,
             config=config,
@@ -251,7 +251,7 @@ def generate_central():
 def generate_dtc():
     """DTC 域一键生成（CAN/XML），请求体含 state 时先写入配置再执行且 skip_lr_rear。参数：data — 请求体中可选前端 state。返回：JSON { success, message } 或 500。"""
     try:
-        base = _base_dir()
+        base = current_base_dir()
         state_config_service = StateConfigService.from_base_dir(base)
         payload = request.get_json(silent=True) or {}
         state = payload.get("data", payload)
@@ -262,7 +262,7 @@ def generate_dtc():
         )
         orch = TaskOrchestrator.from_base_dir(base)
         result = orch.run_dtc_bundle(**state_config_service.get_dtc_generation_flags(state))
-        return _jsonify_generation_result(
+        return jsonify_generation_result(
             orch,
             result,
             config=config,
@@ -285,7 +285,7 @@ def save_preset():
         path = GuiService.ask_saveas_filename(initialfile=default_name)
         if not path:
             return jsonify({"success": False, "message": "用户取消了保存"})
-        base = _base_dir()
+        base = current_base_dir()
         StateConfigService.from_base_dir(base).persist_state_config(state, extra_write_path=path)
         return jsonify({"success": True, "message": "配置已保存", "filepath": path})
     except Exception as error:
@@ -299,7 +299,7 @@ def import_preset():
         path = GuiService.ask_open_config_filename()
         if not path:
             return jsonify({"success": False, "message": "用户取消了选择"})
-        base = _base_dir()
+        base = current_base_dir()
         mgr = ConfigManager(base, config_path=path)
         data = mgr.load_ui_data()
         return jsonify({"success": True, "data": data})

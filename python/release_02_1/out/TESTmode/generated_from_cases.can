@@ -3,6 +3,7 @@
 includes
 {
   #include "TestMoudleControl\TestMoudleControl_Swc.can"
-  #include "..\ILNode\SecOc\CAN\RDCU.cin"
+  #include "..\ILNode\SecOc\CAN\LDCU.cin"
+  #include "generated_from_keyword.cin"
   #include "Testcases\generated_from_cases_pythongongjuzhuanyijiaoyan_V1_0_TC.can"
 }

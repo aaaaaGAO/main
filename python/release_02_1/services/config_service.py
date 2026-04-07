@@ -215,7 +215,7 @@ class ConfigService:
     # ------------------------------------------------------------------
 
     @staticmethod
-    def _normalize_level(v: Any) -> str:
+    def normalize_level(v: Any) -> str:
         """levels 空则写 ALL。"""
         if v is None:
             return "ALL"
@@ -223,10 +223,10 @@ class ConfigService:
         return level_text if level_text else "ALL"
 
     @staticmethod
-    def _normalize_selected_sheets_str(sheets_str: Any) -> str:
+    def normalize_selected_sheets_str(sheets_str: Any) -> str:
         """
         将前端传来的 selected_sheets 字符串归一化为「仅文件名|sheet」格式，
-        行为保持与 app.py 中的 _normalize_selected_sheets_str 一致。
+        行为保持与 app.py 中的 normalize_selected_sheets_str 一致。
         """
         if not sheets_str or not str(sheets_str).strip():
             return ""
@@ -260,7 +260,7 @@ class ConfigService:
             cfg.add_section(SECTION_LR_REAR)
 
         # 筛选器：levels 空则 ALL；平台/车型/Target Version 选什么写什么，空表示全部生成
-        cfg.set(SECTION_LR_REAR, OPTION_CASE_LEVELS, self._normalize_level(preset_data.get("levels", "ALL")))
+        cfg.set(SECTION_LR_REAR, OPTION_CASE_LEVELS, self.normalize_level(preset_data.get("levels", "ALL")))
         cfg.set(SECTION_LR_REAR, OPTION_CASE_PLATFORMS, (preset_data.get("platforms") or "").strip())
         cfg.set(SECTION_LR_REAR, OPTION_CASE_MODELS, (preset_data.get("models") or "").strip())
         cfg.set(SECTION_LR_REAR, OPTION_CASE_TARGET_VERSIONS, (preset_data.get("target_versions") or "").strip())
@@ -317,7 +317,7 @@ class ConfigService:
             cfg.set(SECTION_LR_REAR, OPTION_CIN_INPUT_EXCEL, cin_excel)
 
         # 勾选的 sheet 与日志生成选择
-        lr_sheets = self._normalize_selected_sheets_str(preset_data.get("selected_sheets") or "")
+        lr_sheets = self.normalize_selected_sheets_str(preset_data.get("selected_sheets") or "")
         if lr_sheets:
             cfg.set(SECTION_LR_REAR, OPTION_SELECTED_SHEETS, lr_sheets)
         elif cfg.has_option(SECTION_LR_REAR, OPTION_SELECTED_SHEETS):
