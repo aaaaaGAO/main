@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 import os
+from configparser import ConfigParser
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -26,6 +27,7 @@ from services.config_constants import (
     SECTION_DTC_CONFIG_ENUM,
     SECTION_LR_REAR,
     SECTION_PATHS,
+    UART_COMM_CFG_KEYS,
 )
 from services.run_validator import validate_for_domain
 from services.task_service import TaskService, TaskResult
@@ -226,9 +228,10 @@ class TaskOrchestrator:
             return
         self._restore_config_after_dtc_did_cin(backup, uds_domain=uds_domain)
 
-    def _resolve_uart_path(self) -> Optional[str]:
-        """解析 UART 矩阵文件路径；不存在则返回 None。"""
-        config = self._config_manager.load_config()
+    def _resolve_uart_path(self, config: Optional[ConfigParser] = None) -> Optional[str]:
+        """解析 UART 矩阵文件路径；文件不存在则返回 None。"""
+        if config is None:
+            config = self._config_manager.load_config()
         base_dir = self._task_service.base_dir
         uart_excel_raw = ""
         if config.has_section(SECTION_CENTRAL):
@@ -354,8 +357,12 @@ class TaskOrchestrator:
                 # 仅中央域执行 UART 生成并创建 generate_uart_from_config.log；左右后域/DTC 不涉及 UART 则不生成该日志
                 if not run_uart or config_section != SECTION_CENTRAL:
                     continue
-                uart_matrix_path = self._resolve_uart_path()
-                if uart_matrix_path:
+                cfg = self._config_manager.load_config()
+                uart_matrix_path = self._resolve_uart_path(cfg)
+                has_uart_comm = cfg.has_section(SECTION_CENTRAL) and any(
+                    cfg.has_option(SECTION_CENTRAL, key) for key in UART_COMM_CFG_KEYS
+                )
+                if uart_matrix_path or has_uart_comm:
                     task_result = self._task_service.run_uart()
                     results["uart"] = task_result
                     messages.append(task_result.message)
@@ -368,7 +375,9 @@ class TaskOrchestrator:
                     if task_result.detail:
                         detail_parts.append(task_result.detail)
                 else:
-                    messages.append("跳过 UART 生成（未配置有效矩阵文件）")
+                    messages.append(
+                        "跳过 UART 生成（无有效矩阵文件且 [CENTRAL] 未配置 uart_comm_*）"
+                    )
 
             elif bundle_step == "can":
                 if not run_can:

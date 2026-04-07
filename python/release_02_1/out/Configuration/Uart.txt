@@ -1,0 +1,5650 @@
+[IVIToMCU]
+Msg:0x0300 AND_CDCU_iBCM_Disarmedcfg 1
+Prearmedcfg 0 8 Unsigned
+Msg:0x02FF AND_iBCM_LightCtrlSWSt 1
+LightCtrlSWSt 0 8 Unsigned
+Msg:0x02FF AND_iBCM_LightCtrlSWSt 1
+LightCtrlSWSt 0 8 Unsigned
+Msg:0x02FC AND_iBCM_RearfoglampSwSt 1
+RearfoglampSwSt 0 8 Unsigned
+Msg:0x02FC AND_iBCM_RearfoglampSwSt 1
+RearfoglampSwSt 0 8 Unsigned
+Msg:0x02FB AND_iBCM_HighBeamSw 1
+HighBeamSw 0 8 Unsigned
+Msg:0x02FB AND_iBCM_HighBeamSw 1
+HighBeamSw 0 8 Unsigned
+Msg:0x02FA AND_LDCU_FLWinSwSt 1
+FLWinSwSt 0 8 Unsigned
+Msg:0x02F9 AND_LDCU_FRWinSwSt 1
+FRWinSwSt 0 8 Unsigned
+Msg:0x02F8 AND_LDCU_RLWinSwSt 1
+RLWinSwSt 0 8 Unsigned
+Msg:0x02F7 AND_LDCU_RRWinSwSt 1
+RRWinSwSt 0 8 Unsigned
+Msg:0x02F6 AND_iBCM_FLPos 1
+FLPos 0 8 Unsigned
+Msg:0x02F5 AND_iBCM_FRPos 1
+FRPos 0 8 Unsigned
+Msg:0x02F4 AND_iBCM_RLPos 1
+RLPos 0 8 Unsigned
+Msg:0x02F3 AND_iBCM_RRPos 1
+RRPos 0 8 Unsigned
+Msg:0x02F2 AND_iBCM_MirrorSw 1
+MirrorSw 0 8 Unsigned
+Msg:0x02F1 AND_iBCM_MirrorHeat 1
+MirrorHeat 0 8 Unsigned
+Msg:0x02F0 AND_LDCU_RearMirrorHeat 1
+RearMirrorHeat 0 8 Unsigned
+Msg:0x02EF AND_iBCM_RChargePortRelCmd 1
+RChargePortRelCmd 0 8 Unsigned
+Msg:0x02EE AND_iBCM_SpdAutoLockCfg 1
+SpdAutoLockCfg 0 8 Unsigned
+Msg:0x02ED AND_iBCM_AutoUnlockCfg 1
+AutoUnlockCfg 0 8 Unsigned
+Msg:0x02EC AND_BCM_EmerBrakeCfg 1
+EmerBrakeCfg 0 8 Unsigned
+Msg:0x02EB AND_CDCU_iBCM_Prearmedcfg 1
+Prearmedcfg 0 8 Unsigned
+Msg:0x02EA AND_RainDetecSenCfg 1
+RainDetecSenCfg 0 8 Unsigned
+Msg:0x02E9 AND_iBCM_FollowMeHomeCfg 1
+FollowMeHomeCfg 0 8 Unsigned
+Msg:0x02E8 AND_BCM_HOB 1
+HoldOpenButton 0 8 Unsigned
+Msg:0x02E7 AND_iBCM_LChargePortRelCmd 1
+LChargePortRelCmd 0 8 Unsigned
+Msg:0x02E6 AND_LChildLockSw 1
+LChildLockSw 0 8 Unsigned
+Msg:0x02E5 AND_RChildLockSw 1
+RChildLockSw 0 8 Unsigned
+Msg:0x02E4 AND_iBCM_ChildLockSw 1
+ChildLockSw 0 8 Unsigned
+Msg:0x02E3 AND_iBCM_DRLCfg 1
+DRLCfg 0 8 Unsigned
+Msg:0x02E2 AND_CDCU_iBCM_FollowMeHomeTimeCfg 1
+FollowMeHomeTimeCfg 0 8 Unsigned
+Msg:0x02E1 AND_iBCM_HazardLightSw 1
+HazardLightSw 0 8 Unsigned
+Msg:0x02E0 AND_iBCM_DomeLightSw 1
+DomeLightSw 0 8 Unsigned
+Msg:0x02DF AND_BCM_StopNFCCardSw 1
+StopNFCCardSw 0 8 Unsigned
+Msg:0x02DE AND_BCM_RemoteCtrlCfg 1
+RemoteCtrlCfg 0 8 Unsigned
+Msg:0x02DD AND_iBCM_ComfortWndsCmd 1
+ComfortWndsCmd 0 8 Unsigned
+Msg:0x02DC AND_iBCM_SHCReq 1
+SHCReq 0 8 Unsigned
+Msg:0x02DC AND_iBCM_SHCReq 1
+SHCReq 0 8 Unsigned
+Msg:0x02DB AND_BCM_ReverseCarMirrorCfg 1
+ReverseCarMirrorCfg 0 8 Unsigned
+Msg:0x02DA AND_iBCM_LMirrorCtrl 2
+Control 0 8 Unsigned
+LMirrorCtrl 0 8 Unsigned
+Msg:0x02DA AND_iBCM_LMirrorCtrl 2
+Control 0 8 Unsigned
+LMirrorCtrl 0 8 Unsigned
+Msg:0x02D9 AND_iBCM_RMirrorCtrl 2
+Control 0 8 Unsigned
+RMirrorCtrl 0 8 Unsigned
+Msg:0x02D9 AND_iBCM_RMirrorCtrl 2
+Control 0 8 Unsigned
+RMirrorCtrl 0 8 Unsigned
+Msg:0x02D8 AND_iBCM_WiperServiceSw 1
+WiperServiceSw 0 8 Unsigned
+Msg:0x02D7 AND_BCM_WinSwSt 4
+data 4 8 Unsigned
+Msg:0x02D6 AND_iBCM_WinPos 4
+FLPos 0 8 Unsigned
+FRPos 0 8 Unsigned
+RLPos 0 8 Unsigned
+RRPos 0 8 Unsigned
+Msg:0x02D5 AND_CDU_BCM_RoomlampSWSt 1
+CDU_BCM_RoomlampSWSt 0 8 Unsigned
+Msg:0x02D4 AND_CDU_SEAT_Cmd 2
+CDU_SEAT_Cmd 0 8 Unsigned
+CDU_SEAT_Direction 0 8 Unsigned
+Msg:0x02D3 AND_iBCM_PollingUnlockCfg 1
+PollingUnlockCfg 0 8 Unsigned
+Msg:0x02D2 AND_iBCM_PollingLockCfg 1
+PollingLockCfg 0 8 Unsigned
+Msg:0x02D1 AND_iBCM_LockWinCfg 1
+LockWinCfg 0 8 Unsigned
+Msg:0x02D0 AND_ChrgGunLockCmd 1
+ChrgGunLockCmd 0 8 Unsigned
+Msg:0x02CF AND_BCM_CDU_TWC_UpdownSw 1
+CDU_TWC_UpdownSw 0 8 Unsigned
+Msg:0x02CE AND_SDCL_Sw 2
+Control 0 8 Unsigned
+SDCL_Sw 0 8 Unsigned
+Msg:0x02CD AND_BCM_CDU_SDC_ModeSw 1
+CDU_SDC_ModeSw 0 8 Unsigned
+Msg:0x02CC AND_BCM_CDU_TWC_ModeSw 1
+CDU_TWC_ModeSw 0 8 Unsigned
+Msg:0x02CB AND_SDCR_Sw 2
+Control 0 8 Unsigned
+SDCR_Sw 0 8 Unsigned
+Msg:0x02CA AND_iBCM_PakLghRltedFMBCfg 1
+PakLghRltedFMBCfg 0 8 Unsigned
+Msg:0x02C9 AND_CDU_iBCM_WndsControl 2
+CDU_iBCM_ComfortWndsCmd 0 8 Unsigned
+CDU_iBCM_WndsCmdType 0 8 Unsigned
+Msg:0x02C8 AND_SDC_KeyOpenModeCtrlCfg 1
+KeyOpenModeCtrlCfg 0 8 Unsigned
+Msg:0x02C7 AND_SDC_KeyCloseModeCtrlCfg 1
+KeyCloseModeCtrlCfg 0 8 Unsigned
+Msg:0x02C1 AND_CDU_iBCM_RemoteWinCfg 1
+CDU_iBCM_RemoteWinCfg 0 8 Unsigned
+Msg:0x02C0 AND_CDU_iBCM_TrunkPollingUnlockCfg 1
+CDU_iBCM_TrunkPollingUnlockCfg 0 8 Unsigned
+Msg:0x02C6 AND_CDU_WINS_AUTODOWN_L 1
+WINS_AUTODOWN_L 0 8 Unsigned
+Msg:0x02C5 AND_CDU_WINS_AUTODOWN_R 1
+WINS_AUTODOWN_R 0 8 Unsigned
+Msg:0x02C4 AND_SDC_OpenHallCfg 1
+OpenHallCfg 0 8 Unsigned
+Msg:0x02C3 AND_SDCL_DoorPos 1
+DoorPos 0 8 Unsigned
+Msg:0x02C2 AND_SDCR_DoorPos 1
+DoorPos 0 8 Unsigned
+Msg:0x02BF AND_CDCU_CWC_Sw 1
+CDCU_CWC_Sw 0 8 Unsigned
+Msg:0x02BE AND_iBCM_BrakeSig 1
+BrakeSig 0 8 Unsigned
+Msg:0x02BE AND_BrakeSig 1
+BrakeSig 0 8 Unsigned
+Msg:0x02BD AND_iBCM_DRLEnable 1
+DRLEnable 0 8 Unsigned
+Msg:0x02BC AND_iBCM_LightsaberReqSWSt 1
+LightsaberReqSWSt 0 8 Unsigned
+Msg:0x02BB AND_WashCarSt 1
+WashCarSt 0 8 Unsigned
+Msg:0x02B9 AND_FKSCfg 1
+FKSCfg 0 8 Unsigned
+Msg:0x02B8 AND_FrontMirrorHeat 1
+FrontMirrorHeat 0 8 Unsigned
+Msg:0x02B5 AND_TrunkReleaseCmd 1
+TrunkReleaseCmd 0 8 Unsigned
+Msg:0x02B4 AND_TrunkPosOpenReq 1
+TrunkPosOpenReq 0 8 Unsigned
+Msg:0x02B3 AND_PLGSetPosReq 1
+PLGSetPosReq 0 8 Unsigned
+Msg:0x02B2 AND_HeadLampLevelingReq 1
+CHeadLampLevelingReq 0 8 Unsigned
+Msg:0x02B1 AND_SpecialCarbinModeSt 1
+SpecialCarbinModeSt 0 8 Unsigned
+Msg:0x02B0 AND_AMPWakePowerReq 1
+AMPWakePowerReq 0 8 Unsigned
+Msg:0x02AE AND_SRS_PsngrCrashOccurSwCfg 1
+PsngrCrashOccurSwCfg 0 8 Unsigned
+Msg:0x02AD AND_TTM_Sw 1
+TTM_Sw 0 8 Unsigned
+Msg:0x02AB AND_ChargeGunCmd 1
+ChargeGunCmd 0 8 Unsigned
+Msg:0x02AA AND_LockHazardLightCfg 1
+LockHazardLightCfg 0 8 Unsigned
+Msg:0x02A9 AND_LockHornCfg 1
+LockHornCfg 0 8 Unsigned
+Msg:0x02A8 AND_LockAVASCfg 1
+LockAVASCfg 0 8 Unsigned
+Msg:0x02A7 AND_FLDomeLightSw 1
+FLDomeLightSw 0 8 Unsigned
+Msg:0x02A6 AND_FRDomeLightSw 1
+FRDomeLightSw 0 8 Unsigned
+Msg:0x02A5 AND_RLDomeLightSw 1
+RLDomeLightSw 0 8 Unsigned
+Msg:0x02A4 AND_RRDomeLightSw 1
+RRDomeLightSw 0 8 Unsigned
+Msg:0x02A3 AND_DomelightBrightCfg 1
+DomelightBrightCfg 0 8 Unsigned
+Msg:0x02A2 AND_DomeLightMode 1
+DomeLightMode 0 8 Unsigned
+Msg:0x02A1 AND_FWiperSensitivityCmd 1
+FWiperSensitivityCmd 0 8 Unsigned
+Msg:0x02A0 AND_CDCU_RWiperServiceCmd 1
+CDCU_RWiperServiceCmd 0 8 Unsigned
+Msg:0x029F AND_MSMD_SWSHeatCmd 1
+SWSHeatCmd 0 8 Unsigned
+Msg:0x029E AND_DCPreheatOrPrecoolSw 1
+DCPreheatOrPrecoolSw 0 8 Unsigned
+Msg:0x029D AND_CDCU_DCPreWarmReq 1
+CDCU_DCPreWarmReq 0 8 Unsigned
+Msg:0x029C AND_destType 1
+destType 0 8 Unsigned
+Msg:0x029B AND_remainDis 1
+remainDis 0 8 Unsigned
+Msg:0x029A AND_remainTime 1
+remainTime 0 8 Unsigned
+Msg:0x0299 AND_pathID 4
+pathID 0 32 Unsigned
+Msg:0x0298 AND_navigationType 1
+navigationType 0 8 Unsigned
+Msg:0x0297 AND_kValue 1
+kValue 0 8 Unsigned
+Msg:0x0296 AND_WinLockCtrlReq 1
+WinLockCtrlReq 0 8 Unsigned
+Msg:0x0295 AND_CDCU_RDCU_LEDCtrl 4
+CDCU_RDCU_LED1Ctrl 0 8 Unsigned
+CDCU_RDCU_LED2Ctrl 0 8 Unsigned
+CDCU_RDCU_LED3Ctrl 0 8 Unsigned
+CDCU_RDCU_LED4Ctrl 0 8 Unsigned
+Msg:0x0294 AND_CDCU_RDCU_Color 4
+CDCU_RDCU_Color1 0 8 Unsigned
+CDCU_RDCU_Color2 0 8 Unsigned
+CDCU_RDCU_Color3 0 8 Unsigned
+CDCU_RDCU_Color4 0 8 Unsigned
+Msg:0x0293 AND_CDCU_RDCU_Fadetime 4
+CDCU_RDCU_Fadetime1 0 8 Unsigned
+CDCU_RDCU_Fadetime2 0 8 Unsigned
+CDCU_RDCU_Fadetime3 0 8 Unsigned
+CDCU_RDCU_Fadetime4 0 8 Unsigned
+Msg:0x0292 AND_CDCU_RDCU_Temp 4
+CDCU_RDCU_Temp1 0 8 Unsigned
+CDCU_RDCU_Temp2 0 8 Unsigned
+CDCU_RDCU_Temp3 0 8 Unsigned
+CDCU_RDCU_Temp4 0 8 Unsigned
+Msg:0x0291 AND_CDCU_RDCU_Lux 4
+CDCU_RDCU_Lux1 0 8 Unsigned
+CDCU_RDCU_Lux2 0 8 Unsigned
+CDCU_RDCU_Lux3 0 8 Unsigned
+CDCU_RDCU_Lux4 0 8 Unsigned
+Msg:0x028F AND_CDCU_TTMInitializeCMD 1
+CDCU_TTMInitializeCMD 0 8 Unsigned
+Msg:0x028E AND_MirrorAutoFoldSettingReq 1
+MirrorAutoFoldSettingReq 0 8 Unsigned
+Msg:0x028D AND_AutoCMSScreenBrightSW 1
+AutoCMSScreenBrightSW 0 8 Unsigned
+Msg:0x028C AND_CMSScreenBrightSet 2
+CMSScreenBrightCmd 0 8 Unsigned
+CMSScreenBrightSaveReq 0 8 Unsigned
+Msg:0x028B AND_AutoCMSTurnModeVisionSW 1
+AutoCMSTurnModeVisionSW 0 8 Unsigned
+Msg:0x028A AND_AutoCMSHighSpeedModeVisionSW 1
+AutoCMSHighSpeedModeVisionSW 0 8 Unsigned
+Msg:0x0289 AND_AutoCMSLowSpeedModeVisionSW 1
+AutoCMSLowSpeedModeVisionSW 0 8 Unsigned
+Msg:0x0288 AND_AutoCMSReserveModeVisionSW 1
+AutoCMSReserveModeVisionSW 0 8 Unsigned
+Msg:0x0287 AND_CMSMarkObjectSw 1
+CMSMarkObjectSw 0 8 Unsigned
+Msg:0x0286 AND_CMSVisionReset 1
+CMSVisionReset 0 8 Unsigned
+Msg:0x0285 AND_HMIARSCtrlReq 1
+HMIARSCtrlReq 0 8 Unsigned
+Msg:0x0284 AND_CMSVisionAngleSW 1
+CMSVisionAngleSW 0 8 Unsigned
+Msg:0x0283 AND_HMIARSModeReq 1
+HMIARSModeReq 0 8 Unsigned
+Msg:0x0282 AND_CDCU_CWC_Sw_FR 1
+CDCU_CWC_Sw_FR 0 8 Unsigned
+Msg:0x0281 AND_HmiCtrlSshdMov 1
+HmiCtrlSshdMov 0 8 Unsigned
+Msg:0x027E AND_HmiCtrlSshdPosTargt 1
+HmiCtrlSshdPosTargt 0 8 Unsigned
+Msg:0x027D AND_HmiToSshdLearnPer 1
+HmiToSshdLearnPer 0 8 Unsigned
+Msg:0x027C AND_IMSModeReq 1
+IMSModeReq 0 8 Unsigned
+Msg:0x027B AND_IMSBrightnessLevlSet 1
+IMSBrightnessLevlSet 0 8 Unsigned
+Msg:0x027A AND_IMSAutoVisionSet 1
+IMSAutoVisionSet 0 8 Unsigned
+Msg:0x0279 AND_CDCU_ACCurMaxChgCon 1
+CDCU_ACCurMaxChgCon 0 8 Unsigned
+Msg:0x0278 AND_LowBeamOffResult 1
+LowBeamOffResult 0 8 Unsigned
+Msg:0x0277 AND_HmiToARSLearnPer 1
+HmiToARSLearnPer 0 8 Unsigned
+Msg:0x0276 AND_IMSvisionCtrl 2
+Control 0 8 Unsigned
+IMSvisionCtrl 0 8 Unsigned
+Msg:0x0275 AND_IMSAutoModeReq 1
+IMSAutoModeReq 0 8 Unsigned
+Msg:0x0274 AND_CDCU_CWCRL_Sw_RL 1
+CDCU_CWCRL_Sw_RL 0 8 Unsigned
+Msg:0x0273 AND_CDCU_CWCRR_Sw_RR 1
+CDCU_CWCRR_Sw_RR 0 8 Unsigned
+Msg:0x0272 AND_CDCU_TLDomeLightSw 1
+CDCU_TLDomeLightSw 0 8 Unsigned
+Msg:0x0271 AND_CDCU_TRDomeLightSw 1
+CDCU_TRDomeLightSw 0 8 Unsigned
+Msg:0x026F AND_CDCU_FWiperSensitivityCfg 1
+CDCU_FWiperSensitivityCfg 0 8 Unsigned
+Msg:0x026E AND_CDCU_RDCU_ExterPM25St 2
+CDCU_RDCU_ExterPM25St 0 16 Unsigned
+Msg:0x026D AND_CDCU_RDCU_TrafficJamSt 1
+CDCU_RDCU_TrafficJamSt 0 8 Unsigned
+Msg:0x026C AND_ETC_Switch 1
+ETC_Switch 0 8 Unsigned
+Msg:0x026B AND_CDCU_ETCBleReq 1
+CDCU_ETCBleReq 0 8 Unsigned
+Msg:0x026A AND_CDCU_UnlockHazardLightCfg 1
+CDCU_UnlockHazardLightCfg 0 8 Unsigned
+Msg:0x0269 AND_CDCU_UnlockHornCfg 1
+CDCU_UnlockHornCfg 0 8 Unsigned
+Msg:0x0268 AND_IMSReserveAutoVisionSet 1
+IMSReserveAutoVisionSet 0 8 Unsigned
+Msg:0x0267 AND_VehLockARSAutoFoldSet 1
+VehLockARSAutoFoldSet 0 8 Unsigned
+Msg:0x0266 AND_CDCU_BLE_DisconnetReq 1
+CDCU_BLE_DisconnetReq 0 8 Unsigned
+Msg:0x0265 AND_IMSReset 1
+IMSReset 0 8 Unsigned
+Msg:0x0264 AND_CDCU_ChrgGunUnlockReq 1
+CDCU_ChrgGunUnlockReq 0 8 Unsigned
+Msg:0x0263 AND_CDCU_PollinglockDisableReq 1
+CDCU_PollinglockDisableReq 0 8 Unsigned
+Msg:0x0262 AND_CDCU_PollingUnlockDisableReq 1
+CDCU_PollingUnlockDisableReq 0 8 Unsigned
+Msg:0x0261 AND_CDCU_AutoPowerOffDisableReq 1
+CDCU_AutoPowerOffDisableReq 0 8 Unsigned
+Msg:0x025F AND_CDCU_RDCU_SmartPsnVentCtrSt 1
+CDCU_RDCU_SmartPsnVentCtrSt 0 8 Unsigned
+Msg:0x025E AND_CDCU_SoftStop_Cmd 1
+CDCU_SoftStop_Cmd 0 8 Unsigned
+Msg:0x025C AND_CDCU_ErrorReset_Cmd 1
+CDCU_ErrorReset_Cmd 0 8 Unsigned
+Msg:0x025B AND_CDCU_MoveZero_Cmd 1
+CDCU_MoveZero_Cmd 0 8 Unsigned
+Msg:0x025A AND_CDCU_MoveSpeed_Cmd 1
+CDCU_MoveSpeed_Cmd 0 8 Unsigned
+Msg:0x0259 AND_CDCU_MoveToDefaultPosition_Cmd 1
+CDCU_MoveToDefaultPosition_Cmd 0 8 Unsigned
+Msg:0x0258 AND_CDCU_ControlModeSet 1
+CDCU_ControlModeSet 0 8 Unsigned
+Msg:0x0257 AND_CDCU_MovePosition_Ry 2
+CDCU_MovePosition_Ry 0 16 Unsigned
+Msg:0x0256 AND_CDCU_MovePosition_Rz 2
+CDCU_MovePosition_Rz 0 16 Unsigned
+Msg:0x0255 AND_CDCU_Vib_Type_Active_St 1
+CDCU_VibID_Req 0 8 Unsigned
+Msg:0x0254 AND_CDCU_Vib_Cmd 1
+CDCU_Vib_Cmd 0 8 Unsigned
+Msg:0x0253 AND_CDCU_XPBotScpt 1
+CDCU_XPBotScpt 0 8 Unsigned
+Msg:0x0252 AND_CDCU_LogData_Cmd 1
+CDCU_LogData_Cmd 0 8 Unsigned
+Msg:0x0251 AND_CDCU_XPBotPowerOff_Cmd 1
+CDCU_XPBotPowerOff_Cmd 0 8 Unsigned
+Msg:0x024F AND_CDCU_HUD_MirrorSw 1
+CDCU_HUD_MirrorSw 0 8 Unsigned
+Msg:0x024E AND_CDCU_HUD_LightenLEDSw 1
+CDCU_HUD_LightenLEDSw 0 8 Unsigned
+Msg:0x024D AND_CDCU_HUDheightCtrl 1
+CDCU_HUDheightCtrl 0 8 Unsigned
+Msg:0x024C AND_CDCU_HUD_HeightValueSw 1
+CDCU_HUD_HeightValueSw 0 8 Unsigned
+Msg:0x024B AND_CDCU_HUDbrightnessCtrl 1
+CDCU_HUDbrightnessCtrl 0 8 Unsigned
+Msg:0x024A AND_CDCU_HUD_BrightnessValueSw 1
+CDCU_HUD_BrightnessValueSw 0 8 Unsigned
+Msg:0x0249 AND_CDCU_HUD_AutoBrightnessSw 1
+CDCU_HUD_AutoBrightnessSw 0 8 Unsigned
+Msg:0x0248 AND_CDCU_HUDangleCtrl 1
+CDCU_HUDangleCtrl 0 8 Unsigned
+Msg:0x0247 AND_CDCU_HUD_AngleValueSw 1
+CDCU_HUD_AngleValueSw 0 8 Unsigned
+Msg:0x0245 AND_CDCU_BatChrgfullMonitor 1
+CDCU_BatChrgfullMonitor 0 8 Unsigned
+Msg:0x0246 AND_CDCU_ScptExe_Cmd 1
+CDCU_ScptExe_Cmd 0 8 Unsigned
+Msg:0x0244 AND_CDCU_ScptDataPackID 1
+CDCU_ScptDataPackID 0 8 Unsigned
+Msg:0x0243 AND_CDCU_ScptDataPackTrans_Cmd 2
+CDCU_ScptDataPackTrans_Cmd 0 16 Unsigned
+Msg:0x0242 AND_CDCU_MovePosition 4
+CDCU_MovePosition_Ry 0 16 Unsigned
+CDCU_MovePosition_Rz 0 16 Unsigned
+Msg:0x0241 AND_CDCU_SpecialMode 1
+CDCU_SpecialMode 0 8 Unsigned
+Msg:0x023F AND_ForcePowerOffReq 1
+ForcePowerOffReq 0 8 Unsigned
+Msg:0x023E AND_CDCU_HLCtrlMode 1
+CDCU_HLCtrlMode 0 8 Unsigned
+Msg:0x023D AND_CDCU_StepperMotor_Req 1
+CDCU_StepperMotor_Req 0 8 Unsigned
+Msg:0x023C AND_CDCU_VibCompeArea 1
+CDCU_VibCompeArea 0 8 Unsigned
+Msg:0x023B AND_CDCU_RDCU_AllWeatherLightSWSt 1
+CDCU_RDCU_AllWeatherLightSWSt 0 8 Unsigned
+Msg:0x023A AND_CDCU_Transfer_Data 1
+CDCU_Transfer_Data 0 8 Unsigned
+Msg:0x0239 AND_CDCU_MATRIX_TO_HUD 64
+CDCU_MATRIX_TO_HUD 64 8 Unsigned
+Msg:0x0238 AND_CDCU_MoodTypeCtrCmd 1
+MoodTypeCtrCmd 0 8 Unsigned
+Msg:0x04FF AND_ESC_PATASw 1
+PATASw 0 8 Unsigned
+Msg:0x04FE AND_ESC_AVHSw 1
+AVHSw 0 8 Unsigned
+Msg:0x04FD AND_EPS_Stylereq 1
+EPS_Stylereq 0 8 Unsigned
+Msg:0x04FC AND_ESC_HDCSW 1
+HDCSW 0 8 Unsigned
+Msg:0x04FB AND_CDU_EPBAutoModereq 1
+CDU_EPBAutoModereq 0 8 Unsigned
+Msg:0x04FA AND_ESP_EPBReq 1
+ESP_EPBReq 0 8 Unsigned
+Msg:0x04F9 AND_LDCU_TrailerModeReq 1
+TrailerModeReq 0 8 Unsigned
+Msg:0x04F8 AND_TrailerModeSt 1
+TrailerModeSt 0 8 Unsigned
+Msg:0x04F7 AND_XpedalCtrlModeCfg 1
+XpedalCtrlModeCfg 0 8 Unsigned
+Msg:0x04F6 AND_FuncStyleReq 1
+FuncStyleReq 0 8 Unsigned
+Msg:0x04F5 AND_CDCU_CST_OFF_Switch 1
+CDCU_CST_OFF_Switch 0 8 Unsigned
+Msg:0x04F4 AND_CDCU_IPB_BPFSwitch 1
+CDCU_IPB_BPFSwitch 0 8 Unsigned
+Msg:0x04F3 AND_CDCU_AWDModeReq 1
+CDCU_AWDModeReq 0 8 Unsigned
+Msg:0x04F2 AND_CDCU_VMC_RWSOFFSw 1
+CDCU_VMC_RWSOFFSw 0 8 Unsigned
+Msg:0x04F1 AND_CDCU_VMC_Z_WalkSw 1
+CDCU_VMC_Z_WalkSw 0 8 Unsigned
+Msg:0x06FF AND_ICM_MenuHVACTemp 1
+MenuHVACTemp 0 8 Unsigned
+Msg:0x06FE AND_ICM_MenuHVACWindSpd 1
+MenuHVACWindSpd 0 8 Unsigned
+Msg:0x06FD AND_ICM_ModeSet 1
+ModeSet 0 8 Unsigned
+Msg:0x06FC AND_ICM_MenuMedia 1
+MenuMedia 0 8 Unsigned
+Msg:0x06FB AND_ICM_MDNM 1
+MenuDayNightMode 0 8 Unsigned
+Msg:0x06FA AND_ICM_LowSpeedAlarm 1
+LowSpeedAlarm 0 8 Unsigned
+Msg:0x06F9 AND_ICM_CoulometerSet 1
+CoulometerSet 0 8 Unsigned
+Msg:0x06F8 AND_ICM_MBL 1
+MenuBackLight 0 8 Unsigned
+Msg:0x06F7 AND_ICM_MWM 1
+MenuHVACWindMode 0 8 Unsigned
+Msg:0x06F6 AND_ICM_TAR 1
+TripAReset 0 8 Unsigned
+Msg:0x06F5 AND_ICM_TBR 1
+TripBReset 0 8 Unsigned
+Msg:0x06F4 AND_ICM_SWC 1
+SpdWarnCfg 0 8 Unsigned
+Msg:0x06F3 AND_ICM_SWCSV 1
+SpdWarnCfgSetValue 0 8 Unsigned
+Msg:0x06F2 AND_ICM_WSVC 1
+WarnSoundVolCfg 0 8 Unsigned
+Msg:0x06F0 AND_ICM_TimeModeCfg 1
+TimeModeCfg 0 8 Unsigned
+Msg:0x06EF AND_ICM_FactoryReset 1
+FactoryReset 0 8 Unsigned
+Msg:0x06EE AND_ICM_LLJR 1
+LightLeveladjustReq 0 8 Unsigned
+Msg:0x06ED AND_ICM_LanguageCfg 1
+LanguageCfg 0 8 Unsigned
+Msg:0x06E9 AND_CDU_ICMtime 2
+CDU_ICMtimehour 0 8 Unsigned
+CDU_ICMtimemin 0 8 Unsigned
+Msg:0x06E8 AND_CDU_ICMVOL 7
+CDU_ICMVOL 7 8 Unsigned
+Msg:0x06E7 AND_CDU_ICM_DMS_Mode_St 1
+CDU_ICM_DMS_Mode_St 0 8 Unsigned
+Msg:0x06E6 AND_CDU_ICM_Fatigue_Level 1
+CDU_ICM_Fatigue_Level 0 8 Unsigned
+Msg:0x06E5 AND_CDU_ICM_Distraction_Level 1
+CDU_ICM_Distraction_Level 0 8 Unsigned
+Msg:0x06E4 AND_CDU_ICM_DayNightMode 1
+CDU_ICM_DayNightMode 0 8 Unsigned
+Msg:0x06E3 AND_CDU_ICM_VehElcConspAvgPer100km 2
+CDU_ICM_VehElcConspAvgPer100km 0 16 Unsigned
+Msg:0x06E2 AND_CDU_ICM_Radio_Type 1
+CDU_ICM_Radio_Type 0 8 Unsigned
+Msg:0x06E1 AND_CDU_ICM_Geofence 1
+CDU_ICM_Geofence 0 8 Unsigned
+Msg:0x08FF AND_TPMS_SensorResetCmd 1
+SensorResetCmd 0 8 Unsigned
+Msg:0x08FF AND_TPMS_SensorResetCmd 1
+SensorResetCmd 0 8 Unsigned
+Msg:0x10FA AND_AVM_CameraYaw 2
+AVM_CameraYaw 0 16 Unsigned
+Msg:0x10F9 AND_AVM_CameraUp 1
+AVM_CameraUp 0 8 Unsigned
+Msg:0x10F8 AND_AVM_DisplayStart 1
+AVM_DisplayStart 0 8 Unsigned
+Msg:0x16FF AND_CDCU_MSMP_SeatHorzCmd 2
+Control 0 8 Unsigned
+CDCU_MSMP_SeatHorzCmd 0 8 Unsigned
+Msg:0x16FE AND_CDCU_MSMP_SeatTiltingCmd 2
+Control 0 8 Unsigned
+CDCU_MSMP_SeatTiltingCmd 0 8 Unsigned
+Msg:0x16FD AND_CDCU_MSMP_SeatVerticalCmd 2
+Control 0 8 Unsigned
+CDCU_MSMP_SeatVerticalCmd 0 8 Unsigned
+Msg:0x16FC AND_CDCU_MSMD_SeatHorzCmd 2
+Control 0 8 Unsigned
+CDCU_MSMD_SeatHorzCmd 0 8 Unsigned
+Msg:0x16FB AND_CDCU_MSMD_SeatTiltingCmd 2
+Control 0 8 Unsigned
+CDCU_MSMD_SeatTiltingCmd 0 8 Unsigned
+Msg:0x16FA AND_CDCU_MSMD_SeatVerticalCmd 2
+Control 0 8 Unsigned
+CDCU_MSMD_SeatVerticalCmd 0 8 Unsigned
+Msg:0x16F9 AND_CDCU_DrvSeatCushionTiltCmd 2
+Control 0 8 Unsigned
+CDCU_DrvSeatCushionTiltCmd 0 8 Unsigned
+Msg:0x16F8 AND_CDCU_MSMD_SeatLumbHorzCmd 2
+Control 0 8 Unsigned
+CDCU_MSMD_SeatLumbHorzCmd 0 8 Unsigned
+Msg:0x16F8 AND_CDCU_MSMD_SeatLumbHorzCmd 2
+Control 0 8 Unsigned
+CDCU_MSMD_SeatLumbHorzCmd 0 8 Unsigned
+Msg:0x16F7 AND_CDCU_MSMD_SeatLumbVerticalCmd 2
+Control 0 8 Unsigned
+CDCU_MSMD_SeatLumbVerticalCmd 0 8 Unsigned
+Msg:0x16F7 AND_CDCU_MSMD_SeatLumbVerticalCmd 2
+Control 0 8 Unsigned
+CDCU_MSMD_SeatLumbVerticalCmd 0 8 Unsigned
+Msg:0x16F6 AND_MSMD_SeatWelcomCfg 1
+SeatWelcomCfg 0 8 Unsigned
+Msg:0x16F6 AND_MSMD_SeatWelcomCfg 1
+SeatWelcomCfg 0 8 Unsigned
+Msg:0x16F5 AND_CDCU_MSMD_SeatVentilationCmd 1
+CDCU_MSMD_SeatVentilationCmd 0 8 Unsigned
+Msg:0x16F4 AND_CDCU_MSMD_SeatHeatCmd 1
+CDCU_MSMD_SeatHeatCmd 0 8 Unsigned
+Msg:0x16F3 AND_CDCU_MSMD_SeatHorzPosCmd 1
+CDCU_MSMD_SeatHorzPosCmd 0 8 Unsigned
+Msg:0x16F2 AND_CDCU_MSMD_SeatVerticalPosCmd 1
+CDCU_MSMD_SeatVerticalPosCmd 0 8 Unsigned
+Msg:0x16F1 AND_CDCU_MSMD_SeatTiltingPosCmd 1
+CDCU_MSMD_SeatTiltingPosCmd 0 8 Unsigned
+Msg:0x16F0 AND_CDCU_DrvSeatCushionTiltPosCmd 1
+CDCU_DrvSeatCushionTiltPosCmd 0 8 Unsigned
+Msg:0x16EF AND_MSMD_SLHP 1
+SeatLumbHorzPosCmd 0 8 Unsigned
+Msg:0x16EE AND_MSMD_SLVP 1
+SeatLumbVerticalPosCmd 0 8 Unsigned
+Msg:0x16EC AND_CDCU_MSMP_SeatHorzPosCmd 1
+CDCU_MSMP_SeatHorzPosCmd 0 8 Unsigned
+Msg:0x16EB AND_CDCU_MSMP_SeatVerticalPosCmd 1
+CDCU_MSMP_SeatVerticalPosCmd 0 8 Unsigned
+Msg:0x16EA AND_CDCU_MSMP_SeatTiltingPosCmd 1
+CDCU_MSMP_SeatTiltingPosCmd 0 8 Unsigned
+Msg:0x16E9 AND_CDCU_MSMP_SeatVentilationCmd 1
+CDCU_MSMP_SeatVentilationCmd 0 8 Unsigned
+Msg:0x16E8 AND_CDCU_MSMP_SeatHeatCmd 1
+CDCU_MSMP_SeatHeatCmd 0 8 Unsigned
+Msg:0x16E7 AND_MSMD_POS_SAVE 5
+SeatHorzPosCmd 0 8 Unsigned
+SeatVerticalPosCmd 0 8 Unsigned
+SeatTiltingPosCmd 0 8 Unsigned
+SeatCushionTiltPosCmd 0 8 Unsigned
+SeatCushionExtPosCmd 0 8 Unsigned
+Msg:0x16E6 AND_CDCU_MSMD_ALL_POS_SET 6
+DrvSeatMemoryReq 0 8 Unsigned
+SeatHorzPosCmd 0 8 Unsigned
+SeatVerticalPosCmd 0 8 Unsigned
+SeatTiltingPosCmd 0 8 Unsigned
+SeatCushionTiltPosCmd 0 8 Unsigned
+SeatCushionExtPosCmd 0 8 Unsigned
+Msg:0x16E5 AND_MSMP_POS_SAVE 4
+SeatHorzPosCmd 0 8 Unsigned
+SeatVerticalPosCmd 0 8 Unsigned
+SeatTiltingPosCmd 0 8 Unsigned
+SeatCushionExtPosCmd 0 8 Unsigned
+Msg:0x16E4 AND_MSMP_SeatWelcomCfg 1
+SeatWelcomCfg 0 8 Unsigned
+Msg:0x16E4 AND_MSMP_SeatWelcomCfg 1
+SeatWelcomCfg 0 8 Unsigned
+Msg:0x16E3 AND_CDCU_MSMD_SeatStopMovingCmd 1
+CDCU_MSMD_SeatStopMovingCmd 0 8 Unsigned
+Msg:0x16E2 AND_CDCU_MSMP_SeatStopMovingCmd 1
+CDCU_MSMP_SeatStopMovingCmd 0 8 Unsigned
+Msg:0x16E0 AND_CDCU_MSMP_ALL_POS_SET 6
+PsngrSeatMemoryReq 0 8 Unsigned
+SeatHorzPosCmd 0 8 Unsigned
+SeatVerticalPosCmd 0 8 Unsigned
+SeatTiltingPosCmd 0 8 Unsigned
+SeatLegHeightPosCmd 0 8 Unsigned
+SeatCushionTiltPosCmd 0 8 Unsigned
+Msg:0x16E1 AND_CDCU_MSMP_RLSeatHeatCmd 1
+CDCU_MSMP_RLSeatHeatCmd 0 8 Unsigned
+Msg:0x16DF AND_CDCU_MSMP_RRSeatHeatCmd 1
+CDCU_MSMP_RRSeatHeatCmd 0 8 Unsigned
+Msg:0x16DE AND_CDCU_DrvSeatReclineReq 1
+CDCU_DrvSeatReclineReq 0 8 Unsigned
+Msg:0x16DD AND_CDCU_MSMD_SeatLegHeightCmd 2
+Control 0 8 Unsigned
+CDCU_MSMD_SeatLegHeightCmd 0 8 Unsigned
+Msg:0x16DC AND_CDCU_PsngrCushionExtCmd 2
+Control 0 8 Unsigned
+CDCU_PsngrCushionExtCmd 0 8 Unsigned
+Msg:0x16DB AND_CDCU_PsngrSeatReclineReq 1
+CDCU_PsngrSeatReclineReq 0 8 Unsigned
+Msg:0x16DA AND_CDCU_SecRowLtSeatTiltingReq 2
+Control 0 8 Unsigned
+CDCU_SecRowLtSeatTiltingReq 0 8 Unsigned
+Msg:0x16D9 AND_CDCU_SecRowLtSeatFoldUnfoldReq 1
+CDCU_SecRowLtSeatFoldUnfoldReq 0 8 Unsigned
+Msg:0x16D8 AND_CDCU_SecRowLtSeatStopMovingReq 1
+CDCU_SecRowLtSeatStopMovingReq 0 8 Unsigned
+Msg:0x16D7 AND_CDCU_SecRowRtSeatTiltingReq 2
+Control 0 8 Unsigned
+CDCU_SecRowRtSeatTiltingReq 0 8 Unsigned
+Msg:0x16D6 AND_CDCU_SecRowRtSeatFoldUnfoldReq 1
+CDCU_SecRowRtSeatFoldUnfoldReq 0 8 Unsigned
+Msg:0x16D5 AND_CDCU_SecRowRtSeatStopMovingReq 1
+CDCU_SecRowRtSeatStopMovingReq 0 8 Unsigned
+Msg:0x16D4 AND_CDCU_MSMD_SeatLegHeightPosCmd 1
+CDCU_MSMD_SeatLegHeightPosCmd 0 8 Unsigned
+Msg:0x16D3 AND_CDCU_PsngrCushionExtPosCmd 1
+CDCU_PsngrCushionExtPosCmd 0 8 Unsigned
+Msg:0x16D2 AND_CDCU_LDCU_ColumnVerticalCmd 2
+Control 0 8 Unsigned
+CDCU_LDCU_ColumnVerticalCmd 0 8 Unsigned
+Msg:0x16D2 AND_CDCU_LDCU_ColumnVerticalCmd 2
+Control 0 8 Unsigned
+CDCU_LDCU_ColumnVerticalCmd 0 8 Unsigned
+Msg:0x16D1 AND_CDCU_LDCU_ColumnHorizonalCmd 2
+Control 0 8 Unsigned
+CDCU_LDCU_ColumnHorizonalCmd 0 8 Unsigned
+Msg:0x16D0 AND_CDCU_LDCU_ColumnPosCmd 2
+CDCU_LDCU_ColumnVertPosCmd 0 8 Unsigned
+CDCU_LDCU_ColumnHorPosCmd 0 8 Unsigned
+Msg:0x16D0 AND_CDCU_LDCU_ColumnPosCmd 3
+CDCU_LDCU_ColumnVertPosCmd 0 8 Unsigned
+CDCU_LDCU_ColumnHorPosCmd 0 8 Unsigned
+CDCU_ColumnMemoryReq 0 8 Unsigned
+Msg:0x16CE AND_CDCU_PsngrSeatLumbVerticalCmd 2
+Control 0 8 Unsigned
+PsngrSeatLumbVerticalCmd 0 8 Unsigned
+Msg:0x16CD AND_CDCU_PsngrSeatLumbHorzCmd 2
+Control 0 8 Unsigned
+PsngrSeatLumbHorzCmd 0 8 Unsigned
+Msg:0x16CC AND_CDCU_SecRowLtSeatTiltingPosCmd 1
+CDCU_SecRowLtSeatTiltingPosCmd 0 8 Unsigned
+Msg:0x16CB AND_CDCU_SecRowLtSeatCushExtReq 2
+Control 0 8 Unsigned
+CDCU_SecRowLtSeatCushExtReq 0 8 Unsigned
+Msg:0x16CA AND_CDCU_SecRowLtSeatCushExtPosCmd 1
+CDCU_SecRowLtSeatCushExtPosCmd 0 8 Unsigned
+Msg:0x16C9 AND_CDCU_SecRowRtSeatTiltingPosCmd 1
+CDCU_SecRowRtSeatTiltingPosCmd 0 8 Unsigned
+Msg:0x16C8 AND_CDCU_SecRowRtSeatCushExtReq 2
+Control 0 8 Unsigned
+CDCU_SecRowRtSeatCushExtReq 0 8 Unsigned
+Msg:0x16C7 AND_CDCU_SecRowRtSeatCushExtPosCmd 1
+CDCU_SecRowRtSeatCushExtPosCmd 0 8 Unsigned
+Msg:0x16C6 AND_CDCU_SecRowRtSeatUnlockReq 1
+CDCU_SecRowRtSeatUnlockReq 0 8 Unsigned
+Msg:0x16C5 AND_CDCU_SecRowLtSeatUnlockReq 1
+CDCU_SecRowLtSeatUnlockReq 0 8 Unsigned
+Msg:0x16C4 AND_CDCU_DrvSeatMassgElemCmd 20
+DrvSeatMassgElem1Cmd 0 8 Unsigned
+DrvSeatMassgElem2Cmd 0 8 Unsigned
+DrvSeatMassgElem3Cmd 0 8 Unsigned
+DrvSeatMassgElem4Cmd 0 8 Unsigned
+DrvSeatMassgElem5Cmd 0 8 Unsigned
+DrvSeatMassgElem6Cmd 0 8 Unsigned
+DrvSeatMassgElem7Cmd 0 8 Unsigned
+DrvSeatMassgElem8Cmd 0 8 Unsigned
+DrvSeatMassgElem9Cmd 0 8 Unsigned
+DrvSeatMassgElem10Cmd 0 8 Unsigned
+DrvSeatMassgElem11Cmd 0 8 Unsigned
+DrvSeatMassgElem12Cmd 0 8 Unsigned
+DrvSeatMassgElem13Cmd 0 8 Unsigned
+DrvSeatMassgElem14Cmd 0 8 Unsigned
+DrvSeatMassgElem15Cmd 0 8 Unsigned
+DrvSeatMassgElem16Cmd 0 8 Unsigned
+DrvSeatMassgElem17Cmd 0 8 Unsigned
+DrvSeatMassgElem18Cmd 0 8 Unsigned
+DrvSeatMassgElem19Cmd 0 8 Unsigned
+DrvSeatMassgElem20Cmd 0 8 Unsigned
+Msg:0x16C3 AND_CDCU_PsngrSeatMassgElemCmd 20
+PsngrSeatMassgElem1Cmd 0 8 Unsigned
+PsngrSeatMassgElem2Cmd 0 8 Unsigned
+PsngrSeatMassgElem3Cmd 0 8 Unsigned
+PsngrSeatMassgElem4Cmd 0 8 Unsigned
+PsngrSeatMassgElem5Cmd 0 8 Unsigned
+PsngrSeatMassgElem6Cmd 0 8 Unsigned
+PsngrSeatMassgElem7Cmd 0 8 Unsigned
+PsngrSeatMassgElem8Cmd 0 8 Unsigned
+PsngrSeatMassgElem9Cmd 0 8 Unsigned
+PsngrSeatMassgElem10Cmd 0 8 Unsigned
+PsngrSeatMassgElem11Cmd 0 8 Unsigned
+PsngrSeatMassgElem12Cmd 0 8 Unsigned
+PsngrSeatMassgElem13Cmd 0 8 Unsigned
+PsngrSeatMassgElem14Cmd 0 8 Unsigned
+PsngrSeatMassgElem15Cmd 0 8 Unsigned
+PsngrSeatMassgElem16Cmd 0 8 Unsigned
+PsngrSeatMassgElem17Cmd 0 8 Unsigned
+PsngrSeatMassgElem18Cmd 0 8 Unsigned
+PsngrSeatMassgElem19Cmd 0 8 Unsigned
+PsngrSeatMassgElem20Cmd 0 8 Unsigned
+Msg:0x16C2 AND_CDCU_SecRowLtSeatMassgElemCmd 20
+SecRowLtSeatMassgElem1Cmd 0 8 Unsigned
+SecRowLtSeatMassgElem2Cmd 0 8 Unsigned
+SecRowLtSeatMassgElem3Cmd 0 8 Unsigned
+SecRowLtSeatMassgElem4Cmd 0 8 Unsigned
+SecRowLtSeatMassgElem5Cmd 0 8 Unsigned
+SecRowLtSeatMassgElem6Cmd 0 8 Unsigned
+SecRowLtSeatMassgElem7Cmd 0 8 Unsigned
+SecRowLtSeatMassgElem8Cmd 0 8 Unsigned
+SecRowLtSeatMassgElem9Cmd 0 8 Unsigned
+SecRowLtSeatMassgElem10Cmd 0 8 Unsigned
+SecRowLtSeatMassgElem11Cmd 0 8 Unsigned
+SecRowLtSeatMassgElem12Cmd 0 8 Unsigned
+SecRowLtSeatMassgElem13Cmd 0 8 Unsigned
+SecRowLtSeatMassgElem14Cmd 0 8 Unsigned
+SecRowLtSeatMassgElem15Cmd 0 8 Unsigned
+SecRowLtSeatMassgElem16Cmd 0 8 Unsigned
+SecRowLtSeatMassgElem17Cmd 0 8 Unsigned
+SecRowLtSeatMassgElem18Cmd 0 8 Unsigned
+SecRowLtSeatMassgElem19Cmd 0 8 Unsigned
+SecRowLtSeatMassgElem20Cmd 0 8 Unsigned
+Msg:0x16C1 AND_CDCU_SecRowRtSeatMassgElemCmd 20
+SecRowRtSeatMassgElem1Cmd 0 8 Unsigned
+SecRowRtSeatMassgElem2Cmd 0 8 Unsigned
+SecRowRtSeatMassgElem3Cmd 0 8 Unsigned
+SecRowRtSeatMassgElem4Cmd 0 8 Unsigned
+SecRowRtSeatMassgElem5Cmd 0 8 Unsigned
+SecRowRtSeatMassgElem6Cmd 0 8 Unsigned
+SecRowRtSeatMassgElem7Cmd 0 8 Unsigned
+SecRowRtSeatMassgElem8Cmd 0 8 Unsigned
+SecRowRtSeatMassgElem9Cmd 0 8 Unsigned
+SecRowRtSeatMassgElem10Cmd 0 8 Unsigned
+SecRowRtSeatMassgElem11Cmd 0 8 Unsigned
+SecRowRtSeatMassgElem12Cmd 0 8 Unsigned
+SecRowRtSeatMassgElem13Cmd 0 8 Unsigned
+SecRowRtSeatMassgElem14Cmd 0 8 Unsigned
+SecRowRtSeatMassgElem15Cmd 0 8 Unsigned
+SecRowRtSeatMassgElem16Cmd 0 8 Unsigned
+SecRowRtSeatMassgElem17Cmd 0 8 Unsigned
+SecRowRtSeatMassgElem18Cmd 0 8 Unsigned
+SecRowRtSeatMassgElem19Cmd 0 8 Unsigned
+SecRowRtSeatMassgElem20Cmd 0 8 Unsigned
+Msg:0x16BF AND_CDCU_DrvSeatMassgProgCmd 1
+DrvSeatMassgProgCmd 0 8 Unsigned
+Msg:0x16BE AND_CDCU_DrvSeatMassgIntenCmd 1
+DrvSeatMassgIntenCmd 0 8 Unsigned
+Msg:0x16BD AND_CDCU_PsngrSeatMassgProgCmd 1
+PsngrSeatMassgProgCmd 0 8 Unsigned
+Msg:0x16BC AND_CDCU_PsngrSeatMassgIntenCmd 1
+PsngrSeatMassgIntenCmd 0 8 Unsigned
+Msg:0x16BB AND_CDCU_SecRowLtSeatMassgProgCmd 1
+SecRowLtSeatMassgProgCmd 0 8 Unsigned
+Msg:0x16BA AND_CDCU_SecRowLtSeatMassgIntenCmd 1
+SecRowLtSeatMassgIntenCmd 0 8 Unsigned
+Msg:0x16B9 AND_CDCU_SecRowRtSeatMassgProgCmd 1
+SecRowRtSeatMassgProgCmd 0 8 Unsigned
+Msg:0x16B8 AND_CDCU_SecRowRtSeatMassgIntenCmd 1
+SecRowRtSeatMassgIntenCmd 0 8 Unsigned
+Msg:0x16B7 AND_CDCU_SecRowLt_ALL_POS_SET 2
+CDCU_SecRowLtSeatTiltingPosCmd 0 8 Unsigned
+CDCU_SecRowLtSeatCushExtPosCmd 0 8 Unsigned
+Msg:0x16B7 AND_CDCU_SecRowLt_ALL_POS_SET 8
+SecRowLtSeatMemoryReq 0 8 Unsigned
+SecRowLtSeatHorzPosCmd 0 8 Unsigned
+SecRowLtSeatZeroGravPosCmd 0 8 Unsigned
+SecRowLtSeatTiltingPosCmd 0 8 Unsigned
+SecRowLtSeatLeSuHeigPosCmd 0 8 Unsigned
+SecRowLtSeatLeSuLengPosCmd 0 8 Unsigned
+SecRowLtSeatHeReHeigPosCmd 0 8 Unsigned
+SecRowLtSeatHeReHorzPosCmd 0 8 Unsigned
+Msg:0x16B6 AND_CDCU_SecRowRt_ALL_POS_SET 2
+CDCU_SecRowRtSeatTiltingPosCmd 0 8 Unsigned
+CDCU_SecRowRtSeatCushExtPosCmd 0 8 Unsigned
+Msg:0x16B6 AND_CDCU_SecRowRt_ALL_POS_SET 8
+SecRowRtSeatMemoryReq 0 8 Unsigned
+SecRowRtSeatHorzPosCmd 0 8 Unsigned
+SecRowRtSeatZeroGravPosCmd 0 8 Unsigned
+SecRowRtSeatTiltingPosCmd 0 8 Unsigned
+SecRowRtSeatLeSuHeigPosCmd 0 8 Unsigned
+SecRowRtSeatLeSuLengPosCmd 0 8 Unsigned
+SecRowRtSeatHeReHeigPosCmd 0 8 Unsigned
+SecRowRtSeatHeReHorzPosCmd 0 8 Unsigned
+Msg:0x16B5 AND_CDCU_DrvSeatMemoryReq 1
+CDCU_DrvSeatMemoryReq 0 8 Unsigned
+Msg:0x16B4 AND_DrvSeatEasyEntrySt 1
+DrvSeatEasyEntrySt 0 8 Unsigned
+Msg:0x16B3 AND_PsngrSeatEasyEntrySt 1
+PsngrSeatEasyEntrySt 0 8 Unsigned
+Msg:0x16B2 AND_CDCU_SecRowSeatEasyEntryCfgReq 1
+CDCU_SecRowSeatEasyEntryCfgReq 0 8 Unsigned
+Msg:0x16B1 AND_XSleepModeSt 1
+XSleepModeSt 0 8 Unsigned
+Msg:0x16AF AND_XMovieModeSt 1
+XMovieModeSt 0 8 Unsigned
+Msg:0x16AE AND_X5DCinemaModeSt 1
+X5DCinemaModeSt 0 8 Unsigned
+Msg:0x16AD AND_XMeditationModeSt 1
+XMeditationModeSt 0 8 Unsigned
+Msg:0x16AC AND_CDCU_PsngrSeatMemoryReq 1
+CDCU_PsngrSeatMemoryReq 0 8 Unsigned
+Msg:0x16AB AND_DrvSeatLumbSwCtrlEnable 1
+DrvSeatLumbSwCtrlEnable 0 8 Unsigned
+Msg:0x16AA AND_PsngrSeatLumbSwCtrlEnable 1
+PsngrSeatLumbSwCtrlEnable 0 8 Unsigned
+Msg:0x16A1 AND_CDCU_LDCU_ColumnPosSave 2
+CDCU_LDCU_ColumnVertPosCmd 0 8 Unsigned
+CDCU_LDCU_ColumnHorPosCmd 0 8 Unsigned
+Msg:0x169F AND_CDCU_TrdRowSeatStowReq 1
+CDCU_TrdRowSeatStowReq 0 8 Unsigned
+Msg:0x169E AND_CDCU_TrdRowLtSeatFoldReq 1
+CDCU_TrdRowLtSeatFoldReq 0 8 Unsigned
+Msg:0x169D AND_CDCU_TrdRowRtSeatFoldReq 1
+CDCU_TrdRowRtSeatFoldReq 0 8 Unsigned
+Msg:0x169C AND_CDCU_SecRowLtSeatEZReq 1
+CDCU_SecRowLtSeatEZReq 0 8 Unsigned
+Msg:0x169B AND_CDCU_SecRowRtSeatEZReq 1
+CDCU_SecRowRtSeatEZReq 0 8 Unsigned
+Msg:0x169A AND_CDCU_SecRowLtSeatZeroGravReq 1
+CDCU_SecRowLtSeatZeroGravReq 0 8 Unsigned
+Msg:0x1699 AND_CDCU_SecRowRtSeatZeroGravReq 1
+CDCU_SecRowRtSeatZeroGravReq 0 8 Unsigned
+Msg:0x1698 AND_SecRowLtSeatVentilationCmd 1
+SecRowLtSeatVentilationCmd 0 8 Unsigned
+Msg:0x1697 AND_SecRowRtSeatVentilationCmd 1
+SecRowRtSeatVentilationCmd 0 8 Unsigned
+Msg:0x1696 AND_SecRowLtSeatMemoryReq 1
+SecRowLtSeatMemoryReq 0 8 Unsigned
+Msg:0x1695 AND_SecRowRtSeatMemoryReq 1
+SecRowRtSeatMemoryReq 0 8 Unsigned
+Msg:0x1694 AND_SecRowLtSeatStopMovingCmd 1
+SecRowLtSeatStopMovingCmd 0 8 Unsigned
+Msg:0x1693 AND_SecRowRtSeatStopMovingCmd 1
+SecRowRtSeatStopMovingCmd 0 8 Unsigned
+Msg:0x1692 AND_SecRowLtSeatLeSuLengPosCmd 1
+SecRowLtSeatLeSuLengPosCmd 0 8 Unsigned
+Msg:0x1691 AND_SecRowRtSeatLeSuLengPosCmd 1
+SecRowRtSeatLeSuLengPosCmd 0 8 Unsigned
+Msg:0x168F AND_SecRowLtSeatLeSuHeigPosCmd 1
+SecRowLtSeatLeSuHeigPosCmd 0 8 Unsigned
+Msg:0x168E AND_SecRowRtSeatLeSuHeigPosCmd 1
+SecRowRtSeatLeSuHeigPosCmd 0 8 Unsigned
+Msg:0x168D AND_SecRowLtSeatZeroGravPosCmd 1
+SecRowLtSeatZeroGravPosCmd 0 8 Unsigned
+Msg:0x168C AND_SecRowRtSeatZeroGravPosCmd 1
+SecRowRtSeatZeroGravPosCmd 0 8 Unsigned
+Msg:0x168B AND_SecRowLtSeatHeReHeigPosCmd 1
+SecRowLtSeatHeReHeigPosCmd 0 8 Unsigned
+Msg:0x168A AND_SecRowRtSeatHeReHeigPosCmd 1
+SecRowRtSeatHeReHeigPosCmd 0 8 Unsigned
+Msg:0x1689 AND_TrdRowLtSeatHeReHeigPosCmd 1
+TrdRowLtSeatHeReHeigPosCmd 0 8 Unsigned
+Msg:0x1688 AND_TrdRowRtSeatHeReHeigPosCmd 1
+TrdRowRtSeatHeReHeigPosCmd 0 8 Unsigned
+Msg:0x1687 AND_TrdRowMidSeatHeReHeigPosCmd 1
+TrdRowMidSeatHeReHeigPosCmd 0 8 Unsigned
+Msg:0x1686 AND_SecRowLtSeatHeReHorzPosCmd 1
+SecRowLtSeatHeReHorzPosCmd 0 8 Unsigned
+Msg:0x1685 AND_SecRowRtSeatHeReHorzPosCmd 1
+SecRowRtSeatHeReHorzPosCmd 0 8 Unsigned
+Msg:0x1684 AND_TrdRowLtSeatTiltingPosCmd 1
+TrdRowLtSeatTiltingPosCmd 0 8 Unsigned
+Msg:0x1683 AND_TrdRowRtSeatTiltingPosCmd 1
+TrdRowRtSeatTiltingPosCmd 0 8 Unsigned
+Msg:0x1682 AND_SecRowLtSeatHorzPosCmd 1
+SecRowLtSeatHorzPosCmd 0 8 Unsigned
+Msg:0x1681 AND_SecRowRtSeatHorzPosCmd 1
+SecRowRtSeatHorzPosCmd 0 8 Unsigned
+Msg:0x167F AND_SecRowLtSeatLeSuHeigCmd 2
+Control 0 8 Unsigned
+SecRowLtSeatLeSuHeigCmd 0 8 Unsigned
+Msg:0x167E AND_SecRowRtSeatLeSuHeigCmd 2
+Control 0 8 Unsigned
+SecRowRtSeatLeSuHeigCmd 0 8 Unsigned
+Msg:0x167D AND_SecRowRtSeatZeroGravCmd 2
+Control 0 8 Unsigned
+SecRowRtSeatZeroGravCmd 0 8 Unsigned
+Msg:0x167C AND_SecRowLtSeatZeroGravCmd 2
+Control 0 8 Unsigned
+SecRowLtSeatZeroGravCmd 0 8 Unsigned
+Msg:0x167B AND_SecRowLtSeatHeReHeigCmd 2
+Control 0 8 Unsigned
+SecRowLtSeatHeReHeigCmd 0 8 Unsigned
+Msg:0x167A AND_SecRowRtSeatHeReHeigCmd 2
+Control 0 8 Unsigned
+SecRowRtSeatHeReHeigCmd 0 8 Unsigned
+Msg:0x1679 AND_TrdRowLtSeatHeReHeigCmd 2
+Control 0 8 Unsigned
+TrdRowLtSeatHeReHeigCmd 0 8 Unsigned
+Msg:0x1678 AND_TrdRowRtSeatHeReHeigCmd 2
+Control 0 8 Unsigned
+TrdRowRtSeatHeReHeigCmd 0 8 Unsigned
+Msg:0x1677 AND_TrdRowMidSeatHeReHeigCmd 2
+Control 0 8 Unsigned
+TrdRowMidSeatHeReHeigCmd 0 8 Unsigned
+Msg:0x1676 AND_SecRowLtSeatHeReHorzCmd 2
+Control 0 8 Unsigned
+SecRowLtSeatHeReHorzCmd 0 8 Unsigned
+Msg:0x1675 AND_SecRowRtSeatHeReHorzCmd 2
+Control 0 8 Unsigned
+SecRowRtSeatHeReHorzCmd 0 8 Unsigned
+Msg:0x1674 AND_SecRowLtSeatLumbVerticalCmd 2
+Control 0 8 Unsigned
+SecRowLtSeatLumbVerticalCmd 0 8 Unsigned
+Msg:0x1673 AND_SecRowRtSeatLumbVerticalCmd 2
+Control 0 8 Unsigned
+SecRowRtSeatLumbVerticalCmd 0 8 Unsigned
+Msg:0x166F AND_TrdRowLtSeatTiltingCmd 2
+Control 0 8 Unsigned
+TrdRowLtSeatTiltingCmd 0 8 Unsigned
+Msg:0x166E AND_TrdRowRtSeatTiltingCmd 2
+Control 0 8 Unsigned
+TrdRowRtSeatTiltingCmd 0 8 Unsigned
+Msg:0x166D AND_SecRowLtSeatLumbHorzCmd 2
+Control 0 8 Unsigned
+SecRowLtSeatLumbHorzCmd 0 8 Unsigned
+Msg:0x166C AND_SecRowRtSeatLumbHorzCmd 2
+Control 0 8 Unsigned
+SecRowRtSeatLumbHorzCmd 0 8 Unsigned
+Msg:0x166B AND_SecRowLtSeatHorzCmd 2
+Control 0 8 Unsigned
+SecRowLtSeatHorzCmd 0 8 Unsigned
+Msg:0x166A AND_SecRowRtSeatHorzCmd 2
+Control 0 8 Unsigned
+SecRowRtSeatHorzCmd 0 8 Unsigned
+Msg:0x1669 AND_CDCU_WelCarpetLightCfg 1
+CDCU_WelCarpetLightCfg 0 8 Unsigned
+Msg:0x1668 AND_CDCU_TrdRow_ALL_POS_SET 5
+TrdRowLtSeatTiltingPosCmd 0 8 Unsigned
+TrdRowLtSeatHeReHeigPosCmd 0 8 Unsigned
+TrdRowRtSeatTiltingPosCmd 0 8 Unsigned
+TrdRowRtSeatHeReHeigPosCmd 0 8 Unsigned
+TrdRowMidSeatHeReHeigPosCmd 0 8 Unsigned
+Msg:0x1667 AND_CDCU_PollingWelcomeCfg 1
+CDCU_PollingWelcomeCfg 0 8 Unsigned
+Msg:0x1666 AND_CDCU_TrdRowLtSeatStopMovingCmd 1
+CDCU_TrdRowLtSeatStopMovingCmd 0 8 Unsigned
+Msg:0x1665 AND_CDCU_TrdRowRtSeatStopMovingCmd 1
+CDCU_TrdRowRtSeatStopMovingCmd 0 8 Unsigned
+Msg:0x1664 AND_ICM_DriverTips 2
+ICM_DriverTips 0 16 Unsigned
+Msg:0x1663 AND_CDCU_DrvSeatAntiFatigueReq 1
+CDCU_DrvSeatAntiFatigueReq 0 8 Unsigned
+Msg:0x1662 AND_CDCU_DrvSeatAntiFatigueReqMod 1
+CDCU_DrvSeatAntiFatigueReqMod 0 8 Unsigned
+Msg:0x1661 AND_CDCU_TravelColumnAdjReq 1
+CDCU_TravelColumnAdjReq 0 8 Unsigned
+Msg:0x165F AND_CDCU_PsngrSeatCushionTiltCmd 2
+Control 0 8 Unsigned
+CDCU_PsngrSeatCushionTiltCmd 0 8 Unsigned
+Msg:0x165E AND_CDCU_PsngrSeatCushionTiltPosCmd 1
+CDCU_PsngrSeatCushionTiltPosCmd 0 8 Unsigned
+Msg:0x165D AND_TrdRowLtSeatChildLockReq 1
+TrdRowLtSeatChildLockReq 0 8 Unsigned
+Msg:0x165C AND_SecRowLtSeatChildLockReq 1
+SecRowLtSeatChildLockReq 0 8 Unsigned
+Msg:0x165B AND_SecRowRtSeatChildLockReq 1
+SecRowRtSeatChildLockReq 0 8 Unsigned
+Msg:0x165A AND_PsngrSeatChildLockReq 1
+PsngrSeatChildLockReq 0 8 Unsigned
+Msg:0x1659 AND_TrdRowRtSeatChildLockReq 1
+TrdRowRtSeatChildLockReq 0 8 Unsigned
+Msg:0x1658 AND_CDCU_PsngrSeatLeSuLengCmd 2
+Control 0 8 Unsigned
+CDCU_PsngrSeatLeSuLengCmd 0 8 Unsigned
+Msg:0x1657 AND_CDCU_PsngrSeatLeSuHeigCmd 2
+Control 0 8 Unsigned
+CDCU_PsngrSeatLeSuHeigCmd 0 8 Unsigned
+Msg:0x1656 AND_CDCU_DrvSeatLumbRelaxIntenCmd 1
+CDCU_DrvSeatLumbRelaxIntenCmdSettingValue 0 8 Unsigned
+Msg:0x1655 AND_CDCU_PsSeatLumbRelaxIntenCmd 1
+CDCU_PsSeatLumbRelaxIntenCmdSettingValue 0 8 Unsigned
+Msg:0x1654 AND_CDCU_DrvSeatLumbRelaxModeCmd 1
+CDCU_DrvSeatLumbRelaxModeCmdSettingValue 0 8 Unsigned
+Msg:0x1653 AND_CDCU_PsSeatLumbRelaxModeCmd 1
+CDCU_PsSeatLumbRelaxModeCmdSettingValue 0 8 Unsigned
+Msg:0x18FF AND_CDCU_VCU_DriveModeCfg 1
+CDCU_VCU_DriveModeCfg 0 8 Unsigned
+Msg:0x18FE AND_CDCU_VCU_EnergyRegenModeCfg 1
+CDCU_VCU_EnergyRegenModeCfg 0 8 Unsigned
+Msg:0x18FD AND_CDCU_V2L_PowerLimit 1
+CDCU_V2L_PowerLimit 0 8 Unsigned
+Msg:0x18FC AND_CDCU_V2L_Cmd 1
+CDCU_V2L_Cmd 0 8 Unsigned
+Msg:0x18FB AND_VCU_BrakeSig 1
+BrakeSig 0 8 Unsigned
+Msg:0x18FA AND_CDCU_VCU_SnowModeSwCfg 1
+CDCU_VCU_SnowModeSwCfg 0 8 Unsigned
+Msg:0x18F9 AND_CDU_IntelHeatManaCmd 1
+CDU_IntelHeatManaCmd 0 8 Unsigned
+Msg:0x18F8 AND_CDCU_AS_HeightLvlCfg 1
+CDCU_AS_HeightLvlCfg 0 8 Unsigned
+Msg:0x18F7 AND_CDCU_AS_softLvlCfg 1
+CDCU_AS_softLvlCfg 0 8 Unsigned
+Msg:0x18F6 AND_CDCU_LDCU_PowerResponceCfg 1
+CDCU_LDCU_PowerResponceCfg 0 8 Unsigned
+Msg:0x18F5 AND_CDCU_LDCU_MotorPowerModeCfg 1
+CDCU_LDCU_MotorPowerModeCfg 0 8 Unsigned
+Msg:0x18F4 AND_CDCU_VCU_RanDis_Mode 1
+CDCU_VCU_RanDis_Mode 0 8 Unsigned
+Msg:0x18F3 AND_CDCU_XsportMode 1
+CDCU_XsportMode 0 8 Unsigned
+Msg:0x18F2 AND_CDCU_VCU_CheckModeSt 1
+CDCU_VCU_CheckModeSt 0 8 Unsigned
+Msg:0x18F1 AND_CDCU_AS_WelcomeSW 1
+CDCU_AS_WelcomeSW 0 8 Unsigned
+Msg:0x18F1 AND_CDCU_AS_WelcomeSW 1
+CDCU_AS_WelcomeSW 0 8 Unsigned
+Msg:0x18F0 AND_CDCU_AS_EasyloadingSW 1
+CDCU_AS_EasyloadingSW 0 8 Unsigned
+Msg:0x18EF AND_CDCU_AS_MaintenanceModeSW 1
+CDCU_AS_MaintenanceModeSW 0 8 Unsigned
+Msg:0x18EE AND_CDCU_ESP_OffRoadSw 1
+CDCU_ESP_OffRoadSw 0 8 Unsigned
+Msg:0x18ED AND_CDCU_LDCU_XpedalModeCfg 1
+CDCU_LDCU_XpedalModeCfg 0 8 Unsigned
+Msg:0x18EC AND_TransportModeSW 1
+CDCU_AS_TransportModeSW 0 8 Unsigned
+Msg:0x18EB AND_CDCU_ESP_TSMSw 1
+CDCU_ESP_TSMSw 0 8 Unsigned
+Msg:0x18EA AND_CDCU_AS_TrailerModeSW 1
+CDCU_AS_TrailerModeSW 0 8 Unsigned
+Msg:0x18E9 AND_CDCU_AS_WelcomeReq 1
+CDCU_AS_WelcomeReq 0 8 Unsigned
+Msg:0x18E8 AND_CDCU_LDCU_SSACfg 1
+CDCU_LDCU_SSACfg 0 8 Unsigned
+Msg:0x18E7 AND_CDCU_AS_CustomerModeFlag 1
+CDCU_AS_CustomerModeFlag 0 8 Unsigned
+Msg:0x18E6 AND_CDCU_VCU_RacingModeSwCfg 1
+CDCU_VCU_RacingModeSwCfg 0 8 Unsigned
+Msg:0x18E5 AND_CDCU_LDCU_ASCampingModeSW 1
+CDCU_LDCU_ASCampingModeSW 0 8 Unsigned
+Msg:0x18E2 AND_CDCU_IntellCalc 28
+CDCU_RegenLevelReq 0 8 Unsigned
+CDCU_RegenLevelReqEnbl 0 8 Unsigned
+CDCU_RegenDeceltn 0 8 Unsigned
+CDCU_RegenDeceltnEnbl 0 8 Unsigned
+CDCU_DrivePwrLevelReq 0 8 Unsigned
+CDCU_DrivePwrLevelReqEnbl 0 8 Unsigned
+CDCU_FourWhlSteerCharact 0 8 Unsigned
+CDCU_FourWhlSteerCharactEnbl 0 8 Unsigned
+CDCU_CrpTarVehSpd 0 8 Unsigned
+CDCU_CrpTarVehSpdEnbl 0 8 Unsigned
+CDCU_CrpMaxTarGrad 0 8 Unsigned
+CDCU_CrpMaxTarGradEnbl 0 8 Unsigned
+CDCU_ThermLvlReq 0 8 Unsigned
+CDCU_ThermLvlReqEnbl 0 8 Unsigned
+CDCU_PTCPwrRestrictReq 0 8 Unsigned
+CDCU_PTCPwrRestrictReqEnbl 0 8 Unsigned
+CDCU_CompPwrRestrictReq 0 8 Unsigned
+CDCU_CompPwrRestrictReqEnbl 0 8 Unsigned
+CDCU_PwrModeReq 0 8 Unsigned
+CDCU_PwrModeReqEnbl 0 8 Unsigned
+CDCU_AWDModeReq 0 8 Unsigned
+CDCU_AWDModeReqEnbl 0 8 Unsigned
+CDCU_SlipIndexReq 0 8 Unsigned
+CDCU_SlipIndexReqEnbl 0 8 Unsigned
+CDCU_HandShakeCounter 0 8 Unsigned
+CDCU_RegenRespRateReq 0 8 Unsigned
+CDCU_RegenRespRateReqEnbl 0 8 Unsigned
+CDCU_RoadType 0 8 Unsigned
+Msg:0x18E1 AND_CDCU_AS_DrvModCfg 1
+CDCU_AS_DrvModCfg 0 8 Unsigned
+Msg:0x18DF AND_CDCU_AS_SpecialDriveModeCfg 1
+CDCU_AS_SpecialDriveModeCfg 0 8 Unsigned
+Msg:0x18DE AND_CDCU_LDCU_AutoEasyloadingSW 1
+CDCU_LDCU_AutoEasyloadingSW 0 8 Unsigned
+Msg:0x18DE AND_CDCU_LDCU_AutoEasyloadingSW 1
+CDCU_LDCU_AutoEasyloadingSW 0 8 Unsigned
+Msg:0x18DE AND_CDCU_LDCU_AutoEasyloadingSW 1
+CDCU_LDCU_AutoEasyloadingSW 0 8 Unsigned
+Msg:0x18DD AND_CDCU_LSlideDoorScrCtr 1
+CDCU_LSlideDoorScrCtr 0 8 Unsigned
+Msg:0x18DC AND_CDCU_RSlideDoorScrCtr 1
+CDCU_RSlideDoorScrCtr 0 8 Unsigned
+Msg:0x18DB AND_CDCU_LSlideDoorPosScrReq 1
+CDCU_LSlideDoorPosScrReq 0 8 Unsigned
+Msg:0x18DA AND_CDCU_RSlideDoorPosScrReq 1
+CDCU_RSlideDoorPosScrReq 0 8 Unsigned
+Msg:0x18D9 AND_RearLogolightCfg 1
+RearLogolightCfg 0 8 Unsigned
+Msg:0x18D8 AND_CDCU_LSlideDoorModeCfg 1
+CDCU_LSlideDoorModeCfg 0 8 Unsigned
+Msg:0x18D7 AND_CDCU_RSlideDoorModeCfg 1
+CDCU_RSlideDoorModeCfg 0 8 Unsigned
+Msg:0x18D6 AND_CDCU_UnitSw 1
+CDCU_UnitSw 0 8 Unsigned
+Msg:0x18D5 AND_CDCU_BattTempCtrl 1
+CDCU_BattTempCtrl 0 8 Unsigned
+Msg:0x1AFF AND_CDCU_TMC_DriverTempSelect 1
+CDCU_TMC_DriverTempSelect 0 8 Unsigned
+Msg:0x1AFE AND_CDCU_TMC_PsnTempSelect 1
+CDCU_TMC_PsnTempSelect 0 8 Unsigned
+Msg:0x1AFD AND_HAVC_ACBtnSt 1
+ACBtnSt 0 8 Unsigned
+Msg:0x1AFC AND_CDCU_TMC_AirIntakeBtn 1
+CDCU_TMC_AirIntakeBtn 0 8 Unsigned
+Msg:0x1AFB AND_CDCU_TMC_FDefrostBtn 1
+CDCU_TMC_FDefrostBtn 0 8 Unsigned
+Msg:0x1AFA AND_CDCU_TMC_WindExitSpd 1
+CDCU_TMC_WindExitSpd 0 8 Unsigned
+Msg:0x1AF9 AND_CDCU_RDCU_AirDisModeSelectBtn 1
+CDCU_RDCU_AirDisModeSelectBtn 0 8 Unsigned
+Msg:0x1AF8 AND_CDCU_TMC_ACPowerBtn 1
+CDCU_TMC_ACPowerBtn 0 8 Unsigned
+Msg:0x1AF7 AND_CDCU_TMC_AutoBtn 1
+CDCU_TMC_AutoBtn 0 8 Unsigned
+Msg:0x1AF6 AND_HAVC_BCC 1
+BlwComfortCfg 0 8 Unsigned
+Msg:0x1AF5 AND_HAVC_DBS 1
+SyncBtnSt 0 8 Unsigned
+Msg:0x1AF4 AND_HAVC_PM2_5 1
+PM2_5AirPurgeSw 0 8 Unsigned
+Msg:0x1AF3 AND_CDCU_TMC_WindExitSpdUpBtn 1
+CDCU_TMC_WindExitSpdUpBtn 0 8 Unsigned
+Msg:0x1AF2 AND_CDCU_TMC_WindExitSpdDownBtn 1
+CDCU_TMC_WindExitSpdDownBtn 0 8 Unsigned
+Msg:0x1AF1 AND_CDCU_TMC_DriverTempUpBtn 1
+CDCU_TMC_DriverTempUpBtn 0 8 Unsigned
+Msg:0x1AF0 AND_CDCU_TMC_DriverTempDownBtn 1
+CDCU_TMC_DriverTempDownBtn 0 8 Unsigned
+Msg:0x1AEF AND_CDCU_TMC_PsnTempUpBtn 1
+CDCU_TMC_PsnTempUpBtn 0 8 Unsigned
+Msg:0x1AED AND_CDCU_TMC_PsnTempDownBtn 1
+CDCU_TMC_PsnTempDownBtn 0 8 Unsigned
+Msg:0x1AEC AND_CDCU_TMC_LeftSyncBtn 1
+CDCU_TMC_LeftSyncBtn 0 8 Unsigned
+Msg:0x1AEB AND_CDCU_RDCU_RightSyncBtn 1
+CDCU_RDCU_RightSyncBtn 0 8 Unsigned
+Msg:0x1AEA AND_CDCU_TMC_EAVDrvLeftHorzPos 1
+CDCU_TMC_EAVDrvLeftHorzPos 0 8 Unsigned
+Msg:0x1AE9 AND_CDCU_TMC_EAVDrvLeftVertPos 1
+CDCU_TMC_EAVDrvLeftVertPos 0 8 Unsigned
+Msg:0x1AE8 AND_CDCU_TMC_EAVDrvRightHorzPos 1
+CDCU_TMC_EAVDrvRightHorzPos 0 8 Unsigned
+Msg:0x1AE7 AND_CDCU_TMC_EAVDrvRightVertPos 1
+CDCU_TMC_EAVDrvRightVertPos 0 8 Unsigned
+Msg:0x1AE6 AND_CDCU_TMC_EAVPsnLeftHorzPos 1
+CDCU_TMC_EAVPsnLeftHorzPos 0 8 Unsigned
+Msg:0x1AE5 AND_CDCU_TMC_EAVPsnLeftVertPos 1
+CDCU_TMC_EAVPsnLeftVertPos 0 8 Unsigned
+Msg:0x1AE4 AND_CDCU_TMC_EAVPsnRightHorzPos 1
+CDCU_TMC_EAVPsnRightHorzPos 0 8 Unsigned
+Msg:0x1AE3 AND_CDCU_TMC_EAVPsnRightVertPos 1
+CDCU_TMC_EAVPsnRightVertPos 0 8 Unsigned
+Msg:0x1AE2 AND_CDCU_AQSBtn 1
+CDCU_AQSBtn 0 8 Unsigned
+Msg:0x1AE1 AND_CDCU_TMC_AQSSensitivityBtn 1
+CDCU_TMC_AQSSensitivityBtn 0 8 Unsigned
+Msg:0x1AE0 AND_CDCU_TMC_EAVSweepWindBtn 1
+CDCU_TMC_EAVSweepWindBtn 0 8 Unsigned
+Msg:0x1ADF AND_CDCU_TMC_ECONBtn 1
+CDCU_TMC_ECONBtn 0 8 Unsigned
+Msg:0x1ADE AND_CDCU_TMC_EAVDriverWindModeBtn 1
+CDCU_TMC_EAVDriverWindModeBtn 0 8 Unsigned
+Msg:0x1ADD AND_CDCU_TMC_EAVPsnWindModeBtn 1
+CDCU_TMC_EAVPsnWindModeBtn 0 8 Unsigned
+Msg:0x1ADC AND_CDCU_RDCU_CirculationPeriodSet 1
+CDCU_RDCU_CirculationPeriodSet 0 8 Unsigned
+Msg:0x1ADB AND_CDCU_TMC_AirDisModeBtn 1
+CDCU_TMC_AirDisModeBtn 0 8 Unsigned
+Msg:0x1ADA AND_CDCU_TMC_820ACoolingReqTemp 1
+CDCU_TMC_820ACoolingReqTemp 0 8 Unsigned
+Msg:0x1AD9 AND_CDCU_TMC_AMPCoolingReqTemp 1
+CDCU_TMC_AMPCoolingReqTemp 0 8 Unsigned
+Msg:0x1AD8 AND_CDCU_TMC_AMPTempRiseSpeedSt 1
+CDCU_TMC_AMPTempRiseSpeedSt 0 8 Unsigned
+Msg:0x1AD7 AND_CDU_HVACIonButtonSt 1
+CDU_HVACIonButtonSt 0 8 Unsigned
+Msg:0x1AD6 AND_CDU_HVACACMaxButtonSt 1
+CDU_HVACACMaxButtonSt 0 8 Unsigned
+Msg:0x1AD5 AND_CDU_HVAC_PTC_St 1
+CDU_HVAC_PTC_St 0 8 Unsigned
+Msg:0x1AD4 AND_CDCU_TMC_HCVBtn 1
+CDCU_TMC_HCVBtn 0 8 Unsigned
+Msg:0x1AD3 AND_CDCU_TMC_AfterblowSet 1
+CDCU_TMC_AfterblowSet 0 8 Unsigned
+Msg:0x1AD1 AND_CDCU_TMC_DeodorizeBtn 1
+CDCU_TMC_DeodorizeBtn 0 8 Unsigned
+Msg:0x1AD0 AND_CDCU_TMC_MaxCoolingBtn 1
+CDCU_TMC_MaxCoolingBtn 0 8 Unsigned
+Msg:0x1ACF AND_CDCU_TMC_MaxWarmingBtn 1
+CDCU_TMC_MaxWarmingBtn 0 8 Unsigned
+Msg:0x1ACE AND_CDU_TMC_EconPlusBtn 1
+CDU_TMC_EconPlusBtn 0 8 Unsigned
+Msg:0x1ACC AND_CDCU_RDCU_AutoDefogSet 1
+CDCU_RDCU_AutoDefogSet 0 8 Unsigned
+Msg:0x1ACB AND_CDU_TMC_DisinfBtn 1
+CDU_TMC_DisinfBtn 0 8 Unsigned
+Msg:0x1ACA AND_CDCU_TMC_AirCleanBtn 1
+CDCU_TMC_AirCleanBtn 0 8 Unsigned
+Msg:0x1AC9 AND_CDCU_TMC_SFS_Sw_Rq 1
+CDCU_TMC_SFS_Sw_Rq 0 8 Unsigned
+Msg:0x1AC8 AND_CDCU_TMC_SFS_Ch_Rq 1
+CDCU_TMC_SFS_Ch_Rq 0 8 Unsigned
+Msg:0x1AC7 AND_CDCU_TMC_SFS_Con_Rq 1
+CDCU_TMC_SFS_Con_Rq 0 8 Unsigned
+Msg:0x1AC6 AND_SFS_Ch1_Reset_Rq 1
+SFS_Ch1_Reset_Rq 0 8 Unsigned
+Msg:0x1AC5 AND_SFS_Ch2_Reset_Rq 1
+SFS_Ch2_Reset_Rq 0 8 Unsigned
+Msg:0x1AC4 AND_SFS_Ch3_Reset_Rq 1
+SFS_Ch3_Reset_Rq 0 8 Unsigned
+Msg:0x1AC3 AND_SFS_Mode_Set 1
+SFS_Mode_Set 0 8 Unsigned
+Msg:0x1ABB AND_SFS_CabinTemp 1
+SFS_CabinTemp 0 8 Unsigned
+Msg:0x1ABA AND_SFS_BlowerLev 1
+SFS_BlowerLev 0 8 Unsigned
+Msg:0x1AB9 AND_SFS_AirIntakeSt 1
+SFS_AirIntakeSt 0 8 Unsigned
+Msg:0x1AB8 AND_SFS_Ch_St 3
+SFS_Ch1_St 0 8 Unsigned
+SFS_Ch2_St 0 8 Unsigned
+SFS_Ch3_St 0 8 Unsigned
+Msg:0x1AC2 AND_CDCU_RDCU_NanoeBtn 1
+CDCU_RDCU_NanoeBtn 0 8 Unsigned
+Msg:0x1AC1 AND_CDCU_RDCU_RearAirDisModeBtn 1
+CDCU_RDCU_RearAirDisModeBtn 0 8 Unsigned
+Msg:0x1ABF AND_CDCU_RDCU_RAirDisModeSelectBtn 1
+CDCU_RDCU_RAirDisModeSelectBtn 0 8 Unsigned
+Msg:0x1ABE AND_CDCU_SFS_St 1
+CDCU_SFS_St 0 8 Unsigned
+Msg:0x1ABD AND_CDCU_SFS_Ch_St 1
+CDCU_SFS_Ch_St 0 8 Unsigned
+Msg:0x1ABC AND_CDCU_SFS_Ch_Type 3
+CDCU_SFS_Ch1_Type 0 8 Unsigned
+CDCU_SFS_Ch2_Type 0 8 Unsigned
+CDCU_SFS_Ch3_Type 0 8 Unsigned
+Msg:0x1AB5 AND_CDCU_RDCU_RLTempUpBtn 1
+CDCU_RDCU_RLTempUpBtn 0 8 Unsigned
+Msg:0x1AB4 AND_CDCU_RDCU_RLTempDownBtn 1
+CDCU_RDCU_RLTempDownBtn 0 8 Unsigned
+Msg:0x1AB3 AND_CDCU_RDCU_RLTempSelect 1
+CDCU_RDCU_RLTempSelect 0 8 Unsigned
+Msg:0x1AB2 AND_CDCU_RDCU_RAirDisModeBtn 1
+CDCU_RDCU_RAirDisModeBtn 0 8 Unsigned
+Msg:0x1AB1 AND_CDCU_R_RAirDisModeSelectBtn 1
+CDCU_R_RAirDisModeSelectBtn 0 8 Unsigned
+Msg:0x1AB0 AND_CDCU_RDCU_RRTempUpBtn 1
+CDCU_RDCU_RRTempUpBtn 0 8 Unsigned
+Msg:0x1AAF AND_CDCU_RDCU_RRTempDownBtn 1
+CDCU_RDCU_RRTempDownBtn 0 8 Unsigned
+Msg:0x1AAE AND_CDCU_RDCU_RRTempSelect 1
+CDCU_RDCU_RRTempSelect 0 8 Unsigned
+Msg:0x1AAB AND_CDCU_RDCU_RACPowerBtn 1
+CDCU_RDCU_RACPowerBtn 0 8 Unsigned
+Msg:0x1AAA AND_CDCU_RDCU_RAutoBtn 1
+CDCU_RDCU_RAutoBtn 0 8 Unsigned
+Msg:0x1AA9 AND_CDCU_RDCU_RWindExitSpdUpBtn 1
+CDCU_RDCU_RWindExitSpdUpBtn 0 8 Unsigned
+Msg:0x1AA8 AND_CDCU_RDCU_RWindExitSpdDownBtn 1
+CDCU_RDCU_RWindExitSpdDownBtn 0 8 Unsigned
+Msg:0x1AA7 AND_CDCU_R_RWindExitSpdSelectBtn 1
+CDCU_R_RWindExitSpdSelectBtn 0 8 Unsigned
+Msg:0x1AA6 AND_CDCU_RDCU_3rdRowTempUpBtn 1
+CDCU_RDCU_3rdRowTempUpBtn 0 8 Unsigned
+Msg:0x1AA5 AND_CDCU_RDCU_3rdRowTempDownBtn 1
+CDCU_RDCU_3rdRowTempDownBtn 0 8 Unsigned
+Msg:0x1AA4 AND_CDCU_R_3rdRowTempSelectBtn 1
+CDCU_R_3rdRowTempSelectBtn 0 8 Unsigned
+Msg:0x1AA3 AND_CDCU_NewFreshCmd 1
+CDCU_NewFreshCmd 0 8 Unsigned
+Msg:0x1AA2 AND_CDCU_R_3rdRowAirDisModeBtn 1
+CDCU_R_3rdRowAirDisModeBtn 0 8 Unsigned
+Msg:0x1AA1 AND_CDCU_R_3rdAirDisModeSelectBtn 1
+CDCU_R_3rdAirDisModeSelectBtn 0 8 Unsigned
+Msg:0x1A9F AND_CDCU_RDCU_InsenVentBtn 1
+CDCU_RDCU_InsenVentBtn 0 8 Unsigned
+Msg:0x1A9E AND_CDCU_ACReq 1
+CDCU_ACReq 0 8 Unsigned
+Msg:0x1A9D AND_CDCU_CFPowerReq 1
+CDCU_CFPowerReq 0 8 Unsigned
+Msg:0x1A9C AND_CDCU_CFDoorReq 1
+CDCU_CFDoorReq 0 8 Unsigned
+Msg:0x1A9B AND_CDCU_CFTEMPUP 1
+CDCU_CFTEMPUP 0 8 Unsigned
+Msg:0x1A9A AND_CDCU_CFTEMPDown 1
+CDCU_CFTEMPDown 0 8 Unsigned
+Msg:0x1A99 AND_CDCU_CFTEMPSelect 1
+CDCU_CFTEMPSelect 0 8 Unsigned
+Msg:0x1A98 AND_CDCU_CFModeReq 1
+CDCU_CFModeReq 0 8 Unsigned
+Msg:0x1A97 AND_CDCU_CFChildLockReq 1
+CDCU_CFChildLockReq 0 8 Unsigned
+Msg:0x1A96 AND_CDCU_CFHoldingReq 1
+CDCU_CFHoldingReq 0 8 Unsigned
+Msg:0x1A95 AND_CDCU_CFHoldingTimeREQ 1
+CDCU_CFHoldingTimeREQ 0 8 Unsigned
+Msg:0x1A94 AND_CDCU_CFHoldingTimeSetReq 1
+CDCU_CFHoldingTimeSetReq 0 8 Unsigned
+Msg:0x1A93 AND_SFM_Ctrl 1
+SFM_Ctrl 0 8 Unsigned
+Msg:0x1A92 AND_SFM_PosTarget 1
+SFM_PosTarget 0 8 Unsigned
+Msg:0x1A91 AND_CDCU_LSWSColorR 1
+CDCU_LSWSColorR 0 8 Unsigned
+Msg:0x1A8F AND_CDCU_LSWSColorG 1
+CDCU_LSWSColorG 0 8 Unsigned
+Msg:0x1A8E AND_CDCU_LSWSColorB 1
+CDCU_LSWSColorB 0 8 Unsigned
+Msg:0x1A8D AND_CDCU_RSWSColorR 1
+CDCU_RSWSColorR 0 8 Unsigned
+Msg:0x1A8C AND_CDCU_RSWSColorG 1
+CDCU_RSWSColorG 0 8 Unsigned
+Msg:0x1A8B AND_CDCU_RSWSColorB 1
+CDCU_RSWSColorB 0 8 Unsigned
+Msg:0x1A8A AND_CDCU_SWSHaloEnable 1
+CDCU_SWSHaloEnable 0 8 Unsigned
+Msg:0x1A89 AND_CDCU_LSWSEnable_Fading 1
+CDCU_LSWSEnable_Fading 0 8 Unsigned
+Msg:0x1A88 AND_CDCU_LSWS_FadingTime 1
+CDCU_LSWS_FadingTime 0 8 Unsigned
+Msg:0x1A87 AND_CDCU_LSWSIntensity 1
+CDCU_LSWSIntensity 0 8 Unsigned
+Msg:0x1A86 AND_CDCU_RSWSEnable_Fading 1
+CDCU_RSWSEnable_Fading 0 8 Unsigned
+Msg:0x1A85 AND_CDCU_RSWS_FadingTime 1
+CDCU_RSWS_FadingTime 0 8 Unsigned
+Msg:0x1A84 AND_CDCU_RSWSIntensity 1
+CDCU_RSWSIntensity 0 8 Unsigned
+Msg:0x1CF3 AND_SCU_APAtest 8
+SCU_APAtest 8 8 Unsigned
+Msg:0x1CF1 AND_CDU_SCU_GPSSpeed 19
+CDU_SCU_GPS_Longitude 0 32 Unsigned
+CDU_SCU_GPS_Latitude 0 32 Unsigned
+CDU_SCU_GPS_Altitude 0 16 Unsigned
+CDU_SCU_GPS_Bearing 0 16 Unsigned
+CDU_SCU_GPS_Accuracy 0 8 Unsigned
+CDU_SCU_GPSSpeed 0 16 Unsigned
+CDU_SCU_GPSTime 0 32 Unsigned
+Msg:0x1CF0 AND_CDU_SCU_GPS 17
+CDU_SCU_GPS_Latitude 0 32 Unsigned
+CDU_SCU_GPS_Longitude 0 32 Unsigned
+CDU_SCU_GPS_Bearing 0 16 Unsigned
+CDU_SCU_GPS_Altitude 0 16 Unsigned
+CDU_SCU_GPS_Accuracy 0 8 Unsigned
+CDU_SCU_GPSTime 0 32 Unsigned
+Msg:0x1CED AND_CDU_SCU_autoParkActivecmd 1
+CDU_SCU_autoParkActivecmd 0 8 Unsigned
+Msg:0x1CEC AND_CDU_SCU_PhoneSMButton 1
+CDU_SCU_PhoneSMButton 0 8 Unsigned
+Msg:0x1CEB AND_CDU_SCU_HomeSlot_ID 1
+CDU_SCU_HomeSlot_ID 0 8 Unsigned
+Msg:0x1CE6 AND_CDU_SCU_UradarAlarm_UserSwitch 1
+CDU_SCU_UradarAlarm_UserSwitch 0 8 Unsigned
+Msg:0x1CEA AND_CDU_SCU_KeyPark_SwSt 1
+CDU_SCU_KeyPark_SwSt 0 8 Unsigned
+Msg:0x1CE5 AND_CDU_SCU_RoadAttribute 2
+CDU_SCU_RoadAttribute_PK 0 8 Unsigned
+CDU_SCU_RoadAttribute_RD 0 8 Unsigned
+Msg:0x1CE4 AND_CDU_SCU_AssistedLaneChangeSwSt 1
+CDU_SCU_AssistedLaneChangeSwSt 0 8 Unsigned
+Msg:0x1CE3 AND_CDU_SCU_MSB_DMS_SeatbeltReq 1
+CDU_SCU_MSB_DMS_SeatbeltReq 0 8 Unsigned
+Msg:0x1CE2 AND_CDU_SCU_DMS_Mode_St 1
+CDU_SCU_DMS_Mode_St 0 8 Unsigned
+Msg:0x1CE1 AND_CDU_SCU_ParkingStyle 1
+CDU_SCU_ParkingStyle 0 8 Unsigned
+Msg:0x1CDD AND_CDU_SCU_RoadAttribute_Detail_RD 1
+CDU_SCU_RoadAttribute_Detail_RD 0 8 Unsigned
+Msg:0x1CDB AND_CDU_SCU_FreeParking_1 14
+CDU_FreeParking_R_1 0 16 Unsigned
+CDU_FreeParking_ds_1 0 16 Unsigned
+CDU_FreeParking_Attr_1 0 16 Unsigned
+CDU_FreeParking_St_1 0 16 Unsigned
+CDU_FreeParking_Rtheta_1 0 16 Unsigned
+CDU_FreeParking_Ry_1 0 16 Unsigned
+CDU_FreeParking_Rx_1 0 16 Unsigned
+Msg:0x1CDA AND_CDU_SCU_FreeParking_2 14
+CDU_FreeParking_R_2 0 16 Unsigned
+CDU_FreeParking_ds_2 0 16 Unsigned
+CDU_FreeParking_Attr_2 0 16 Unsigned
+CDU_FreeParking_St_2 0 16 Unsigned
+CDU_FreeParking_Rtheta_2 0 16 Unsigned
+CDU_FreeParking_Ry_2 0 16 Unsigned
+CDU_FreeParking_Rx_2 0 16 Unsigned
+Msg:0x1CD3 AND_CDCU_RViewMirrorSwSt 1
+CDCU_RViewMirrorSwSt 0 8 Unsigned
+Msg:0x1EFF AND_AVAS_LowSpeedDriveSoundSelect 1
+SoundCfg 0 8 Unsigned
+Msg:0x1EFE AND_AVAS_LowSpeedDriveSoundEnable 1
+SwStCmd 0 8 Unsigned
+Msg:0x1EF3 AND_AVAS_FriendlySayHiCfg 1
+FriendlySayHiCfg 0 8 Unsigned
+Msg:0x1EFD AND_AVAS_WakeUpWaitSetCmd 1
+WakeUpWaitSetCmd 0 8 Unsigned
+Msg:0x1EFC AND_AVAS_FullChrgWakeUpSetCmd 1
+FullChrgWakeUpSetCmd 0 8 Unsigned
+Msg:0x1EFB AND_AVAS_CarSleepSetCmd 1
+CarSleepSetCmd 0 8 Unsigned
+Msg:0x1EFA AND_AVAS_ACChrgInSetCmd 1
+ACChrgInSetCmd 0 8 Unsigned
+Msg:0x1EF9 AND_AVAS_DCChrgInSetCmd 1
+DCChrgInSetCmd 0 8 Unsigned
+Msg:0x1EF8 AND_AVAS_DisConnectChrgSetCmd 1
+DisConnectChrgSetCmd 0 8 Unsigned
+Msg:0x1EF7 AND_AVAS_ExternalSoundFileCmd 1
+ExternalSoundFileCmd 0 8 Unsigned
+Msg:0x1EF6 AND_AVAS_ExternalSoundModeCmd 1
+ExternalSoundModeCmd 0 8 Unsigned
+Msg:0x1EF5 AND_AVAS_ExtVolumeAdjustCmd 1
+ExtVolAdjustCmd 0 8 Unsigned
+Msg:0x1EF4 AND_AVAS_LowSpeedDriveSoundVolume 1
+LowSpdVolAdjustCmd 0 8 Unsigned
+Msg:0x1EF2 AND_AVAS_PhotoSetCmd 1
+CDU_AVAS_PhotoSetCmd 0 8 Unsigned
+Msg:0x1EF1 AND_AVAS_UnlockSoundSelect 1
+AVAS_UnlockSoundSelectCmd 0 8 Unsigned
+Msg:0x1EF0 AND_AVAS_LockSoundSelect 1
+AVAS_LockSoundSelectCmd 0 8 Unsigned
+Msg:0x1EEF AND_AVAS_UnlockOrLockSoundEnable 1
+AVAS_UnlockOrLockSoundEnableCmd 0 8 Unsigned
+Msg:0x1EEE AND_AVAS_ChargeSoundEnable 1
+AVAS_ChargeSoundEnableCmd 0 8 Unsigned
+Msg:0x1EED AND_AVAS_BatteryProtectEnable 1
+AVAS_BatteryProtectEnableCmd 0 8 Unsigned
+Msg:0x1EEC AND_AVAS_SocSoundEnable 1
+AVAS_SocSoundEnableCmd 0 8 Unsigned
+Msg:0x1EEB AND_AVAS_SocSoundVolume 1
+AVAS_SocSoundVolumeCmd 0 8 Unsigned
+Msg:0x1EEA AND_AVAS_SoundCalibration 255
+AVAS_SoundCalibrationCmd 255 8 Unsigned
+Msg:0x1EE9 AND_AVAS_LockSoundEnable 1
+AVAS_LockSoundEnableCmd 0 8 Unsigned
+Msg:0x1EE8 AND_AVAS_UnlockSoundEnable 1
+AVAS_UnlockSoundEnableCmd 0 8 Unsigned
+Msg:0x1F01 AND_SolarVentilateCfg 1
+CDU_SolarVentilateCfg 0 8 Unsigned
+Msg:0x1F02 AND_OFFGntEnableCfg 1
+CDU_OFFGntEnableCfg 0 8 Unsigned
+Msg:0x1F03 AND_ONGntEnableCfg 1
+CDU_ONGntEnableCfg 0 8 Unsigned
+Msg:0x1F04 AND_EnergyGntClean 1
+CDU_EnergyGntClean 0 8 Unsigned
+Msg:0x20FC AND_XPU_LKA 1
+LKASwSt 0 8 Unsigned
+Msg:0x20FB AND_XPU_CIP 1
+CIPSwSt 0 8 Unsigned
+Msg:0x20F4 AND_XPU_TSR 1
+TSRSwSt 0 8 Unsigned
+Msg:0x20F3 AND_XPU_SLWTS 1
+SpdLimitWarningTypeSet 0 8 Unsigned
+Msg:0x20F2 AND_XPU_TLIA 1
+TLIASwSt 0 8 Unsigned
+Msg:0x20F0 AND_XPU_NGPSwSt 1
+CDU_NGPSwSt 0 8 Unsigned
+Msg:0x20D8 AND_CDCU_XPU_SmtAS_MAPSw 1
+CDCU_XPU_SmtAS_MAPSw 0 8 Unsigned
+Msg:0x20E2 AND_CDU_LDWSensitivitySwSt 1
+CDU_SCU_LDWSensitivitySwSt 0 8 Unsigned
+Msg:0x20E4 AND_CDU_DistractionSWSt 1
+CDU_DistractionSWSt 0 8 Unsigned
+Msg:0x20EE AND_CDCU_SSXD_SDCCtrlSw 1
+CDCU_SSXD_SDCCtrlSw 0 8 Unsigned
+Msg:0x21FF AND_MSBActveSt 1
+ActSwCfg 0 8 Unsigned
+Msg:0x21FE AND_CDCU_SRS_2ndBeltWarnSwCfg 1
+CDCU_SRS_2ndBeltWarnSwCfg 0 8 Unsigned
+Msg:0x21FE AND_CDCU_SRS_2ndBeltWarnSwCfg 1
+CDCU_SRS_2ndBeltWarnSwCfg 0 8 Unsigned
+Msg:0x21FD AND_CDCU_iBCM_RMALLRLocation 1
+CDCU_iBCM_RMALLRLocation 0 8 Unsigned
+Msg:0x21FC AND_CDCU_iBCM_RMALUDLocation 1
+CDCU_iBCM_RMALUDLocation 0 8 Unsigned
+Msg:0x21FB AND_CDCU_iBCM_RMARLRLocation 1
+CDCU_iBCM_RMARLRLocation 0 8 Unsigned
+Msg:0x21FA AND_CDCU_iBCM_RMARUDLocation 1
+CDCU_iBCM_RMARUDLocation 0 8 Unsigned
+Msg:0x21E8 AND_CDCU_RMA_Ctrl 4
+CDCU_iBCM_RMALLRLocation 0 8 Unsigned
+CDCU_iBCM_RMALUDLocation 0 8 Unsigned
+CDCU_iBCM_RMARLRLocation 0 8 Unsigned
+CDCU_iBCM_RMARUDLocation 0 8 Unsigned
+Msg:0x21E1 AND_CMS_CHANGE_VISION 8
+ChangeLCMSVisionPointX 0 16 Unsigned
+ChangeLCMSVisionPointY 0 16 Unsigned
+ChangeRCMSVisionPointX 0 16 Unsigned
+ChangeRCMSVisionPointY 0 16 Unsigned
+Msg:0x21F9 AND_ESP_VDCModeReq 1
+CDU_ESP_VDCModeReq 0 8 Unsigned
+Msg:0x21F8 AND_IBS_BrakeModeReq 1
+CDU_IBS_BrakeModeReq 0 8 Unsigned
+Msg:0x21F7 AND_CDC_FuncStyleReq 1
+CDU_CDC_FuncStyleReq 0 8 Unsigned
+Msg:0x21F6 AND_CDCU_iBCM_TrunkReleaseCmd 1
+CDCU_iBCM_TrunkReleaseCmd 0 8 Unsigned
+Msg:0x21F5 AND_CDCU_iBCM_CentralLockSw 1
+CDCU_iBCM_CentralLockSw 0 8 Unsigned
+Msg:0x21F4 AND_AMP_StyleSW 2
+CDU_AMP_StyleSW 0 16 Unsigned
+Msg:0x21F3 AND_AMP_SceneSW 1
+CDU_AMP_SceneSW 0 8 Unsigned
+Msg:0x21F2 AND_AMP_StandBySW 1
+CDU_AMP_StandBySW 0 8 Unsigned
+Msg:0x21F1 AND_CDCU_AMP_SoundFieldSW 1
+CDCU_AMP_SoundFieldSW 0 8 Unsigned
+Msg:0x21EF AND_AMP_AudioAffectSW 1
+CDU_AMP_AudioAffectSW 0 8 Unsigned
+Msg:0x21EE AND_AMP_MuteSW 1
+CDU_AMP_MuteSW 0 8 Unsigned
+Msg:0x21ED AND_AMP_VoulmeSW 1
+CDU_AMP_VoulmeSW 0 8 Unsigned
+Msg:0x21EC AND_AMP_SoundTrackSW 1
+CDU_AMP_SoundTrackSW 0 8 Unsigned
+Msg:0x21EB AND_AMP_Channel 8
+AMP_Channel 8 8 Unsigned
+Msg:0x21EA AND_AMP_SourceSW 1
+AMP_SourceSW 1 8 Unsigned
+Msg:0x21E7 AND_CDCU_MSBWarningReq 1
+CDCU_MSBWarningReq 0 8 Unsigned
+Msg:0x21E6 AND_CDCU_AMP_SwCtrl 16
+CDCU_AMP_SwCtrl1 8 8 Unsigned
+CDCU_AMP_SwCtrl2 8 8 Unsigned
+Msg:0x21E6 AND_CDCU_AMP_SwCtrl 24
+CDCU_AMP_SwCtrl1 8 8 Unsigned
+CDCU_AMP_SwCtrl2 8 8 Unsigned
+CDCU_AMP_SwCtrl3 8 8 Unsigned
+Msg:0x21E5 AND_CDCU_AMP_VolCtrl 16
+CDCU_AMP_VolCtrl1 8 8 Unsigned
+CDCU_AMP_VolCtrl2 8 8 Unsigned
+Msg:0x21E5 AND_CDCU_AMP_VolCtrl 24
+CDCU_AMP_VolCtrl1 8 8 Unsigned
+CDCU_AMP_VolCtrl2 8 8 Unsigned
+CDCU_AMP_VolCtrl3 8 8 Unsigned
+Msg:0x21E4 AND_CDCU_AMP_GroupSWCtrl 8
+CDCU_AMP_GroupSWCtrl 8 8 Unsigned
+Msg:0x21E3 AND_CDCU_AMP_GroupVolCtrl 8
+CDCU_AMP_GroupVolCtrl 8 8 Unsigned
+Msg:0x21E2 AND_CDCU_AMP_FreqGainCtrl 10
+CDCU_AMP_FreqGain1Sw 0 8 Unsigned
+CDCU_AMP_FreqGain2Sw 0 8 Unsigned
+CDCU_AMP_FreqGain3Sw 0 8 Unsigned
+CDCU_AMP_FreqGain4Sw 0 8 Unsigned
+CDCU_AMP_FreqGain5Sw 0 8 Unsigned
+CDCU_AMP_FreqGain6Sw 0 8 Unsigned
+CDCU_AMP_FreqGain7Sw 0 8 Unsigned
+CDCU_AMP_FreqGain8Sw 0 8 Unsigned
+CDCU_AMP_FreqGain9Sw 0 8 Unsigned
+CDCU_AMP_FreqGain10Sw 0 8 Unsigned
+Msg:0x21DF AND_SRS_2ndLeftSeatBeltSwCfg 1
+SRS_2ndLeftSeatBeltSwCfg 0 8 Unsigned
+Msg:0x21DE AND_SRS_2ndMidSeatBeltSwCfg 1
+SRS_2ndMidSeatBeltSwCfg 0 8 Unsigned
+Msg:0x21DD AND_SRS_2ndRightSeatBeltSwCfg 1
+SRS_2ndRightSeatBeltSwCfg 0 8 Unsigned
+Msg:0x21DC AND_SRS_3rdLeftSeatBeltSwCfg 1
+SRS_3rdLeftSeatBeltSwCfg 0 8 Unsigned
+Msg:0x21DB AND_SRS_3rdMidSeatBeltSwCfg 1
+SRS_3rdMidSeatBeltSwCfg 0 8 Unsigned
+Msg:0x21DA AND_SRS_3rdRightSeatBeltSwCfg 1
+SRS_3rdRightSeatBeltSwCfg 0 8 Unsigned
+Msg:0x21D9 AND_RearSeatBeltWarnPopUpSwCfg 1
+RearSeatBeltWarnPopUpSwCfg 0 8 Unsigned
+Msg:0x21D8 AND_CDCU_AVASEnableSw 1
+CDCU_AVASEnableSw 0 8 Unsigned
+Msg:0x22FF AND_CDCU_TBOX_SOCMaxChgCon 1
+CDCU_TBOX_SOCMaxChgCon 0 8 Unsigned
+Msg:0x22FE AND_CDCU_TBOX_Appoint 5
+CDCU_TBOX_AppointFlag 0 8 Unsigned
+CDCU_AppointChghour 0 8 Unsigned
+CDCU_AppointChgMin 0 8 Unsigned
+CDCU_AppointEndChghour 0 8 Unsigned
+CDCU_AppointEndChgMin 0 8 Unsigned
+Msg:0x22FC AND_CDCU_ChargeReq 1
+CDCU_ChargeReq 0 8 Unsigned
+Msg:0x22FD AND_CDCU_ChargeGunUnlockCmd 1
+CDCU_ChargeGunUnlockCmd 0 8 Unsigned
+Msg:0x22FA AND_Charge_Appoint 8
+CDU_stChgCon 0 8 Unsigned
+CDU_tiArtTimeYear 0 8 Unsigned
+CDU_tiArtTimeMonth 0 8 Unsigned
+CDU_tiArtTimeDay 0 8 Unsigned
+CDU_tiArtTimeHour 0 8 Unsigned
+CDU_tiArtTimeMin 0 8 Unsigned
+CDU_tiArtTimeSecond 0 8 Unsigned
+reserved 0 8 Unsigned
+Msg:0x22FB AND_ChargeACReq 1
+CDU_AC_ChargeReq 0 8 Unsigned
+Msg:0x22F9 AND_CDCU_AutoPoweroffConfig 1
+CDCU_AutoPoweroffConfig 0 8 Unsigned
+Msg:0x22F8 AND_CDCU_CancelPoweroffSW 1
+CDCU_CancelPoweroffSW 0 8 Unsigned
+Msg:0x22F7 AND_SoldierSw 1
+SoldierSw 0 8 Unsigned
+Msg:0x22F6 AND_CONTROL_TBOX 1
+CDU_TBOX_Control 0 8 Unsigned
+Msg:0x22F5 AND_SoldierCameraSw 1
+SoldierCameraSw 0 8 Unsigned
+Msg:0x22F4 AND_CDCU_PhotoCmd 1
+CDCU_PhotoCmd 0 8 Unsigned
+Msg:0x22F3 AND_CDCU_BatteryKeepTempReq 1
+CDCU_BatteryKeepTempReq 0 8 Unsigned
+Msg:0x22F2 AND_SoldierThresholdSetting 12
+high 0 32 Signed
+middle 0 32 Signed
+low 0 32 Signed
+Msg:0x22F1 AND_CDCU_Vlimit_Stop_ACK 1
+CDCU_Vlimit_Stop_ACK 0 8 Unsigned
+Msg:0x22EF AND_CDCU_SoldierEnable 1
+CDCU_SoldierEnable 0 8 Unsigned
+Msg:0x22EE AND_CPDAlarmHarzardLightReq 1
+CPDAlarmHarzardLightReq 0 8 Unsigned
+Msg:0x22ED AND_CDCU_TBOX_AppointKeepTemp 3
+CDCU_TBOX_AppointKeepTempFlag 0 8 Unsigned
+CDCU_AppointKeepTemphour 0 8 Unsigned
+CDCU_AppointKeepTempmin 0 8 Unsigned
+Msg:0x22ED AND_CDCU_TBOX_AppointKeepTemp 3
+CDCU_TBOX_AppointKeepTempFlag 0 8 Unsigned
+CDCU_AppointKeepTemphour 0 8 Unsigned
+CDCU_AppointKeepTempmin 0 8 Unsigned
+Msg:0x22EC AND_CPDAlarmHornReq 1
+CPDAlarmHornReq 0 8 Unsigned
+Msg:0x22E4 AND_CDU_XPU_Lightchange 1
+CDU_XPU_Lightchange 0 8 Unsigned
+Msg:0x22E5 AND_CDU_NGPDriverconfirmLCSw 1
+CDU_NGPDriverconfirmLCSw 0 8 Unsigned
+Msg:0x22E9 AND_CDCU_APP_AccountFB 1
+CDCU_APP_AccountFB 0 8 Unsigned
+Msg:0x23E3 AND_CDU_NGPSwRe1 1
+CDU_NGPSwRe1 0 8 Unsigned
+Msg:0x23E4 AND_CDU_NGPSwRe2 1
+CDU_NGPSwRe2 0 8 Unsigned
+Msg:0x23E6 AND_CDU_NGPSwRe4 1
+CDU_NGPSwRe4 0 8 Unsigned
+Msg:0x23E7 AND_CDU_NGPSwRe5 1
+CDU_NGPSwRe5 0 8 Unsigned
+Msg:0x23FF AND_CDCU_AppointChrgPos 1
+CDCU_AppointChrgPos 0 8 Unsigned
+Msg:0x2400 AND_ATLS_ThemefirstColorCfg 1
+ThemefirstColorCfg 0 8 Unsigned
+Msg:0x2401 AND_ATLS_ThemeSecondColorCfg 1
+ThemeSecondColorCfg 0 8 Unsigned
+Msg:0x2402 AND_ATLS_BrightnessSw 1
+BrightnessSw 0 8 Unsigned
+Msg:0x2403 AND_ATLS_BrightnessCfg 1
+BrightnessCfg 0 8 Unsigned
+Msg:0x2404 AND_ATLS_ThemeColorSwCfg 1
+ThemeColorSwCfg 0 8 Unsigned
+Msg:0x2410 AND_CDU_ATLS_Ctrl 8
+CDU_ATLS_Ctrl 8 8 Unsigned
+Msg:0x2420 AND_ATLS_MULTICTRL 8
+MULTICTRL 8 8 Unsigned
+Msg:0x2430 AND_ATLS_ALLCTRL 64
+ALLCTRL 64 8 Unsigned
+Msg:0x2405 AND_ATLS_Sw 1
+ATLS_Sw 1 8 Unsigned
+Msg:0x2406 AND_ATLS_LIN2 8
+ATLS_LIN2 8 8 Unsigned
+Msg:0x2407 AND_ATLS_LIN3 8
+ATLS_LIN3 8 8 Unsigned
+Msg:0x2408 AND_ATLS_LIN1 8
+ATLS_LIN1 8 8 Unsigned
+Msg:0x2440 AND_ATLS_LED_ModeCtrl 3
+ATLS_LED_Mode 0 8 Unsigned
+ATLS_LED_Length 0 16 Unsigned
+Msg:0x2441 AND_ATLS_LED_FadingTime 1
+ATLS_LED_FadingTime 0 8 Unsigned
+Msg:0x2442 AND_ATLS_LED_ActiveEnable 2
+ATLS_LED_L_ActiveEnable 0 8 Unsigned
+ATLS_LED_R_ActiveEnable 0 8 Unsigned
+Msg:0x2443 AND_ATLS_LED_FullData_Frame1 250
+ATLS_LED_FullData_Frame1 250 8 Unsigned
+Msg:0x2444 AND_ATLS_LED_FullData_Frame2 250
+ATLS_LED_FullData_Frame2 250 8 Unsigned
+Msg:0x2445 AND_ATLS_LED_FullData_Frame3 250
+ATLS_LED_FullData_Frame3 250 8 Unsigned
+Msg:0x2446 AND_ATLS_LED_SingleLight 4
+ATLS_LED_SingleLight_BL 0 8 Unsigned
+ATLS_LED_SingleLight_R 0 8 Unsigned
+ATLS_LED_SingleLight_G 0 8 Unsigned
+ATLS_LED_SingleLight_B 0 8 Unsigned
+Msg:0x2447 AND_ATLS_LED_SingleColor 131
+ATLS_LED_SingleColor_R 0 8 Unsigned
+ATLS_LED_SingleColor_G 0 8 Unsigned
+ATLS_LED_SingleColor_B 0 8 Unsigned
+ATLS_LED_SingleColor_BL 128 8 Unsigned
+Msg:0x2448 AND_ATLS_LED_SingleBrightness_Frame1 201
+ATLS_LED_SingleBrightness_BL 0 8 Unsigned
+ATLS_LED_SingleBrightness_Frame1 200 8 Unsigned
+Msg:0x2449 AND_ATLS_LED_SingleBrightness_Frame2 184
+ATLS_LED_SingleBrightness_Frame2 184 8 Unsigned
+Msg:0x2601 AND_LLUSw 1
+LLUSw 0 8 Unsigned
+Msg:0x2602 AND_LLUWakewaitSw 1
+LLUWakewaitSw 0 8 Unsigned
+Msg:0x2603 AND_LLUShowoffSw 1
+LLUShowoffSw 0 8 Unsigned
+Msg:0x2604 AND_LLUSleepSw 1
+LLUSleepSw 0 8 Unsigned
+Msg:0x2605 AND_LLUChargingSw 1
+LLUChargingSw 0 8 Unsigned
+Msg:0x2606 AND_LLUPhotoSw 1
+LLUPhotoSw 0 8 Unsigned
+Msg:0x2607 AND_LLU_Ctrl 8
+LLU_Ctrl 8 8 Unsigned
+Msg:0x2608 AND_LLU_WakewaitCfg 1
+LLU_WakewaitCfg 0 8 Unsigned
+Msg:0x2609 AND_LLU_ShowoffCfg 1
+LLU_ShowoffCfg 0 8 Unsigned
+Msg:0x260A AND_LLU_SleepCfg 1
+LLU_SleepCfg 0 8 Unsigned
+Msg:0x260B AND_LLU_BreathModeSw 1
+LLU_BreathModeSw 0 8 Unsigned
+Msg:0x260C AND_LLU_SelfActive 1
+CDU_LLU_SelfActive 0 8 Unsigned
+Msg:0x260D AND_LLU_LockUnLockCfg 1
+LLU_LockUnLockCfg 0 8 Unsigned
+Msg:0x260E AND_LLU_PhotoCfg 1
+LLU_PhotoCfg 0 8 Unsigned
+Msg:0x260F AND_LLU_BreathModeCfg 1
+LLU_BreathModeCfg 0 8 Unsigned
+Msg:0x2610 AND_LLU_ACChargingCfg 1
+LLU_ACChargingCfg 0 8 Unsigned
+Msg:0x2611 AND_LLU_DCChargingCfg 1
+LLU_DCChargingCfg 0 8 Unsigned
+Msg:0x2612 AND_LLU_UnlockSOCDsp 1
+CDU_LLU_UnlockSOCDsp 0 8 Unsigned
+Msg:0x2613 AND_LLU_LockSOCDsp 1
+CDU_LLU_LockSOCDsp 0 8 Unsigned
+Msg:0x2614 AND_LLU_FindCarCfg 1
+CDU_LLU_FindCarCfg 0 8 Unsigned
+Msg:0x2615 AND_LLU_lockUnlockSOCDsp 1
+CDU_LLU_lockUnlockSOCDsp 0 8 Unsigned
+Msg:0x2616 AND_LLU_SpedLimitCfg 1
+LLU_SpedLimitCfg 0 8 Unsigned
+Msg:0x2617 AND_LLU_PersonAngle 1
+CDU_LLU_PersonAngle 0 8 Unsigned
+Msg:0x2618 AND_LLU_PersonWalkdirection 1
+CDU_LLU_PersonWalkdirection 0 8 Unsigned
+Msg:0x2619 AND_LLU_Control 1
+LLU_Control 0 8 Unsigned
+Msg:0x2620 AND_CDU_LLU_ModeCtrl 6
+CDU_MHL_Active 0 8 Unsigned
+CDU_LHL_Active 0 8 Unsigned
+CDU_RHL_Active 0 8 Unsigned
+CDU_MRL_Active 0 8 Unsigned
+CDU_LRL_Active 0 8 Unsigned
+CDU_RRL_Active 0 8 Unsigned
+Msg:0x2621 AND_CDU_Self_Control_Front_Data 200
+CDU_Self_Control_Front_Data 200 8 Unsigned
+Msg:0x2622 AND_CDU_Self_Control_Rear_Data 200
+CDU_Self_Control_Rear_Data 200 8 Unsigned
+Msg:0x2623 AND_CDU_Self_Control_Data 98
+CDU_Self_Control_Data 98 8 Unsigned
+Msg:0x2624 AND_CDU_Self_Control_Data 178
+CDU_Self_Control_Data 178 8 Unsigned
+Msg:0x2625 AND_CDU_Self_Control_Data 191
+CDU_Self_Control_Data 191 8 Unsigned
+Msg:0x2800 AND_CDCU_HandleAutoSw 1
+CDCU_HandleAutoSw 0 8 Unsigned
+Msg:0x2801 AND_CDCU_NetSt 1
+CDCU_NetSt 0 8 Unsigned
+Msg:0x2C00 AND_ADAS_Meta 8
+NetSt 8 8 Unsigned
+Msg:0x2C01 AND_ADAS_Position 8
+ADAS_Position 8 8 Unsigned
+Msg:0x2C02 AND_ADAS_ProfLong 8
+ADAS_ProfLong 8 8 Unsigned
+Msg:0x2C03 AND_ADAS_ProfShort 8
+ADAS_ProfShort 8 8 Unsigned
+Msg:0x2C04 AND_ADAS_Segment 8
+ADAS_Segment 8 8 Unsigned
+Msg:0x2C05 AND_ADAS_Stub 8
+ADAS_Stub 8 8 Unsigned
+Msg:0x06F1 AND_ADAS_MainRoadSpdLmt 1
+MainRoadSpdLmt 0 8 Unsigned
+Msg:0x10FF AND_AVM_DisplayMode 1
+DisplayMode 0 8 Unsigned
+Msg:0x10FE AND_XPU_Calibration 1
+Calibration 0 8 Unsigned
+Msg:0x10FD AND_XPU_OverlayWorkSt 1
+OverlayWorkSt 0 8 Unsigned
+Msg:0x10FC AND_XPU_TranspChassisWorkSt 1
+TranspChassisWorkSt 0 8 Unsigned
+Msg:0x10FB AND_XPU_FineTuneMode 1
+FineTuneMode 0 8 Unsigned
+Msg:0x10F7 AND_XPU_DisplayMode 5
+DisplayMode 0 8 Unsigned
+Calibration 0 8 Unsigned
+OverlayWorkSt 0 8 Unsigned
+TranspChassisWorkSt 0 8 Unsigned
+FineTuneMode 0 8 Unsigned
+Msg:0x10F6 AND_CDCU_3603Dangle 2
+CDCU_3603Dangle 0 16 Unsigned
+Msg:0x10F5 AND_CDCU_XPU_TranBody 1
+CDCU_XPU_TranBody 0 8 Unsigned
+Msg:0x10F4 AND_CDCU_XPU_3DAirWallSt 1
+CDCU_XPU_3DAirWallSt 0 8 Unsigned
+Msg:0x1CFF AND_CDCU_XPU_AutoPkCmd 1
+CDCU_XPU_AutoPkCmd 0 8 Unsigned
+Msg:0x1CFE AND_CDCU_XPU_UradarAlarmSw 1
+CDCU_XPU_UradarAlarmSw 0 8 Unsigned
+Msg:0x1CFD AND_CDCU_XPU_ReceiveID 1
+CDCU_XPU_ReceiveID 0 8 Unsigned
+Msg:0x1CFC AND_CDCU_XPU_ChoseID 1
+CDCU_XPU_ChoseID 0 8 Unsigned
+Msg:0x1CFB AND_CDCU_XPU_SuperPkAct 1
+CDCU_XPU_SuperPkAct 0 8 Unsigned
+Msg:0x1CFA AND_CDCU_XPU_RemoteCtrlBtn 1
+CDCU_XPU_RemoteCtrlBtn 0 8 Unsigned
+Msg:0x1CF9 AND_SCU_PhoneCtrlBtn 1
+SCU_PhoneCtrlBtn 0 8 Unsigned
+Msg:0x1CF8 AND_CDCU_XPU_PkBtn 1
+CDCU_XPU_PkBtn 0 8 Unsigned
+Msg:0x1CF7 AND_CDCU_XPU_RemotePkBtn 1
+CDCU_XPU_RemotePkBtn 0 8 Unsigned
+Msg:0x1CF6 AND_CDCU_XPU_PhonePkBtn 1
+CDCU_XPU_PhonePkBtn 0 8 Unsigned
+Msg:0x1CF5 AND_CDCU_XPU_RemoteDriveBtn 1
+CDCU_XPU_RemoteDriveBtn 0 8 Unsigned
+Msg:0x1CF4 AND_CDCU_XPU_APAFreeParking 16
+CDCU_XPU_APAFreeParking 16 8 Unsigned
+Msg:0x1CEF AND_CDCU_XPU_Test 1
+CDCU_XPU_Test 0 8 Unsigned
+Msg:0x1CE9 AND_CDCU_XPU_LocatWeather 2
+CDCU_XPU_LocatWeather 0 8 Unsigned
+ValidFlag 0 8 Unsigned
+Msg:0x1CE8 AND_CDCU_XPU_CurHumi 1
+CDCU_XPU_CurHumi 0 8 Unsigned
+Msg:0x1CE7 AND_CDCU_XPU_CurTemp 1
+CDCU_XPU_CurTemp 0 8 Unsigned
+Msg:0x1CE0 AND_CDCU_XPU_RoadAttribute_RD 1
+CDCU_XPU_RoadAttribute_RD 0 8 Unsigned
+Msg:0x1CDF AND_CDCU_XPU_ParkingStyle 1
+CDCU_XPU_ParkingStyle 0 8 Unsigned
+Msg:0x1CDE AND_CDCU_XPU_HomeSlotID 1
+CDCU_XPU_HomeSlotID 0 8 Unsigned
+Msg:0x1CDC AND_CDCU_XPU_RoadAttribute_PK 1
+CDCU_XPU_RoadAttribute_PK 0 8 Unsigned
+Msg:0x1CD9 AND_CDCU_XPU_SCPSw 1
+CDCU_XPU_SCPSw 0 8 Unsigned
+Msg:0x1CD8 AND_CDCU_XPU_ApRemote_Sw 1
+CDCU_XPU_ApRemote_Sw 0 8 Unsigned
+Msg:0x1CD7 AND_CDCU_XPU_AP_Sw 1
+CDCU_XPU_AP_Sw 0 8 Unsigned
+Msg:0x1CD6 AND_CDCU_RAEBSwSt 1
+CDCU_RAEBSwSt 0 8 Unsigned
+Msg:0x1CCC AND_CDCU_ParkingGround_state 1
+CDCU_ParkingGround_state 0 8 Unsigned
+Msg:0x1CCB AND_CDCU_XPU_Formway_RD 1
+CDCU_XPU_Formway_RD 0 8 Unsigned
+Msg:0x1CCA AND_CDCU_XPU_RoadLinkType_RD 1
+CDCU_XPU_RoadLinkType_RD 0 8 Unsigned
+Msg:0x1CC9 AND_CDCU_XPU_EventInfo_RD 1
+CDCU_XPU_EventInfo_RD 0 8 Unsigned
+Msg:0x1CC8 AND_CDCU_LSSSenSwSt 1
+CDCU_LSSSenSwSt 0 8 Unsigned
+Msg:0x1CC7 AND_CDCU_SCU_GROUP 7
+CDCU_XPU_DangerAreaLoc_RD 0 8 Unsigned
+CDCU_XPU_DangerLane_RD 0 8 Unsigned
+CDCU_XPU_DangerLaneNum_RD 0 8 Unsigned
+CDCU_XPU_DangerType_RD 0 8 Unsigned
+CDCU_XPU_DangerLever_RD 0 8 Unsigned
+CDCU_XPU_DangerPro_RD 0 8 Unsigned
+CDCU_XPU_DangerAct_RD 0 8 Unsigned
+Msg:0x1CC6 AND_CDCU_RadarEmissionSwSt 1
+CDCU_RadarEmissionSwSt 0 8 Unsigned
+Msg:0x20FF AND_CDCU_FCWAEBSwSt 1
+CDCU_FCWAEBSwSt 0 8 Unsigned
+Msg:0x20FE AND_CDCU_LDW_LKASwSt 1
+CDCU_LDW_LKASwSt 0 8 Unsigned
+Msg:0x20FD AND_CDCU_IHBSwSt 1
+CDCU_IHBSwSt 0 8 Unsigned
+Msg:0x20FA AND_CDCU_BSDSwSt 1
+CDCU_BSDSwSt 0 8 Unsigned
+Msg:0x20F9 AND_CDCU_RCTASwSt 1
+CDCU_RCTASwSt 0 8 Unsigned
+Msg:0x20F8 AND_CDCU_RCWSwSt 1
+CDCU_RCWSwSt 0 8 Unsigned
+Msg:0x20F7 AND_CDCU_DOWSwSt 1
+CDCU_DOWSwSt 0 8 Unsigned
+Msg:0x20F6 AND_CDCU_LCSSwSt 1
+CDCU_LCSSwSt 0 8 Unsigned
+Msg:0x20F5 AND_CDCU_DSMSwSt 1
+CDCU_DSMSwSt 0 8 Unsigned
+Msg:0x20F1 AND_CDCU_ISLCSwSt 1
+CDCU_ISLCSwSt 0 8 Unsigned
+Msg:0x20D7 AND_CDCU_NGPOptimalLaneSw 1
+CDCU_NGPOptimalLaneSw 0 8 Unsigned
+Msg:0x20D6 AND_CDCU_NGPULCSw 1
+CDCU_NGPULCSw 0 8 Unsigned
+Msg:0x20CF AND_CDCU_LDWVibrationSwSt 1
+CDCU_LDWVibrationSwSt 0 8 Unsigned
+Msg:0x2100 AND_CDCU_ISLCSpeedRange 1
+CDCU_ISLCSpeedRange 0 8 Unsigned
+Msg:0x2101 AND_CDCU_ISLCDriverSet 1
+CDCU_ISLCDriverSet 0 8 Unsigned
+Msg:0x20E1 AND_CDCU_LCCSwSt 1
+CDCU_LCCSwSt 0 8 Unsigned
+Msg:0x20E3 AND_CDCU_XPU_ULCLightRemindSw 1
+CDCU_XPU_ULCLightRemindSw 0 8 Unsigned
+Msg:0x20E5 AND_CDCU_ELKSwSt 1
+CDCU_ELKSwSt 0 8 Unsigned
+Msg:0x20E6 AND_CDCU_XPU_NRABtn 1
+CDCU_XPU_NRABtn 0 8 Unsigned
+Msg:0x20E7 AND_CDCU_SLIFSoundSwSt 1
+CDCU_SLIFSoundSwSt 0 8 Unsigned
+Msg:0x20E8 AND_CDCU_SLWFVoiceSwSt 1
+CDCU_SLWFVoiceSwSt 0 8 Unsigned
+Msg:0x20EA AND_CDCU_XPU_Command 1
+CDCU_XPU_Command 0 8 Unsigned
+Msg:0x20EB AND_CDCU_ADAS_EleeyeSpdDis 2
+CDCU_ADAS_EleeyeSpdDis 0 16 Unsigned
+Msg:0x20ED AND_CDCU_ADAS_Eleeye_RangeSpdLmt 1
+CDCU_ADAS_Eleeye_RangeSpdLmt 0 8 Unsigned
+Msg:0x20EF AND_XPU_MSBActveSt 1
+ActSwCfg 0 8 Unsigned
+Msg:0x22E3 AND_CDCU_XPU_NEDC_Status 1
+CDCU_XPU_NEDC_Status 0 8 Unsigned
+Msg:0x22E6 AND_CDCU_XPU_NGPSROpeButtonSw 1
+CDCU_XPU_NGPSROpeButtonSw 0 8 Unsigned
+Msg:0x22E7 AND_CDCU_XPU_NGPAvoidTruckSw 1
+CDCU_XPU_NGPAvoidTruckSw 0 8 Unsigned
+Msg:0x22E8 AND_CDCU_XPU_NGPSw 1
+CDCU_XPU_NGPSw 0 8 Unsigned
+Msg:0x23E1 AND_CDCU_XPU_NGP_SRRemindType 1
+CDCU_XPU_NGP_SRRemindType 0 8 Unsigned
+Msg:0x23E2 AND_CDCU_XPU_NGPLaneChangeModeSw 1
+CDCU_XPU_NGPLaneChangeModeSw 0 8 Unsigned
+Msg:0x23E8 AND_CDCU_XPU_VoiceLaneChangeSw 1
+CDCU_XPU_VoiceLaneChangeSw 0 8 Unsigned
+Msg:0x23E9 AND_CDCU_ADAS_Meta_CountryCode 2
+CDCU_ADAS_Meta_CountryCode 0 16 Unsigned
+Msg:0x23EA AND_CDCU_ADAS_Meta_SpdUnits 1
+CDCU_ADAS_Meta_SpdUnits 0 8 Unsigned
+Msg:0x23EB AND_CDCU_ADAS_Topspeed 1
+CDCU_ADAS_Topspeed 0 8 Unsigned
+Msg:0x23EC AND_CDCU_OMS_PicSw 1
+CDCU_OMS_PicSw 0 8 Unsigned
+Msg:0x2002 AND_CDCU_LCCCrossLineSetSw 1
+CDCU_LCCCrossLineSetSw 0 8 Unsigned
+Msg:0x23DE AND_CDCU_LCCStopLineSetSw 1
+CDCU_LCCStopLineSetSw 0 8 Unsigned
+Msg:0x23DD AND_CDCU_NaviRemDist 2
+CDCU_NaviRemDist 0 16 Unsigned
+Msg:0x23E5 AND_CDCU_CityNGPSw 1
+CDCU_CityNGPSw 0 8 Unsigned
+Msg:0x23DB AND_CDCU_LDW_LKA_ELK_SwSt 1
+CDCU_LDW_LKA_ELK_SwSt 0 8 Unsigned
+Msg:0x23DC AND_CDCU_AEBSenSt 1
+CDCU_AEBSenSt 0 8 Unsigned
+Msg:0x23DA AND_CDCU_NGPCustomSpdSw 1
+CDCU_NGPCustomSpdSw 0 8 Unsigned
+Msg:0x23D9 AND_CDCU_NGPCustomSpdCount1 1
+CDCU_NGPCustomSpdCount1 0 8 Unsigned
+Msg:0x23D8 AND_CDCU_NGPCustomSpdCount2 1
+CDCU_NGPCustomSpdCount2 0 8 Unsigned
+Msg:0x23D7 AND_CDCU_XminerAvailableSt 1
+CDCU_XminerAvailableSt 0 8 Unsigned
+Msg:0x23D6 AND_CDCU_TiredDistractionSwSt 1
+CDCU_TiredDistractionSwSt 0 8 Unsigned
+Msg:0x23D5 AND_CDCU_XPU_NGPCustomETCSw 1
+CDCU_XPU_NGPCustomETCSw 0 8 Unsigned
+Msg:0x23D4 AND_CDCU_XPU_ULCRemindSw 1
+CDCU_XPU_ULCRemindSw 0 8 Unsigned
+Msg:0x23D3 AND_CDCU_FreeNGPSetSw 1
+CDCU_FreeNGPSetSw 0 8 Unsigned
+Msg:0x23D2 AND_CDCU_XPU_LearningReq 1
+CDCU_XPU_LearningReq 0 8 Unsigned
+Msg:0x23D1 AND_CDCU_XPU_RTActReq 1
+CDCU_XPU_RTActReq 0 8 Unsigned
+Msg:0x22CD AND_CDCU_DSMSenSwSt 1
+CDCU_DSMSenSwSt 0 8 Unsigned
+Msg:0x22CC AND_CDCU_XPU_ResetReq 1
+CDCU_XPU_ResetReq 0 8 Unsigned
+Msg:0x22CB AND_CDCU_XPU_XminerTrigger 1
+CDCU_XPU_XminerTrigger 0 8 Unsigned
+Msg:0x22CA AND_CDCU_DSM_DDAWSwSt 1
+CDCU_DSM_DDAWSwSt 0 8 Unsigned
+Msg:0x22C9 AND_CDCU_XPU_ADASFunctionLampSw 1
+CDCU_XPU_ADASFunctionLampSw 0 8 Unsigned
+Msg:0x22C8 AND_CDCU_XPU_HODsw 1
+CDCU_XPU_HODsw 0 8 Unsigned
+Msg:0x22C7 AND_ActivateXpilot 1
+ActivateXpilot 0 8 Unsigned
+Msg:0x22C6 AND_CDCU_DSMManualSwSt 1
+CDCU_DSMManualSwSt 0 8 Unsigned
+Msg:0x22C5 AND_CDCU_AdasOneClickSw 1
+CDCU_AdasOneClickSw 0 8 Unsigned
+Msg:0x22C4 AND_CDCU_CDUAction 1
+CDCU_CDUAction 0 8 Unsigned
+Msg:0x22C3 AND_CDCU_MapdataAvailableSt 1
+CDCU_MapdataAvailableSt 0 8 Unsigned
+Msg:0x22CE AND_CDCU_EnergyMode 1
+EnergyMode 0 8 Unsigned
+Msg:0x5030 AND_CDCU_ADAS_Seg_EffSpdLmtType 1
+CDCU_ADAS_Seg_EffSpdLmtType 0 8 Unsigned
+Msg:0x5031 AND_ADAS_ProfShort_ProfType 4
+CDCU_ADAS_EleeyeSpdLmt 0 16 Unsigned
+CDCU_ADAS_EleeyeSpdLmtDis 0 16 Unsigned
+Msg:0x5032 CDCU_ADAS_Navi_Type 1
+CDCU_ADAS_Navi_Type 0 8 Unsigned
+Msg:0x3001 AND_CDU_iBCM_SC_initialization 1
+CDU_iBCM_SC_initialization 0 8 Unsigned
+Msg:0x3002 AND_CDU_iBCM_SC_PosCmd 1
+CDU_iBCM_SC_PosCmd 0 8 Unsigned
+Msg:0x3003 AND_CDU_iBCM_SC_ComfortCmd 1
+CDU_iBCM_SC_ComfortCmd 0 8 Unsigned
+Msg:0x3004 AND_CDCU_SWSCtrlSceneSt 1
+CDCU_SWSCtrlSceneSt 0 8 Unsigned
+Msg:0x3005 AND_CDCU_DolbyAtomsSw 1
+CDCU_DolbyAtomsSw 0 8 Unsigned
+Msg:0x3007 AND_CDCU_AMP_DynSDVCLevSW 1
+CDCU_AMP_DynSDVCLevSW 0 8 Unsigned
+Msg:0x3008 AND_CDCU_AMP_Dyn3DEffectSW 1
+CDCU_AMP_Dyn3DEffectSW 0 8 Unsigned
+Msg:0x3009 AND_CDCU_AMP_SoundStyleSW 1
+CDCU_AMP_SoundStyleSW 0 8 Unsigned
+Msg:0x300A AND_CDCU_AMP_SoundSourceDolbySt 1
+CDCU_AMP_SoundSourceDolbySt 0 8 Unsigned
+Msg:0x300B AND_CDCU_AMP_SDSSCLevSW 1
+CDCU_AMP_SDSSCLevSW 0 8 Unsigned
+Msg:0x300C AND_CDCU_AMP_MediaMuteReq 1
+CDCU_AMP_MediaMuteReq 0 8 Unsigned
+Msg:0x300D AND_CDCU_AMP_MediaVolume 1
+CDCU_AMP_MediaVolume 0 8 Unsigned
+Msg:0x300E AND_CDCU_AMP_DolbyBassEnhancTypeSw 1
+CDCU_AMP_DolbyBassEnhancTypeSw 0 8 Unsigned
+Msg:0x3200 AND_CDCU_Smartlight_DisplaySwitchReq 1
+CDCU_Smartlight_DisplaySwitchReq 0 8 Unsigned
+Msg:0x3201 AND_SmartLightUnlockReq 1
+SmartLightUnlockReq 0 8 Unsigned
+Msg:0x3202 AND_SmartLightSafelockReq 1
+SmartLightSafelockReq 0 8 Unsigned
+Msg:0x3203 AND_SmartLightStandbyReq 1
+SmartLightStandbyReq 0 8 Unsigned
+Msg:0x3204 AND_SmartLightNorReadtodriveReq 1
+SmartLightNorReadtodriveReq 0 8 Unsigned
+Msg:0x3205 AND_SmartLightAbnorReadtodriveReq 1
+SmartLightAbnorReadtodriveReq 0 8 Unsigned
+Msg:0x3206 AND_SmartLightParkingbreakReq 1
+SmartLightParkingbreakReq 0 8 Unsigned
+Msg:0x3207 AND_SmartLightTurnInstructionsReq 1
+SmartLightTurnInstructionsReq 0 8 Unsigned
+Msg:0x3208 AND_SmartLightLaneChangeReq 1
+SmartLightLaneChangeReq 0 8 Unsigned
+Msg:0x3209 AND_SmaLi_CtrlCmd 1
+SmaLi_CtrlCmd 0 8 Unsigned
+Msg:0x320A AND_SmartLightVoiceAssistantReq 1
+SmartLightVoiceAssistantReq 0 8 Unsigned
+Msg:0x320B AND_SmartLightIncommingCallReq 1
+SmartLightIncommingCallReq 0 8 Unsigned
+Msg:0x320C AND_SmartLightChargingReq 1
+SmartLightChargingReq 0 8 Unsigned
+Msg:0x320D AND_SmartLightBreakwarningReq 1
+SmartLightBreakwarningReq 0 8 Unsigned
+Msg:0x320E AND_SmartLightTurtlemodReq 1
+SmartLightTurtlemodReq 0 8 Unsigned
+Msg:0x320F AND_SmartLightbrightnessReq 1
+SmartLightbrightnessReq 0 8 Unsigned
+Msg:0x3210 AND_SmartLightHandsdetectionReq 1
+SmartLightHandsdetectionReq 0 8 Unsigned
+Msg:0x3211 AND_SmartLightACCReq 1
+SmartLightACCReq 0 8 Unsigned
+Msg:0x3212 AND_SmartLightIPAReq 1
+SmartLightIPAReq 0 8 Unsigned
+Msg:0x3213 AND_SmartLightExtremeHeatingReq 1
+SmartLightExtremeHeatingReq 0 8 Unsigned
+Msg:0x3214 AND_SmartLightExtremeCoolingReq 1
+SmartLightExtremeCoolingReq 0 8 Unsigned
+Msg:0x3215 AND_SmartLightOverspeedReq 1
+SmartLightOverspeedReq 0 8 Unsigned
+Msg:0x3216 AND_SmartLightTravelAssistReq 1
+SmartLightTravelAssistReq 0 8 Unsigned
+Msg:0x3217 AND_SmartLightParkingReq 1
+SmartLightParkingReq 0 8 Unsigned
+Msg:0x3280 AND_CDCU_LogoLightSwitchSt 1
+LogoLightSwitchSt 0 8 Unsigned
+Msg:0x3281 AND_CDCU_SDSSwSt 1
+SDSSwSt 0 8 Unsigned
+Msg:0x3282 AND_CDCU_IncommingCall 1
+IncommingCall 0 8 Unsigned
+Msg:0x3283 AND_CDCU_AmbientLightSwSt 1
+AmbientLightSwSt 0 8 Unsigned
+Msg:0x3284 AND_CDCU_AmbientLightbrightness 1
+AmbientLightbrightness 0 8 Unsigned
+Msg:0x5000 AND_CDU_NavInfo 16
+CDU_NavInfo 16 8 Unsigned
+Msg:0x5001 AND_ADASMapInfo 64
+ADASMapInfo 64 8 Unsigned
+Msg:0x5002 AND_CIU_Ctrl 8
+CIU_Ctrl 8 8 Unsigned
+Msg:0x5003 AND_CDU_CIU_Dvr_Mode 1
+CDU_CIU_Dvr_Mode 0 8 Unsigned
+Msg:0x5004 AND_CDU_CIU_Photo_process 1
+CDU_CIU_Photo_process 0 8 Unsigned
+Msg:0x5005 AND_CDU_CIU_DVR_lock 1
+CDU_CIU_DVR_lock 0 8 Unsigned
+Msg:0x5006 AND_CDU_CIU_Video_output_select 1
+CDU_CIU_Video_output_select 0 8 Unsigned
+Msg:0x5007 AND_CDU_CIU_SD_Format_Req 1
+CDU_CIU_SD_Format_Req 0 8 Unsigned
+Msg:0x5008 AND_CDU_CIU_UID 2
+CDU_CIU_UID 0 16 Unsigned
+Msg:0x5009 AND_CDU_CIU_Face_ID_Set 1
+CDU_CIU_Face_ID_Set 0 8 Unsigned
+Msg:0x500A AND_CDU_CIU_DMS_Set 1
+CDU_CIU_DMS_Set 0 8 Unsigned
+Msg:0x500B AND_CDU_CIU_Distraction_SW 1
+CDU_CIU_Distraction_SW 0 8 Unsigned
+Msg:0x500C AND_CDU_CIU_Delete_upload_Data 1
+CDU_CIU_Delete_upload_Data 0 8 Unsigned
+Msg:0x500D AND_CDU_CIU_RainDetecSen_Req 1
+CDU_CIU_RainDetecSen_Req 0 8 Unsigned
+Msg:0x500E AND_CDU_CIU_Face_ID 1
+CDU_CIU_Face_ID 0 8 Unsigned
+Msg:0x500F AND_CDU_CIU_Delete_FaceID_UID 1
+CDU_CIU_Delete_FaceID_UID 0 8 Unsigned
+Msg:0x5010 AND_AI_CDU_Reg_Hint 1
+AI_CDU_Reg_Hint 0 8 Unsigned
+Msg:0x5011 AND_AI_CDU_Reg_Start_ProcFlow 1
+AI_CDU_Reg_Start_ProcFlow 0 8 Unsigned
+Msg:0x5012 AND_CDU_CIU_FaceActionRq 1
+CDU_CIU_FaceActionRq 0 8 Unsigned
+Msg:0x5013 AND_CDU_CIU_PrimalFaceCancel 1
+CDU_CIU_PrimalFaceCancel 0 8 Unsigned
+Msg:0x5014 AND_AI_CDU_Start_Reg_Flag 1
+AI_CDU_Start_Reg_Flag 0 8 Unsigned
+Msg:0x5015 AND_CDU_CIU_RequestMulti 12
+CDU_CIU_UID 0 32 Unsigned
+CDU_CIU_FaceActionRq 0 32 Unsigned
+CDU_CIU_Face_ID 0 32 Unsigned
+Msg:0x5016 AND_CDU_CIU_DeleteMulti 8
+CDU_CIU_UID 0 32 Unsigned
+CDU_CIU_Delete_FaceID_UID 0 32 Unsigned
+Msg:0x5017 AND_CDU_CIU_RainSW 1
+CDU_CIU_RainSW 0 8 Unsigned
+Msg:0x5018 AND_CDU_CIU_CarWash 1
+CDU_CIU_CarWash 0 8 Unsigned
+Msg:0x5019 AND_CDU_CIU_Fatigue_St 1
+CDU_CIU_Fatigue_St 0 8 Unsigned
+Msg:0x501A AND_CDU_CIU_DMS_Mode_St 1
+CDU_CIU_DMS_Mode_St 0 8 Unsigned
+Msg:0x501B AND_CDU_CIU_Delay_Off 1
+CDU_CIU_Delay_Off 0 8 Unsigned
+Msg:0x501C AND_CDU_CIU_Delivery_Configuration 1
+CDU_CIU_Delivery_Configuration 0 8 Unsigned
+Msg:0x501D AND_CDU_CIU_Configuration_Activation 1
+CDU_CIU_Configuration_Activation 0 8 Unsigned
+Msg:0x501E AND_CDU_CIU_Lightchange 1
+CDU_CIU_Lightchange 0 8 Unsigned
+Msg:0x501F AND_CDU_CIU_DVR_St 1
+CDU_CIU_DVR_St 0 8 Unsigned
+Msg:0x6000 AND_CDCU_NGearWarningSw 1
+CDCU_NGearWarningSw 0 8 Unsigned
+Msg:0x6A01 IVI_MCU_ICM_HMI_DSP_STATE 1
+IcmHmiDspState 0 8 Unsigned
+Msg:0x6A02 IVI_MCU_ICM_RESET_TRIPA 1
+IcmResetTripA 0 8 Unsigned
+Msg:0x6A03 IVI_MCU_ICM_RESET_TRIPB 1
+IcmResetTripB 0 8 Unsigned
+Msg:0x6A04 IVI_MCU_ICM_FORCE_POWER_OFF 1
+IcmForcePowerOff 0 8 Unsigned
+Msg:0x6A05 IVI_MCU_ICM_ALARM_VOICE_INFO 2
+VoiceGenre 0 8 Unsigned
+PlayState 0 8 Unsigned
+Msg:0x6A08 IVI_MCU_ICM_ALARM_VOICE_INFO_2 2
+VoiceGenre 0 8 Unsigned
+PlayState 0 8 Unsigned
+Msg:0x6A06 IVI_MCU_ICM_ALARM_CONFIRM_KEY 1
+KeyValue 0 8 Unsigned
+Msg:0x6A07 IVI_MCU_ICM_P_GEAR_LIM_OFF 1
+PGearLimOff 0 8 Unsigned
+Msg:0x9000 AND_MCU_OTA_YMODEM_SEND 255
+data 255 8 Unsigned
+Msg:0x9001 AND_MCU_OTA_REQ 1
+data 0 8 Unsigned
+Msg:0x9002 AND_MCU_OTA_RESP 1
+data 0 8 Unsigned
+Msg:0x7001 AND_PM_STATE_RSP 8
+data 8 8 Unsigned
+Msg:0x7004 AND_INF_SYNC 64
+data 64 8 Unsigned
+Msg:0x7006 AND_DATA_SYNC 64
+data 64 8 Unsigned
+Msg:0x7008 AND_SYNC_INFO 1
+MaintainMode 0 8 Unsigned
+Msg:0x7013 AND_MAP_INF_INFO 64
+data 64 8 Unsigned
+Msg:0x7020 AND_STOP_MCU_MONITOR 2
+Mode 0 8 Unsigned
+Time 0 8 Unsigned
+Msg:0x7021 AND_PSU_OTA_MSG 10
+PsuResetReq 0 8 Unsigned
+WakeUpSetReq 0 8 Unsigned
+WakeUpSetType 0 8 Unsigned
+WakeUpHour 0 8 Unsigned
+WakeUpMin 0 8 Unsigned
+WakeUpSecond 0 8 Unsigned
+OtaSt 0 8 Unsigned
+reserved 3 8 Unsigned
+Msg:0x7023 AND_TEST_MSG 1
+CanTest 0 8 Unsigned
+Msg:0x7024 AND_REQ_RST_IMMEDIATELY 1
+Request 0 8 Unsigned
+Msg:0x7025 AND_MCU_DVTEST_SWITCH 1
+action 0 8 Unsigned
+Msg:0x7027 AND_MCU_DVTEST_TEMP_CYCLE 1
+cycle 0 8 Unsigned
+Msg:0x7029 AND_MCU_FACEID_ONOFF 1
+FACEID_ONOFF 0 8 Unsigned
+Msg:0x7031 AND_MCU_FACEID_MODE 1
+FACEID_MODE 0 8 Unsigned
+Msg:0x7033 AND_CHARGPORT_TIME_CFG 5
+CHARGPORT_TIME 0 32 Unsigned
+CHARGPORT_TIME_MODE 0 8 Unsigned
+Msg:0x7035 AND_LLU_ScriptParameter 36
+effect_name 0 32 Unsigned
+f_period 0 32 Unsigned
+f_loop 0 32 Unsigned
+f_retain 0 32 Unsigned
+f_data_totally_length 0 32 Unsigned
+r_period 0 32 Unsigned
+r_loop 0 32 Unsigned
+r_retain 0 32 Unsigned
+r_data_totally_length 0 32 Unsigned
+Msg:0x7037 AND_LLU_ScriptData 252
+index 0 32 Unsigned
+Front_Or_Rear 0 32 Unsigned
+Current_Length 0 32 Unsigned
+DATA 60 32 Unsigned
+Msg:0x7039 AND_LLU_ScriptStRequest 1
+RequestSt 0 8 Unsigned
+Msg:0x703B AND_AUTO_POWERDOWN_SWITCH 1
+SwitchSt 0 8 Unsigned
+Msg:0x703D AND_AUTO_POWERDOWN_ACTION 1
+Action 0 8 Unsigned
+Msg:0x7041 AND_OTA_STATUS 1
+ANDROID_OTA_STATUS 0 8 Unsigned
+Msg:0x7043 AND_TIME_TO_COMPLETE_CHARGE_MSG 4
+TIME_TO_COMPLETE_CHARGE_REQ 0 32 Unsigned
+Msg:0x7045 AND_VechFlashHorn 2
+VechFlash 0 8 Unsigned
+VechHorn 0 8 Unsigned
+Msg:0x7047 AND_DEALY_SLEEP 2
+heartbeat 0 8 Unsigned
+Reserved 0 8 Unsigned
+Msg:0x7177 CDCU_TBOX_12VPWR1PowerCfg 1
+CDCU_TBOX_12VPWR1PowerCfg 0 8 Unsigned
+Msg:0x7179 AND_CDCU_LDCU_AppointKeep12VPWR1 4
+CDCU_LDCU_AppointKeep12VPWR1 0 16 Unsigned
+CDCU_AppointKp12VPWR1TempCfg 0 16 Unsigned
+Msg:0x7049 AND_BLE_DATA_RESPONSE 1
+Response 0 8 Unsigned
+Msg:0x7052 AND_MCU_DRIVER_UNINSTALL_RESULT 4
+DriverUnistallresult 0 32 
+Msg:0x7053 IVI_MCU_WIFI_REQ_ACK 1
+Resp 0 8 Unsigned
+Msg:0x7054 IVI_MCU_TBOX_USB_VBUS_CTRL 1
+TboxUsbVBusCtrlCmd 0 8 Unsigned
+Msg:0x7091 AND_CPDWarnCfgSt 1
+CPDWarnCfgSt 0 8 Unsigned
+Msg:0x7093 AND_FACTORY_MODE 1
+FactoryMode 0 8 Unsigned
+Msg:0x7097 AND_SDC_BrakeCloseReq 1
+SDC_BrakeCloseReq 0 8 Unsigned
+Msg:0x7014 ICM_MCU_DisplayScreenInfoRsp 18
+InfoRspType 0 8 Unsigned
+InfoRsp 17 8 Unsigned
+Msg:0x7014 ICM_MCU_DisplayScreenInfoRsp 18
+InfoRsp 18 8 Unsigned
+Msg:0x7015 IVI_MCU_TouchScreenInfoRsp 18
+InfoRspType 0 8 Unsigned
+InfoRsp 17 8 Unsigned
+Msg:0x7015 IVI_MCU_TouchScreenInfoRsp 18
+InfoRsp 18 8 Unsigned
+Msg:0x7016 RFS_MCU_DisplayScreenInfoRsp 18
+InfoRsp 18 8 Unsigned
+Msg:0x7017 RCD_MCU_DisplayScreenInfoRsp 18
+InfoRsp 18 8 Unsigned
+Msg:0x70A0 FID_MCU_DisplayScreenInfoRsp 24
+InfoRsp 24 8 Unsigned
+Msg:0x70A1 ABT_MCU_DisplayScreenInfoRsp 24
+InfoRsp 24 8 Unsigned
+Msg:0x70A2 CDD_MCU_DisplayScreenInfoRsp 24
+InfoRsp 24 8 Unsigned
+Msg:0x0110 4G_MCU_REMOTE_CTRL_REPAIR_MODE_STATUS 4
+State 0 32 Unsigned
+Msg:0xA002 4G_INF_PROTOLVERSION 8
+Major_version 0 32 Unsigned
+Minor_Version 0 32 Unsigned
+Msg:0xA000 AND_UARTP_LB_TEST 4
+Counter 1 32 Unsigned
+Msg:0xA001 4G_MCU_TestDemo 4
+Data 0 32 Unsigned
+Msg:0xA402 4G_MCU_RTC_TIME 12
+sec 0 8 Unsigned
+min 0 8 Unsigned
+hour 0 8 Unsigned
+week 0 8 Unsigned
+day 0 8 Unsigned
+month 0 8 Unsigned
+year 0 16 Unsigned
+mcu_reset_rand 0 32 Unsigned
+Msg:0xA500 4G_MCU_ON_OFF_NOTIFY 4
+state 0 32 Unsigned
+Msg:0xA501 4G_MCU_SYS_MODE 32
+mode 0 32 Unsigned
+remote_control 0 32 Unsigned
+_4g_flashing 0 32 Unsigned
+mcu_flashing 0 32 Unsigned
+cdu_state 0 32 Unsigned
+reserved 12 8 Unsigned
+Msg:0xA502 4G_MCU_SYNC_REQ 8
+mode 0 32 Unsigned
+reserved 0 32 Unsigned
+Msg:0xA603 4G_MCU_EOL_SWITCH_ACK 4
+ack 0 32 Unsigned
+Msg:0xA605 4G_MCU_MODEM_STATE_RESP 16
+csq 0 32 Unsigned
+main_ant_state 0 8 Unsigned
+div_ant_state 0 8 Unsigned
+sim_card_state 0 8 Unsigned
+wwan_net_regster_state 0 8 Unsigned
+base_station_operator 0 8 Unsigned
+service_status 0 8 Unsigned
+nework_radio 0 8 Signed
+voice_call_state 0 8 Unsigned
+data_call_state 3 8 Unsigned
+data_unused0 0 8 Unsigned
+Msg:0xA604 4G_MCU_GNSS_DATA 40
+longitude 0 32 Signed
+latitude 0 32 Signed
+speed_3d 0 32 Signed
+speed_north 0 32 Signed
+speed_east 0 32 Signed
+speed_down 0 32 Signed
+gps_time 0 32 Unsigned
+horizontal_accuracy 0 16 Unsigned
+head_motion 0 16 Signed
+height 0 16 Signed
+speed_accuracy 0 16 Unsigned
+gps_diagnose 0 8 Unsigned
+located_flag 0 8 Unsigned
+data_unused0 0 8 Unsigned
+data_unused1 0 8 Unsigned
+Msg:0xA100 4G_MCU_REMOTE_CTRL_AC_REQ 8
+cmd 0 32 Unsigned
+data 0 32 Unsigned
+Msg:0xA105 4G_MCU_REMOTE_CTRL_DOOR_REQ 4
+cmd 0 32 Unsigned
+Msg:0xA107 4G_MCU_REMOTE_CTRL_HORN_REQ 4
+cmd 0 32 Unsigned
+Msg:0xA109 4G_MCU_REMOTE_CTRL_WINDOW_REQ 4
+cmd 0 32 Unsigned
+Msg:0xA104 4G_MCU_REMOTE_CTRL_HAZARD_LIGHT_REQ 4
+cmd 0 32 Unsigned
+Msg:0xA607 4G_MCU_EOL_SPECIAL_RESP 66
+eol_service_id 0 16 Unsigned
+parameter 64 8 Unsigned
+Msg:0xA200 4G_MCU_DIAG_REQ 520
+diag_service_id 0 16 Unsigned
+ecu_id 0 16 Signed
+req_buf 512 8 Unsigned
+valid_data_lenth 0 32 Unsigned
+Msg:0xA103 4G_MCU_REMOTE_CTRL_CHARGE_REQ 12
+cmd 0 32 Unsigned
+Data 2 32 Unsigned
+Msg:0xA600 4G_MCU_DTC_NOTIFICATION_REQ 8
+dtc_notification_id 0 32 Unsigned
+dtc_nofitication_flag 0 32 Unsigned
+Msg:0xA606 4G_MCU_GNSS_ALG_RESET_RESP 4
+result 0 32 Singed
+Msg:0xA609 4G_MCU_INERTIAL_NAVIGATION_STATUS 4
+inertial_navigation_status 0 32 Unsigned
+Msg:0xA403 4G_MCU_MODEM_INFO 76
+modem_software_ver 16 8 Unsigned
+modem_hardware_ver 16 8 Unsigned
+modem_iccid 20 8 Unsigned
+modem_imei 24 8 Unsigned
+Msg:0xA405 4G_MCU_APN_INFO 108
+apn_index 0 8 Unsigned
+NotUsed 3 8 Unsigned
+pdp_format 0 32 Unsigned
+auth_proto 0 32 Unsigned
+apn_name 32 8 Unsigned
+user_name 32 8 Unsigned
+password 32 8 Unsigned
+Msg:0xA800 4G_MCU_OTA_YMODEM_SEND 517
+data 517 8 Unsigned
+Msg:0xA801 4G_MCU_OTA_REQ 4
+req 0 32 Unsigned
+Msg:0xA802 4G_MCU_OTA_RESP 4
+ack 0 32 Unsigned
+Msg:0xA900 4G_MCU_BLE_AUTH_RESP 16
+seed 0 32 Unsigned
+result 0 8 Unsigned
+ctrlid 0 8 Unsigned
+reserved1 0 8 Unsigned
+reserved2 0 8 Unsigned
+reason 0 32 Unsigned
+action 0 32 Unsigned
+Msg:0xA901 4G_MCU_AES_KEY_REQ 24
+seed 0 32 Unsigned
+action 0 32 Unsigned
+aeskey 16 8 Unsigned
+Msg:0xA60A 4G_MCU_PHY_DATA 36
+ports 0 32 Signed
+comm_stat 0 32 Signed
+phy_id 0 32 Signed
+link_stat 0 32 Signed
+sqi_value 0 32 Signed
+sqi_max 0 32 Signed
+sqi_threshold 0 32 Signed
+send_packets 0 32 Unsigned
+recv_packets 0 32 Unsigned
+Msg:0xA60B 4G_MCU_PHY_RESET_RESP 4
+result 0 32 Signed
+Msg:0xA60C 4G_MCU_PHY_TEST_MODE_RESP 12
+port_id 0 32 Signed
+current_tmode 0 32 Signed
+result 0 32 Signed
+Msg:0xA10B 4G_MCU_REMOTE_CTRL_XPU_TAKE_PHOTO_REQ 4
+cmd 0 32 Unsigned
+Msg:0xA10C 4G_MCU_REMOTE_CTRL_USER_LLU_REQ 4
+cmd 0 32 Unsigned
+Msg:0xA10A 4G_MCU_REMOTE_CTRL_AVAS_REQ 2
+mode 0 8 Unsigned
+FileNum 0 8 Unsigned
+Msg:0xA102 4G_MCU_REMOTE_CTRL_CAMERA_REQ 12
+cmd 0 32 Unsigned
+data 0 32 Signed
+camera_type 0 32 Unsigned
+Msg:0xA108 4G_MCU_REMOTE_CTRL_VERBOSE_REPORT_REQ 4
+cmd 0 32 Unsigned
+Msg:0xA902 4G_MCU_BLE_MAC_REQ 0
+Msg:0xA60D 4G_MCU_PHY_SQI_THRESHOLD_SET_RESP 8
+port_id 0 32 Unsigned
+result 0 32 Unsigned
+Msg:0xA701 4G_MCU_AVP_GMS_MSG 68
+cmdType 0 32 Unsigned
+data 64 8 Unsigned
+Msg:0xA60E 4G_MCU_PHY_ON_OFF_RESP 8
+action 0 32 Unsigned
+result 0 32 Unsigned
+Msg:0xA60F 4G_MCU_DVTEST_SWITCH 4
+action 0 32 Unsigned
+Msg:0xA610 4G_MCU_DVTEST_TEMP_CYCLE 4
+cycle 0 32 Unsigned
+Msg:0xA903 4G_MCU_UNREG_DEFAULT_KEY_RESP 2
+cmd 0 8 Unsigned
+result 0 8 Unsigned
+Msg:0xA409 4G_MCU_GNSS_CHIP_INFO_RESP 44
+hw_version 12 8 Unsigned
+fw_version 16 8 Unsigned
+ptc_version 16 8 Unsigned
+Msg:0xA612 4G_MCU_SET_AIRPLANE_MODE_RESP 4
+result 0 32 Unsigned
+Msg:0xAA00 4G_MCU_NFC_SERVICE_REQ 2
+session 0 8 Unsigned
+status 0 8 Unsigned
+Msg:0xA503 4G_MCU_GPS_ANT_REQ 4
+action 0 32 Unsigned
+Msg:0xA613 4G_MCU_UPLOAD_LOG_RESP 4
+result 0 32 Unsigned
+Msg:0xA614 4G_MCU_GNSS_CHIP_POWER_RESET 0
+Msg:0xA10D 4G_MCU_REMOTE_CTRL_CDU_REQ 4
+cmd 0 32 Unsigned
+Msg:0xAB00 4G_MCU_OTA_NOTIFY 4
+status 0 32 Unsigned
+Msg:0xAB01 4G_MCU_OTA_SET_TIMER_REQ 3
+cmd 0 8 Unsigned
+hour 0 8 Unsigned
+minute 0 8 Unsigned
+Msg:0xAB02 4G_MCU_OTA_WAKEUP_EVENT_RESP 2
+cmd 0 8 Unsigned
+result 0 8 Unsigned
+Msg:0xA10E 4G_MCU_REMOTE_CTRL_RESET_REQ 1
+type 0 8 Unsigned
+Msg:0xA504 4G_MCU_PHY_POWER_CONTROL_REQ 4
+phy_power 0 32 Unsigned
+Msg:0xAA01 4G_MCU_NFC_SERVICE_NOTIFY 2
+seconds 0 8 Unsigned
+code 0 8 Unsigned
+Msg:0xAA02 4G_MCU_NFC_INFO_NOTIFY_ACK 2
+code 0 8 Unsigned
+result 0 8 Unsigned
+Msg:0xA10F 4G_MCU_SOLDIER_THRESHOLD_SETTING 12
+high 0 32 Signed
+middle 0 32 Signed
+low 0 32 Signed
+Msg:0xA408 4G_MCU_MCU_RESET_RAND_ACK 4
+mcu_reset_rand 0 32 Unsigned
+Msg:0xA110 4G_MCU_REMOTE_CTRL_REPAIR_MODE_REQ 4
+State 0 32 Unsigned
+Msg:0xA904 4G_MCU_BLE_SERVICE_REQ 4
+cmd 0 8 Unsigned
+session 0 8 Unsigned
+status 0 8 Unsigned
+reserverd 0 8 Unsigned
+Msg:0xAB03 MSG_ID_OTA_DLY_SLEEP_REQ 4
+State 0 32 Unsigned
+Msg:0xA111 4G_MCU_REMOTE_CTRL_VECHICLE_SET_REQ 12
+cmd 0 32 Unsigned
+sensitivity 0 32 Unsigned
+video_to_phone 0 32 Unsigned
+Msg:0xA506 4G_MCU_SUPERVISOR_MUART_PHY_STATUS 16
+emmc_sdcard 0 8 Unsigned
+emmc_sdcard2 0 8 Unsigned
+rootfs 0 8 Unsigned
+at_dev_monitor_st 0 8 Unsigned
+monitor_2g_st 0 8 Unsigned
+apn0_st 0 8 Unsigned
+apn1_st 0 8 Unsigned
+apn0_ping_st 0 8 Unsigned
+apn1_ping_st 0 8 Unsigned
+AndroidGNSSUseState 0 8 Unsigned
+reserve 0 8 Unsigned
+phy_link_state 0 8 Unsigned
+sqi 0 8 Unsigned
+sqi_threshold 0 8 Unsigned
+crc_upper 0 8 Unsigned
+crc_lower 0 8 Unsigned
+Msg:0xAB04 4G_MCU_OTA_DATA_FORWARD 4
+data 4 8 Unsigned
+Msg:0xAC00 4G_MCU_ECALL_NOTIFY 8
+counter 0 32 Unsigned
+state 0 32 Unsigned
+Msg:0xAC01 4G_MCU_ECALL_BUTTON_TRIGGER_RESP 4
+session 0 32 Unsigned
+Msg:0xAC02 4G_MCU_ECALL_AUTO_TRIGGER_RESP 4
+session 0 32 Unsigned
+Msg:0xAC03 4G_MCU_ECALL_STATUS_LED_CONTROL 4
+status 0 32 Unsigned
+Msg:0xAC04 4G_MCU_ECALL_ERROR_LED_CONTROL 4
+status 0 32 Unsigned
+Msg:0xACF1 4G_MCU_ECALL_BUTTON_TRIGGER_TEST 8
+session 0 32 Unsigned
+op 0 32 Unsigned
+Msg:0xACF2 4G_MCU_ECALL_AUTO_TRIGGER_TEST 8
+session 0 32 Unsigned
+type 0 32 Unsigned
+Msg:0xACF3 4G_MCU_ECALL_NOTIFY_STATE 8
+state 0 32 Unsigned
+counter 0 32 Unsigned
+Msg:0xAD01 4G_MCU_GNSS_IMU_DATA 36
+time 2 32 Unsigned
+gyroX 0 32 Unsigned
+gyroY 0 32 Unsigned
+gyroZ 0 32 Unsigned
+accX 0 32 Unsigned
+accY 0 32 Unsigned
+accZ 0 32 Unsigned
+temp 0 32 Unsigned
+Msg:0xA905 4G_MCU_BLE_DIAG_RESP 12
+status 0 8 Unsigned
+reserved 0 8 Unsigned
+data 10 8 Unsigned
+Msg:0xA617 4G_MCU_EOL_BUF_FORWARD 62
+reserved 0 32 Unsigned
+data 58 8 Unsigned
+Msg:0xA115 4G_MCU_REMOTE_CTRL_SEAT_REQ 12
+cmdtype 0 32 Unsigned
+cmdvalue 0 32 Unsigned
+cmdmode 0 32 Unsigned
+Msg:0xA116 4G_MCU_REMOTE_CTRL_STEERING_WHEEL_HEAT_REQ 8
+cmdtype 0 32 Unsigned
+cmdvalue 0 32 Unsigned
+Msg:0xA112 4G_MCU_REMOTE_CTRL_TRUNK_POWER_REQ 8
+cmdtype 0 32 Unsigned
+poweroff_min 0 32 Unsigned
+Msg:0xA507 4G_MCU_EMMC_LIFE_TIME_RESP 4
+life_time 0 32 Unsigned
+Msg:0xA40C 4G_MCU_SOC_VERSION_DATA 4
+version_data 0 32 Unsigned
+Msg:0xA113 4G_MCU_REMOTE_CTRL_PIGEON_REQ 4
+cmd 0 32 Unsigned
+Msg:0xA114 4G_MCU_REMOTE_CTRL_DEBUG_INFO 4
+debug_info 0 32 Unsigned
+Msg:0xA615 4G_MCU_DIAG_SIMCARD_NUMBER_RES 21
+result 0 8 Unsigned
+phone_number 20 8 Unsigned
+Msg:0xA117 4G_MCU_REMOTE_CTRL_WAKEUP_VEHICLE 4
+cmd 0 32 Unsigned
+Msg:0xA119 4G_MCU_FRIDGE_REQ 4
+Cmd 0 16 Unsigned
+Value 0 16 Unsigned
+Msg:0xA90C 4G_MCU_BLE_MUTUAL_AUTH_DATA 66
+type 0 8 Unsigned
+len 0 8 Unsigned
+data 64 8 Unsigned
+Msg:0xA907 4G_MCU_IOT_DOWNLINK_DATA 8
+data 8 8 Unsigned
+Msg:0xA909 4G_MCU_CHARGING_PILE_REQ 66
+type 0 8 Unsigned
+len 0 8 Unsigned
+cmd 64 8 Unsigned
+Msg:0xA118 4G_MCU_CUSTOM_APPOINT_REQ 8
+cmdtype 0 32 Unsigned
+id 0 8 Unsigned
+weekday 0 8 Unsigned
+hour 0 8 Unsigned
+min 0 8 Unsigned
+Msg:0xA11B 4G_MCU_RC_SOA_WAKEUP_REQ 4
+cmd 0 32 Unsigned
+Msg:0xA11A 4G_MCU_BLE_SOA_AUTH_RESP 4
+ErrorCode 0 16 Unsigned
+Ctrlid 0 8 Unsigned
+reserved 0 8 Unsigned
+Msg:0xA125 AND_OMS_DTC_INFO 2
+ErrorSt 0 16 Unsigned
+Msg:0xA910 MSG_ID_4G_MCU_CAR_KEY_GENERAL_DATA 249
+CommNode 0 8 Unsigned
+data 248 8 Unsigned
+Msg:0xA911 MSG_ID_4G_MCU_CAR_KEY_SYNC_INFO 256
+DataType 0 8 Unsigned
+Length 0 8 Unsigned
+data 254 8 Unsigned
+Msg:0xA121 MSG_ID_4G_MCU_PRE_CHECK 1
+reserved 0 8 Unsigned
+Msg:0xA122 MSG_ID_4G_MCU_ORDER_CONFIG 2
+order_type 0 8 Unsigned
+result 0 8 Unsigned
+Msg:0xA123 MSG_ID_4G_MCU_ORDER_ACTION 8
+order_action 0 8 Unsigned
+order_type 0 8 Unsigned
+order_status 0 8 Unsigned
+end_time_flag 0 8 Unsigned
+start_time_hour 0 8 Unsigned
+start_time_minute 0 8 Unsigned
+end_time_hour 0 8 Unsigned
+end_time_minute 0 8 Unsigned
+Msg:0xFF00 AND_RESPONSE_DIAG 64
+data 64 8 Unsigned
+Msg:0xFF01 AND_REQUEST_DIAG 64
+data 64 8 Unsigned
+Msg:0xFF02 AND_DIAG_HORN_INFO 4
+HornLF 0 8 Unsigned
+HornLR 0 8 Unsigned
+HornRF 0 8 Unsigned
+HornRR 0 8 Unsigned
+Msg:0xFFF1 AND_RESPONSE_C220 3
+data 3 8 Unsigned
+Msg:0xFFF2 AND_RESPONSE_C221 3
+data 3 8 Unsigned
+Msg:0xFFF3 AND_RESPONSE_C222 3
+data 3 8 Unsigned
+Msg:0xFFF4 AND_RESPONSE_C224 3
+data 3 8 Unsigned
+Msg:0xFF21 AND_RESPONSE_0221 2
+data 2 8 Unsigned
+Msg:0xFF22 AND_RESPONSE_0222 1
+data 1 8 Unsigned
+Msg:0xFF23 AND_RESPONSE_0223 1
+data 1 8 Unsigned
+Msg:0xFF24 AND_RESPONSE_0224 2
+data 2 8 Unsigned
+Msg:0xFF25 AND_RESPONSE_0225 4
+data 4 8 Unsigned
+Msg:0xFF26 AND_RESPONSE_0226 4
+data 4 8 Unsigned
+Msg:0xFF27 AND_RESPONSE_0303 1
+data 1 8 Unsigned
+Msg:0xFF28 AND_RESPONSE_0235 2
+data 2 8 Unsigned
+Msg:0xFF31 AND_RESPONSE_DTC_8 1
+data 0 8 Unsigned
+Msg:0xFF32 AND_RESPONSE_DTC_9 1
+data 0 8 Unsigned
+Msg:0xFF33 AND_RESPONSE_DTC_11 1
+data 0 8 Unsigned
+Msg:0xFF34 AND_RESPONSE_DTC_INFO 6
+ErrorModule 0 16 Unsigned
+ErrorCode 0 16 Unsigned
+ErrorSt 0 16 Unsigned
+Msg:0xFFFF AND_INF_PROTOLVERSION 1
+Major_version 0 32 Unsigned
+Minor_Version 0 32 Unsigned
+Msg:0xFFFE AND_UARTP_LB_TEST 4
+Counter 1 32 Unsigned
+[MCUToIVI]
+Msg:0xFFFF MCU_INF_PROTOLVERSION_CDCU 8
+Major_version 0 32 Unsigned
+Minor_Version 0 32 Unsigned
+Msg:0x6001 MCU_ALARM_INDICATOR 64
+DriverPowerLimitedInd 0 8 Unsigned
+LowPowerInd 0 8 Unsigned
+SrsSystemInd 0 8 Unsigned
+BrakeSystemFailueInd 0 8 Unsigned
+AbsSystemInd 0 8 Unsigned
+EspInd 0 8 Unsigned
+EspOffInd 0 8 Unsigned
+AvhSystemInd 0 8 Unsigned
+TpmsSystemInd 0 8 Unsigned
+EpbErrorInd 0 8 Unsigned
+EpbStateInd 0 8 Unsigned
+EpsSystemInd 0 8 Unsigned
+BatteryChargingSystemInd 0 8 Unsigned
+ElectricalSystemFailureInd 0 8 Unsigned
+MotorAndControllerHotInd 0 8 Unsigned
+PowerBatteryHotInd 0 8 Unsigned
+PowerBatteryErrorInd 0 8 Unsigned
+PowerBatteryOffInd 0 8 Unsigned
+PowerTemperatureLowInd 0 8 Unsigned
+DriverBeltInd 0 8 Unsigned
+PsngrBeltInd 0 8 Unsigned
+LeftPsngrSeatBeltInd 0 8 Unsigned
+MidPsngrSeatBeltInd 0 8 Unsigned
+RightPsngrSeatBeltInd 0 8 Unsigned
+CoolingLiquidTempHighInd 0 8 Unsigned
+DriverDoorInd 0 8 Unsigned
+RLDoorInd 0 8 Unsigned
+PsngrDoorInd 0 8 Unsigned
+RRDoorInd 0 8 Unsigned
+BonnetInd 0 8 Unsigned
+TrunkInd 0 8 Unsigned
+BackFogLampInd 0 8 Unsigned
+ParkingLampInd 0 8 Unsigned
+HighBeamInd 0 8 Unsigned
+LowBeamInd 0 8 Unsigned
+TurnLeftLampInd 0 8 Unsigned
+TurnRightLampInd 0 8 Unsigned
+ReadySystemInd 0 8 Unsigned
+DrivingModeInd 0 8 Unsigned
+ChargingGunConnectedInd 0 8 Unsigned
+HdcInd 0 8 Unsigned
+IhbSmartHighBeamInd 0 8 Unsigned
+AVPInd 0 8 Unsigned
+AutomaticPilotStatusInd 0 8 Unsigned
+AccAndCruiseInd 0 8 Unsigned
+LeftPopUpWindow 0 8 Unsigned
+LeftChargePortOpenInd 0 8 Unsigned
+RightChargePortOpenInd 0 8 Unsigned
+TurnlightQuickFlag 0 8 Unsigned
+WasherFluidWarningInd 0 8 Unsigned
+PsngrSRSCloseInd 0 8 Unsigned
+BrakingInd 0 8 Unsigned
+PressButtonEnterNGear 0 8 Unsigned
+TrailerModeInd 0 8 Unsigned
+AsFaultStInd 0 8 Unsigned
+LeftChargePortFaultInd 0 8 Unsigned
+RightChargePortFaultInd 0 8 Unsigned
+LightSaberInd 0 8 Unsigned
+ThirdLeftPsngrSeatBeltInd 0 8 Unsigned
+ThirdMidPsngrSeatBeltInd 0 8 Unsigned
+ThirdRightPsngrSeatBeltInd 0 8 Unsigned
+IpuErrorInd 0 8 Unsigned
+VMCFaultInd 0 8 Unsigned
+CdcFaultStInd 0 8 Unsigned
+Msg:0x6010 MCU_ALARM_INDICATOR2 64
+LHighBeamOutputInd 0 8 Unsigned
+RHighBeamOutputInd 0 8 Unsigned
+LLowBeamOutputInd 0 8 Unsigned
+RLowBeamOutputInd 0 8 Unsigned
+FLParkingLight1OutputInd 0 8 Unsigned
+FLParkingLight2OutputInd 0 8 Unsigned
+FLParkingLight3OutputInd 0 8 Unsigned
+FMParkingLightOutputInd 0 8 Unsigned
+FRParkingLight1OutputInd 0 8 Unsigned
+FRParkingLight2OutputInd 0 8 Unsigned
+FRParkingLight3OutputInd 0 8 Unsigned
+RLParkingLightOutputInd 0 8 Unsigned
+RMParkingLightOutputInd 0 8 Unsigned
+RRParkingLightOutputInd 0 8 Unsigned
+FLTurnLampOutputInd 0 8 Unsigned
+FRTurnLampOutputInd 0 8 Unsigned
+RLTurnLampOutputInd 0 8 Unsigned
+RMLTurnLampOutputInd 0 8 Unsigned
+RMRTurnLampOutputInd 0 8 Unsigned
+RRTurnLampOutputInd 0 8 Unsigned
+LBrkLightOutputInd 0 8 Unsigned
+MBrkLightOutputInd 0 8 Unsigned
+RBrkLightOutputInd 0 8 Unsigned
+ReversingLampOutputInd 0 8 Unsigned
+RearLogoLightOutputInd 0 8 Unsigned
+ARSOutputInd 0 8 Unsigned
+RMLParkingLightOutputInd 0 8 Unsigned
+RMRParkingLightOutputInd 0 8 Unsigned
+LDRLLampOutputInd 0 8 Unsigned
+RDRLLampOutputInd 0 8 Unsigned
+ALDWInd 0 8 Unsigned
+EAInd 0 8 Unsigned
+WBAInd 0 8 Unsigned
+FWiperSysFaultWarningInd 0 8 Unsigned
+RLSFaultRainInd 0 8 Unsigned
+Reserved 0 8 Unsigned
+LSmartHighBeamWorkingInd 0 8 Unsigned
+AFeSInd 0 8 Unsigned
+TakeoverInd 0 8 Unsigned
+ASwarningYellowLampInd 0 8 Unsigned
+Reserve41 0 8 Unsigned
+Reserve42 0 8 Unsigned
+Reserve43 0 8 Unsigned
+Reserve44 0 8 Unsigned
+Reserve45 0 8 Unsigned
+Reserve46 0 8 Unsigned
+Reserve47 0 8 Unsigned
+Reserve48 0 8 Unsigned
+Reserve49 0 8 Unsigned
+Reserve50 0 8 Unsigned
+Reserve51 0 8 Unsigned
+Reserve52 0 8 Unsigned
+Reserve53 0 8 Unsigned
+Reserve54 0 8 Unsigned
+Reserve55 0 8 Unsigned
+Reserve56 0 8 Unsigned
+Reserve57 0 8 Unsigned
+Reserve58 0 8 Unsigned
+Reserve59 0 8 Unsigned
+Reserve60 0 8 Unsigned
+Reserve61 0 8 Unsigned
+Reserve62 0 8 Unsigned
+Reserve63 0 8 Unsigned
+Reserve64 0 8 Unsigned
+Msg:0x6002 MCU_ALARM_AUTODRIVE_INFO 32
+AccTimeGap 0 8 Unsigned
+SrrFailureSt 0 8 Unsigned
+SrrRlFailureSt 0 8 Unsigned
+SrrRrFailureSt 0 8 Unsigned
+SrrFlFailureSt 0 8 Unsigned
+SrrFrFailureSt 0 8 Unsigned
+TsrOfForbid 0 8 Unsigned
+AutoLaneChange 0 8 Unsigned
+TsrOfSpeed 0 8 Unsigned
+LimitedSpeed 0 8 Unsigned
+PreventHitWallInd 0 8 Unsigned
+FcwImpactWarningFailInd 0 8 Unsigned
+FcwImpactWarningOffInd 0 8 Unsigned
+RearCrashWarningInd 0 8 Unsigned
+RctaLeftWarningInd 0 8 Unsigned
+RctaRightWarningInd 0 8 Unsigned
+LssLdwFaultInd 0 8 Unsigned
+LssLkaFaultInd 0 8 Unsigned
+LssElkFaultInd 0 8 Unsigned
+LCCFailureInd 0 8 Unsigned
+ALCInd 0 8 Unsigned
+NGPInd 0 8 Unsigned
+ISLCSt 0 8 Unsigned
+RaebFaultInd 0 8 Unsigned
+RaebOffInd 0 8 Unsigned
+PreventRearHitWallInd 0 8 Unsigned
+SASFailureInd 0 8 Unsigned
+SpdLmtType 0 8 Unsigned
+Reserve16 0 8 Unsigned
+Reserve17 0 8 Unsigned
+Reserve18 0 8 Unsigned
+Reserve19 0 8 Unsigned
+Msg:0x6003 MCU_ALARM_TEXT 4
+AutoDriveTipsId 0 16 Unsigned
+GeneralTipsId 0 16 Unsigned
+Msg:0x6015 MCU_ALARM_TEXT_HUD 4
+AutoDriveTipsId 0 16 Unsigned
+GeneralTipsId 0 16 Unsigned
+Msg:0x6004 MCU_ALARM_VOICE 4
+AlarmVoiceGenre 0 8 Unsigned
+AlarmVoicePlayTime 0 8 Unsigned
+AlarmVoiceRegion 0 8 Unsigned
+Reserve2 0 8 Unsigned
+Msg:0x6016 MCU_ALARM_VOICE_2 4
+AlarmVoiceGenre 0 8 Unsigned
+AlarmVoicePlayTime 0 8 Unsigned
+AlarmVoiceRegion 0 8 Unsigned
+Reserve2 0 8 Unsigned
+Msg:0x6005 MCU_DRIVING_INFO 36
+DisplayVehSpdFilter 0 8 Unsigned
+ElectricityValue 0 8 Unsigned
+VechiclePowerConfig 0 8 Unsigned
+GearLevel 0 8 Unsigned
+VehiclePowerValue 0 16 Unsigned
+RangeMileageNEDC 0 16 Unsigned
+RangeMileageWLTP 0 16 Unsigned
+OutTemperature 0 8 Unsigned
+BackLightValue 0 8 Unsigned
+ElcConspAvg 0 16 Unsigned
+BackLightDiagnosisAdjustFlag 0 8 Unsigned
+ElcConsp100m 0 8 Unsigned
+SeatHeatSt 0 8 Unsigned
+ScreenBackLightState 0 8 Unsigned
+WindExitSpd 0 8 Unsigned
+AirDistributionMode 0 8 Unsigned
+SeatVentilationSt 0 8 Unsigned
+EAVSweepWindSt 0 8 Unsigned
+AcPowerSt 0 8 Unsigned
+DriverTempSelectSt 0 8 Unsigned
+ResAvailPower 0 8 Unsigned
+TFTColorsDisplay 0 8 Unsigned
+RangeMileageCLTC 0 16 Unsigned
+RangeMileageDynamic 0 16 Unsigned
+RangeDisMode 0 8 Unsigned
+LDCU_TPMSTempWarnFL 0 8 Unsigned
+LDCU_TPMSTempWarnFR 0 8 Unsigned
+LDCU_TPMSTempWarnRL 0 8 Unsigned
+LDCU_TPMSTempWarnRR 0 8 Unsigned
+Reserve11 0 8 Unsigned
+Msg:0x600D MCU_DRIVING_INFO2 40
+TotalOdo 0 32 Unsigned
+MileageSinceCharge 0 32 Unsigned
+MileageSinceIgOn 0 32 Unsigned
+TimeSinceCharge 0 16 Unsigned
+TimeSinceIgOn 0 16 Unsigned
+MileageA 0 32 Unsigned
+MileageB 0 32 Unsigned
+TimeA 0 16 Unsigned
+TimeB 0 16 Unsigned
+VehAvgSpdSinceCharge 0 8 Unsigned
+VehAvgSpdSinceIgOn 0 8 Unsigned
+VehAvgSpdA 0 8 Unsigned
+VehAvgSpdB 0 8 Unsigned
+VehLongAccel 0 16 Unsigned
+VehLateralAccel 0 16 Unsigned
+IpuActTorq 0 16 Unsigned
+LDCU_TPMSFrPrStd 0 8 Unsigned
+LDCU_TPMSRePrStd 0 8 Unsigned
+Msg:0x6013 MCU_DRIVING_INFO3 32
+TotalOdometerHD 0 32 Unsigned
+Reserve1 0 8 Unsigned
+Reserve2 0 8 Unsigned
+Reserve3 0 8 Unsigned
+Reserve4 0 8 Unsigned
+Reserve5 0 8 Unsigned
+Reserve6 0 8 Unsigned
+Reserve7 0 8 Unsigned
+Reserve8 0 8 Unsigned
+Reserve9 0 8 Unsigned
+Reserve10 0 8 Unsigned
+Reserve11 0 8 Unsigned
+Reserve12 0 8 Unsigned
+Reserve13 0 8 Unsigned
+Reserve14 0 8 Unsigned
+Reserve15 0 8 Unsigned
+Reserve16 0 8 Unsigned
+Reserve17 0 8 Unsigned
+Reserve18 0 8 Unsigned
+Reserve19 0 8 Unsigned
+Reserve20 0 8 Unsigned
+Reserve21 0 8 Unsigned
+Reserve22 0 8 Unsigned
+Reserve23 0 8 Unsigned
+Reserve24 0 8 Unsigned
+Reserve25 0 8 Unsigned
+Reserve26 0 8 Unsigned
+Reserve27 0 8 Unsigned
+Reserve28 0 8 Unsigned
+Msg:0x6018 MCU_REEV_DISPLAY_INFO 28
+MillampReq 0 8 Unsigned
+SVSlampReq 0 8 Unsigned
+ReevResAvailPower 0 16 Unsigned
+EMS_StMode 0 8 Unsigned
+EMS_CoolantTemp 0 8 Unsigned
+HPFT_FuelVal 0 16 Unsigned
+EMS_EngSpd 0 16 Unsigned
+EMS_CoolantTempAlert 0 8 Unsigned
+EMS_EngOilPrAlert 0 8 Unsigned
+FuelLowDisp 0 8 Unsigned
+Reserve1 0 8 Unsigned
+Reserve2 0 8 Unsigned
+Reserve3 0 8 Unsigned
+Reserve4 0 8 Unsigned
+Reserve5 0 8 Unsigned
+Reserve6 0 8 Unsigned
+Reserve7 0 8 Unsigned
+Reserve8 0 8 Unsigned
+Reserve9 0 8 Unsigned
+Reserve10 0 8 Unsigned
+Reserve11 0 8 Unsigned
+Reserve12 0 8 Unsigned
+Reserve13 0 8 Unsigned
+Reserve14 0 8 Unsigned
+Reserve15 0 8 Unsigned
+Msg:0x600E MCU_VEHICLE_TYRE_INFO 24
+LeftFrontTyrePressureValue 0 8 Unsigned
+LeftFrontTyreTemperatureState 0 8 Unsigned
+LeftFrontTyrePressureState 0 8 Unsigned
+RightFrontTyrePressureValue 0 8 Unsigned
+RightFrontTyreTemperatureState 0 8 Unsigned
+RightFrontTyrePressureState 0 8 Unsigned
+LeftBackTyrePressureValue 0 8 Unsigned
+LeftBackTyreTemperatureState 0 8 Unsigned
+LeftBackTyrePressureState 0 8 Unsigned
+RightBackTyrePressureValue 0 8 Unsigned
+RightBackTyreTemperatureState 0 8 Unsigned
+RightBackTyrePressureState 0 8 Unsigned
+LeftFrontTyreTemperature 0 8 Unsigned
+RightFrontTyreTemperature 0 8 Unsigned
+LeftBackTyreTemperature 0 8 Unsigned
+RightBackTyreTemperature 0 8 Unsigned
+TireTempWarningFlag 0 8 Unsigned
+SteeringAngle 0 8 Unsigned
+RWSWheelangle 0 8 Unsigned
+Reserve1 0 8 Unsigned
+Reserve2 0 8 Unsigned
+Reserve3 0 8 Unsigned
+Reserve4 0 8 Unsigned
+Reserve5 0 8 Unsigned
+Msg:0x6006 MCU_AUTODRIVER_VEHICLE 72
+Vehicles1Type 0 8 Unsigned
+Vehicles1Color 0 8 Unsigned
+Vehicles1X 0 16 Unsigned
+Vehicles1Y 0 8 Unsigned
+Vehicles1YawAngle 0 8 Unsigned
+Vehicles2Type 0 8 Unsigned
+Vehicles2Color 0 8 Unsigned
+Vehicles2X 0 16 Unsigned
+Vehicles2Y 0 8 Unsigned
+Vehicles2YawAngle 0 8 Unsigned
+Vehicles3Type 0 8 Unsigned
+Vehicles3Color 0 8 Unsigned
+Vehicles3X 0 16 Unsigned
+Vehicles3Y 0 8 Unsigned
+Vehicles3YawAngle 0 8 Unsigned
+Vehicles4Type 0 8 Unsigned
+Vehicles4Color 0 8 Unsigned
+Vehicles4X 0 16 Unsigned
+Vehicles4Y 0 8 Unsigned
+Vehicles4YawAngle 0 8 Unsigned
+Vehicles5Type 0 8 Unsigned
+Vehicles5Color 0 8 Unsigned
+Vehicles5X 0 16 Unsigned
+Vehicles5Y 0 8 Unsigned
+Vehicles5YawAngle 0 8 Unsigned
+Vehicles6Type 0 8 Unsigned
+Vehicles6Color 0 8 Unsigned
+Vehicles6X 0 16 Unsigned
+Vehicles6Y 0 8 Unsigned
+Vehicles6YawAngle 0 8 Unsigned
+Vehicles7Type 0 8 Unsigned
+Vehicles7Color 0 8 Unsigned
+Vehicles7X 0 16 Unsigned
+Vehicles7Y 0 8 Unsigned
+Vehicles7YawAngle 0 8 Unsigned
+Vehicles8Type 0 8 Unsigned
+Vehicles8Color 0 8 Unsigned
+Vehicles8X 0 16 Unsigned
+Vehicles8Y 0 8 Unsigned
+Vehicles8YawAngle 0 8 Unsigned
+Vehicles9Type 0 8 Unsigned
+Vehicles9Color 0 8 Unsigned
+Vehicles9X 0 16 Unsigned
+Vehicles9Y 0 8 Unsigned
+Vehicles9YawAngle 0 8 Unsigned
+Vehicles10Type 0 8 Unsigned
+Vehicles10Color 0 8 Unsigned
+Vehicles10X 0 16 Unsigned
+Vehicles10Y 0 8 Unsigned
+Vehicles10YawAngle 0 8 Unsigned
+Vehicles11Type 0 8 Unsigned
+Vehicles11Color 0 8 Unsigned
+Vehicles11X 0 16 Unsigned
+Vehicles11Y 0 8 Unsigned
+Vehicles11YawAngle 0 8 Unsigned
+Reserve1 0 8 Unsigned
+Reserve2 0 8 Unsigned
+Reserve3 0 8 Unsigned
+Reserve4 0 8 Unsigned
+Reserve5 0 8 Unsigned
+Reserve6 0 8 Unsigned
+Msg:0x6007 MCU_AUTODRIVER_SENSOR 40
+SensorFaultSt 0 8 Unsigned
+UltrasonicRadarSensorSt 0 8 Unsigned
+URadarFolFaultSt 0 8 Unsigned
+URadarFclFaultSt 0 8 Unsigned
+URadarFcrFaultSt 0 8 Unsigned
+URadarForFaultSt 0 8 Unsigned
+URadarFslFaultSt 0 8 Unsigned
+URadarFsrFaultSt 0 8 Unsigned
+URadarRolFaultSt 0 8 Unsigned
+URadarRclFaultSt 0 8 Unsigned
+URadarRcrFaultSt 0 8 Unsigned
+URadarRorFaultSt 0 8 Unsigned
+URadarRslFaultSt 0 8 Unsigned
+URadarRsrFaultSt 0 8 Unsigned
+MillimeterRadarSensorSt 0 8 Unsigned
+MRadarFcFailureSt 0 8 Unsigned
+MRadarFlFailureSt 0 8 Unsigned
+MRadarFrFailureSt 0 8 Unsigned
+MRadarRlFailureSt 0 8 Unsigned
+MRadarRrFailureSt 0 8 Unsigned
+FrontSingleSmartCameraSensorSt 0 8 Unsigned
+FrontThreeFisheEyeCameraSensorSt 0 8 Unsigned
+FrontThreeMainCameraSensorSt 0 8 Unsigned
+FrontThreeNarrowCameraSensorSt 0 8 Unsigned
+DirverPerceptionCameraSensorSt 0 8 Unsigned
+ACameraFrontCFaultSt 0 8 Unsigned
+ACameraLeftFaultSt 0 8 Unsigned
+ACameraRightFaultSt 0 8 Unsigned
+ACameraRearCcFaultSt 0 8 Unsigned
+LookAroundCameraSensorSt 0 8 Unsigned
+SensorFaultTextAlarmId 0 8 Unsigned
+LidarRLDirt 0 8 Unsigned
+LidarRRDirt 0 8 Unsigned
+Reserve3 0 8 Unsigned
+Reserve4 0 8 Unsigned
+Reserve5 0 8 Unsigned
+Reserve6 0 8 Unsigned
+Reserve7 0 8 Unsigned
+Reserve8 0 8 Unsigned
+Reserve9 0 8 Unsigned
+Msg:0x6008 MCU_AUTODRIVER_RADAR 36
+IsRadarActive 0 8 Unsigned
+RadarFDistance 0 8 Unsigned
+RadarRDistance 0 8 Unsigned
+FslDistanceLevel 0 8 Unsigned
+FsrDistanceLevel 0 8 Unsigned
+RslDistanceLevel 0 8 Unsigned
+RsrDistanceLevel 0 8 Unsigned
+FolDistanceLevel 0 8 Unsigned
+FclDistanceLevel 0 8 Unsigned
+FcrDistanceLevel 0 8 Unsigned
+ForDistanceLevel 0 8 Unsigned
+RolDistanceLevel 0 8 Unsigned
+RclDistanceLevel 0 8 Unsigned
+RcrDistanceLevel 0 8 Unsigned
+RorDistanceLevel 0 8 Unsigned
+FslDistance 0 8 Unsigned
+FsrDistance 0 8 Unsigned
+RslDistance 0 8 Unsigned
+RsrDistance 0 8 Unsigned
+FolDistance 0 8 Unsigned
+FclDistance 0 8 Unsigned
+FcrDistance 0 8 Unsigned
+ForDistance 0 8 Unsigned
+RolDistance 0 8 Unsigned
+RclDistance 0 8 Unsigned
+RcrDistance 0 8 Unsigned
+RorDistance 0 8 Unsigned
+Reserve1 0 8 Unsigned
+Reserve2 0 8 Unsigned
+Reserve3 0 8 Unsigned
+Reserve4 0 8 Unsigned
+Reserve5 0 8 Unsigned
+Reserve6 0 8 Unsigned
+Reserve7 0 8 Unsigned
+Reserve8 0 8 Unsigned
+Reserve9 0 8 Unsigned
+Msg:0x6009 MCU_AUTODRIVER_PARKING 16
+ParkingSpace 0 8 Unsigned
+LeftParkingSlot1 0 8 Unsigned
+LeftParkingSlot2 0 8 Unsigned
+LeftParkingSlot3 0 8 Unsigned
+RightParkingSlot1 0 8 Unsigned
+RightParkingSlot2 0 8 Unsigned
+RightParkingSlot3 0 8 Unsigned
+Reserve1 0 8 Unsigned
+Reserve2 0 8 Unsigned
+Reserve3 0 8 Unsigned
+Reserve4 0 8 Unsigned
+Reserve5 0 8 Unsigned
+Reserve6 0 8 Unsigned
+Reserve7 0 8 Unsigned
+Reserve8 0 8 Unsigned
+Reserve9 0 8 Unsigned
+Msg:0x600A MCU_AUTODRIVER_LANE 64
+LLlaneState 0 8 Unsigned
+RRlaneState 0 8 Unsigned
+LeftLaneState 0 8 Unsigned
+RightLaneState 0 8 Unsigned
+LeftLaneLength 0 8 Unsigned
+RightLaneLength 0 8 Unsigned
+LLeftLaneLength 0 8 Unsigned
+RRightLaneLength 0 8 Unsigned
+LeftLaneStart 0 8 Unsigned
+RightLaneStart 0 8 Unsigned
+LLeftLaneStart 0 8 Unsigned
+RRightLaneStart 0 8 Unsigned
+LaneLLC0 0 16 Unsigned
+LaneLC0 0 16 Unsigned
+LaneRC0 0 16 Unsigned
+LaneRRC0 0 16 Unsigned
+LaneLLC1 0 32 Unsigned
+LaneLC1 0 32 Unsigned
+LaneRC1 0 32 Unsigned
+LaneRRC1 0 32 Unsigned
+LaneLLC2 0 16 Unsigned
+LaneLC2 0 16 Unsigned
+LaneRC2 0 16 Unsigned
+LaneRRC2 0 16 Unsigned
+LaneLLC3 0 16 Unsigned
+LaneLC3 0 16 Unsigned
+LaneRC3 0 16 Unsigned
+LaneRRC3 0 16 Unsigned
+RDPLeftWarningSt 0 8 Unsigned
+RDPRightWarningSt 0 8 Unsigned
+BSDLeftWarning 0 8 Unsigned
+BSDRightWarning 0 8 Unsigned
+DOWLeftWarning 0 8 Unsigned
+DOWRightWarning 0 8 Unsigned
+Reserve7 0 8 Unsigned
+Reserve8 0 8 Unsigned
+Reserve9 0 8 Unsigned
+Reserve10 0 8 Unsigned
+Reserve11 0 8 Unsigned
+Reserve12 0 8 Unsigned
+Msg:0x600B MCU_AUTODRIVER_ASSIST 12
+CcOrAccSpeed 0 8 Unsigned
+AlcTargetLaneEndCenterPointX 0 8 Unsigned
+AlcTargetLaneEndCenterPointY 0 16 Unsigned
+AlcTargetLaneEndCenterPointZ 0 8 Unsigned
+NEDCSt 0 8 Unsigned
+SDView 0 8 Unsigned
+TrafficLight 0 8 Unsigned
+FreeNGPState 0 8 Unsigned
+TFLCounter 0 8 Unsigned
+TFLColor 0 8 Unsigned
+Reserve6 0 8 Unsigned
+Msg:0x600C MCU_CHARGE_INFO 32
+ChargeSetState 0 8 Unsigned
+OrderChargeTimeMin 0 8 Unsigned
+OrderChargeTimeHour 0 8 Unsigned
+QuickOrSlowCharge 0 8 Unsigned
+ChargeCompleteTime 0 16 Unsigned
+ChargeVoltage 0 16 Unsigned
+ChargeCurrent 0 16 Unsigned
+BatteryHeatOrColdTime 0 16 Unsigned
+ChargeLimitValue 0 8 Unsigned
+SuperChrgFlg 0 8 Unsigned
+ChargeBattCap 0 16 Unsigned
+DischargeBattCap 0 16 Unsigned
+ChrgPwr 0 16 Unsigned
+DCPreheatOrPrecoolSt 0 8 Unsigned
+FlashChrgDspFlg 0 8 Unsigned
+OrderEndTimeMin 0 8 Unsigned
+OrderEndTimeHour 0 8 Unsigned
+Reserve5 0 8 Unsigned
+Reserve6 0 8 Unsigned
+Reserve7 0 8 Unsigned
+Reserve8 0 8 Unsigned
+Reserve9 0 8 Unsigned
+Reserve10 0 8 Unsigned
+Reserve11 0 8 Unsigned
+Reserve12 0 8 Unsigned
+Msg:0x600F MCU_AUTODRIVE_OBSTACLE 64
+Cone1x 0 8 Unsigned
+Cone2x 0 8 Unsigned
+Cone3x 0 8 Unsigned
+Cone4x 0 8 Unsigned
+Cone5x 0 8 Unsigned
+Cone1y 0 8 Unsigned
+Cone2y 0 8 Unsigned
+Cone3y 0 8 Unsigned
+Cone4y 0 8 Unsigned
+Cone5y 0 8 Unsigned
+Cone1Type 0 8 Unsigned
+Cone2Type 0 8 Unsigned
+Cone3Type 0 8 Unsigned
+Cone4Type 0 8 Unsigned
+Cone5Type 0 8 Unsigned
+Construction_x 0 8 Unsigned
+Construction_y 0 8 Unsigned
+Construction_Type 0 8 Unsigned
+Barriers_x 0 8 Unsigned
+Barriers_y 0 8 Unsigned
+Barriers_Type 0 8 Unsigned
+Reserve7 0 8 Unsigned
+Reserve8 0 8 Unsigned
+Reserve9 0 8 Unsigned
+Reserve10 0 8 Unsigned
+Reserve11 0 8 Unsigned
+Reserve12 0 8 Unsigned
+Reserve13 0 8 Unsigned
+Reserve14 0 8 Unsigned
+Reserve15 0 8 Unsigned
+Reserve16 0 8 Unsigned
+Reserve17 0 8 Unsigned
+Reserve18 0 8 Unsigned
+Reserve19 0 8 Unsigned
+Reserve20 0 8 Unsigned
+Reserve21 0 8 Unsigned
+Reserve22 0 8 Unsigned
+Reserve23 0 8 Unsigned
+Reserve24 0 8 Unsigned
+Reserve25 0 8 Unsigned
+Reserve26 0 8 Unsigned
+Reserve27 0 8 Unsigned
+Reserve28 0 8 Unsigned
+Reserve29 0 8 Unsigned
+Reserve30 0 8 Unsigned
+Reserve31 0 8 Unsigned
+Reserve32 0 8 Unsigned
+Reserve33 0 8 Unsigned
+Reserve34 0 8 Unsigned
+Reserve35 0 8 Unsigned
+Reserve36 0 8 Unsigned
+Reserve37 0 8 Unsigned
+Reserve38 0 8 Unsigned
+Reserve39 0 8 Unsigned
+Reserve40 0 8 Unsigned
+Reserve41 0 8 Unsigned
+Reserve42 0 8 Unsigned
+Reserve43 0 8 Unsigned
+Reserve44 0 8 Unsigned
+Reserve45 0 8 Unsigned
+Reserve46 0 8 Unsigned
+Reserve47 0 8 Unsigned
+Reserve48 0 8 Unsigned
+Reserve49 0 8 Unsigned
+Msg:0x6011 MCU_AND_PSDL_INFO 8
+MessageData 8 8 Unsigned
+Msg:0x6012 MCU_AND_PSDR_INFO 8
+MessageData 8 8 Unsigned
+Msg:0x6014 MCU_RD_PK_MODEL 1
+SignalData 0 8 Unsigned
+Msg:0x9013 MCU_AND_OTA_RESP_VER 6
+SWversion 6 8 Unsigned
+Msg:0x9012 MCU_AND_OTA_RESP 1
+data 0 8 Unsigned
+Msg:0x9011 MCU_AND_OTA_REQ 1
+data 0 8 Unsigned
+Msg:0x9010 MCU_AND_OTA_YMODEM_RCV 1
+data 0 8 Unsigned
+Msg:0xF000 MCU_REQUEST_DIAG 64
+data 64 8 Unsigned
+Msg:0xF001 MCU_RESPONSE_DIAG 64
+data 64 8 Unsigned
+Msg:0xF0F1 MCU_DIAG_C220 2
+data 2 8 Unsigned
+Msg:0xF0F2 MCU_DIAG_C221 4
+data 4 8 Unsigned
+Msg:0xF0F3 MCU_DIAG_C222 2
+data 2 8 Unsigned
+Msg:0xF0F4 MCU_DIAG_C224 4
+data 4 8 Unsigned
+Msg:0xF010 MCU_DIAG_0222 1
+data 1 8 Unsigned
+Msg:0xF011 MCU_DIAG_0223 1
+data 1 8 Unsigned
+Msg:0x7000 MCU_PM_STATE_REQ 8
+data 8 8 Unsigned
+Msg:0x7003 MCU_INF_SYNC 64
+data 64 8 Unsigned
+Msg:0x7005 MCU_DATA_SYNC 32
+data 32 8 Unsigned
+Msg:0x7007 MCU_DATA_BATTERY_ST 1
+data 0 8 Unsigned
+Msg:0x7008 MCU_DATA_BATTERY_VALUE 2
+data 0 16 Unsigned
+Msg:0x7009 MCU_DATA_IG_ST 1
+data 0 8 Unsigned
+Msg:0x700B MCU_DATA_R_CAMERA_ST 1
+data 0 8 Unsigned
+Msg:0x700D MCU_DATA_R_LIGHT_ST 1
+data 0 8 Unsigned
+Msg:0x700F MCU_DATA_BATCHARG_ST 1
+data 0 8 Unsigned
+Msg:0x7010 MCU_PM_REQ 8
+data 8 8 Unsigned
+Msg:0x7011 MCU_SOC_MONITOR_ST 1
+SOCMonitorSt 0 8 Unsigned
+Msg:0x7012 MCU_CDU_BACKLIGHT_CTRL 1
+CduBacklightCtrl 0 8 Unsigned
+Msg:0x7013 MCU_PSN_BACKLIGHT_CTRL 1
+PsnBacklightCtrl 0 8 Unsigned
+Msg:0x7100 MCU_TIME_INFO 4
+second 0 32 Unsigned
+Msg:0x7101 MCU_KEY_1 1
+data 0 8 Unsigned
+Msg:0x7102 MCU_KEY_2 1
+data 0 8 Unsigned
+Msg:0x7103 MCU_KEY_3 1
+data 0 8 Unsigned
+Msg:0x7104 MCU_FAULT_CODE 32
+ID 0 8 Unsigned
+Counter 0 8 Unsigned
+Year 0 8 Unsigned
+Mouth 0 8 Unsigned
+day 0 8 Unsigned
+hours 0 8 Unsigned
+mins 0 8 Unsigned
+second 0 8 Unsigned
+Voltage 0 8 Unsigned
+WakeupResetTime 0 8 Unsigned
+CP_ID 0 8 Unsigned
+Reserved 21 8 Unsigned
+Msg:0x7105 MCU_BLP_ALARM_MSG 1
+BLPAlarm 0 8 Unsigned
+Msg:0x7107 MCU_WLP_ALARM_MSG 1
+WLPAlarm 0 8 Unsigned
+Msg:0x7016 MCU_REPROT_DISPLAY_MSG 32
+data 32 8 Unsigned
+Msg:0x7018 MCU_G_SENSOR_MSG 6
+x 0 16 Unsigned
+y 0 16 Unsigned
+z 0 16 Unsigned
+Msg:0x701A MCU_REPORT_OCU_MSG 1
+OcuSt 0 8 Unsigned
+Msg:0x701C MCU_REPORT_CIU_MSG 1
+CiuSt 0 8 Unsigned
+Msg:0x701B MCU_MSMD_SeatWelcomCfg_FB 1
+SeatWelcomCfg_FB 0 8 Unsigned
+Msg:0x701D MCU_MSMP_SeatWelcomCfg_FB 1
+SeatWelcomCfg_FB 0 8 Unsigned
+Msg:0x701E MCU_MSMD_DrvSeatEasyEntryRcvSts 1
+DrvSeatEasyEntryRcvSts 0 8 Unsigned
+Msg:0x7022 MCU_ACK_TEST_MSG 1
+CanTestResult 0 8 Unsigned
+Msg:0x7024 MCU_DVTEST_BBAT_STATUS 14
+charge_st 0 8 Unsigned
+soc 0 8 Unsigned
+soh 0 8 Unsigned
+connect_st 0 8 Unsigned
+stepup_st 0 8 Unsigned
+discharge_st 0 8 Unsigned
+discharge_current 0 16 Unsigned
+voltage 0 16 Unsigned
+dc_impedance 0 16 Unsigned
+stepup_volt 0 16 Unsigned
+Msg:0x7026 MCU_DVTEST_MCU_TMP 8
+MCU_TMP 0 16 Signed
+BATT_TMP 0 16 Signed
+PCB_TMP 0 16 Signed
+Reserved 0 16 Signed
+Msg:0x7028 MCU_DLT_RECORD 255
+dlt_playload 255 8 Unsigned
+Msg:0x7032 MCU_ATLS_STATE 1
+MCU_ATLS_STATE 0 8 Unsigned
+Msg:0x7033 MCU_ATLS_CONFIG 1
+MCU_ATLS_CONFIG 0 8 Unsigned
+Msg:0x7030 MCU_SOC_LIMIT 1
+SOC_LIMIT 0 8 Unsigned
+Msg:0x7040 MCU_FACEID_ONOFF 1
+FACEID_ONOFF 0 8 Unsigned
+Msg:0x7034 MCU_FACEID_MODE 1
+FACEID_MODE 0 8 Unsigned
+Msg:0x7036 MCU_CHARGPORT_TIME_CFG_FB 5
+CHARGPORT_TIME 0 32 Unsigned
+CHARGPORT_TIME_MODE 0 8 Unsigned
+Msg:0x7038 MCU_PSU_OTA_MSG 4
+ArdSleepTime 0 16 Unsigned
+Reserved 0 16 Unsigned
+Msg:0x703A MCU_SOC_B1_ALARM_STATUS 1
+Status 0 8 Unsigned
+Msg:0x703C MCU_SOC_DIAGNOSTIC_RESET_NOTIFY 4
+DiagnosticResetNotify 0 32 Unsigned
+Msg:0x7042 MCU_LLU_ScriptStResponse 1
+ResponseSt 0 8 Unsigned
+Msg:0x7044 MCU_LLU_SwFB 1
+LLU_SwFB 0 8 Unsigned
+Msg:0x7046 MCU_LLU_FindCarCfgFB 1
+LLU_FindCarFB 0 8 Unsigned
+Msg:0x7048 MCU_LLUWakewaitSwFB 1
+LLU_WakewaitSwFB 0 8 Unsigned
+Msg:0x7050 MCU_LLUSleepSwFB 1
+LLU_SleepSwFB 0 8 Unsigned
+Msg:0x7052 MCU_LLUShowoffSwFB 1
+LLUShowoffSwFB 0 8 Unsigned
+Msg:0x7054 MCU_LLUPhotoSwFB 1
+LLUPhotoSwFB 0 8 Unsigned
+Msg:0x7056 MCU_LLU_lockUnlockSOCDspFB 1
+LLU_lockUnlockSOCDspFB 0 8 Unsigned
+Msg:0x7058 MCU_LLUChargingSwFB 1
+LLUChargingSwFB 0 8 Unsigned
+Msg:0x705A MCU_LLU_LockUnLockCfgFB 1
+LLU_LockUnLockCfgFB 0 8 Unsigned
+Msg:0x7060 MCU_LLU_ACChargingCfgFB 1
+LLU_ACChargingCfgFB 0 8 Unsigned
+Msg:0x7062 MCU_LLU_DCChargingCfgFB 1
+LLU_DCChargingCfgFB 0 8 Unsigned
+Msg:0x7064 MCU_LLU_SpedLimitFB 1
+LLU_SpedLimitFB 0 8 Unsigned
+Msg:0x7066 MCU_RESPONSE_AUTO_POWERDOWN_SWITCH 1
+SwitchSt 0 8 Unsigned
+Msg:0x7068 MCU_SEND_AND_COUNTDOWN_ACTION 1
+Action 0 8 Unsigned
+Msg:0x7069 MCU_SEND_AND_CancelPoweroffSW 1
+data 0 8 Unsigned
+Msg:0x7070 MCU_GET_INFO_MSG 1
+Cmd 0 8 Unsigned
+Msg:0x7072 MCU_LLU_Active 1
+LLU_Active 0 8 Unsigned
+Msg:0x7133 MCU_IVI_ALARM_TEXT 2
+IVI_AutoDriveTipsId 0 16 Unsigned
+Msg:0x7180 MCU_AVAS_Active 1
+AVAS_Active 0 8 Unsigned
+Msg:0x7182 MCU_AVAS_LowSpeedSound_SwFB 1
+AVAS_LowSpeedSound_SwFB 0 8 Unsigned
+Msg:0x7184 MCU_AVAS_LowSpeedSound_FileFB 1
+AVAS_LowSpeedSound_FileFB 0 8 Unsigned
+Msg:0x7186 MCU_AVAS_LowSpeedSound_VolumeFB 1
+AVAS_LowSpeedSound_VolumeFB 0 8 Unsigned
+Msg:0x7188 MCU_AVAS_UnlockLockSound_SwFB 1
+AVAS_UnlockLockSound_SwFB 0 8 Unsigned
+Msg:0x718A MCU_AVAS_UnlockSound_FileFB 1
+AVAS_UnlockSound_FileFB 0 8 Unsigned
+Msg:0x718C MCU_AVAS_LockSound_FileFB 1
+AVAS_LockSound_FileFB 0 8 Unsigned
+Msg:0x718D MCU_AVAS_UnlockLockSound_VolumeFB 1
+AVAS_UnlockLockSound_VolumeFB 0 8 Unsigned
+Msg:0x7190 MCU_AVAS_ChargeSound_SwFB 1
+AVAS_ChargeSound_SwFB 0 8 Unsigned
+Msg:0x7192 MCU_AVAS_ChargeSound_VolumeFB 1
+AVAS_ChargeSound_VolumeFB 0 8 Unsigned
+Msg:0x7194 MCU_AVAS_SocSound_SwFB 1
+AVAS_SocSound_SwFB 0 8 Unsigned
+Msg:0x7196 MCU_AVAS_SocSound_VolumeFB 1
+AVAS_SocSound_VolumeFB 0 8 Unsigned
+Msg:0x7198 MCU_AVAS_LockSound_SwFB 1
+AVAS_LockSound_SwFB 0 8 Unsigned
+Msg:0x719A MCU_AVAS_UnlockSound_SwFB 1
+AVAS_UnlockSound_SwFB 0 8 Unsigned
+Msg:0x7075 MCU_Charg_Appoint 3
+Flag 0 8 Unsigned
+hour 0 8 Unsigned
+Min 0 8 Unsigned
+Msg:0x7176 MCU_RSP_TRKP_Mode 1
+TrkpMode 0 8 Unsigned
+Msg:0x7178 MCU_RSP_TRKP_TimeOn 2
+TrkpTimeOn 0 16 Unsigned
+Msg:0x717A MCU_RSP_TRKP_iBcmStatus 1
+TrkpBcmStatus 0 8 Unsigned
+Msg:0x717C MCU_RSP_TRKP_VcuStatus 1
+TrkpVcuStatus 0 8 Unsigned
+Msg:0x7078 MCU_Send_AND_BLE_DATA 255
+AllLength 0 32 Unsigned
+Length 0 16 Unsigned
+ID 0 16 Unsigned
+Data 247 8 Unsigned
+Msg:0x7079 MCU_Send_AND_AUTO_POWER_OFF 3
+Min 0 8 Unsigned
+second 0 8 Unsigned
+AutoPoweroffSt 0 8 Unsigned
+Msg:0x7080 MCU_Send_AND_SOLIDER_STATE 3
+Enable 0 8 Unsigned
+SensSt 0 8 Unsigned
+CameraSwSt 0 8 Unsigned
+Msg:0x7081 MCU_Send_AND_SOLIDER_WORK 1
+SoldierWorkSt 0 8 Unsigned
+Msg:0x7082 MCU_Send_AND_SOLIDER_WORK_ACCD 6
+shockAccdXMax 0 16 Unsigned
+shockAccdYMax 0 16 Unsigned
+shockAccdZMax 0 16 Unsigned
+Msg:0x7083 MCU_BATT_TEMP_Appoint 3
+Flag 0 8 Unsigned
+hour 0 8 Unsigned
+Min 0 8 Unsigned
+Msg:0x7085 MCU_CDU_WINS_AUTODOWN_LFB 1
+CDU_WINS_AUTODOWN_L_FB 0 8 Unsigned
+Msg:0x7086 MCU_CDU_WINS_AUTODOWN_RFB 1
+CDU_WINS_AUTODOWN_R_FB 0 8 Unsigned
+Msg:0x7088 MCU_ACFC 10
+MCU_AD_CID 10 8 Unsigned
+Msg:0x7089 MCU_NCFC 10
+data 10 8 Unsigned
+Msg:0x7091 MCU_HUD_CALIBRATION_DATA 128
+data 128 8 Unsigned
+Msg:0x7093 MCU_HUD_CALIBRATION_STATUS 1
+data 0 8 Unsigned
+Msg:0x7200 MCU_MCU_KEY_STATUS 8
+data 8 8 Unsigned
+Msg:0x7202 MCU_SWS_LLeftButton 1
+data 0 8 Unsigned
+Msg:0x7203 MCU_SWS_LRightButton 1
+data 0 8 Unsigned
+Msg:0x7204 MCU_SWS_LKnobOKButton 1
+data 0 8 Unsigned
+Msg:0x7205 MCU_SWS_LVoiceButton 1
+data 0 8 Unsigned
+Msg:0x7206 MCU_SWS_LXpengButton 1
+data 0 8 Unsigned
+Msg:0x7207 MCU_SWS_RLeftButton 1
+data 0 8 Unsigned
+Msg:0x7208 MCU_SWS_RRightButton 1
+data 0 8 Unsigned
+Msg:0x7209 MCU_SWS_RKnobOKButton 1
+data 0 8 Unsigned
+Msg:0x720A MCU_SWS_RBackButton 1
+data 0 8 Unsigned
+Msg:0x720B MCU_SWS_RMuteButton 1
+data 0 8 Unsigned
+Msg:0x720C MCU_SWS_LKnobRotateDirection 2
+LKnobRotateDirection 0 8 Unsigned
+LKnobCounter 0 8 Unsigned
+Msg:0x720E MCU_SWS_RKnobRotateDirection 2
+RKnobRotateDirection 0 8 Unsigned
+RKnobCounter 0 8 Unsigned
+Msg:0x7210 MCU_SWS_BackLightOutputSt 1
+data 0 8 Unsigned
+Msg:0x7211 MCU_SWS_LLeftButtonRaw 1
+data 0 8 Unsigned
+Msg:0x7212 MCU_SWS_LRightButtonRaw 1
+data 0 8 Unsigned
+Msg:0x7213 MCU_SWS_LKnobOKButtonRaw 1
+data 0 8 Unsigned
+Msg:0x7214 MCU_SWS_LVoiceButtonRaw 1
+data 0 8 Unsigned
+Msg:0x7215 MCU_SWS_LXpengButtonRaw 1
+data 0 8 Unsigned
+Msg:0x7216 MCU_SWS_RLeftButtonRaw 1
+data 0 8 Unsigned
+Msg:0x7217 MCU_SWS_RRightButtonRaw 1
+data 0 8 Unsigned
+Msg:0x7218 MCU_SWS_RKnobOKButtonRaw 1
+data 0 8 Unsigned
+Msg:0x7219 MCU_SWS_RBackButtonRaw 1
+data 0 8 Unsigned
+Msg:0x721A MCU_SWS_RMuteButtonRaw 1
+data 0 8 Unsigned
+Msg:0x721B MCU_SWS_HODFault 1
+data 0 8 Unsigned
+Msg:0x721C MCU_SWS_LSatelliteKnobRotateDirection 2
+LSatelliteKnobRotateDirection 0 8 Unsigned
+LSatelliteButtonKobRotate 0 8 Unsigned
+Msg:0x721D MCU_SWS_RSatelliteKnobRotateDirection 2
+RSatelliteKnobRotateDirection 0 8 Unsigned
+RSatelliteButtonKobRotate 0 8 Unsigned
+Msg:0x7201 MCU_SOC_RTC_TIME 12
+year 0 16 Unsigned
+month 0 8 Unsigned
+day 0 8 Unsigned
+hour 0 8 Unsigned
+min 0 8 Unsigned
+sec 0 8 Unsigned
+week 0 8 Unsigned
+syncNetTime 0 32 Unsigned
+Msg:0x7220 MCU_CDU_2ND_SBR_WARNING_SW_ST 1
+IVI_2ndSbrWarningSwSt 0 8 Unsigned
+Msg:0x7221 MCU_SOC_START_FAILED_POP_UP_ALARM 1
+StartFailedPopUpAlarm 0 8 Unsigned
+Msg:0x7222 MCU_SOC_WIFI_HOTSPOT_REQ 1
+WifiHotspotReq 0 8 Unsigned
+Msg:0x7092 MCU_AND_FACTORY_MODE 1
+FactoryMode 0 8 Unsigned
+Msg:0x7094 MCU_AND_TEMP_FACTORY 1
+UnlcokFactory 0 8 Unsigned
+Msg:0x7095 MCU_AND_AppTrkPOnCmd 1
+Cmd 0 8 Unsigned
+Msg:0x7110 MCU_AND_BWiperSensitivityCmd 1
+BWiperSensitivityCmd 0 8 Unsigned
+Msg:0x7090 MCU_AND_BWasherSensitivityCmd 1
+BWasherSensitivityCmd 0 8 Unsigned
+Msg:0x7223 MCU_DVTEST_WIFI0_STATUS 1
+Status 0 8 Unsigned
+Msg:0x7224 MCU_DVTEST_WIFI1_STATUS 1
+Status 0 8 Unsigned
+Msg:0x7225 MCU_DVTEST_BT_STATUS 1
+Status 0 8 Unsigned
+Msg:0x7226 MCU_DVTEST_GPS_STATUS 1
+Status 0 8 Unsigned
+Msg:0x7227 MCU_DVTEST_DAB_STATUS 1
+Status 0 8 Unsigned
+Msg:0x7228 MCU_AND_VCU_DstBatMode 1
+DstBatMode 0 8 Unsigned
+Msg:0x7229 MCU_AND_SSXD_SDCCTRL_LRADAR_DIST 1
+SSXD_SDCCtrl_LRadar_Dist 0 8 Unsigned
+Msg:0x7230 MCU_AND_SSXD_SDCCTRL_RRADAR_DIST 1
+SSXD_SDCCtrl_RRadar_Dist 0 8 Unsigned
+Msg:0x7231 MCU_AND_SSXD_SDCCTRL_LRADAR_DIS_LEVEL 1
+SSXD_SDCCtrl_LRadar_Dis_Level 0 8 Unsigned
+Msg:0x7232 MCU_AND_SSXD_SDCCTRL_RRADAR_DIS_LEVEL 1
+SSXD_SDCCtrl_RRadar_Dis_Level 0 8 Unsigned
+Msg:0x7233 MCU_AND_SSXD_SDCCTRL_URADARVOICE_TONE 1
+SSXD_SDCCtrl_UradarVoice_Tone 0 8 Unsigned
+Msg:0x7234 MCU_AND_SSXD_SDCCTRL_MCUSWST 1
+SSXD_SDCCtrl_MCUSwSt 0 8 Unsigned
+Msg:0x7235 MCU_AND_SSXD_SDCCTRL_CDU_TIPS 1
+SSXD_SDCCtrl_CDU_Tips 0 8 Unsigned
+Msg:0x7236 MCU_AND_SSXD_SDCCTRL_CDU_TTS 1
+SSXD_SDCCtrl_CDU_TTS 0 8 Unsigned
+Msg:0x7237 MCU_MODULE_CHECK 3
+Type 0 8 Unsigned
+ModelID 0 8 Unsigned
+ModelLevel 0 8 Unsigned
+Msg:0x7096 MCU_AND_XPU_NGP_ST 1
+XPU_NGP_ST 0 8 Unsigned
+Msg:0x7014 MCU_ICM_DisplayScreenInfoReq 1
+InfoReqType 0 8 Unsigned
+Msg:0x7015 MCU_IVI_TouchScreenInfoReq 1
+InfoReqType 0 8 Unsigned
+Msg:0x7017 MCU_RFS_DisplayScreenReq 1
+InfoReqType 0 8 Unsigned
+Msg:0x7019 MCU_RCD_DisplayScreenReq 1
+InfoReqType 0 8 Unsigned
+Msg:0x70A0 MCU_FID_DisplaySrceenInfoReq 1
+InfoReqType 0 8 Unsigned
+Msg:0x70A1 MCU_ABT_DisplaySrceenInfoReq 1
+InfoReqType 0 8 Unsigned
+Msg:0x70A2 MCU_CDD_DisplaySrceenInfoReq 1
+InfoReqType 0 8 Unsigned
+Msg:0x7098 MCU_IVI_LeftbehindchkreminWarnReq 1
+LeftbehindchkreminWarnReq 0 8 Unsigned
+Msg:0x7099 MCU_SDC_BrakeCloseReq 1
+SDC_BrakeCloseReq 0 8 Unsigned
+Msg:0x7240 MCU_AND_CF_CFPowerSt 1
+CF_CFPowerSt 0 8 Unsigned
+Msg:0x7241 MCU_AND_CF_CFDoorSt 1
+CF_CFDoorSt 0 8 Unsigned
+Msg:0x7242 MCU_AND_CF_CFTEMPSelectSt 1
+CF_CFTEMPSelectSt 0 8 Unsigned
+Msg:0x7243 MCU_AND_CF_CFModeSt 1
+CF_CFModeSt 0 8 Unsigned
+Msg:0x7244 MCU_AND_CF_CFChildLockSt 1
+CF_CFChildLockSt 0 8 Unsigned
+Msg:0x7247 MCU_AND_CF_CFHoldingTimeSt 1
+CF_CFHoldingTimeSt 0 8 Unsigned
+Msg:0x7245 MCU_AND_CF_CFHoldingTime 1
+CF_CFHoldingTime 0 8 Unsigned
+Msg:0x7246 MCU_AND_CF_CFHoldingSt 1
+CF_CFHoldingSt 0 8 Unsigned
+Msg:0x7248 MCU_AND_CF_CFHoldingFB 1
+CF_CFHoldingFB 0 8 Unsigned
+Msg:0x7249 MCU_AND_SFM_State 1
+SFM_State 0 8 Unsigned
+Msg:0x7250 MCU_AND_SFM_Pos 1
+SFM_Pos 0 8 Unsigned
+Msg:0x7251 MCU_2ND_LEFT_SEAT_BELT_WARN_SW_ST 1
+IVI_2ndLeftSeatBeltWarnSwSt 0 8 Unsigned
+Msg:0x7252 MCU_2ND_MID_SEAT_BELT_WARN_SW_ST 1
+IVI_2ndMidSeatBeltWarnSwSt 0 8 Unsigned
+Msg:0x7253 MCU_2ND_RIGHT_SEAT_BELT_WARN_SW_ST 1
+IVI_2ndRightSeatBeltWarnSwSt 0 8 Unsigned
+Msg:0x7254 MCU_3RD_LEFT_SEAT_BELT_WARN_SW_ST 1
+IVI_3rdLeftSeatBeltWarnSwSt 0 8 Unsigned
+Msg:0x7255 MCU_3RD_MID_SEAT_BELT_WARN_SW_ST 1
+IVI_3rdMidSeatBeltWarnSwSt 0 8 Unsigned
+Msg:0x7256 MCU_3RD_RIGHT_SEAT_BELT_WARN_SW_ST 1
+IVI_3rdRightSeatBeltWarnSwSt 0 8 Unsigned
+Msg:0x7257 MCU_REAR_SEAT_BELT_WARN_POP_UP 6
+IVI2ndLeftSeatBeltWarnSt 0 8 Unsigned
+IVI2ndMidSeatBeltWarnSt 0 8 Unsigned
+IVI2ndRightSeatBeltWarnSt 0 8 Unsigned
+IVI3rdLeftSeatBeltWarnSt 0 8 Unsigned
+IVI3rdMidSeatBeltWarnSt 0 8 Unsigned
+IVI3rdRightSeatBeltWarnSt 0 8 Unsigned
+Msg:0x7268 MCU_AND_CDCU_VehicleMode 1
+CDCU_VehicleMode 0 8 Unsigned
+Msg:0x7289 MCU_AND_TBOX_GuardModeVideoRecCfgReq 1
+TBOX_GuardModeVideoRecCfgReq 0 8 Unsigned
+Msg:0x7297 MCU_AND_TBOX_GuardModeSensCfgReq 1
+TBOX_GuardModeSensCfgReq 0 8 Unsigned
+Msg:0x8002 MCU_INF_PROTOLVERSION_4G 8
+Major_version 0 32 Unsigned
+Minor_Version 0 32 Unsigned
+Msg:0x8001 MCU_4G_TestDemo 4
+Data 0 32 Unsigned
+Msg:0x0000 TMCU_UARTP_LB_TEST 4
+Counter 1 32 Unsigned
+Msg:0x8401 MCU_4G_RTC_TIME 12
+sec 0 8 Unsigned
+min 0 8 Unsigned
+hour 0 8 Unsigned
+week 0 8 Unsigned
+day 0 8 Unsigned
+month 0 8 Unsigned
+year 0 16 Unsigned
+syncNetTime 0 32 Unsigned
+Msg:0x8500 MCU_4G_ON_OFF_NOTIFY 8
+onOff 0 32 Unsigned
+reason 0 32 Unsigned
+Msg:0x8501 MCU_4G_SUPERVISOR_MAIN_VORBOSE 32
+mask 0 32 Unsigned
+ignition 0 32 Unsigned
+charging 0 32 Unsigned
+vbat 0 32 Unsigned
+iBCM_AlarmSt 0 32 Unsigned
+reserved 12 8 Unsigned
+Msg:0x8502 MCU_4G_SYNC_RESP 12
+state 0 32 Unsigned
+mode 0 32 Unsigned
+reserved 0 32 Unsigned
+Msg:0x8602 MCU_4G_EOL_RESULT 2
+result 0 8 Unsigned
+reason 0 8 Unsigned
+Msg:0x8603 MCU_4G_EOL_SWITCH 8
+switch_action 0 32 Unsigned
+reason 0 32 Unsigned
+Msg:0x8605 MCU_4G_MODEM_STATE_REQ 1
+req 0 8 Unsigned
+Msg:0x8400 MCU_4G_MCU_VERSION 41
+HwVersion 0 8 Unsigned
+SwVersion 4 8 Unsigned
+vin 17 8 Unsigned
+sn_num 16 8 Unsigned
+app_run_zone 0 8 Unsigned
+mccc 2 8 Unsigned
+Msg:0x8100 MCU_4G_REMOTE_CTRL_AC_RESP 56
+AckCode 0 32 Unsigned
+OnOff 0 32 Unsigned
+temperature 0 32 Unsigned
+AcAuto 0 32 Unsigned
+InnerTemperature 0 32 Signed
+Speed 0 32 Unsigned
+AcForce 0 32 Unsigned
+Defrost 0 8 Unsigned
+Deodorize 0 8 Unsigned
+MirrorHeat 0 8 Unsigned
+SFSMode 0 8 Unsigned
+AppointEnable 0 8 Unsigned
+AppointDayFlag 0 8 Unsigned
+AppointHour 0 8 Unsigned
+AppointMin 0 8 Unsigned
+OffTime 0 32 Unsigned
+ForceColdMode 0 8 Unsigned
+SFSCh1Type 0 8 Unsigned
+SFSCh2Type 0 8 Unsigned
+SFSCh3Type 0 8 Unsigned
+ForceWarmMode 0 8 Unsigned
+SFSFChMode 0 8 Unsigned
+WindshieldHeat 0 8 Unsigned
+WindMode 0 8 Unsigned
+HighTempAntiVirus 0 32 Unsigned
+CleanMode 0 32 Unsigned
+Msg:0x8105 MCU_4G_REMOTE_CTRL_DOOR_RESP 28
+AckCode 0 32 Unsigned
+LockStatus 0 16 Unsigned
+temp_parking_status 0 8 Unsigned
+Bonnet 0 8 Unsigned
+Driver 0 32 Unsigned
+Passenger 0 8 Unsigned
+LeftSlide_pos 0 8 Unsigned
+RightSlide_pos 0 8 Unsigned
+PollingLockDisableSt 0 8 Unsigned
+RearLift 0 8 Unsigned
+LeftSlide_st 0 8 Unsigned
+RightSlide_st 0 8 Unsigned
+reserve2 0 8 Unsigned
+RearRight 0 8 Unsigned
+TailPlane_State 0 8 Unsigned
+IsChildInCar 0 8 Unsigned
+TailPosVal 0 8 Unsigned
+TrunkAjarSt 0 32 Unsigned
+Msg:0x8107 MCU_4G_REMOTE_CTRL_HORN_RESP 4
+AckCode 0 32 Unsigned
+Msg:0x8109 MCU_4G_REMOTE_CTRL_WINDOW_RESP 8
+AckCode 0 16 Unsigned
+Front_SunShade_pos 0 8 Unsigned
+Rear_SunShade_pos 0 8 Unsigned
+front_left_pos 0 8 Unsigned
+rear_left_pos 0 8 Unsigned
+front_right_pos 0 8 Unsigned
+rear_right_pos 0 8 Unsigned
+Msg:0x8104 MCU_4G_REMOTE_CTRL_HAZARDLIGHT_RESP 8
+AckCode 0 32 Unsigned
+Status 0 32 Unsigned
+Msg:0x8607 MCU_4G_EOL_SPECIAL_REQ 66
+eol_service_id 0 16 Unsigned
+parameter 64 8 Unsigned
+Msg:0x8200 MCU_4G_ECU_DIAG_RESP 524
+diag_service_id 0 16 Unsigned
+ecu_id 0 16 signed
+resp_code 0 32 Unsigned
+resp_buf 512 8 Unsigned
+valid_data_lenth 0 32 Unsigned
+Msg:0x8103 MCU_4G_REMOTE_CTRL_CHARGE_RESP 56
+AckCode 0 32 Unsigned
+VcuChargeState 0 32 Unsigned
+max_range_charge 0 32 Unsigned
+LeftPortState 0 8 Unsigned
+RightPortState 0 8 Unsigned
+VcuChrgConnectState 0 8 Unsigned
+battery_monitor_status 0 8 Unsigned
+charge_capacity 0 32 Unsigned
+fast_charge_add_mileage 0 16 Unsigned
+big_current_charge_flag 0 8 Unsigned
+flash_charge_status 0 8 Unsigned
+AppointEnable 0 8 Unsigned
+AppointFlag 0 8 Unsigned
+AppointHour 0 8 Unsigned
+AppointMin 0 8 Unsigned
+Chrg_AppointEndHour 0 8 Unsigned
+Chrg_AppointEndMin 0 8 Unsigned
+charge_reserve2 0 8 Unsigned
+charge_reserve3 0 8 Unsigned
+Voltage 0 32 Unsigned
+Currents 0 32 Unsigned
+ChargeRate 0 32 Unsigned
+Time2Completed 0 16 Unsigned
+BatterSoc 0 8 Unsigned
+charge_reserve4 0 8 Unsigned
+keep_warm_st 0 8 Unsigned
+super_charge_flag 0 8 Unsigned
+ChargeGun_State 0 8 Unsigned
+ChargeGun_Lock 0 8 Unsigned
+Batt_AppointEnable 0 8 Unsigned
+Batt_AppointFlag 0 8 Unsigned
+Batt_AppointHour 0 8 Unsigned
+Batt_AppointMin 0 8 Unsigned
+Msg:0x8608 MCU_4G_DLT_RECORD 255
+dlt_playload 255 8 Unsigned
+Msg:0x8600 MCU_4G_DTC_NOTIFICATION_RESP 12
+dtc_notification_id 0 32 Unsigned
+dtc_nofitication_flag 0 32 Unsigned
+dtc_notification_result 0 32 signed
+Msg:0x8606 MCU_4G_GNSS_ALG_RESET_REQ 0
+Msg:0x8405 MCU_4G_APN_INFO 108
+apn_index 0 8 Unsigned
+NotUsed 3 8 Unsigned
+pdp_format 0 32 Unsigned
+auth_proto 0 32 Unsigned
+apn_name 32 8 Unsigned
+user_name 32 8 Unsigned
+password 32 8 Unsigned
+Msg:0x8800 MCU_4G_OTA_YMODEM_RCV 1
+data 0 8 Unsigned
+Msg:0x8801 MCU_4G_OTA_RESP 4
+Ack 0 32 Unsigned
+Msg:0x8802 MCU_4G_OTA_REQ 4
+Req 0 32 Unsigned
+Msg:0x8900 MCU_4G_BLE_AUTH_REQ 392
+seed 0 32 Unsigned
+valid_data_lenth 0 32 Unsigned
+data 384 8 Unsigned
+Msg:0x8901 MCU_4G_AES_KEY_RESP 28
+seed 0 32 Unsigned
+result 0 32 Unsigned
+reason 0 32 Unsigned
+aeskey 16 8 Unsigned
+Msg:0x860B MCU_4G_PHY_RESET_REQ 0
+Msg:0x860C MCU_4G_PHY_TEST_MODE_REQ 8
+port_id 0 32 Signed
+tmode 0 32 Signed
+Msg:0x810B MCU_4G_REMOTE_CTRL_XPU_TAKE_PHOTO_RESP 4
+AckCode 0 32 Unsigned
+Msg:0x810C MCU_4G_REMOTE_CTRL_USER_LLU_RESP 4
+AckCode 0 32 Unsigned
+Msg:0x810A MCU_4G_REMOTE_CTRL_AVAS_RESP 4
+AckCode 0 32 Unsigned
+Msg:0x8102 MCU_4G_REMOTE_CTRL_CAMERA_RESP 4
+AckCode 0 32 Unsigned
+Msg:0x8108 MCU_4G_REMOTE_CTRL_VERBOSE_REPORT_RESP 296
+AckCode 0 32 Unsigned
+Drivingspeed 0 32 Unsigned
+DriverSeatSt 0 32 Unsigned
+Gear 0 32 Unsigned
+Power_car_power_state 0 32 Unsigned
+Power_car_igon_state 0 8 Unsigned
+Power_Rmstart_St 0 8 Unsigned
+Power_Reserve_00 0 8 Unsigned
+Power_Reserve_01 0 8 Unsigned
+ACAckCode 0 32 Unsigned
+OnOff 0 32 Unsigned
+temperature 0 32 Unsigned
+AcAuto 0 32 Unsigned
+InnerTemperature 0 32 Signed
+Speed 0 32 Unsigned
+AcForce 0 32 Unsigned
+Defrost 0 8 Unsigned
+Deodorize 0 8 Unsigned
+MirrorHeat 0 8 Unsigned
+SFSMode 0 8 Unsigned
+AppointEnable 0 8 Unsigned
+AppointDayFlag 0 8 Unsigned
+AppointHour 0 8 Unsigned
+AppointMin 0 8 Unsigned
+OffTime 0 32 Unsigned
+ForceColdMode 0 8 Unsigned
+SFSCh1Type 0 8 Unsigned
+SFSCh2Type 0 8 Unsigned
+SFSCh3Type 0 8 Unsigned
+ForceWarmMode 0 8 Unsigned
+SFSFChMode 0 8 Unsigned
+WindshieldHeat 0 8 Unsigned
+WindMode 0 8 Unsigned
+HighTempAntiVirus 0 32 Unsigned
+CleanMode 0 32 Unsigned
+Door_AckCode 0 32 Unsigned
+Door_LockStatus 0 16 Unsigned
+temp_parking_status 0 8 Unsigned
+Bonnet 0 8 Unsigned
+Door_Driver 0 32 Unsigned
+Door_Passenger 0 8 Unsigned
+Door_LeftSlide_pos 0 8 Unsigned
+Door_RightSlide_pos 0 8 Unsigned
+Door_PollingLockDisableSt 0 8 Unsigned
+Door_RearLift 0 8 Unsigned
+Door_LeftSlide_st 0 8 Unsigned
+Door_RightSlide_st 0 8 Unsigned
+Door_reserve1 0 8 Unsigned
+Door_RearRight 0 8 Unsigned
+Door_TailPlane_State 0 8 Unsigned
+Door_IsChildInCar 0 8 Unsigned
+Door_TailPosVal 0 8 Unsigned
+Door_TrunkAjarSt 0 32 Unsigned
+Win_AckCode 0 16 Unsigned
+Win_Front_SunShade_pos 0 8 Unsigned
+Win_Rear_SunShade_pos 0 8 Unsigned
+Win_front_left_pos 0 8 Unsigned
+Win_rear_left_pos 0 8 Unsigned
+Win_front_right_pos 0 8 Unsigned
+Win_rear_right_pos 0 8 Unsigned
+VCU_dstBat_Dsp 0 32 Unsigned
+ICM_TotalOdometer 0 32 Unsigned
+range_type 0 32 Unsigned
+Chrg_AckCode 0 32 Unsigned
+Chrg_VcuChargeState 0 32 Unsigned
+Chrg_max_range_charge 0 32 Unsigned
+Chrg_LeftPortState 0 8 Unsigned
+Chrg_RightPortState 0 8 Unsigned
+Chrg_VcuChrgConnectState 0 8 Unsigned
+battery_monitor_status 0 8 Unsigned
+charge_capacity 0 32 Unsigned
+fast_charge_add_mileage 0 16 Unsigned
+big_current_charge_flag 0 8 Unsigned
+flash_charge_status 0 8 Unsigned
+Chrg_AppointEnable 0 8 Unsigned
+Chrg_AppointFlag 0 8 Unsigned
+Chrg_AppointHour 0 8 Unsigned
+Chrg_AppointMin 0 8 Unsigned
+Chrg_AppointEndHour 0 8 Unsigned
+Chrg_AppointEndMin 0 8 Unsigned
+charge_reserve2 0 8 Unsigned
+charge_reserve3 0 8 Unsigned
+Chrg_Voltage 0 32 Unsigned
+Chrg_Currents 0 32 Unsigned
+Chrg_ChargeRate 0 32 Unsigned
+Chrg_Time2Completed 0 16 Unsigned
+Chrg_BatterSoc 0 8 Unsigned
+charge_reserve4 0 8 Unsigned
+Chrg_keep_warm_st 0 8 Unsigned
+Charge_super_charge 0 8 Unsigned
+Charge_ChargeGun_State 0 8 Unsigned
+Charge_ChargeGun_Lock 0 8 Unsigned
+Batt_AppointEnable 0 8 Unsigned
+Batt_AppointFlag 0 8 Unsigned
+Batt_AppointHour 0 8 Unsigned
+Batt_AppointMin 0 8 Unsigned
+statistic_added_range 0 32 Unsigned
+statistic_usage_electricity 0 32 Unsigned
+statistic_chargeTime 0 32 Unsigned
+statistic_complete_time 2 32 Unsigned
+hook_status 0 8 Unsigned
+hook_machine_status 0 8 Unsigned
+hook_system_monitor 0 8 Unsigned
+hook_reserve1 0 8 Unsigned
+TrunkPwr_AckCode 0 32 Unsigned
+TrunkPwrOnOff_State 0 32 Unsigned
+TrunkPwrPoweroff_min 0 32 Unsigned
+SeatAckAckCode 0 32 Unsigned
+DrvSeat_Heat 0 32 Unsigned
+PsngSeat_Heat 0 32 Unsigned
+RLSeat_Heat 0 32 Unsigned
+RRSeat_Heat 0 32 Unsigned
+DrvSeat_Vent 0 32 Unsigned
+PsngSeat_Vent 0 8 Unsigned
+RLSeat_Vent 0 8 Unsigned
+RRSeat_Vent 0 8 Unsigned
+SeatHeat_Reserve 0 8 Unsigned
+Steer_wheel_heat_AckCode 0 32 Unsigned
+Steer_wheel_heat_state 0 32 Unsigned
+SoldierCamSt 0 8 Unsigned
+Fridge_AckCode 0 8 Unsigned
+Fridge_AckCode_Res 0 8 Unsigned
+Fridge_HoldingSt 0 8 Unsigned
+Fridge_Mode 0 8 Unsigned
+Fridge_Temperature 0 8 Unsigned
+Fridge_RemindHoldTime 0 8 Unsigned
+Fridge_HoldTimeSetting 0 8 Unsigned
+Fridge_Reserve 0 8 Unsigned
+Soilder_Sensitivity 0 8 Unsigned
+Soilder_enbaleVedio 0 8 Unsigned
+new_reserved 0 8 Unsigned
+Charge_Discharge_Power 0 32 Unsigned
+Charge_Discharge_Capacity 0 32 Unsigned
+TirePresVal_FL 0 32 Unsigned
+TirePresVal_FR 0 32 Unsigned
+TirePresVal_RL 0 32 Unsigned
+TirePresVal_RR 0 32 Unsigned
+TirePresWarn_FL 0 8 Unsigned
+TirePresWarn_FR 0 8 Unsigned
+TirePresWarn_RL 0 8 Unsigned
+TirePresWarn_RR 0 8 Unsigned
+Msg:0x8120 MCU_4G_REMOTE_CTRL_INFORM_MSG 36
+Event 0 32 Unsigned
+data 32 8 Unsigned
+Msg:0x8902 MCU_4G_BLE_MAC_RESP 7
+ble_mac 6 8 
+index 0 8 
+Msg:0x860D MCU_4G_PHY_SQI_THRESHOLD_SET_REQ 8
+port_id 0 32 Unsigned
+threshold 0 32 Unsigned
+Msg:0x860E MCU_4G_PHY_ON_OFF_REQ 4
+action 0 32 Unsigned
+Msg:0x860A MCU_4G_DVTEST_BBAT_STATUS 40
+charge_st 0 32 Unsigned
+soc 0 32 Unsigned
+voltage 0 32 Unsigned
+dc_impedance 0 32 Unsigned
+soh 0 32 Unsigned
+connect_st 0 32 Unsigned
+stepup_st 0 32 Unsigned
+stepup_volt 0 32 Unsigned
+discharge_st 0 32 Unsigned
+discharge_current 0 32 Unsigned
+Msg:0x8407 MCU_4G_GPS_ANT_STATE 4
+gps_ant_state 0 32 Unsigned
+Msg:0x8610 MCU_4G_DVTEST_TEMP_INFO 12
+pcb_temp 0 32 Signed
+mcu_temp 0 32 Signed
+bbat_temp 0 32 Signed
+Msg:0x8408 MCU_4G_MCU_RESET_RAND 4
+mcu_reset_rand 0 32 Unsigned
+Msg:0x8903 MCU_4G_UNREG_DEFAULT_KEY_REQ 1
+cmd 0 8 Unsigned
+Msg:0x8409 MCU_4G_GNSS_CHIP_INFO_REQ 0
+Msg:0x8612 MCU_4G_SET_AIRPLANE_MODE_REQ 4
+airplane_cmd 0 32 Unsigned
+Msg:0x8A00 MCU_4G_NFC_SERVICE_RESPONSE 1
+session 0 8 Unsigned
+Msg:0x8503 MCU_4G_GPS_ANT_NOTIFY 8
+gps_ant_state 0 32 Unsigned
+gps_ant_power_state 0 32 Unsigned
+Msg:0x8613 MCU_4G_UPLOAD_LOG_REQ 0
+Msg:0x810D MCU_4G_REMOTE_CTRL_CDU_RESP 4
+AckCode 0 32 Unsigned
+Msg:0x8B00 MCU_4G_OTA_NOTIFY_RESP 8
+status 0 32 Unsigned
+result 0 32 Unsigned
+Msg:0x8B01 MCU_4G_OTA_SET_TIMER_RESP 2
+cmd 0 8 Unsigned
+result 0 8 Unsigned
+Msg:0x8B02 MCU_4G_OTA_WAKEUP_EVENT_REQ 2
+cmd 0 8 Unsigned
+IgnSt 0 8 Unsigned
+Msg:0x810E MCU_4G_REMOTE_CTRL_RESET_RESP 4
+AckCode 0 32 Unsigned
+Msg:0x8504 MCU_4G_PHY_POWER_CONTROL_RESP 4
+phy_power 0 32 Unsigned
+Msg:0x8A01 MCU_4G_NFC_SERVICE_ACK 1
+code 0 8 Unsigned
+Msg:0x8505 MCU_4G_PRE_RESET_NOTIFY 1
+reserved 0 8 Unsigned
+Msg:0x8A02 MCU_4G_NFC_INFO_NOTIFY 18
+code 0 8 Unsigned
+len 0 8 Unsigned
+data 16 8 Unsigned
+Msg:0x8904 MCU_4G_BLE_SERVICE_RESP 4
+cmd 0 8 Unsigned
+session 0 8 Unsigned
+status 0 8 Unsigned
+reserverd 0 8 Unsigned
+Msg:0x8B03 MSG_ID_OTA_DLY_SLEEP_ACK 8
+status 0 32 Unsigned
+result 0 32 Unsigned
+Msg:0x8111 MCU_4G_REMOTE_CTRL_VECHICLE_SET_RESP 16
+code 0 32 Unsigned
+sensitivity 0 32 Unsigned
+video_to_phone 0 32 Unsigned
+video_support 0 32 Unsigned
+Msg:0x8115 MCU_4G_RMCTRL_CTRL_SEAT_HEAT_VENT_RESP 28
+AckCode 0 32 Unsigned
+DrvSeat_Heat 0 32 Unsigned
+PsngSeat_Heat 0 32 Unsigned
+RLSeat_Heat 0 32 Unsigned
+RRSeat_Heat 0 32 Unsigned
+DrvSeat_Vent 0 32 Unsigned
+PsngSeat_Vent 0 8 Unsigned
+RLSeat_Vent 0 8 Unsigned
+RRSeat_Vent 0 8 Unsigned
+SeatHeat_Reserve 0 8 Unsigned
+Msg:0x8116 MCU_4G_RMCTRL_CTRL_STEERING_WHEEL_HEAT_RESP 8
+AckCode 0 32 Unsigned
+State 0 32 Unsigned
+Msg:0x8B04 MCU_4G_OTA_DATA_FORWARD 4
+data 4 8 Unsigned
+Msg:0x8C01 MCU_4G_ECALL_BUTTON_TRIGGER_REQ 8
+session 0 32 Unsigned
+op 0 32 Unsigned
+Msg:0x8C02 MCU_4G_ECALL_AUTO_TRIGGER_REQ 8
+session 0 32 Unsigned
+type 0 32 Unsigned
+Msg:0x8C05 MCU_4G_ECALL_HW_ERROR_NOTIFY 4
+type 0 32 Unsigned
+Msg:0x8C06 MCU_4G_ECALL_IGN_STATUS_NOTIFY 4
+status 0 32 Unsigned
+Msg:0x8905 MCU_4G_BLE_DIAG_REQ 1
+cmd 0 8 Unsigned
+Msg:0x840B MCU_4G_MOD_ANT_STATE 4
+ant_state 4 8 Unsigned
+Msg:0x8617 MCU_4G_EOL_BUF_FORWARD 62
+reserved 0 32 Unsigned
+data 58 8 Unsigned
+Msg:0x8112 MCU_4G_REMOTE_CTRL_TRUNK_POWER_RESP 12
+AckCode 0 32 Unsigned
+TrunkPwrOnOff_State 0 32 Unsigned
+Poweroff_min 0 32 Unsigned
+Msg:0x8507 MCU_4G_EMMC_LIFE_TIME_REQ 1
+action 0 8 Unsigned
+Msg:0x8908 MCU_4G_BLE_VEHICLE_STATUS_NOTIFY 32
+BLE_ConnectedSt 0 8 Unsigned
+LDCU_TemporaryLockFB 0 8 Unsigned
+LDCU_PowerMode 0 8 Unsigned
+RDCU_BonnetAjarSt 0 8 Unsigned
+LDCU_LockLogicSt 0 8 Unsigned
+data 27 8 Unsigned
+Msg:0x8113 MCU_4G_REMOTE_CTRL_PIGEON_RESP 4
+AckCode 0 32 Unsigned
+Msg:0x8C07 MCU_4G_ECALL_AIRBAG_STATE 1
+state 0 8 Unsigned
+Msg:0x8615 MCU_4G_DIAG_SIMCARD_NUMBER_REQ 1
+cmd 0 8 Unsigned
+Msg:0x8117 MCU_4G_REMOTE_CTRL_WAKEUP_VEHICLE 4
+ackcode 0 32 Unsigned
+Msg:0x840D MCU_4G_PART_NUM 14
+partnumber 14 8 Unsigned
+Msg:0x8C08 MCU_4G_ECALL_PASSENGER_NUM 4
+num 0 32 Unsigned
+Msg:0x8119 MCU_4G_FRIDGE_RESP 8
+AckCode 0 16 Unsigned
+Fridge_HoldingSt 0 8 Unsigned
+Fridge_Mode 0 8 Unsigned
+Fridge_Temperature 0 8 Unsigned
+Fridge_RemindHoldTime 0 8 Unsigned
+Fridge_HoldTimeSetting 0 8 Unsigned
+Fridge_Reserve 0 8 Unsigned
+Msg:0x8907 MCU_4G_BLE_IOT_UPLINK_DATA 256
+len 0 8 Unsigned
+data 255 8 Unsigned
+Msg:0x890A MCU_4G_BLE_IOT_VEHICLE_STATUS_NOTIFY 64
+BLE_ConnectedSt 0 8 Unsigned
+TemporaryLockFB 0 8 Unsigned
+PowerMode 0 8 Unsigned
+RemoteFlag 0 8 Unsigned
+BonnetAjarSt 0 8 Unsigned
+LockLogicSt 0 8 Unsigned
+DriverDoorLockSt 0 8 Unsigned
+ChargePortSt 0 8 Unsigned
+RChargerPortSt 0 8 Unsigned
+ChargePortActSt 0 8 Unsigned
+RChrgPortActSt 0 8 Unsigned
+ChargeConnSt 0 8 Unsigned
+ChargePortOpenSource 0 8 Unsigned
+FLWinPosStFB 0 8 Unsigned
+FRWinPosStFB 0 8 Unsigned
+RLWinPosStFB 0 8 Unsigned
+RRWinPosStFB 0 8 Unsigned
+TrOpenerSts 0 8 Unsigned
+GearLev 0 8 Unsigned
+DriverSeatOccupied 0 8 Unsigned
+VehSpd 0 16 Unsigned
+DriverDoorAjarSt 0 8 Unsigned
+PsngrDoorAjarSt 0 8 Unsigned
+RLDoorAjarSt 0 8 Unsigned
+RRDoorAjarSt 0 8 Unsigned
+LTurnLampOutputActiveSt 0 8 Unsigned
+RTurnLampOutputActiveSt 0 8 Unsigned
+MCULLFunctionSt 0 8 Unsigned
+PsngrSeatOccupancySt 0 8 Unsigned
+SecRowLtSeatOccupancySt 0 8 Unsigned
+SecRowMidSeatOccupancySt 0 8 Unsigned
+SecRowRtSeatOccupancySt 0 8 Unsigned
+TrdRowLtSeatOccupancySt 0 8 Unsigned
+TrdRowMidSeatOccupancySt 0 8 Unsigned
+TrdRowRtSeatOccupancySt 0 8 Unsigned
+XSleepModeSt 0 8 Unsigned
+DrvSeatBeltBuckleSt 0 8 Unsigned
+PsngrSeatBeltBuckleSt 0 8 Unsigned
+SecRowLtSeatBeltBuckleSt 0 8 Unsigned
+SecRowMidSeatBeltBuckleSt 0 8 Unsigned
+SecRowRtSeatBeltBuckleSt 0 8 Unsigned
+TrdRowLtSeatBeltBuckleSt 0 8 Unsigned
+TrdRowMidSeatBeltBuckleSt 0 8 Unsigned
+TrdRowRtSeatBeltBuckleSt 0 8 Unsigned
+WashCarSt 0 8 Unsigned
+UnlockEnableSt 0 8 Unsigned
+BatChrgSt_Disp 0 8 Unsigned
+ReserveChargeFlag 0 8 Unsigned
+ReserveTimeHour 0 8 Unsigned
+ReserveTimeMin 0 8 Unsigned
+PollinglockDisableReq 0 8 Unsigned
+reserved 12 8 Unsigned
+Msg:0x8909 MCU_4G_BLE_CHARGING_INFO_NOTIFY 32
+ChargePortSt 0 8 Unsigned
+ChargePortActSt 0 8 Unsigned
+ChargeConnSt 0 8 Unsigned
+ChargePortOpenSource 0 8 Unsigned
+data 28 8 Unsigned
+Msg:0x8118 MCU_4G_CUSTOM_APPOINT_RESPONSE 12
+cmd 0 32 Unsigned
+result 0 32 Signed
+id 0 8 Unsigned
+weekday 0 8 Unsigned
+hour 0 8 Unsigned
+min 0 8 Unsigned
+Msg:0x890B 4G_BLE_IOT_VEHICLE_CONTROL_RESPONSE 9
+DevType 0 32 Unsigned
+ErrorCode 0 32 Unsigned
+MsgId 0 8 Unsigned
+Msg:0x811B MCU_4G_RC_SOA_WAKEUP_RESP 4
+code 0 32 Unsigned
+Msg:0x890D MSG_ID_MCU_4G_BLE_CAN_EVENT_REQUEST 64
+BLE_DisconnetReq 0 8 Unsigned
+ChargeStopReq 0 8 Unsigned
+reserved 62 8 Unsigned
+Msg:0x8C09 MCU_4G_ECALL_IMPACT_INFO 16
+impact_position 0 32 Unsigned
+is_rollover_detected 0 32 Unsigned
+delta_x 0 32 Signed
+delta_y 0 32 Signed
+Msg:0x8803 MSG_ID_MCU_4G_OTA_ACK_WITH_PID 2
+data 0 8 Unsigned
+id 0 8 Unsigned
+Msg:0x8910 MSG_ID_MCU_4G_CAR_KEY_GENERAL_DATA 249
+CommNode 0 8 Unsigned
+data 248 8 Unsigned
+Msg:0x8911 MSG_ID_MCU_4G_CAR_KEY_SYNC_INFO 256
+DataType 0 8 Unsigned
+Length 0 8 Unsigned
+data 254 8 Unsigned
+Msg:0x811C MCU_4G_REMOTE_CTRL_SOA_ORDER_REQ 4
+RmCtrl_order 0 32 Unsigned
+Msg:0x8C0A MSG_ID_MCU_ECALL_DEALER_NUMBER_SET_REQ 16
+PhoneNumber 16 8 Unsigned
+Msg:0x8c0b MSG_ID_MCU_4G_ECALL_TEMP_INFO_SET_REQ 4
+temp 0 32 Unsigned
+Msg:0x8619 MSG_ID_MCU_PRPJECT_CODE_INFO 32
+Datatype 0 8 Unsigned
+Length 0 8 Unsigned
+data 30 8 Unsigned
+Msg:0x8121 MCU_4G_PRE_CHECK 2
+power_mode 0 8 Unsigned
+charge_conn_st 0 8 Unsigned
+Msg:0x8122 MCU_4G_ORDER_CONFIG 8
+order_type 0 8 Unsigned
+enable_flag 0 8 Unsigned
+weekdays 0 8 Unsigned
+end_time_flag 0 8 Unsigned
+start_time_hour 0 8 Unsigned
+start_time_minute 0 8 Unsigned
+end_time_hour 0 8 Unsigned
+end_time_minute 0 8 Unsigned
+Msg:0x8123 MCU_4G_ORDER_ACTION 3
+order_action 0 8 Unsigned
+order_type 0 8 Unsigned
+result 0 8 Unsigned
+Msg:0x840E MCU_4G_REBOOT_NOTIFY 4
+reserved 4 8 Unsigned
+Msg:0x7FE MCU_EVENT_EXTENDED_CAN_INFO 72
+EventExtenedCanId 0 32 Unsigned
+CanNode 0 8 Unsigned
+PAD1 0 8 Unsigned
+Length 0 16 Unsigned
+data 64 8 Unsigned
+Msg:0x7FF MCU_EXTENDED_CAN_INFO 72
+ExtenedCanId 0 32 Unsigned
+CanNode 0 8 Unsigned
+PAD1 0 8 Unsigned
+Length 0 16 Unsigned
+data 64 8 Unsigned
+Msg:0x800 MCU_CAN_LOSS_INFO 12
+LOSSCANID 0 32 Unsigned
+TimeOutCounter 0 32 Unsigned
+LossCanNode 0 8 Unsigned
+PAD1 0 8 Unsigned
+PAD2 0 16 Unsigned
+Msg:0x800 MCU_CAN_LOSS_INFO 12
+LOSSCANID 0 32 Unsigned
+TimeOutCounter 0 32 Unsigned
+LossCanNode 0 8 Unsigned
+PAD1 0 8 Unsigned
+PAD2 0 16 Unsigned
+Msg:0x3D1 LP_MRL_SysSt 9
+data 9 8 Unsigned
+Msg:0x3D2 LP_RRL_SysSt 9
+data 9 8 Unsigned
+Msg:0x3D3 LP_LRL_SysSt 9
+data 9 8 Unsigned
+Msg:0x3D4 LP_RHL_SysSt 9
+data 9 8 Unsigned
+Msg:0x3D5 LP_MHL_SysSt 9
+data 9 8 Unsigned
+Msg:0x3D6 LP_LHL_SysSt 9
+data 9 8 Unsigned
+Msg:0x180 B_SRS_SysSt 9
+data 9 8 Unsigned
+Msg:0x110 B_SRS_EDRInfo 9
+data 9 8 Unsigned
+Msg:0x312 B_MSB_SysSt 9
+data 9 8 Unsigned
+Msg:0x362 B_RDM_SysSt 9
+data 9 8 Unsigned
+Msg:0x27E B_TTM_MotorSysSt 9
+data 9 8 Unsigned
+Msg:0x529 B_TTM_DiagInfo 9
+data 9 8 Unsigned
+Msg:0x217 B_CWC_SysSt 9
+data 9 8 Unsigned
+Msg:0x326 B_CWCD_SysSt 9
+data 9 8 Unsigned
+Msg:0x328 B_CWCP_SysSt 9
+data 9 8 Unsigned
+Msg:0x2C6 B_AMP_SysySt1 9
+data 9 8 Unsigned
+Msg:0x2CA B_AMP_SysySt2 9
+data 9 8 Unsigned
+Msg:0x2CB B_AMP_SysySt3 9
+data 9 8 Unsigned
+Msg:0x2CE B_AMP_SysySt4 9
+data 9 8 Unsigned
+Msg:0x2CF B_AMP_FreqGainSt 9
+data 9 8 Unsigned
+Msg:0x2FB B_RDCU_VGADisplayInfo 9
+data 9 8 Unsigned
+Msg:0x284 B_RCDU_SFSDisplayInfo 9
+data 9 8 Unsigned
+Msg:0x571 B_RDCU_ThermalSysSenInfo1 9
+data 9 8 Unsigned
+Msg:0x224 I_LDCU_BodySysSt1 9
+data 9 8 Unsigned
+Msg:0x226 I_LDCU_BodySysSt2 65
+data 65 8 Unsigned
+Msg:0x248 I_LDCU_BodySysSt3 9
+data 9 8 Unsigned
+Msg:0x132 I_LDCU_XpilotInfo 9
+data 9 8 Unsigned
+Msg:0x24A I_LDCU_SysStDisp1 65
+data 65 8 Unsigned
+Msg:0x25A I_LDCU_SysStDisp2 9
+data 9 8 Unsigned
+Msg:0x318 I_LDCU_SeatInfo 49
+data 49 8 Unsigned
+Msg:0x314 I_LDCU_LINWinStFB1 9
+data 9 8 Unsigned
+Msg:0x315 I_LDCU_LINWinStFB2 9
+data 9 8 Unsigned
+Msg:0x35C I_LDCU_SysLVInfo 65
+data 65 8 Unsigned
+Msg:0x22B I_LDCU_BodyCtrl 9
+data 9 8 Unsigned
+Msg:0x21C I_LDCU_CycleEventCtrl 9
+data 9 8 Unsigned
+Msg:0x3B4 I_LDCU_TPMSPrInfo 9
+data 9 8 Unsigned
+Msg:0x3B5 I_LDCU_TPMSTempInfo 9
+data 9 8 Unsigned
+Msg:0x3F9 I_RDCU_PowerConsumption 65
+data 65 8 Unsigned
+Msg:0x3FC I_LDCU_PowerConsumption 65
+data 65 8 Unsigned
+Msg:0x218 I_LDCU_IntelCalcFeedBack 65
+data 65 8 Unsigned
+Msg:0x295 I_LDCU_SlideDoorCtrl 9
+data 9 8 Unsigned
+Msg:0x225 I_RDCU_BodySysSt1 9
+data 9 8 Unsigned
+Msg:0x227 I_RDCU_BodySysSt2 9
+data 9 8 Unsigned
+Msg:0x22A I_RDCU_BodySysSt3 9
+data 9 8 Unsigned
+Msg:0x220 I_RDCU_BodySysSt4 9
+data 9 8 Unsigned
+Msg:0x23F I_RDCU_RLINInfo 33
+data 33 8 Unsigned
+Msg:0x21D I_RDCU_BodyCtrl2 9
+data 9 8 Unsigned
+Msg:0x31A I_RDCU_SeatInfo 33
+data 33 8 Unsigned
+Msg:0x2FD I_RDCU_ACDisplayInfo1 9
+data 9 8 Unsigned
+Msg:0x2FE I_RDCU_ACDisplayInfo2 9
+data 9 8 Unsigned
+Msg:0x302 I_RDCU_ThermalSys1 9
+data 9 8 Unsigned
+Msg:0x35D I_RDCU_SysLVInfo 65
+data 65 8 Unsigned
+Msg:0x232 I_XPU_AssistSysSt 33
+data 33 8 Unsigned
+Msg:0x230 I_XPU_AEBSysSt 9
+data 9 8 Unsigned
+Msg:0x233 I_XPU_VehLineInfo1 65
+data 65 8 Unsigned
+Msg:0x235 I_XPU_VehLineInfo2 49
+data 49 8 Unsigned
+Msg:0x27D I_XPU_CNGP_HNGPInfo 65
+data 65 8 Unsigned
+Msg:0x234 I_XPU_AssistSysFaultSt 17
+data 17 8 Unsigned
+Msg:0x236 I_XPU_NGPInfo 65
+data 65 8 Unsigned
+Msg:0x2BC I_XPU_DSM 17
+data 17 8 Unsigned
+Msg:0x239 I_XPU_BodyCtrl 9
+data 9 8 Unsigned
+Msg:0x21E I_XPU_SmartChargePortCtrl 9
+data 9 8 Unsigned
+Msg:0x242 I_XPU_URadarInfo 65
+data 65 8 Unsigned
+Msg:0x2B8 I_XPU_APAInfo 65
+data 65 8 Unsigned
+Msg:0x244 I_XPU_CDCU_APASlotInfo 65
+data 65 8 Unsigned
+Msg:0x245 I_XPU_XPilotLog 65
+data 65 8 Unsigned
+Msg:0x246 I_XPU_CDCU_SF_A1 65
+data 65 8 Unsigned
+Msg:0x14B I_XPU_VehLocation 65
+data 65 8 Unsigned
+Msg:0x247 I_XPU_PK_CCP 65
+data 65 8 Unsigned
+Msg:0x249 I_XPU_RD_CCP 65
+data 65 8 Unsigned
+Msg:0x274 I_XPU_ADASSysSt 65
+data 65 8 Unsigned
+Msg:0x39F I_XPU_DiagInfo1 65
+data 65 8 Unsigned
+Msg:0x39B I_XPU_DiagInfo2 65
+data 65 8 Unsigned
+Msg:0x146 I_XPU_IMUSysSt 49
+data 49 8 Unsigned
+Msg:0x2CC I_RDCU_PowerSt 9
+data 9 8 Unsigned
+Msg:0x2CD I_LDCU_PowerSt 9
+data 9 8 Unsigned
+Msg:0x200 I_MRR_AssistSysSt 25
+data 25 8 Unsigned
+Msg:0x27A I_SRR_RL_AssistSysSt 25
+data 25 8 Unsigned
+Msg:0x27B I_SRR_RR_AssistSysSt 25
+data 25 8 Unsigned
+Msg:0x279 I_SRR_FR_AssistSysSt 25
+data 25 8 Unsigned
+Msg:0x278 I_SRR_FL_AssistSysSt 25
+data 25 8 Unsigned
+Msg:0x1BF TP_TBOX_GensorInfo 9
+data 9 8 Unsigned
+Msg:0x81 TP_TBOX_CDCU_IOTst 9
+data 9 8 Unsigned
+Msg:0x22F TP_TBOX_BodyRemoteCtrl 9
+data 9 8 Unsigned
+Msg:0x23B TP_TBOX_CDCU_RemoteCtrl 9
+data 9 8 Unsigned
+Msg:0x2C5 TP_TBOX_PowerCtrl 9
+data 9 8 Unsigned
+Msg:0x2C7 TP_TBOX_CDCU_CtrlFB 9
+data 9 8 Unsigned
+Msg:0x3A5 TP_TBOX_TimeInfo 9
+data 9 8 Unsigned
+Msg:0x2F2 TP_TBOX_SysSt 9
+data 9 8 Unsigned
+Msg:0x1A0 TP_TBOX_IMUData1 9
+data 9 8 Unsigned
+Msg:0x1A1 TP_TBOX_IMUData2 9
+data 9 8 Unsigned
+Msg:0x1A2 TP_TBOX_IMUData3 9
+data 9 8 Unsigned
+Msg:0x1A3 TP_TBOX_IMUData4 9
+data 9 8 Unsigned
+Msg:0x287 TP_TBOX_PowerReq 9
+data 9 8 Unsigned
+Msg:0x281 TP_TBOX_VehSysSt 9
+data 9 8 Unsigned
+Msg:0x92 TP_TBOX_BLE_CtrlFB 9
+data 9 8 Unsigned
+Msg:0x60 TP_BLE_CDCU_UID1 9
+data 9 8 Unsigned
+Msg:0x61 TP_BLE_CDCU_UID2 9
+data 9 8 Unsigned
+Msg:0x62 TP_BLE_CDCU_UID3 9
+data 9 8 Unsigned
+Msg:0x228 TP_BLE_SysSt 9
+data 9 8 Unsigned
+Msg:0x2D0 E_DCDC_Info1 9
+data 9 8 Unsigned
+Msg:0x17B E_LDCU_BMS_Ctrl 9
+data 9 8 Unsigned
+Msg:0x16B E_BMS_HVSt 9
+data 9 8 Unsigned
+Msg:0x1CB E_BMS_CmdMsg 9
+data 9 8 Unsigned
+Msg:0x2F4 E_BMS_BattSt 9
+data 9 8 Unsigned
+Msg:0x16C E_BMS_PwrLimit 9
+data 9 8 Unsigned
+Msg:0x2F8 E_BMS_Temp 9
+data 9 8 Unsigned
+Msg:0x3C8 E_BMS_Info 9
+data 9 8 Unsigned
+Msg:0x2F1 E_BMS_ChrgSt 9
+data 9 8 Unsigned
+Msg:0x280 E_BMS_EVCC_CTRL 9
+data 9 8 Unsigned
+Msg:0x3CD E_BMS_DCchargerInfo 9
+data 9 8 Unsigned
+Msg:0x162 E_IPUR_General 9
+data 9 8 Unsigned
+Msg:0x2F6 E_IPUR_Temp 9
+data 9 8 Unsigned
+Msg:0x166 E_IPUF_General 9
+data 9 8 Unsigned
+Msg:0x2A5 E_IPUF_Temp 9
+data 9 8 Unsigned
+Msg:0x304 E_OBC_BMS_Info1 9
+data 9 8 Unsigned
+Msg:0x305 E_OBC_BMS_Info2 9
+data 9 8 Unsigned
+Msg:0x127 C_ESP_SpdInfoF 9
+data 9 8 Unsigned
+Msg:0x128 C_ESP_SpdInfoR 9
+data 9 8 Unsigned
+Msg:0x1A7 C_ESP_SysSt 9
+data 9 8 Unsigned
+Msg:0x12A C_ESP_SpdEdges 9
+data 9 8 Unsigned
+Msg:0x1A8 C_ESP_Accel 9
+data 9 8 Unsigned
+Msg:0x111 C_ESP_LDCU_RTorqCtrl 9
+data 9 8 Unsigned
+Msg:0x112 C_ESP_LDCU_FTorqCtrl 9
+data 9 8 Unsigned
+Msg:0x1B2 C_ESP_APBSysSt 9
+data 9 8 Unsigned
+Msg:0x11F C_ESP_IBT_APB_ROPP1 9
+data 9 8 Unsigned
+Msg:0x1B0 C_EPS_Sys 9
+data 9 8 Unsigned
+Msg:0x115 C_EPS_SASInfo 9
+data 9 8 Unsigned
+Msg:0x116 C_IBT_SysSt1 9
+data 9 8 Unsigned
+Msg:0x18A C_IBT_SysSt2 9
+data 9 8 Unsigned
+Msg:0x18F C_AS_SysSt1 9
+data 9 8 Unsigned
+Msg:0x170 C_AS_CDCU_SysInfo 9
+data 9 8 Unsigned
+Msg:0x292 C_AS_SysSt2 9
+data 9 8 Unsigned
+Msg:0x293 C_AS_SysSt3 9
+data 9 8 Unsigned
+Msg:0x1B6 C_AS_SensorInfo 9
+data 9 8 Unsigned
+Msg:0x117 C_LDCU_SysSt 9
+data 9 8 Unsigned
+Msg:0x106 C_LDCU_RTorqInfo 9
+data 9 8 Unsigned
+Msg:0x107 C_LDCU_FTorqInfo 9
+data 9 8 Unsigned
+Msg:0x229 C_LDCU_AS_Ctrl 9
+data 9 8 Unsigned
+Msg:0x3D0 LP_MHL_SysSt 9
+data 9 8 Unsigned
+Msg:0x180 B_SRS_SysSt 9
+data 9 8 Unsigned
+Msg:0x312 B_MSB_SysSt 9
+data 9 8 Unsigned
+Msg:0x2FB B_RDCU_VGADisplayInfo 9
+data 9 8 Unsigned
+Msg:0x571 B_RDCU_ThermalSysSenInfo1 9
+data 9 8 Unsigned
+Msg:0x269 B_RDCU_BodyCtrl 9
+data 9 8 Unsigned
+Msg:0x320 B_RDCU_ACDisplayInfo3 9
+data 9 8 Unsigned
+Msg:0x12B B_GRA_ACC_01 9
+data 9 8 Unsigned
+Msg:0x3D4 B_SMLS_01 9
+data 9 8 Unsigned
+Msg:0xB5 B_Waehlhebel_04 9
+data 9 8 Unsigned
+Msg:0x2AB B_MSBP_SysSt 9
+data 9 8 Unsigned
+Msg:0x2C6 B_AMP_SysySt1 9
+data 9 8 Unsigned
+Msg:0x2CA B_AMP_SysySt2 9
+data 9 8 Unsigned
+Msg:0x2CB B_AMP_SysySt3 9
+data 9 8 Unsigned
+Msg:0x2CE B_AMP_SysySt4 9
+data 9 8 Unsigned
+Msg:0x2CF B_AMP_FreqGainSt 9
+data 9 8 Unsigned
+Msg:0x224 I_LDCU_BodySysSt1 9
+data 9 8 Unsigned
+Msg:0x226 I_LDCU_BodySysSt2 65
+data 65 8 Unsigned
+Msg:0x132 I_LDCU_XpilotInfo 9
+data 9 8 Unsigned
+Msg:0x24A I_LDCU_SysStDisp1 65
+data 65 8 Unsigned
+Msg:0x25A I_LDCU_SysStDisp2 9
+data 9 8 Unsigned
+Msg:0x318 I_LDCU_SeatInfo 25
+data 25 8 Unsigned
+Msg:0x314 I_LDCU_WinStFB1 9
+data 9 8 Unsigned
+Msg:0x315 I_LDCU_WinStFB2 9
+data 9 8 Unsigned
+Msg:0x35C I_LDCU_SysLVInfo 65
+data 65 8 Unsigned
+Msg:0x22B I_LDCU_BodyCtrl 9
+data 9 8 Unsigned
+Msg:0x21C I_LDCU_CycleEventCtrl 9
+data 9 8 Unsigned
+Msg:0x2DA I_LDCU_RDCU_Ctrl1 17
+data 17 8 Unsigned
+Msg:0x3B4 I_LDCU_TPMSPrInfo 9
+data 9 8 Unsigned
+Msg:0x3B5 I_LDCU_TPMSTempInfo 9
+data 9 8 Unsigned
+Msg:0x225 I_RDCU_BodySysSt1 9
+data 9 8 Unsigned
+Msg:0x227 I_RDCU_BodySysSt2 9
+data 9 8 Unsigned
+Msg:0x22A I_RDCU_BodySysSt3 17
+data 17 8 Unsigned
+Msg:0x218 I_RDCU_WinSt 9
+data 9 8 Unsigned
+Msg:0x220 I_RDCU_BodySysSt4 9
+data 9 8 Unsigned
+Msg:0x221 I_RDCU_BodySysSt6 49
+data 49 8 Unsigned
+Msg:0x23F I_RDCU_RLIN3Info 25
+data 25 8 Unsigned
+Msg:0x21D I_RDCU_BodyCtrl2 9
+data 9 8 Unsigned
+Msg:0x31A I_RDCU_SeatInfo 17
+data 17 8 Unsigned
+Msg:0x2FD I_RDCU_ACDisplayInfo1 9
+data 9 8 Unsigned
+Msg:0x2FE I_RDCU_ACDisplayInfo2 9
+data 9 8 Unsigned
+Msg:0x302 I_RDCU_ThermalSys1 9
+data 9 8 Unsigned
+Msg:0x35D I_RDCU_SysLVInfo 65
+data 65 8 Unsigned
+Msg:0x232 I_XPU_AssistSysSt 33
+data 33 8 Unsigned
+Msg:0x230 I_XPU_AEBSysSt 9
+data 9 8 Unsigned
+Msg:0x233 I_XPU_VehLineInfo1 65
+data 65 8 Unsigned
+Msg:0x235 I_XPU_VehLineInfo2 49
+data 49 8 Unsigned
+Msg:0x234 I_XPU_AssistSysFaultSt 17
+data 17 8 Unsigned
+Msg:0x236 I_XPU_NGPInfo 65
+data 65 8 Unsigned
+Msg:0x2BC I_XPU_DSM 21
+data 21 8 Unsigned
+Msg:0x239 I_XPU_BodyCtrl 9
+data 9 8 Unsigned
+Msg:0x21E I_XPU_SmartChargePortCtrl 9
+data 9 8 Unsigned
+Msg:0x242 I_XPU_URadarInfo 65
+data 65 8 Unsigned
+Msg:0x2B8 I_XPU_APAInfo 65
+data 65 8 Unsigned
+Msg:0x244 I_XPU_CDCU_APASlotInfo 65
+data 65 8 Unsigned
+Msg:0x245 I_XPU_XPilotLog 65
+data 65 8 Unsigned
+Msg:0x246 I_XPU_CDCU_SF_A1 65
+data 65 8 Unsigned
+Msg:0x14B I_XPU_VehLocation 65
+data 65 8 Unsigned
+Msg:0x249 I_XPU_RD_CCP 65
+data 65 8 Unsigned
+Msg:0x274 I_XPU_ADASSysSt 65
+data 65 8 Unsigned
+Msg:0x2CC I_RDCU_PowerSt 9
+data 9 8 Unsigned
+Msg:0x2CD I_LDCU_PowerSt 9
+data 9 8 Unsigned
+Msg:0x200 I_MRR_AssistSysSt 25
+data 25 8 Unsigned
+Msg:0x248 I_LDCU_BodySysSt3 9
+data 9 8 Unsigned
+Msg:0x146 I_XPU_IMUSysSt 49
+data 49 8 Unsigned
+Msg:0x3B2 I_LDCU_SshdCtrl 65
+data 65 8 Unsigned
+Msg:0x43 I_LDCU_CDCU_SecOCSyncReq 9
+data 9 8 Unsigned
+Msg:0x44 I_RDCU_CDCU_SecOCSyncReq 9
+data 9 8 Unsigned
+Msg:0x45 I_XPU_CDCU_SecOCSyncReq 9
+data 9 8 Unsigned
+Msg:0x335 I_LDCU_SeatInfo2 17
+data 17 8 Unsigned
+Msg:0x336 I_RDCU_SeatInfo2 17
+data 17 8 Unsigned
+Msg:0x629 I_LDCU_EntrySysInfo 9
+data 9 8 Unsigned
+Msg:0x39B I_XPU_DiagInfo2 65
+data 65 8 Unsigned
+Msg:0x39F I_XPU_DiagInfo1 65
+data 65 8 Unsigned
+Msg:0x319 I_LDCU_TgateSysSts 25
+data 25 8 Unsigned
+Msg:0x334 I_LDCU_SeatSysSts 25
+data 25 8 Unsigned
+Msg:0x2D7 I_HUD_SysSt 9
+data 9 8 Unsigned
+Msg:0x3F9 I_RDCU_PowerConsumption 65
+data 65 8 Unsigned
+Msg:0x3FC I_LDCU_PowerConsumption 65
+data 65 8 Unsigned
+Msg:0x2AA I_RLSs_01 9
+data 9 8 Unsigned
+Msg:0x2AC I_RDCU_SunRoofWindowCtrl 65
+data 65 8 Unsigned
+Msg:0x331 I_RDCU_SeatInfo3 17
+data 17 8 Unsigned
+Msg:0x1D8 I_XPU_AEBSysSt2 9
+data 9 8 Unsigned
+Msg:0x3E9 I_XPU_PMode 9
+data 9 8 Unsigned
+Msg:0x3EA I_LDCU_PMode 9
+data 9 8 Unsigned
+Msg:0x1BF TP_TBOX_GensorInfo 9
+data 9 8 Unsigned
+Msg:0x22E TP_TBOX_WinRemoteCtrl 17
+data 17 8 Unsigned
+Msg:0x22F TP_TBOX_BodyRemoteCtrl 17
+data 17 8 Unsigned
+Msg:0x23A TP_TBOX_ACRemoteCtrl 9
+data 9 8 Unsigned
+Msg:0x23B TP_TBOX_CDCU_RemoteCtrl 17
+data 17 8 Unsigned
+Msg:0x2C5 TP_TBOX_PowerCtrl 17
+data 17 8 Unsigned
+Msg:0x2C7 TP_TBOX_CDCU_CtrlFB 9
+data 9 8 Unsigned
+Msg:0x3A5 TP_TBOX_TimeInfo 9
+data 9 8 Unsigned
+Msg:0x2F2 TP_TBOX_SysSt 9
+data 9 8 Unsigned
+Msg:0x1A0 TP_TBOX_IMUData1 9
+data 9 8 Unsigned
+Msg:0x1A1 TP_TBOX_IMUData2 9
+data 9 8 Unsigned
+Msg:0x1A2 TP_TBOX_IMUData3 9
+data 9 8 Unsigned
+Msg:0x1A3 TP_TBOX_IMUData4 9
+data 9 8 Unsigned
+Msg:0x60 TP_BLE_CDCU_UID1 9
+data 9 8 Unsigned
+Msg:0x61 TP_BLE_CDCU_UID2 9
+data 9 8 Unsigned
+Msg:0x62 TP_BLE_CDCU_UID3 9
+data 9 8 Unsigned
+Msg:0x228 TP_BLE_SysSt 25
+data 25 8 Unsigned
+Msg:0x528 TP_BLE_Debug 65
+data 65 8 Unsigned
+Msg:0x46 TP_TBOX_CDCU_SecOCSyncReq 9
+data 9 8 Unsigned
+Msg:0x81 TP_TBOX_CDCU_IOTst 9
+data 9 8 Unsigned
+Msg:0x368 TP_TBOX_CFCTRL 9
+data 9 8 Unsigned
+Msg:0x283 TP_TBOX_DigitalKeyInfo 17
+data 17 8 Unsigned
+Msg:0x92 TP_TBOX_BLE_CtrlFB 9
+data 9 8 Unsigned
+Msg:0x326 TP_CWCD_SysSt 9
+data 9 8 Unsigned
+Msg:0x87 TP_TBOX_CDCU_Application 65
+data 65 8 Unsigned
+Msg:0x291 TP_LDCU_StartRanging 9
+data 9 8 Unsigned
+Msg:0x1CD E_DCDC_info 13
+data 13 8 Unsigned
+Msg:0x17B E_LDCU_BMS_Ctrl 17
+data 17 8 Unsigned
+Msg:0x17A E_LDCU_IPU_Ctrl 21
+data 21 8 Unsigned
+Msg:0x16B E_BMS_HV_PwrlimitSt 25
+data 25 8 Unsigned
+Msg:0x1CB E_BMS_CmdMsg 17
+data 17 8 Unsigned
+Msg:0x2F5 E_BMS_CellVolt_Temp 33
+data 33 8 Unsigned
+Msg:0x3C8 E_BMS_Info 21
+data 21 8 Unsigned
+Msg:0x2F1 E_BMS_Chrg_BattSt 25
+data 25 8 Unsigned
+Msg:0x340 E_BMS_Monitor_info 65
+data 65 8 Unsigned
+Msg:0x304 E_OBC_Info 33
+data 33 8 Unsigned
+Msg:0x2D2 E_BMS_OCRecord 13
+data 13 8 Unsigned
+Msg:0x3DA E_BMS_TBOX 13
+data 13 8 Unsigned
+Msg:0x3DB E_LDCU_TBOX 9
+data 9 8 Unsigned
+Msg:0x3DC E_DCDC_TBOX 9
+data 9 8 Unsigned
+Msg:0x3DD E_IPUF_TBOX 13
+data 13 8 Unsigned
+Msg:0x3DE E_IPUR_TBOX 13
+data 13 8 Unsigned
+Msg:0x100 C_XPU_IPB_ADASToqCtrl 9
+data 9 8 Unsigned
+Msg:0x127 C_IPB_SpdInfoF 9
+data 9 8 Unsigned
+Msg:0x128 C_IPB_SpdInfoR 9
+data 9 8 Unsigned
+Msg:0x1A7 C_IPB_SysSt 9
+data 9 8 Unsigned
+Msg:0x12A C_IPB_SpdEdges 9
+data 9 8 Unsigned
+Msg:0x1A8 C_IPB_Accel 9
+data 9 8 Unsigned
+Msg:0x111 C_IPB_LDCU_RTorqCtrl 9
+data 9 8 Unsigned
+Msg:0x112 C_IPB_LDCU_FTorqCtrl 9
+data 9 8 Unsigned
+Msg:0x1B2 C_IPB_APBSysSt 9
+data 9 8 Unsigned
+Msg:0x1B0 C_EPS_Sys 9
+data 9 8 Unsigned
+Msg:0x115 C_EPS_SASInfo 9
+data 9 8 Unsigned
+Msg:0x116 C_IPB_SysSt1 9
+data 9 8 Unsigned
+Msg:0x18A C_IPB_SysSt2 9
+data 9 8 Unsigned
+Msg:0x3CF C_IPB_RKA 17
+data 17 8 Unsigned
+Msg:0x117 C_LDCU_SysSt 9
+data 9 8 Unsigned
+Msg:0x106 C_LDCU_RTorqInfo 9
+data 9 8 Unsigned
+Msg:0x107 C_LDCU_FTorqInfo 9
+data 9 8 Unsigned
+Msg:0x18F C_AS_SysSt1 9
+data 9 8 Unsigned
+Msg:0x292 C_AS_SysSt2 49
+data 49 8 Unsigned
+Msg:0x293 C_AS_SysSt3 9
+data 9 8 Unsigned
+Msg:0x1B6 C_AS_SensorInfo 9
+data 9 8 Unsigned
+Msg:0x1B3 C_RDCU_APBSysSt 9
+data 9 8 Unsigned
+Msg:0x1B4 C_LDCU_APBSysSt 9
+data 9 8 Unsigned
+Msg:0x10C C_LDCU_VMCctrl 9
+data 9 8 Unsigned
+Msg:0x229 C_LDCU_AS_Ctrl 9
+data 9 8 Unsigned
+Msg:0x3D0 LP_MHL_SysSt 9
+data 9 8 Unsigned
+Msg:0x180 B_SRS_SysSt 9
+data 9 8 Unsigned
+Msg:0x312 B_MSB_SysSt 9
+data 9 8 Unsigned
+Msg:0x2FB B_RDCU_VGADisplayInfo 9
+data 9 8 Unsigned
+Msg:0x571 B_RDCU_ThermalSysSenInfo1 9
+data 9 8 Unsigned
+Msg:0x269 B_RDCU_BodyCtrl 9
+data 9 8 Unsigned
+Msg:0x320 B_RDCU_ACDisplayInfo3 9
+data 9 8 Unsigned
+Msg:0x2AB B_MSBP_SysSt 9
+data 9 8 Unsigned
+Msg:0x2C6 B_AMP_SysySt1 9
+data 9 8 Unsigned
+Msg:0x2CA B_AMP_SysySt2 9
+data 9 8 Unsigned
+Msg:0x2CB B_AMP_SysySt3 9
+data 9 8 Unsigned
+Msg:0x2CE B_AMP_SysySt4 9
+data 9 8 Unsigned
+Msg:0x2CF B_AMP_FreqGainSt 9
+data 9 8 Unsigned
+Msg:0x224 I_LDCU_BodySysSt1 9
+data 9 8 Unsigned
+Msg:0x226 I_LDCU_BodySysSt2 65
+data 65 8 Unsigned
+Msg:0x132 I_LDCU_XpilotInfo 9
+data 9 8 Unsigned
+Msg:0x24A I_LDCU_SysStDisp1 65
+data 65 8 Unsigned
+Msg:0x25A I_LDCU_SysStDisp2 9
+data 9 8 Unsigned
+Msg:0x318 I_LDCU_SeatInfo 25
+data 25 8 Unsigned
+Msg:0x314 I_LDCU_WinStFB1 9
+data 9 8 Unsigned
+Msg:0x316 I_LDCU_WinStFB3 9
+data 9 8 Unsigned
+Msg:0x315 I_LDCU_WinStFB2 9
+data 9 8 Unsigned
+Msg:0x35C I_LDCU_SysLVInfo 65
+data 65 8 Unsigned
+Msg:0x22B I_LDCU_BodyCtrl 9
+data 9 8 Unsigned
+Msg:0x21C I_LDCU_CycleEventCtrl 9
+data 9 8 Unsigned
+Msg:0x2DA I_LDCU_RDCU_Ctrl1 17
+data 17 8 Unsigned
+Msg:0x3B4 I_LDCU_TPMSPrInfo 9
+data 9 8 Unsigned
+Msg:0x3B5 I_LDCU_TPMSTempInfo 9
+data 9 8 Unsigned
+Msg:0x225 I_RDCU_BodySysSt1 9
+data 9 8 Unsigned
+Msg:0x227 I_RDCU_BodySysSt2 9
+data 9 8 Unsigned
+Msg:0x22A I_RDCU_BodySysSt3 17
+data 17 8 Unsigned
+Msg:0x218 I_RDCU_WinSt 9
+data 9 8 Unsigned
+Msg:0x220 I_RDCU_BodySysSt4 9
+data 9 8 Unsigned
+Msg:0x221 I_RDCU_BodySysSt6 49
+data 49 8 Unsigned
+Msg:0x23F I_RDCU_RLIN3Info 25
+data 25 8 Unsigned
+Msg:0x21D I_RDCU_BodyCtrl2 9
+data 9 8 Unsigned
+Msg:0x31A I_RDCU_SeatInfo 17
+data 17 8 Unsigned
+Msg:0x2FD I_RDCU_ACDisplayInfo1 9
+data 9 8 Unsigned
+Msg:0x2FE I_RDCU_ACDisplayInfo2 9
+data 9 8 Unsigned
+Msg:0x302 I_RDCU_ThermalSys1 9
+data 9 8 Unsigned
+Msg:0x35D I_RDCU_SysLVInfo 65
+data 65 8 Unsigned
+Msg:0x232 I_XPU_AssistSysSt 33
+data 33 8 Unsigned
+Msg:0x230 I_XPU_AEBSysSt 9
+data 9 8 Unsigned
+Msg:0x233 I_XPU_VehLineInfo1 65
+data 65 8 Unsigned
+Msg:0x235 I_XPU_VehLineInfo2 49
+data 49 8 Unsigned
+Msg:0x234 I_XPU_AssistSysFaultSt 17
+data 17 8 Unsigned
+Msg:0x236 I_XPU_NGPInfo 65
+data 65 8 Unsigned
+Msg:0x2BC I_XPU_DSM 21
+data 21 8 Unsigned
+Msg:0x239 I_XPU_BodyCtrl 9
+data 9 8 Unsigned
+Msg:0x21F I_XPU_TBOX_Ctrl 9
+data 9 8 Unsigned
+Msg:0x21E I_XPU_SmartChargePortCtrl 9
+data 9 8 Unsigned
+Msg:0x242 I_XPU_URadarInfo 65
+data 65 8 Unsigned
+Msg:0x2B8 I_XPU_APAInfo 65
+data 65 8 Unsigned
+Msg:0x244 I_XPU_CDCU_APASlotInfo 65
+data 65 8 Unsigned
+Msg:0x245 I_XPU_XPilotLog 65
+data 65 8 Unsigned
+Msg:0x246 I_XPU_CDCU_SF_A1 65
+data 65 8 Unsigned
+Msg:0x14B I_XPU_VehLocation 65
+data 65 8 Unsigned
+Msg:0x249 I_XPU_RD_CCP 65
+data 65 8 Unsigned
+Msg:0x353 I_XPU_BLE_RemotePk 9
+data 9 8 Unsigned
+Msg:0x274 I_XPU_ADASSysSt 65
+data 65 8 Unsigned
+Msg:0x29E I_XPU_TBOX_APSt 9
+data 9 8 Unsigned
+Msg:0x2CC I_RDCU_PowerSt 9
+data 9 8 Unsigned
+Msg:0x2CD I_LDCU_PowerSt 9
+data 9 8 Unsigned
+Msg:0x200 I_MRR_AssistSysSt 25
+data 25 8 Unsigned
+Msg:0x248 I_LDCU_BodySysSt3 9
+data 9 8 Unsigned
+Msg:0x146 I_XPU_IMUSysSt 49
+data 49 8 Unsigned
+Msg:0x30E I_LDCU_State 65
+data 65 8 Unsigned
+Msg:0x3B2 I_LDCU_SshdCtrl 65
+data 65 8 Unsigned
+Msg:0x43 I_LDCU_CDCU_SecOCSyncReq 9
+data 9 8 Unsigned
+Msg:0x44 I_RDCU_CDCU_SecOCSyncReq 9
+data 9 8 Unsigned
+Msg:0x45 I_XPU_CDCU_SecOCSyncReq 9
+data 9 8 Unsigned
+Msg:0x335 I_LDCU_SeatInfo2 17
+data 17 8 Unsigned
+Msg:0x336 I_RDCU_SeatInfo2 17
+data 17 8 Unsigned
+Msg:0x629 I_LDCU_EntrySysInfo 9
+data 9 8 Unsigned
+Msg:0x39B I_XPU_DiagInfo2 65
+data 65 8 Unsigned
+Msg:0x39F I_XPU_DiagInfo1 65
+data 65 8 Unsigned
+Msg:0x319 I_LDCU_TgateSysSts 25
+data 25 8 Unsigned
+Msg:0x334 I_LDCU_SeatSysSts 25
+data 25 8 Unsigned
+Msg:0x1F4 I_RDCU_SDCCtrl 9
+data 9 8 Unsigned
+Msg:0x2D7 I_HUD_SysSt 9
+data 9 8 Unsigned
+Msg:0x3F9 I_RDCU_PowerConsumption 65
+data 65 8 Unsigned
+Msg:0x3FC I_LDCU_PowerConsumption 65
+data 65 8 Unsigned
+Msg:0x2AA I_RLSs_01 9
+data 9 8 Unsigned
+Msg:0x2AC I_RDCU_SunRoofWindowCtrl 65
+data 65 8 Unsigned
+Msg:0x331 I_RDCU_SeatInfo3 17
+data 17 8 Unsigned
+Msg:0x1D8 I_XPU_AEBSysSt2 9
+data 9 8 Unsigned
+Msg:0x3E9 I_XPU_PMode 9
+data 9 8 Unsigned
+Msg:0x3EA I_LDCU_PMode 9
+data 9 8 Unsigned
+Msg:0xB0 I_XPU_Event 9
+data 9 8 Unsigned
+Msg:0x1CD E_DCDC_info 13
+data 13 8 Unsigned
+Msg:0x17B E_LDCU_BMS_Ctrl 17
+data 17 8 Unsigned
+Msg:0x17A E_LDCU_IPU_Ctrl 21
+data 21 8 Unsigned
+Msg:0x16B E_BMS_HV_PwrlimitSt 25
+data 25 8 Unsigned
+Msg:0x1CB E_BMS_CmdMsg 17
+data 17 8 Unsigned
+Msg:0x2F5 E_BMS_CellVolt_Temp 33
+data 33 8 Unsigned
+Msg:0x3C8 E_BMS_Info 21
+data 21 8 Unsigned
+Msg:0x2F1 E_BMS_Chrg_BattSt 25
+data 25 8 Unsigned
+Msg:0x340 E_BMS_Monitor_info 65
+data 65 8 Unsigned
+Msg:0x304 E_OBC_Info 33
+data 33 8 Unsigned
+Msg:0x2D2 E_BMS_OCRecord 13
+data 13 8 Unsigned
+Msg:0x3DA E_BMS_TBOX 13
+data 13 8 Unsigned
+Msg:0x3DB E_LDCU_TBOX 9
+data 9 8 Unsigned
+Msg:0x3DC E_DCDC_TBOX 9
+data 9 8 Unsigned
+Msg:0x3DD E_IPUF_TBOX 13
+data 13 8 Unsigned
+Msg:0x3DE E_IPUR_TBOX 13
+data 13 8 Unsigned
+Msg:0x100 C_XPU_IPB_ADASToqCtrl 9
+data 9 8 Unsigned
+Msg:0x127 C_IPB_SpdInfoF 9
+data 9 8 Unsigned
+Msg:0x128 C_IPB_SpdInfoR 9
+data 9 8 Unsigned
+Msg:0x1A7 C_IPB_SysSt 9
+data 9 8 Unsigned
+Msg:0x12A C_IPB_SpdEdges 9
+data 9 8 Unsigned
+Msg:0x1A8 C_IPB_Accel 9
+data 9 8 Unsigned
+Msg:0x111 C_IPB_LDCU_RTorqCtrl 9
+data 9 8 Unsigned
+Msg:0x112 C_IPB_LDCU_FTorqCtrl 9
+data 9 8 Unsigned
+Msg:0x1B2 C_IPB_APBSysSt 9
+data 9 8 Unsigned
+Msg:0x1B0 C_EPS_Sys 9
+data 9 8 Unsigned
+Msg:0x115 C_EPS_SASInfo 9
+data 9 8 Unsigned
+Msg:0x116 C_IPB_SysSt1 9
+data 9 8 Unsigned
+Msg:0x18A C_IPB_SysSt2 9
+data 9 8 Unsigned
+Msg:0x3CF C_IPB_RKA 17
+data 17 8 Unsigned
+Msg:0x117 C_LDCU_SysSt 9
+data 9 8 Unsigned
+Msg:0x106 C_LDCU_RTorqInfo 9
+data 9 8 Unsigned
+Msg:0x107 C_LDCU_FTorqInfo 9
+data 9 8 Unsigned
+Msg:0x18F C_AS_SysSt1 9
+data 9 8 Unsigned
+Msg:0x292 C_AS_SysSt2 49
+data 49 8 Unsigned
+Msg:0x293 C_AS_SysSt3 9
+data 9 8 Unsigned
+Msg:0x1B6 C_AS_SensorInfo 9
+data 9 8 Unsigned
+Msg:0x1B3 C_RDCU_APBSysSt 9
+data 9 8 Unsigned
+Msg:0x118 C_RDCU_IPB_APB_ROPP 9
+data 9 8 Unsigned
+Msg:0x1B4 C_LDCU_APBSysSt 9
+data 9 8 Unsigned
+Msg:0x10C C_LDCU_VMCctrl 9
+data 9 8 Unsigned
+Msg:0x229 C_LDCU_AS_Ctrl 9
+data 9 8 Unsigned
+Msg:0x3D4 C_SMLS_01 9
+data 9 8 Unsigned
+Msg:0xB5 C_Waehlhebel_04 9
+data 9 8 Unsigned
+Msg:0x3D0 LP_MHL_SysSt 9
+data 9 8 Unsigned
+Msg:0x2D7 I_HUD_SysSt 9
+data 9 8 Unsigned
+Msg:0x3E9 I_XPU_PMode 9
+data 9 8 Unsigned
+Msg:0x3EA I_LDCU_PMode 9
+data 9 8 Unsigned
+Msg:0x333 LP_FSLFBInfo 9
+data 9 8 Unsigned
+Msg:0x332 LP_RSLFBInfo 9
+data 9 8 Unsigned
+Msg:0x348 LP_LHCM_LightFBFrames 33
+data 33 8 Unsigned
+Msg:0x347 LP_RHCM_LightFBFrames 33
+data 33 8 Unsigned
+Msg:0x349 LP_CDCU_SmartLightGeneralFB 9
+data 9 8 Unsigned
+Msg:0x180 B_SRS_SysSt 9
+data 9 8 Unsigned
+Msg:0x312 B_MSB_SysSt 9
+data 9 8 Unsigned
+Msg:0x2FB B_RDCU_VGADisplayInfo 9
+data 9 8 Unsigned
+Msg:0x571 B_RDCU_ThermalSysSenInfo1 9
+data 9 8 Unsigned
+Msg:0x58B B_RDCU_TMC_DTC2 9
+data 9 8 Unsigned
+Msg:0x269 B_RDCU_BodyCtrl 9
+data 9 8 Unsigned
+Msg:0x320 B_RDCU_ACDisplayInfo3 9
+data 9 8 Unsigned
+Msg:0x2AB B_MSBP_SysSt 9
+data 9 8 Unsigned
+Msg:0x2C6 B_AMP_SysySt1 9
+data 9 8 Unsigned
+Msg:0x2CA B_AMP_SysySt2 9
+data 9 8 Unsigned
+Msg:0x2CB B_AMP_SysySt3 9
+data 9 8 Unsigned
+Msg:0x2CE B_AMP_SysySt4 9
+data 9 8 Unsigned
+Msg:0x2D1 B_AMP_SysySt5 9
+data 9 8 Unsigned
+Msg:0x2CF B_AMP_FreqGainSt 9
+data 9 8 Unsigned
+Msg:0x224 I_LDCU_BodySysSt1 9
+data 9 8 Unsigned
+Msg:0x226 I_LDCU_BodySysSt2 65
+data 65 8 Unsigned
+Msg:0x132 I_LDCU_XpilotInfo 9
+data 9 8 Unsigned
+Msg:0x24A I_LDCU_SysStDisp1 65
+data 65 8 Unsigned
+Msg:0x25A I_LDCU_SysStDisp2 9
+data 9 8 Unsigned
+Msg:0x318 I_LDCU_SeatInfo 25
+data 25 8 Unsigned
+Msg:0x314 I_LDCU_WinStFB1 9
+data 9 8 Unsigned
+Msg:0x316 I_LDCU_WinStFB3 9
+data 9 8 Unsigned
+Msg:0x315 I_LDCU_WinStFB2 9
+data 9 8 Unsigned
+Msg:0x35C I_LDCU_SysLVInfo 65
+data 65 8 Unsigned
+Msg:0x22B I_LDCU_BodyCtrl 9
+data 9 8 Unsigned
+Msg:0x21C I_LDCU_CycleEventCtrl 9
+data 9 8 Unsigned
+Msg:0x2DA I_LDCU_RDCU_Ctrl1 17
+data 17 8 Unsigned
+Msg:0x3B4 I_LDCU_TPMSPrInfo 9
+data 9 8 Unsigned
+Msg:0x3B5 I_LDCU_TPMSTempInfo 9
+data 9 8 Unsigned
+Msg:0x56 I_LDCU_TBOX_RdomCode1 9
+data 9 8 Unsigned
+Msg:0x57 I_LDCU_TBOX_RdomCode2 9
+data 9 8 Unsigned
+Msg:0x225 I_RDCU_BodySysSt1 9
+data 9 8 Unsigned
+Msg:0x227 I_RDCU_BodySysSt2 9
+data 9 8 Unsigned
+Msg:0x22A I_RDCU_BodySysSt3 17
+data 17 8 Unsigned
+Msg:0x218 I_RDCU_WinSt 9
+data 9 8 Unsigned
+Msg:0x220 I_RDCU_BodySysSt4 9
+data 9 8 Unsigned
+Msg:0x221 I_RDCU_BodySysSt6 49
+data 49 8 Unsigned
+Msg:0x23F I_RDCU_RLIN3Info 25
+data 25 8 Unsigned
+Msg:0x21D I_RDCU_BodyCtrl2 9
+data 9 8 Unsigned
+Msg:0x31A I_RDCU_SeatInfo 17
+data 17 8 Unsigned
+Msg:0x2FD I_RDCU_ACDisplayInfo1 9
+data 9 8 Unsigned
+Msg:0x2FE I_RDCU_ACDisplayInfo2 9
+data 9 8 Unsigned
+Msg:0x302 I_RDCU_ThermalSys1 9
+data 9 8 Unsigned
+Msg:0x35D I_RDCU_SysLVInfo 65
+data 65 8 Unsigned
+Msg:0x232 I_XPU_AssistSysSt 33
+data 33 8 Unsigned
+Msg:0x230 I_XPU_AEBSysSt 9
+data 9 8 Unsigned
+Msg:0x233 I_XPU_VehLineInfo1 65
+data 65 8 Unsigned
+Msg:0x235 I_XPU_VehLineInfo2 49
+data 49 8 Unsigned
+Msg:0x234 I_XPU_AssistSysFaultSt 17
+data 17 8 Unsigned
+Msg:0x236 I_XPU_NGPInfo 65
+data 65 8 Unsigned
+Msg:0x2BC I_XPU_DSM 21
+data 21 8 Unsigned
+Msg:0x239 I_XPU_BodyCtrl 9
+data 9 8 Unsigned
+Msg:0x3C1 I_XPU_LDCU_Req 9
+data 9 8 Unsigned
+Msg:0x21F I_XPU_TBOX_Ctrl 9
+data 9 8 Unsigned
+Msg:0x13E I_XPU_LDCU_CtrlAndReq 17
+data 17 8 Unsigned
+Msg:0x21E I_XPU_SmartChargePortCtrl 9
+data 9 8 Unsigned
+Msg:0x242 I_XPU_URadarInfo 65
+data 65 8 Unsigned
+Msg:0x2B8 I_XPU_APAInfo 65
+data 65 8 Unsigned
+Msg:0x244 I_XPU_CDCU_APASlotInfo 65
+data 65 8 Unsigned
+Msg:0x245 I_XPU_XPilotLog 65
+data 65 8 Unsigned
+Msg:0x246 I_XPU_CDCU_SF_A1 65
+data 65 8 Unsigned
+Msg:0x14B I_XPU_VehLocation 65
+data 65 8 Unsigned
+Msg:0x249 I_XPU_RD_CCP 65
+data 65 8 Unsigned
+Msg:0x353 I_XPU_BLE_RemotePk 9
+data 9 8 Unsigned
+Msg:0x274 I_XPU_ADASSysSt 65
+data 65 8 Unsigned
+Msg:0x29E I_XPU_TBOX_APSt 17
+data 17 8 Unsigned
+Msg:0x2CC I_RDCU_PowerSt 9
+data 9 8 Unsigned
+Msg:0x2CD I_LDCU_PowerSt 9
+data 9 8 Unsigned
+Msg:0x200 I_MRR_AssistSysSt 25
+data 25 8 Unsigned
+Msg:0x248 I_LDCU_BodySysSt3 9
+data 9 8 Unsigned
+Msg:0x146 I_XPU_IMUSysSt 49
+data 49 8 Unsigned
+Msg:0x30E I_LDCU_State 65
+data 65 8 Unsigned
+Msg:0x3B2 I_LDCU_SshdCtrl 65
+data 65 8 Unsigned
+Msg:0x43 I_LDCU_CDCU_SecOCSyncReq 9
+data 9 8 Unsigned
+Msg:0x44 I_RDCU_CDCU_SecOCSyncReq 9
+data 9 8 Unsigned
+Msg:0x45 I_XPU_CDCU_SecOCSyncReq 9
+data 9 8 Unsigned
+Msg:0x335 I_LDCU_SeatInfo2 17
+data 17 8 Unsigned
+Msg:0x336 I_RDCU_SeatInfo2 25
+data 25 8 Unsigned
+Msg:0x629 I_LDCU_EntrySysInfo 13
+data 13 8 Unsigned
+Msg:0x39B I_XPU_DiagInfo2 65
+data 65 8 Unsigned
+Msg:0x39F I_XPU_DiagInfo1 65
+data 65 8 Unsigned
+Msg:0x319 I_LDCU_TgateSysSts 25
+data 25 8 Unsigned
+Msg:0x334 I_LDCU_SeatSysSts 25
+data 25 8 Unsigned
+Msg:0x1F4 I_RDCU_SDCCtrl 9
+data 9 8 Unsigned
+Msg:0x3F9 I_RDCU_PowerConsumption 65
+data 65 8 Unsigned
+Msg:0x3FC I_LDCU_PowerConsumption 65
+data 65 8 Unsigned
+Msg:0x2AA I_RLSs_01 9
+data 9 8 Unsigned
+Msg:0x2AC I_RDCU_SunRoofWindowCtrl 65
+data 65 8 Unsigned
+Msg:0x331 I_RDCU_SeatInfo3 17
+data 17 8 Unsigned
+Msg:0x1D8 I_XPU_AEBSysSt2 9
+data 9 8 Unsigned
+Msg:0xB0 I_XPU_Event 9
+data 9 8 Unsigned
+Msg:0x311 I_HUD_Status 33
+data 33 8 Unsigned
+Msg:0xAA I_HUD_Resp_CDCU 65
+data 65 8 Unsigned
+Msg:0x184 I_XPU_AEBSysSt3 9
+data 9 8 Unsigned
+Msg:0x222 I_RDCU_Light_SaftLightSt 9
+data 9 8 Unsigned
+Msg:0x27A I_SRR_RL_AssistSysSt 25
+data 25 8 Unsigned
+Msg:0x27B I_SRR_RR_AssistSysSt 25
+data 25 8 Unsigned
+Msg:0x1E4 I_LDCU_VheicleLevelingAngle 9
+data 9 8 Unsigned
+Msg:0x3D5 I_FID_Status 9
+data 9 8 Unsigned
+Msg:0x24B I_LDCU_SysStDisp3 9
+data 9 8 Unsigned
+Msg:0x240 I_LDCU_PCX_Ctrl 9
+data 9 8 Unsigned
+Msg:0x5A BL_BLE_Authent1 9
+data 9 8 Unsigned
+Msg:0x5B BL_BLE_Authent2 9
+data 9 8 Unsigned
+Msg:0x5C BL_BLE_Authent3 9
+data 9 8 Unsigned
+Msg:0x60 BL_BLE_CDCU_UID1 9
+data 9 8 Unsigned
+Msg:0x61 BL_BLE_CDCU_UID2 9
+data 9 8 Unsigned
+Msg:0x62 BL_BLE_CDCU_UID3 9
+data 9 8 Unsigned
+Msg:0x228 BL_BLE_SysSt 25
+data 25 8 Unsigned
+Msg:0x528 BL_BLE_Debug 65
+data 65 8 Unsigned
+Msg:0x7C BL_BLE_R_MacAddress 9
+data 9 8 Unsigned
+Msg:0x7D BL_BLE_FL_MacAddress 9
+data 9 8 Unsigned
+Msg:0x7E BL_BLE_FR_MacAddress 9
+data 9 8 Unsigned
+Msg:0x7F BL_BLE_RL_MacAddress 9
+data 9 8 Unsigned
+Msg:0x5F BL_BLE_MacAddress 9
+data 9 8 Unsigned
+Msg:0x67 BL_BLE_IOT_MacAddress 9
+data 9 8 Unsigned
+Msg:0x2A BL_BLE_TBOX_IOT1 9
+data 9 8 Unsigned
+Msg:0x2B BL_BLE_TBOX_IOT2 9
+data 9 8 Unsigned
+Msg:0x2C BL_BLE_TBOX_IOT3 9
+data 9 8 Unsigned
+Msg:0x341 BL_BLE_FL_TOF 9
+data 9 8 Unsigned
+Msg:0x342 BL_BLE_FR_TOF 9
+data 9 8 Unsigned
+Msg:0x343 BL_BLE_RR_TOF 9
+data 9 8 Unsigned
+Msg:0x344 BL_BLE_RL_TOF 9
+data 9 8 Unsigned
+Msg:0xA0 BL_SK_IDE1 49
+data 49 8 Unsigned
+Msg:0x369 BL_SK_IDE2 49
+data 49 8 Unsigned
+Msg:0x345 BL_BLE_Main_UWB_TOF 9
+data 9 8 Unsigned
+Msg:0x290 BL_BLE_RSSI 9
+data 9 8 Unsigned
+Msg:0x5F4 BL_BLE_IOT_Debug 65
+data 65 8 Unsigned
+Msg:0x291 BL_LDCU_StartRanging 9
+data 9 8 Unsigned
+Msg:0x296 BL_BLE_UWB_St 33
+data 33 8 Unsigned
+Msg:0x13 BL_BLE_UWBConfiguration1 65
+data 65 8 Unsigned
+Msg:0x14 BL_BLE_UWBConfiguration2 65
+data 65 8 Unsigned
+Msg:0x15 BL_BLE_UWBConfiguration3 65
+data 65 8 Unsigned
+Msg:0x16 BL_BLE_UWBConfiguration4 65
+data 65 8 Unsigned
+Msg:0x1C BL_BLE_BLEControl1 65
+data 65 8 Unsigned
+Msg:0x1D BL_BLE_BLEControl2 65
+data 65 8 Unsigned
+Msg:0x1E BL_BLE_BLEControl3 65
+data 65 8 Unsigned
+Msg:0x1F BL_BLE_BLEControl4 65
+data 65 8 Unsigned
+Msg:0x4C BL_NFC_ControlNFCConfig1 65
+data 65 8 Unsigned
+Msg:0x4D BL_NFC_ControlNFCConfig2 65
+data 65 8 Unsigned
+Msg:0x4E BL_NFC_ControlNFCConfig3 65
+data 65 8 Unsigned
+Msg:0x4F BL_NFC_ControlNFCConfig4 65
+data 65 8 Unsigned
+Msg:0x271 BL_NFC_SysSt 65
+data 65 8 Unsigned
+Msg:0x326 BL_CWCD_SysSt 9
+data 9 8 Unsigned
+Msg:0x73 BL_CWCD_ConsoleNFCConfig1 65
+data 65 8 Unsigned
+Msg:0x74 BL_CWCD_ConsoleNFCConfig2 65
+data 65 8 Unsigned
+Msg:0x75 BL_CWCD_ConsoleNFCConfig3 65
+data 65 8 Unsigned
+Msg:0x76 BL_CWCD_ConsoleNFCConfig4 65
+data 65 8 Unsigned
+Msg:0x1CD E_DCDC_info 13
+data 13 8 Unsigned
+Msg:0x17B E_LDCU_BMS_Ctrl 17
+data 17 8 Unsigned
+Msg:0x17A E_LDCU_IPU_Ctrl 21
+data 21 8 Unsigned
+Msg:0x16B E_BMS_HV_PwrlimitSt 25
+data 25 8 Unsigned
+Msg:0x1CB E_BMS_CmdMsg 17
+data 17 8 Unsigned
+Msg:0x1DB E_BMS_BattSysCode 33
+data 33 8 Unsigned
+Msg:0x2F5 E_BMS_CellVolt_Temp 33
+data 33 8 Unsigned
+Msg:0x3C8 E_BMS_Info 21
+data 21 8 Unsigned
+Msg:0x177 E_BMS_CellVoltInfo 65
+data 65 8 Unsigned
+Msg:0x382 E_BMS_ModTempInfo 65
+data 65 8 Unsigned
+Msg:0x2F1 E_BMS_Chrg_BattSt 25
+data 25 8 Unsigned
+Msg:0x280 E_BMS_EVCC_CTRL 9
+data 9 8 Unsigned
+Msg:0x340 E_BMS_Monitor_info 65
+data 65 8 Unsigned
+Msg:0x162 E_IPUR_General 9
+data 9 8 Unsigned
+Msg:0x2F6 E_IPUR_Temp 9
+data 9 8 Unsigned
+Msg:0x163 E_IPUR_Limits 17
+data 17 8 Unsigned
+Msg:0x166 E_IPUF_General 9
+data 9 8 Unsigned
+Msg:0x2A5 E_IPUF_Temp 9
+data 9 8 Unsigned
+Msg:0x167 E_IPUF_Limits 17
+data 17 8 Unsigned
+Msg:0x304 E_OBC_Info 33
+data 33 8 Unsigned
+Msg:0x2D2 E_BMS_OCRecord 13
+data 13 8 Unsigned
+Msg:0x3DA E_BMS_TBOX 13
+data 13 8 Unsigned
+Msg:0x3DB E_LDCU_TBOX 9
+data 9 8 Unsigned
+Msg:0x3DC E_DCDC_TBOX 9
+data 9 8 Unsigned
+Msg:0x3DD E_IPUF_TBOX 13
+data 13 8 Unsigned
+Msg:0x3DE E_IPUR_TBOX 13
+data 13 8 Unsigned
+Msg:0x46 E_BMS_CDCU_SecOCSyncReq 9
+data 9 8 Unsigned
+Msg:0x47 E_IPUF_CDCU_SecOCSyncReq 9
+data 9 8 Unsigned
+Msg:0x100 C_XPU_IPB_ADASToqCtrl 9
+data 9 8 Unsigned
+Msg:0x127 C_IPB_SpdInfoF 9
+data 9 8 Unsigned
+Msg:0x128 C_IPB_SpdInfoR 9
+data 9 8 Unsigned
+Msg:0x1A7 C_IPB_SysSt 9
+data 9 8 Unsigned
+Msg:0x12A C_IPB_SpdEdges 9
+data 9 8 Unsigned
+Msg:0x1A8 C_IPB_Accel 9
+data 9 8 Unsigned
+Msg:0x1A9 C_IPB_AccelOffset 9
+data 9 8 Unsigned
+Msg:0x111 C_IPB_LDCU_RTorqCtrl 9
+data 9 8 Unsigned
+Msg:0x112 C_IPB_LDCU_FTorqCtrl 9
+data 9 8 Unsigned
+Msg:0x1B2 C_IPB_APBSysSt 9
+data 9 8 Unsigned
+Msg:0x11F C_IPB_EPB_APB_ROPP1 9
+data 9 8 Unsigned
+Msg:0x1B0 C_EPS_Sys 9
+data 9 8 Unsigned
+Msg:0x115 C_EPS_SASInfo 9
+data 9 8 Unsigned
+Msg:0x116 C_IPB_SysSt1 9
+data 9 8 Unsigned
+Msg:0x18A C_IPB_SysSt2 9
+data 9 8 Unsigned
+Msg:0x3CF C_IPB_RKA 17
+data 17 8 Unsigned
+Msg:0x117 C_LDCU_SysSt 9
+data 9 8 Unsigned
+Msg:0x106 C_LDCU_RTorqInfo 9
+data 9 8 Unsigned
+Msg:0x107 C_LDCU_FTorqInfo 9
+data 9 8 Unsigned
+Msg:0x11B C_LDCU_IPB_MotorSpd 9
+data 9 8 Unsigned
+Msg:0x10A C_LDCU_IPB_FaxleRegen 9
+data 9 8 Unsigned
+Msg:0x10B C_LDCU_IPB_RaxleRegen 9
+data 9 8 Unsigned
+Msg:0x18F C_AS_SysSt1 9
+data 9 8 Unsigned
+Msg:0x292 C_AS_SysSt2 49
+data 49 8 Unsigned
+Msg:0x293 C_AS_SysSt3 9
+data 9 8 Unsigned
+Msg:0x1B6 C_AS_SensorInfo 9
+data 9 8 Unsigned
+Msg:0x1B3 C_RDCU_APBSysSt 9
+data 9 8 Unsigned
+Msg:0x118 C_RDCU_IPB_APB_ROPP 9
+data 9 8 Unsigned
+Msg:0x1B4 C_LDCU_APBSysSt 9
+data 9 8 Unsigned
+Msg:0x10C C_LDCU_VMCctrl 9
+data 9 8 Unsigned
+Msg:0x229 C_LDCU_AS_Ctrl 9
+data 9 8 Unsigned
+Msg:0x114 C_LDCU_EPB_APB_ROPP2 9
+data 9 8 Unsigned
+Msg:0x23F C_RDCU_RLIN3Info 25
+data 25 8 Unsigned
+Msg:0x126 C_IPB_SpdInfo_E2E 17
+data 17 8 Unsigned
+Msg:0x1A6 C_IPB_SysSt_E2E 13
+data 13 8 Unsigned
+Msg:0x113 C_EPS_SASInfo_E2E 17
+data 17 8 Unsigned
+Msg:0x3D4 C_SMLS_01 9
+data 9 8 Unsigned
+Msg:0xB5 C_Waehlhebel_04 9
+data 9 8 Unsigned

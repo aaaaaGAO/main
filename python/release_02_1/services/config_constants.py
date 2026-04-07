@@ -43,6 +43,17 @@ OPTION_CASE_MODELS = "case_models"
 OPTION_CASE_TARGET_VERSIONS = "case_target_versions"
 OPTION_DIDINFO_INPUTS = "didinfo_inputs"
 OPTION_CIN_INPUT_EXCEL = "cin_input_excel"
+OPTION_UART_EXCEL = "uart_excel"
+OPTION_IGN_WAITTIME = "ign_waittime"
+OPTION_IGN_CURRENT = "ign_current"
+OPTION_LOGIN_USERNAME = "login_username"
+OPTION_LOGIN_PASSWORD = "login_password"
+OPTION_C_PWR = "c_pwr"
+OPTION_C_RLY = "c_rly"
+OPTION_C_IG = "c_ig"
+OPTION_C_PW = "c_pw"
+OPTION_IGNITION_CYCLE_WAIT_TIME = "waitTime"
+OPTION_IGNITION_CYCLE_CURRENT = "current"
 
 DEFAULT_DID_CONFIG_FILENAME = "DIDConfig.txt"
 DEFAULT_DOMAIN_LR_REAR = SECTION_LR_REAR
@@ -181,14 +192,14 @@ CENTRAL_UART_UI_KEY_MAP: dict[str, str] = {
 
 CENTRAL_MANAGED_KEYS: frozenset[str] = frozenset(
     {
-        "c_pwr",
-        "c_rly",
-        "c_ig",
-        "c_pw",
-        "ign_waittime",
-        "ign_current",
-        "login_username",
-        "login_password",
+        OPTION_C_PWR,
+        OPTION_C_RLY,
+        OPTION_C_IG,
+        OPTION_C_PW,
+        OPTION_IGN_WAITTIME,
+        OPTION_IGN_CURRENT,
+        OPTION_LOGIN_USERNAME,
+        OPTION_LOGIN_PASSWORD,
         *UART_COMM_CFG_KEYS,
     }
 )

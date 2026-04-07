@@ -20,21 +20,27 @@ from services.config_constants import (
     OPTION_DIDINFO_INPUTS,
     OPTION_INPUT_EXCEL,
     OPTION_INPUTS,
+    OPTION_IGNITION_CYCLE_CURRENT,
+    OPTION_IGNITION_CYCLE_WAIT_TIME,
+    OPTION_IGN_CURRENT,
+    OPTION_IGN_WAITTIME,
+    OPTION_LOGIN_PASSWORD,
+    OPTION_LOGIN_USERNAME,
     OPTION_LOG_LEVEL_MIN,
     OPTION_OUTPUT_DIR,
     OPTION_SELECTED_SHEETS,
     OPTION_UDS_ECU_QUALIFIER,
+    OPTION_UART_EXCEL,
     SECTION_CENTRAL,
     SECTION_DTC,
     SECTION_DTC_CONFIG_ENUM,
     SECTION_DTC_IOMAPPING,
     SECTION_IGNITION_CYCLE,
-    SECTION_LR_REAR,
     UART_COMM_CFG_KEYS,
     UART_COMM_KEY_MAP,
 )
 from services.config_manager import ConfigManager
-from services.config_service import ConfigPaths, ConfigService
+from services.config_service import ConfigService
 
 
 class StateConfigService:
@@ -261,7 +267,7 @@ class StateConfigService:
             self.set_text_option(
                 cfg,
                 SECTION_CENTRAL,
-                "uart_excel",
+                OPTION_UART_EXCEL,
                 state.get("c_uart"),
                 remove_on_empty=True,
             )
@@ -288,27 +294,27 @@ class StateConfigService:
                     if not cfg.has_section(SECTION_IGNITION_CYCLE):
                         cfg.add_section(SECTION_IGNITION_CYCLE)
                     if state.get("c_ign_waitTime") is not None:
-                        cfg.set(SECTION_CENTRAL, "ign_waittime", ign_waittime)
-                        cfg.set(SECTION_IGNITION_CYCLE, "waitTime", ign_waittime)
+                        cfg.set(SECTION_CENTRAL, OPTION_IGN_WAITTIME, ign_waittime)
+                        cfg.set(SECTION_IGNITION_CYCLE, OPTION_IGNITION_CYCLE_WAIT_TIME, ign_waittime)
                     if state.get("c_ign_current") is not None:
-                        cfg.set(SECTION_CENTRAL, "ign_current", ign_current)
-                        cfg.set(SECTION_IGNITION_CYCLE, "current", ign_current)
+                        cfg.set(SECTION_CENTRAL, OPTION_IGN_CURRENT, ign_current)
+                        cfg.set(SECTION_IGNITION_CYCLE, OPTION_IGNITION_CYCLE_CURRENT, ign_current)
                 else:
                     if cfg.has_section(SECTION_CENTRAL):
-                        if cfg.has_option(SECTION_CENTRAL, "ign_waittime"):
-                            cfg.remove_option(SECTION_CENTRAL, "ign_waittime")
-                        if cfg.has_option(SECTION_CENTRAL, "ign_current"):
-                            cfg.remove_option(SECTION_CENTRAL, "ign_current")
+                        if cfg.has_option(SECTION_CENTRAL, OPTION_IGN_WAITTIME):
+                            cfg.remove_option(SECTION_CENTRAL, OPTION_IGN_WAITTIME)
+                        if cfg.has_option(SECTION_CENTRAL, OPTION_IGN_CURRENT):
+                            cfg.remove_option(SECTION_CENTRAL, OPTION_IGN_CURRENT)
                     if cfg.has_section(SECTION_IGNITION_CYCLE):
-                        if cfg.has_option(SECTION_IGNITION_CYCLE, "waitTime"):
-                            cfg.remove_option(SECTION_IGNITION_CYCLE, "waitTime")
-                        if cfg.has_option(SECTION_IGNITION_CYCLE, "current"):
-                            cfg.remove_option(SECTION_IGNITION_CYCLE, "current")
+                        if cfg.has_option(SECTION_IGNITION_CYCLE, OPTION_IGNITION_CYCLE_WAIT_TIME):
+                            cfg.remove_option(SECTION_IGNITION_CYCLE, OPTION_IGNITION_CYCLE_WAIT_TIME)
+                        if cfg.has_option(SECTION_IGNITION_CYCLE, OPTION_IGNITION_CYCLE_CURRENT):
+                            cfg.remove_option(SECTION_IGNITION_CYCLE, OPTION_IGNITION_CYCLE_CURRENT)
 
             if state.get("c_login_username") is not None:
-                cfg.set(SECTION_CENTRAL, "login_username", str(state.get("c_login_username") or "").strip())
+                cfg.set(SECTION_CENTRAL, OPTION_LOGIN_USERNAME, str(state.get("c_login_username") or "").strip())
             if state.get("c_login_password") is not None:
-                cfg.set(SECTION_CENTRAL, "login_password", str(state.get("c_login_password") or "").strip())
+                cfg.set(SECTION_CENTRAL, OPTION_LOGIN_PASSWORD, str(state.get("c_login_password") or "").strip())
 
             self.set_json_option_or_remove(
                 cfg,

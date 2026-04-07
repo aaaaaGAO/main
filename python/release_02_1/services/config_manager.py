@@ -382,7 +382,7 @@ class ConfigManager:
 
     @staticmethod
     def _has_relay_config(relay: Any) -> bool:
-        """判断单个继电器是否算已配置：须填写串口 port 或 relayID。
+        """判断单个继电器是否算已配置：须填写串口 port，或 relayID / id（前端继电器行主键）。
 
         仅含 relayType / 默认 coilStatuses（UI 渲染时自动补全）不算，否则用户未选串口
         或 ini 中残留骨架仍会触发生成 PowerRelayConfig.txt。
@@ -393,6 +393,8 @@ class ConfigManager:
         if port:
             return True
         relay_id = relay.get("relayID")
+        if relay_id is None:
+            relay_id = relay.get("id")
         if relay_id is not None and str(relay_id).strip() != "":
             return True
         return False
@@ -677,9 +679,13 @@ class ConfigManager:
                     config_file.writelines(cleaned)
             return read_config_if_exists(self._main_config_read_path)
 
+    def reload(self) -> configparser.ConfigParser:
+        """公开的配置重载入口，供跨模块调用。"""
+        return self._reload()
+
     def load_config(self) -> configparser.ConfigParser:
         """公开配置读取入口，供外部模块获取最新配置。"""
-        return self._reload()
+        return self.reload()
 
     @staticmethod
     def _ui_state_key(prefix: str, option_name: str) -> str:
@@ -903,7 +909,7 @@ class ConfigManager:
 
     @staticmethod
     def _is_relay_list_effectively_empty(relay_list_value: Any) -> bool:
-        """判断继电器列表是否为“有效空”：空列表，或所有项均未构成有效继电器配置（与 _has_relay_config 对齐，避免仅靠 relayID 判定）。"""
+        """判断继电器列表是否为“有效空”：空列表，或所有项均未构成有效继电器配置（与 _has_relay_config 对齐，含 id/relayID）。"""
         if relay_list_value is None or relay_list_value == "" or relay_list_value == [] or relay_list_value == {}:
             return True
         # 前端可能传回已解析的 list 或 JSON 字符串
@@ -964,7 +970,7 @@ class ConfigManager:
         增强点：
         - 对 CENTRAL 段的 UI 托管键（如 c_pwr/c_rly/c_ig/c_pw/ign_*/login_*/uart_comm_*）做“缺失即删”的处理，
           防止增量更新导致旧值残留。
-        - 继电器 c_rly 为列表：空列表或所有项均未填 port/relayID 时视为“有效空”，从配置中删除，避免骨架残留。
+        - 继电器 c_rly 为列表：空列表或所有项均未填 port/relayID/id 时视为“有效空”，从配置中删除，避免骨架残留。
         - 对所有节的键，若值为 None / 空串 / 空列表 / 空字典，则优先执行 remove_option 而不是写入空字符串。
         参数:
             data: 节名为键、值为「选项名->值」字典，如 {"LR_REAR": {"input_excel": "..."}, ...}。

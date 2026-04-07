@@ -246,14 +246,14 @@ def _find_header_row_and_indices(ws, *, max_scan_rows: int = 30) -> tuple[int, d
 # ==================== ⑤ 字符串/枚举工具 ====================
 
 
-def find_colon(s: str, start: int) -> int:
+def find_colon(text_line: str, start: int) -> int:
     """
-    返回 s[start:] 中第一个冒号（英文或中文）的位置。
-    形参：s - 传入待查字符串；start - 传入起始下标。
+    返回 text_line[start:] 中第一个冒号（英文或中文）的位置。
+    形参：text_line - 传入待查字符串；start - 传入起始下标。
     返回：int。位置索引，无则 -1。
     """
-    candidates = [s.find(c, start) for c in _COLON_CHARS]
-    candidates = [p for p in candidates if p >= 0]
+    candidates = [text_line.find(char, start) for char in _COLON_CHARS]
+    candidates = [found_at for found_at in candidates if found_at >= 0]
     return min(candidates) if candidates else -1
 
 
@@ -352,30 +352,30 @@ def parse_values_cell(values_cell: str) -> Dict[str, str]:
                 mapping[normalize_enum_key(right)] = left
             continue
 
-        i = 0
-        n = len(line)
-        while i < n:
-            j = find_colon(line, i)
-            if j < 0:
+        current_index = 0
+        line_length = len(line)
+        while current_index < line_length:
+            colon_index = find_colon(line, current_index)
+            if colon_index < 0:
                 break
-            left = line[i:j].strip()
+            left = line[current_index:colon_index].strip()
             if not left:
-                i = j + 1
+                current_index = colon_index + 1
                 continue
-            k = j + 1
-            while k < n and line[k].isspace():
-                k += 1
-            start_right = k
-            m = re.search(r"\s+\S+\s*[:\uFF1A]", line[start_right:])
-            next_pair_pos = start_right + m.start() if m else None
+            after_colon_index = colon_index + 1
+            while after_colon_index < line_length and line[after_colon_index].isspace():
+                after_colon_index += 1
+            start_right = after_colon_index
+            pair_boundary_match = re.search(r"\s+\S+\s*[:\uFF1A]", line[start_right:])
+            next_pair_pos = start_right + pair_boundary_match.start() if pair_boundary_match else None
             if next_pair_pos is None:
                 right = line[start_right:].strip()
-                i = n
+                current_index = line_length
             else:
                 right = line[start_right:next_pair_pos].strip()
-                i = next_pair_pos
-                while i < n and line[i].isspace():
-                    i += 1
+                current_index = next_pair_pos
+                while current_index < line_length and line[current_index].isspace():
+                    current_index += 1
             if not right:
                 continue
             mapping[normalize_enum_key(right)] = left.strip()

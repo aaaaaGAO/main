@@ -6,7 +6,7 @@
 真实实现位于 infra.excel.header；本模块仅作兼容 re-export。
 """
 
-from infra.excel.header import (  # noqa: F401
+from infra.excel.header import (  
     ColumnMapper,
     TestCaseHeaderResolver,
     find_header_row_and_col_indices,

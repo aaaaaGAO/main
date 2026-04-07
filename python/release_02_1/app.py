@@ -36,7 +36,7 @@ from infra.filesystem import get_base_dir
 from web import create_app
 
 # 工具显示名（Web 右上角 + build_exe 打包时的 EXE 文件名，只改此处即可）
-TOOL_DISPLAY_NAME = "测试用例生成工具_2026.4.3_V1.0"
+TOOL_DISPLAY_NAME = "测试用例生成工具_2026.4.3_V2.0"
 
 # ---------------------------------------------------------------------------
 # 配置
@@ -93,6 +93,26 @@ def auto_suicide_monitor() -> None:
 
 
 # ---------------------------------------------------------------------------
+# 根路由与全局错误处理（模块级函数，在 make_app 中注册到 app）
+# ---------------------------------------------------------------------------
+def index():
+    """首页：渲染 index.html。"""
+    return render_template("index.html", app_name=TOOL_DISPLAY_NAME)
+
+
+def handle_500(e):
+    """统一处理 HTTP 500：将异常信息返回为 JSON。参数 e: 触发的异常对象。"""
+    return jsonify(success=False, message=str(e) if e else "Internal Server Error"), 500
+
+
+def handle_exception(e):
+    """全局异常处理：HTTPException 原样返回，其余转 500。参数 e: 触发的异常对象。"""
+    if isinstance(e, HTTPException):
+        return e
+    return handle_500(e)
+
+
+# ---------------------------------------------------------------------------
 # 应用工厂：创建 app 并挂载仅属于 app 的路由与配置
 # ---------------------------------------------------------------------------
 def make_app() -> Flask:
@@ -108,25 +128,11 @@ def make_app() -> Flask:
     app.template_folder = get_resource_path("templates")
     app.static_folder = get_resource_path("static")
 
-    # 3. 根路由定义（必须缩进在 make_app 内部）
-    @app.route("/")
-    def index():
-        return render_template("index.html", app_name=TOOL_DISPLAY_NAME)
+    # 3. 根路由与全局错误处理
+    app.add_url_rule("/", view_func=index)
+    app.register_error_handler(500, handle_500)
+    app.register_error_handler(Exception, handle_exception)
 
-    # 4. 全局错误处理（必须缩进在 make_app 内部）
-    @app.errorhandler(500)
-    def handle_500(e):
-        """统一处理 HTTP 500：将异常信息返回为 JSON。参数 e: 触发的异常对象。"""
-        return jsonify(success=False, message=str(e) if e else "Internal Server Error"), 500
-
-    @app.errorhandler(Exception)
-    def handle_exception(e):
-        """全局异常处理：HTTPException 原样返回，其余转 500。参数 e: 触发的异常对象。"""
-        if isinstance(e, HTTPException):
-            return e
-        return handle_500(e)
-
-    # 5. 返回构建好的实例
     return app
 
 
@@ -137,10 +143,16 @@ app = make_app()
 
 
 @app.before_request
-def _track_heartbeat():
+def track_heartbeat():
     global last_heartbeat_time
     if request.path == "/api/heartbeat" and request.method == "POST":
         last_heartbeat_time = time.time()
+
+
+def open_browser_after_delay(url: str) -> None:
+    """延迟打开浏览器（在独立线程中调用，避免阻塞服务启动）。"""
+    time.sleep(1.5)
+    webbrowser.open(url)
 
 
 def start_app() -> None:
@@ -161,7 +173,8 @@ def start_app() -> None:
     print(f"正在启动服务: {url}")
     
     threading.Thread(
-        target=lambda: (time.sleep(1.5), webbrowser.open(url)),
+        target=open_browser_after_delay,
+        args=(url,),
         daemon=True,
     ).start()
 
