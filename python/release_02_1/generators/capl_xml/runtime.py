@@ -20,7 +20,7 @@ from core.parse_table_loggers import get_testcases_parse_logger
 from core.generator_config import GeneratorConfig
 from core.generator_logging import GeneratorLogger
 from core.run_context import clear_run_logger as _clear_run_logger_impl
-from services.config_constants import DEFAULT_DOMAIN_LR_REAR, SECTION_FILTER, SECTION_LR_REAR, SECTION_PATHS
+from services.config_constants import DEFAULT_DOMAIN_LR_REAR, SECTION_CENTRAL, SECTION_FILTER, SECTION_LR_REAR, SECTION_PATHS
 from utils.logger import PROGRESS_LEVEL
 from utils.sheet_filter import parse_selected_sheets
 
@@ -167,17 +167,21 @@ def load_runtime_config(
 
     config = gconfig.raw_config
 
-    case_excel_file = gconfig.get_first(
-        build_xml_domain_candidates(
-            domain,
-            "xml_input_excel",
-            "Xml_Input_Excel",
-            "input_excel",
-            "Input_Excel",
-            "input_excel_dir",
-            "Input_Excel_Dir",
+    if domain == SECTION_CENTRAL:
+        # CENTRAL 试点：定点读取，不做跨节/跨别名兜底。
+        case_excel_file = gconfig.get_required_from_section(domain, "xml_input_excel")
+    else:
+        case_excel_file = gconfig.get_first(
+            build_xml_domain_candidates(
+                domain,
+                "xml_input_excel",
+                "Xml_Input_Excel",
+                "input_excel",
+                "Input_Excel",
+                "input_excel_dir",
+                "Input_Excel_Dir",
+            )
         )
-    )
     if not case_excel_file:
         raise ValueError(
             "未配置 Xml_Input_Excel 或 xml_input_excel。\n"
@@ -186,15 +190,18 @@ def load_runtime_config(
         )
 
     output_xml_file = gconfig.get_fixed("xml_output_filename") or "Generated_Testcase.xml"
-    output_dir = gconfig.get_first(
-        build_xml_domain_candidates(
-            domain,
-            "Output_Dir_Xml",
-            "output_dir_xml",
-            "Output_Dir",
-            "output_dir",
+    if domain == SECTION_CENTRAL:
+        output_dir = gconfig.get_required_from_section(domain, "output_dir")
+    else:
+        output_dir = gconfig.get_first(
+            build_xml_domain_candidates(
+                domain,
+                "Output_Dir_Xml",
+                "output_dir_xml",
+                "Output_Dir",
+                "output_dir",
+            )
         )
-    )
     if not output_dir:
         raise ValueError(
             "未在当前主配置文件的当前域节中找到 Output_Dir / output_dir 或 Output_Dir_Xml / output_dir_xml，"
@@ -208,32 +215,44 @@ def load_runtime_config(
     if config.has_section(domain) or (
         domain == DEFAULT_DOMAIN_LR_REAR and (config.has_section(SECTION_FILTER) or config.has_section(SECTION_LR_REAR))
     ):
-        case_levels_value = gconfig.get_first(build_xml_domain_candidates(domain, "Case_Levels", "case_levels"))
+        if domain == SECTION_CENTRAL:
+            case_levels_value = gconfig.get_from_section(domain, "case_levels", fallback="")
+        else:
+            case_levels_value = gconfig.get_first(build_xml_domain_candidates(domain, "Case_Levels", "case_levels"))
         allowed_levels = CaseFilter.parse_levels(case_levels_value)
         if allowed_levels is not None:
             print(f"[xml] 等级过滤已启用: {sorted(allowed_levels)}")
         else:
             print(f"[xml] 等级过滤: 不过滤（ALL 或未配置，原始值={case_levels_value!r}）")
 
-        case_platforms_value = gconfig.get_first(
-            build_xml_domain_candidates(domain, "Case_Platforms", "case_platforms")
-        )
+        if domain == SECTION_CENTRAL:
+            case_platforms_value = gconfig.get_from_section(domain, "case_platforms", fallback="")
+        else:
+            case_platforms_value = gconfig.get_first(
+                build_xml_domain_candidates(domain, "Case_Platforms", "case_platforms")
+            )
         allowed_platforms = CaseFilter.parse_platforms_or_models(case_platforms_value)
         if allowed_platforms is not None:
             print(f"[xml] 平台过滤已启用: {sorted(allowed_platforms)}")
         else:
             print(f"[xml] 平台过滤: 不过滤（ALL 或未配置，原始值={case_platforms_value!r}）")
 
-        case_models_value = gconfig.get_first(build_xml_domain_candidates(domain, "Case_Models", "case_models"))
+        if domain == SECTION_CENTRAL:
+            case_models_value = gconfig.get_from_section(domain, "case_models", fallback="")
+        else:
+            case_models_value = gconfig.get_first(build_xml_domain_candidates(domain, "Case_Models", "case_models"))
         allowed_models = CaseFilter.parse_platforms_or_models(case_models_value)
         if allowed_models is not None:
             print(f"[xml] 车型过滤已启用: {sorted(allowed_models)}")
         else:
             print(f"[xml] 车型过滤: 不过滤（未配置，原始值={case_models_value!r}）")
 
-        case_target_versions_value = (
-            gconfig.get_first(build_xml_domain_candidates(domain, "Case_Target_Versions", "case_target_versions")) or ""
-        )
+        if domain == SECTION_CENTRAL:
+            case_target_versions_value = gconfig.get_from_section(domain, "case_target_versions", fallback="") or ""
+        else:
+            case_target_versions_value = (
+                gconfig.get_first(build_xml_domain_candidates(domain, "Case_Target_Versions", "case_target_versions")) or ""
+            )
         try:
             fopts = parse_shaixuan_config(base_dir)
             all_target_versions = fopts.get("target_versions") or []
@@ -250,7 +269,10 @@ def load_runtime_config(
         print("[xml] 等级过滤: 未找到当前域 / [FILTER] / [LR_REAR] 配置，不过滤")
         allowed_target_versions = None
 
-    selected_sheets_str = gconfig.get_first(build_xml_domain_candidates(domain, "selected_sheets"), fallback="")
+    if domain == SECTION_CENTRAL:
+        selected_sheets_str = gconfig.get_from_section(domain, "selected_sheets", fallback="")
+    else:
+        selected_sheets_str = gconfig.get_first(build_xml_domain_candidates(domain, "selected_sheets"), fallback="")
     selected_filter = parse_selected_sheets(selected_sheets_str)
 
     if not os.path.isabs(case_excel_file):

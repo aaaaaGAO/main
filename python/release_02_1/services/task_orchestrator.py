@@ -277,6 +277,10 @@ class TaskOrchestrator:
                 self._task_service.base_dir,
                 self._task_service.config_path,
                 self._config_manager,
+                run_can=run_can,
+                run_xml=run_xml,
+                run_did=run_did,
+                run_cin=run_cin,
             )
             if not is_valid:
                 return OrchestratorResult(

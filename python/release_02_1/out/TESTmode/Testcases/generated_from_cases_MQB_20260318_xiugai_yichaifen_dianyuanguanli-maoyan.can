@@ -1,0 +1,222 @@
+/*@!Encoding: 936*/
+
+includes
+{
+}
+
+variables
+{
+}
+
+testcase SYS_CDCU_SOCdianyuanguanlimaoyan_0001()
+{
+  TestDescription("前置环境设置-1");
+  teststep("warning","原始用例id为SYS-CDCU-SOC电源管理冒烟-0001");
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("12&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 12&CH1
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("5"); // 测试步骤 TC_Sleep 5
+  g_CAN_Bus_Swc_AllCANDataDefaultAllCh(); // 测试步骤 TC_CANTest SET AllCANDataDefaultAllCh
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("3"); // 测试步骤 TC_Sleep 3
+  g_CAN_Bus_Swc_Disable_AllSentMessage(); // 测试步骤 TC_CANTest Disable AllSentMessage
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("3"); // 测试步骤 TC_Sleep 3
+  g_EM_UDS_ETH_Swc_DOIP_Disconnect(); // 测试步骤 TC_CANTest DOIP Disconnect
+  g_EM_UDS_CAN_Swc_Diag("10 03"); // 测试步骤 TC_CANTest Diag 10 03
+  g_EM_UDS_CAN_Swc_TC_CheckDiagRes("50 03 *"); // 预期结果 TC_CheckDiagRes 50 03 *
+  g_EM_UDS_CAN_Swc_Diag_SA_01_02(); // 测试步骤 TC_CANTest Diag SA_01_02//一级解锁
+  g_EM_UDS_CAN_Swc_TC_CheckDiagRes("67 02"); // 预期结果 TC_CheckDiagRes 67 02
+  g_EM_UDS_CAN_Swc_Diag("2E CF 00 02 00 00 00 00 00 00 00 00 00"); // 测试步骤 TC_CANTest Diag 2E CF 00 02 00 00 00 00 00 00 00 00 00
+  g_EM_UDS_CAN_Swc_TC_CheckDiagRes("6E CF 00 *"); // 预期结果 TC_CheckDiagRes 6E CF 00 *
+  g_EM_UDS_CAN_Swc_Diag("2E CF 0A 01"); // 测试步骤 TC_CANTest Diag 2E CF 0A 01//KL30唤醒未使能
+  g_EM_UDS_CAN_Swc_TC_CheckDiagRes("6E CF 0A *"); // 预期结果 TC_CheckDiagRes 6E CF 0A *
+  g_EM_UDS_CAN_Swc_Diag("2E A5 F5 00"); // 测试步骤 TC_CANTest Diag 2E A5 F5 00//关闭SOC异常监控
+  g_EM_UDS_CAN_Swc_TC_CheckDiagRes("6E A5 F5 *"); // 预期结果 TC_CheckDiagRes 6E A5 F5 *
+  g_EM_UDS_CAN_Swc_Diag("11 01"); // 测试步骤 TC_CANTest Diag 11 01
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("5"); // 测试步骤 TC_Sleep 5
+}
+
+testcase SYS_CDCU_SOCdianyuanguanlimaoyan_0002()
+{
+  TestDescription("SOC上电条件判断&SOC上电流程");
+  teststep("warning","原始用例id为SYS-CDCU-SOC电源管理冒烟-0002");
+  g_EM_Equipment_Swc_TC_IG("OFF"); // 测试步骤 TC_IG OFF
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("3"); // 测试步骤 TC_Sleep 3
+  g_EM_Equipment_Swc_TC_PW("ON"); // 测试步骤 TC_PW ON
+  g_EM_Equipment_Swc_TC_IG("ON"); // 测试步骤 TC_IG ON
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("5"); // 测试步骤 TC_Sleep 5
+  g_EM_Uart_Swc_Ser_CheckRaw("1070080001"); // 预期结果 TC_CANTest Ser CheckRaw 1070080001 // (MCU 通知SOC电源模式切换 normal)
+}
+
+testcase SYS_CDCU_SOCdianyuanguanlimaoyan_0003()
+{
+  TestDescription("SOC上电条件判断&SOC上电流程");
+  teststep("warning","原始用例id为SYS-CDCU-SOC电源管理冒烟-0003");
+  g_EM_Equipment_Swc_TC_IG("OFF"); // 测试步骤 TC_IG OFF
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("3"); // 测试步骤 TC_Sleep 3
+  g_EM_Equipment_Swc_TC_PW("ON"); // 测试步骤 TC_PW ON
+  g_EM_Equipment_Swc_TC_IG("ON"); // 测试步骤 TC_IG ON
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt1.I_LDCU_PowerMode 0x02"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt1.I_LDCU_PowerMode 0x02
+  g_EM_Uart_Swc_Ser_CheckRaw("1070080001"); // 预期结果 TC_CANTest Ser CheckRaw 1070080001 // (MCU 通知SOC电源模式切换 normal)
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("5"); // 测试步骤 TC_Sleep 5
+  g_CAN_Bus_Swc_Disable_AllSentMessage(); // 测试步骤 TC_CANTest Disable AllSentMessage
+  g_EM_Uart_Swc_Ser_CheckRaw("1070080001"); // 预期结果 TC_CANTest Ser CheckRaw 1070080001 // (MCU 通知SOC电源模式切换 normal)
+}
+
+testcase SYS_CDCU_SOCdianyuanguanlimaoyan_0004()
+{
+  TestDescription("SOC上电条件判断&SOC上电流程");
+  teststep("warning","原始用例id为SYS-CDCU-SOC电源管理冒烟-0004");
+  g_EM_Equipment_Swc_TC_IG("OFF"); // 测试步骤 TC_IG OFF
+  g_CAN_Bus_Swc_Set("I_LDCU_NM.I_LDCU_NMActiveWakeupBit 1"); // 测试步骤 TC_CANTest SET I_LDCU_NM.I_LDCU_NMActiveWakeupBit 1
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("5"); // 测试步骤 TC_Sleep 5
+  g_EM_Uart_Swc_Ser_CheckRaw("1070080001"); // 预期结果 TC_CANTest Ser CheckRaw 1070080001 // (MCU 通知SOC电源模式切换 normal)
+  g_CAN_Bus_Swc_Disable_AllSentMessage(); // 测试步骤 TC_CANTest Disable AllSentMessage
+  g_EM_Uart_Swc_Ser_CheckRaw("1070080001"); // 预期结果 TC_CANTest Ser CheckRaw 1070080001 // (MCU 通知SOC电源模式切换 normal)
+}
+
+testcase SYS_CDCU_SOCdianyuanguanlimaoyan_0005()
+{
+  TestDescription("SOC上电条件判断&SOC上电流程");
+  teststep("warning","原始用例id为SYS-CDCU-SOC电源管理冒烟-0005");
+  g_EM_Equipment_Swc_TC_IG("ON"); // 测试步骤 TC_IG ON
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("3"); // 测试步骤 TC_Sleep 3
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("7.6&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 7.6&CH1//一级欠压KL30上电
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("5"); // 测试步骤 TC_Sleep 5
+  g_EM_Uart_Swc_Ser_CheckRaw("1070080001"); // 预期结果 TC_CANTest Ser CheckRaw 1070080001 //(MCU 通知SOC电源模式切换 normal)
+}
+
+testcase SYS_CDCU_SOCdianyuanguanlimaoyan_0006()
+{
+  TestDescription("SOC上电条件判断&SOC上电流程");
+  teststep("warning","原始用例id为SYS-CDCU-SOC电源管理冒烟-0006");
+  g_EM_Equipment_Swc_TC_IG("OFF"); // 测试步骤 TC_IG OFF
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("7.6&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 7.6&CH1//一级欠压KL30上电
+  g_CAN_Bus_Swc_Set("I_LDCU_NM.I_LDCU_NMActiveWakeupBit 1"); // 测试步骤 TC_CANTest SET I_LDCU_NM.I_LDCU_NMActiveWakeupBit 1
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("5"); // 测试步骤 TC_Sleep 5
+  g_CAN_Bus_Swc_Disable_AllSentMessage(); // 测试步骤 TC_CANTest Disable AllSentMessage
+  g_EM_Uart_Swc_Ser_CheckRaw("1070080001"); // 预期结果 TC_CANTest Ser CheckRaw 1070080001 //(MCU 通知SOC电源模式切换 normal)
+}
+
+testcase SYS_CDCU_SOCdianyuanguanlimaoyan_0007()
+{
+  TestDescription("SOC上电条件判断&SOC上电流程");
+  teststep("warning","原始用例id为SYS-CDCU-SOC电源管理冒烟-0007");
+  g_EM_Equipment_Swc_TC_IG("ON"); // 测试步骤 TC_IG ON
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("1"); // 测试步骤 TC_Sleep 1
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("16.9&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 16.9&CH1//一级过压KL30上电
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("5"); // 测试步骤 TC_Sleep 5
+  g_EM_Uart_Swc_Ser_CheckRaw("1070080001"); // 预期结果 TC_CANTest Ser CheckRaw 1070080001 //(MCU 通知SOC电源模式切换 normal)
+}
+
+testcase SYS_CDCU_SOCdianyuanguanlimaoyan_0008()
+{
+  TestDescription("SOC上电条件判断&SOC上电流程");
+  teststep("warning","原始用例id为SYS-CDCU-SOC电源管理冒烟-0008");
+  g_EM_Equipment_Swc_TC_IG("OFF"); // 测试步骤 TC_IG OFF
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("1"); // 测试步骤 TC_Sleep 1
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("16.9&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 16.9&CH1//一级过压KL30上电
+  g_CAN_Bus_Swc_Set("I_LDCU_NM.I_LDCU_NMActiveWakeupBit 1"); // 测试步骤 TC_CANTest SET I_LDCU_NM.I_LDCU_NMActiveWakeupBit 1
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("5"); // 测试步骤 TC_Sleep 5
+  g_CAN_Bus_Swc_Disable_AllSentMessage(); // 测试步骤 TC_CANTest Disable AllSentMessage
+  g_EM_Uart_Swc_Ser_CheckRaw("1070080001"); // 预期结果 TC_CANTest Ser CheckRaw 1070080001 //(MCU 通知SOC电源模式切换 normal)
+}
+
+testcase SYS_CDCU_SOCdianyuanguanlimaoyan_0009()
+{
+  TestDescription("SOC下电条件判断&SOC下电流程");
+  teststep("warning","原始用例id为SYS-CDCU-SOC电源管理冒烟-0009");
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("12&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 12&CH1
+  g_EM_Equipment_Swc_TC_IG("ON"); // 测试步骤 TC_IG ON
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("5"); // 测试步骤 TC_Sleep 5
+  g_EM_Uart_Swc_Ser_CheckRaw("1070080001"); // 预期结果 TC_CANTest Ser CheckRaw 1070080001 // (MCU 通知SOC电源模式切换 normal)
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("18.4&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 18.4&CH1//二级过压KL30上电
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("10"); // 测试步骤 TC_Sleep 10
+  g_EM_Uart_Swc_Ser_CheckRaw("1070080003"); // 预期结果 TC_CANTest Ser CheckRaw 1070080003// (MCU 通知SOC电源模式切换 OFF)
+}
+
+testcase SYS_CDCU_SOCdianyuanguanlimaoyan_0010()
+{
+  TestDescription("SOC下电条件判断&SOC下电流程");
+  teststep("warning","原始用例id为SYS-CDCU-SOC电源管理冒烟-0010");
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("12&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 12&CH1
+  g_EM_Equipment_Swc_TC_IG("OFF"); // 测试步骤 TC_IG OFF
+  g_CAN_Bus_Swc_Set("I_LDCU_NM.I_LDCU_NMActiveWakeupBit 1"); // 测试步骤 TC_CANTest SET I_LDCU_NM.I_LDCU_NMActiveWakeupBit 1
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("5"); // 测试步骤 TC_Sleep 5
+  g_EM_Uart_Swc_Ser_CheckRaw("1070080001"); // 预期结果 TC_CANTest Ser CheckRaw 1070080001 // (MCU 通知SOC电源模式切换 normal)
+  g_CAN_Bus_Swc_Disable_AllSentMessage(); // 测试步骤 TC_CANTest Disable AllSentMessage
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("18.4&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 18.4&CH1//二级过压上电
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("8"); // 测试步骤 TC_Sleep 8
+  g_EM_Uart_Swc_Ser_CheckRaw("1070080003"); // 预期结果 TC_CANTest Ser CheckRaw 1070080003// (MCU 通知SOC电源模式切换 OFF)
+}
+
+testcase SYS_CDCU_SOCdianyuanguanlimaoyan_0011()
+{
+  TestDescription("SOC下电条件判断&SOC下电流程");
+  teststep("warning","原始用例id为SYS-CDCU-SOC电源管理冒烟-0011");
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("12&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 12&CH1
+  g_EM_Equipment_Swc_TC_IG("ON"); // 测试步骤 TC_IG ON
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("3"); // 测试步骤 TC_Sleep 3
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("7.6&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 7.6&CH1//一级欠压上电
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("8"); // 测试步骤 TC_Sleep 8
+  g_EM_Uart_Swc_Ser_CheckRaw("1070080001"); // 预期结果 TC_CANTest Ser CheckRaw 1070080001 // (MCU 通知SOC电源模式切换 normal)
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("18.4&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 18.4&CH1//二级过压上电
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("8"); // 测试步骤 TC_Sleep 8
+  g_EM_Uart_Swc_Ser_CheckRaw("1070080003"); // 预期结果 TC_CANTest Ser CheckRaw 1070080003// (MCU 通知SOC电源模式切换 OFF)
+}
+
+testcase SYS_CDCU_SOCdianyuanguanlimaoyan_0012()
+{
+  TestDescription("SOC下电条件判断&SOC下电流程");
+  teststep("warning","原始用例id为SYS-CDCU-SOC电源管理冒烟-0012");
+  g_EM_Equipment_Swc_TC_IG("OFF"); // 测试步骤 TC_IG OFF
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("3"); // 测试步骤 TC_Sleep 3
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("7.6&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 7.6&CH1//一级欠压KL30上电
+  g_CAN_Bus_Swc_Set("I_LDCU_NM.I_LDCU_NMActiveWakeupBit 1"); // 测试步骤 TC_CANTest SET I_LDCU_NM.I_LDCU_NMActiveWakeupBit 1
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("5"); // 测试步骤 TC_Sleep 5
+  g_CAN_Bus_Swc_Disable_AllSentMessage(); // 测试步骤 TC_CANTest Disable AllSentMessage
+  g_EM_Uart_Swc_Ser_CheckRaw("1070080001"); // 预期结果 TC_CANTest Ser CheckRaw 1070080001 // (MCU 通知SOC电源模式切换 normal)
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("18.4&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 18.4&CH1//二级过压KL30上电
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("8"); // 测试步骤 TC_Sleep 8
+  g_EM_Uart_Swc_Ser_CheckRaw("1070080003"); // 预期结果 TC_CANTest Ser CheckRaw 1070080003// (MCU 通知SOC电源模式切换 OFF)
+}
+
+testcase SYS_CDCU_SOCdianyuanguanlimaoyan_0013()
+{
+  TestDescription("SOC下电条件判断&SOC下电流程");
+  teststep("warning","原始用例id为SYS-CDCU-SOC电源管理冒烟-0013");
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("12&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 12&CH1
+  g_EM_Equipment_Swc_TC_IG("ON"); // 测试步骤 TC_IG ON
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("3"); // 测试步骤 TC_Sleep 3
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("16.9&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 16.9&CH1//一级过压KL30上电
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("5"); // 测试步骤 TC_Sleep 5
+  g_EM_Uart_Swc_Ser_CheckRaw("1070080001"); // 预期结果 TC_CANTest Ser CheckRaw 1070080001 // (MCU 通知SOC电源模式切换 normal)
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("18.4&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 18.4&CH1//二级过压KL30上电
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("8"); // 测试步骤 TC_Sleep 8
+  g_EM_Uart_Swc_Ser_CheckRaw("1070080003"); // 预期结果 TC_CANTest Ser CheckRaw 1070080003// (MCU 通知SOC电源模式切换 OFF)
+}
+
+testcase SYS_CDCU_SOCdianyuanguanlimaoyan_0014()
+{
+  TestDescription("SOC下电条件判断&SOC下电流程");
+  teststep("warning","原始用例id为SYS-CDCU-SOC电源管理冒烟-0014");
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("12&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 12&CH1
+  g_EM_Equipment_Swc_TC_IG("OFF"); // 测试步骤 TC_IG OFF
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("3"); // 测试步骤 TC_Sleep 3
+  g_CAN_Bus_Swc_Set("I_LDCU_NM.I_LDCU_NMActiveWakeupBit 1"); // 测试步骤 TC_CANTest SET I_LDCU_NM.I_LDCU_NMActiveWakeupBit 1
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("16.9&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 16.9&CH1//一级过压KL30上电
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("5"); // 测试步骤 TC_Sleep 5
+  g_EM_Uart_Swc_Ser_CheckRaw("1070080001"); // 预期结果 TC_CANTest Ser CheckRaw 1070080001 // (MCU 通知SOC电源模式切换 normal)
+  g_CAN_Bus_Swc_Disable_AllSentMessage(); // 测试步骤 TC_CANTest Disable AllSentMessage
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("18.4&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 18.4&CH1//二级过压KL30上电
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("8"); // 测试步骤 TC_Sleep 8
+  g_EM_Uart_Swc_Ser_CheckRaw("1070080003"); // 预期结果 TC_CANTest Ser CheckRaw 1070080003// (MCU 通知SOC电源模式切换 OFF)
+}
+
+testcase SYS_CDCU_SOCdianyuanguanlimaoyan_0015()
+{
+  TestDescription("恢复环境");
+  teststep("warning","原始用例id为SYS-CDCU-SOC电源管理冒烟-0015");
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("12&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 12&CH1
+  g_EM_Equipment_Swc_TC_IG("ON"); // 测试步骤 TC_IG ON
+  g_CAN_Bus_Swc_AllCANDataDefaultAllCh(); // 测试步骤 TC_CANTest SET AllCANDataDefaultAllCh
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("3"); // 测试步骤 TC_Sleep 3
+  g_CAN_Bus_Swc_Disable_AllSentMessage(); // 测试步骤 TC_CANTest Disable AllSentMessage
+}

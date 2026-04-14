@@ -10,7 +10,7 @@ import sys
 from openpyxl import load_workbook
 
 from core.generator_config import GeneratorConfig
-from services.config_constants import DEFAULT_DOMAIN_LR_REAR, SECTION_PATHS
+from services.config_constants import DEFAULT_DOMAIN_LR_REAR, SECTION_CENTRAL, SECTION_PATHS
 from infra.filesystem.pathing import RuntimePathResolver
 from utils.path_utils import list_excel_files, resolve_target_subdir
 
@@ -72,15 +72,19 @@ class CANEntrypointSupport:
     def build_runtime_paths(gconfig: GeneratorConfig, domain: str = DEFAULT_DOMAIN_LR_REAR) -> dict:
         base_dir = gconfig.base_dir
 
-        raw_path = gconfig.get_first(
-            CANEntrypointSupport.build_domain_candidates(
-                domain,
-                "input_excel",
-                "input_excel_dir",
-                "Input_Excel_Dir",
-                "Input_Excel",
+        if domain == SECTION_CENTRAL:
+            # CENTRAL 试点：定点读取，不做跨节兜底。
+            raw_path = gconfig.get_required_from_section(domain, "input_excel")
+        else:
+            raw_path = gconfig.get_first(
+                CANEntrypointSupport.build_domain_candidates(
+                    domain,
+                    "input_excel",
+                    "input_excel_dir",
+                    "Input_Excel_Dir",
+                    "Input_Excel",
+                )
             )
-        )
         if not raw_path:
             raise ValueError(f"未配置输入路径：请配置 [{domain}] 的 input_excel。")
 
@@ -113,16 +117,19 @@ class CANEntrypointSupport:
             else os.path.join(base_dir, mapping_excel_file)
         )
 
-        output_dir = gconfig.get_first(
-            CANEntrypointSupport.build_domain_candidates(
-                domain,
-                "Output_Dir_Can",
-                "output_dir_can",
-                "Output_Dir",
-                "output_dir",
-            ),
-            fallback="./output",
-        )
+        if domain == SECTION_CENTRAL:
+            output_dir = gconfig.get_required_from_section(domain, "output_dir")
+        else:
+            output_dir = gconfig.get_first(
+                CANEntrypointSupport.build_domain_candidates(
+                    domain,
+                    "Output_Dir_Can",
+                    "output_dir_can",
+                    "Output_Dir",
+                    "output_dir",
+                ),
+                fallback="./output",
+            )
         output_dir = (output_dir or "./output").strip()
         output_filename = gconfig.get_fixed("output_filename") or "generated_from_cases.can"
         cin_output_filename = (

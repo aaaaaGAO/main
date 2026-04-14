@@ -36,6 +36,7 @@ _PINYIN_WARNED: set[str] = set()
 XML_TITLE = "Test Module"
 XML_VERSION = "1.0"
 XML_DESCRIPTION = "Generated from .can test cases"
+_GROUP_KEY_SEP = "\x1f"
 
 
 def find_excel_files(input_path: str) -> list[str]:
@@ -524,11 +525,11 @@ def group_testcases_by_sheet_and_group(
     result = {}
     for sheet_name, testcases in sheet_testcases_dict.items():
         groups = {}
-        for tc in testcases:
+        # 保持“按原始行顺序输出”：同名功能模块不再聚合，逐条生成独立 testgroup。
+        for idx, tc in enumerate(testcases):
             group_name = tc["group"]
-            if group_name not in groups:
-                groups[group_name] = []
-            groups[group_name].append(tc)
+            group_key = f"{group_name}{_GROUP_KEY_SEP}{idx}"
+            groups[group_key] = [tc]
         result[sheet_name] = groups
     return result
 
@@ -564,8 +565,9 @@ def generate_xml_content(
             lines.append(f'\t\t<testgroup title="{escape_xml(sheet_title)}">')
 
             group_items = list(group_dict.items())
-            for group_name, testcases in group_items:
+            for group_key, testcases in group_items:
                 inner_group_idx += 1
+                group_name = group_key.split(_GROUP_KEY_SEP, 1)[0]
                 if not group_name or not group_name.strip():
                     group_name = " "
                 lines.append(f'\t\t\t<testgroup ident="{inner_group_idx}.0" title="{escape_xml(group_name)}">')
@@ -575,13 +577,7 @@ def generate_xml_content(
                     lines.append(f'\t\t\t\t<capltestcase name="{escape_xml(tc_name_pinyin)}">\t')
                     lines.append('\t\t\t\t</capltestcase>\t')
                 lines.append('\t\t\t</testgroup>')
-                if inner_group_idx < total_inner_groups_in_excel:
-                    lines.append('\t\t\t')
             lines.append('\t\t</testgroup>')
-            if sheet_idx < len(sheet_items):
-                lines.append('\t\t')
         lines.append('\t</testgroup>')
-        if excel_idx < len(excel_items):
-            lines.append('\t')
     lines.append('</testmodule>')
     return '\n'.join(lines)

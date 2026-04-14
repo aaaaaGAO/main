@@ -11,4 +11,13 @@ CASEID_LOG_PATTERNS = (
     "[dup] 用例ID重复",
 )
 
-__all__ = ["CASEID_LOG_PATTERNS"]
+DEFAULT_CIN_OUTPUT_DIR = "output"
+DEFAULT_CIN_OUTPUT_FILENAME = "generated_from_keyword.cin"
+DEFAULT_KEYWORD_SHEET_NAME = "HIL用例关键字说明"
+
+__all__ = [
+    "CASEID_LOG_PATTERNS",
+    "DEFAULT_CIN_OUTPUT_DIR",
+    "DEFAULT_CIN_OUTPUT_FILENAME",
+    "DEFAULT_KEYWORD_SHEET_NAME",
+]

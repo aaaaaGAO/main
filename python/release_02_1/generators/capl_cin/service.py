@@ -21,6 +21,7 @@ from .runtime_io import (
     read_clib_steps as io_read_clib_steps,
     render_step_lines as io_render_step_lines,
 )
+from .constants import DEFAULT_KEYWORD_SHEET_NAME
 
 
 class CINGeneratorService:
@@ -41,7 +42,7 @@ class CINGeneratorService:
             if s and str(s).strip()
         ]
         if not sheet_names:
-            sheet_names = ["HIL用例关键字说明"]
+            sheet_names = [DEFAULT_KEYWORD_SHEET_NAME]
 
         keyword_specs = io_load_keyword_specs(runtime["mapping_excel_path"], sheet_names)
 

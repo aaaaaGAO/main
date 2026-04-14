@@ -100,6 +100,24 @@ class GeneratorConfig:
             return (self._fixed_config.get(key) or "").strip()
         return fallback
 
+    def get_from_section(self, section: str, key: str, fallback: str = "") -> str:
+        """仅从主配置指定节读取键值（不读取 FixedConfig）。"""
+        if not self._loaded:
+            self.load()
+        if self._config is None:
+            return fallback
+        try:
+            return (self._config.get(section, key, fallback=fallback) or "").strip()
+        except (configparser.NoSectionError, configparser.NoOptionError):
+            return fallback
+
+    def get_required_from_section(self, section: str, key: str) -> str:
+        """仅从主配置指定节读取必填键；缺失或为空时抛错。"""
+        value = self.get_from_section(section, key, fallback="")
+        if value:
+            return value
+        raise ValueError(f"缺少必填配置: [{section}] {key}")
+
     def get_first(
         self,
         candidates: Sequence[tuple[str, str]],

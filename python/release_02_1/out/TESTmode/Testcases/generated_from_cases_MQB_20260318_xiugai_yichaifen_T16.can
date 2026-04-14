@@ -1,0 +1,64 @@
+/*@!Encoding: 936*/
+
+includes
+{
+}
+
+variables
+{
+}
+
+testcase SYS_CDCU_dianyuanguanliT16_0001()
+{
+  TestDescription("前置环境设置");
+  teststep("warning","原始用例id为SYS-CDCU-电源管理T16-0001");
+  g_EM_Equipment_Swc_TC_IG("ON"); // 测试步骤 TC_IG ON
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("12&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 12&CH1
+  g_CAN_Bus_Swc_AllCANDataDefaultAllCh(); // 测试步骤 TC_CANTest SET AllCANDataDefaultAllCh
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("3"); // 测试步骤 TC_Sleep 3
+  g_CAN_Bus_Swc_Disable_AllSentMessage(); // 测试步骤 TC_CANTest Disable AllSentMessage
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("3"); // 测试步骤 TC_Sleep 3
+  g_EM_UDS_ETH_Swc_DOIP_Disconnect(); // 测试步骤 TC_CANTest DOIP Disconnect
+  g_EM_UDS_CAN_Swc_Diag("10 03"); // 测试步骤 TC_CANTest Diag 10 03
+  g_EM_UDS_CAN_Swc_TC_CheckDiagRes("50 03 *"); // 预期结果 TC_CheckDiagRes 50 03 *
+  g_EM_UDS_CAN_Swc_Diag_SA_01_02(); // 测试步骤 TC_CANTest Diag SA_01_02//一级解锁
+  g_EM_UDS_CAN_Swc_TC_CheckDiagRes("67 02"); // 预期结果 TC_CheckDiagRes 67 02
+  g_EM_UDS_CAN_Swc_Diag("2E CF 00 02 00 00 00 00 00 00 00 00 00"); // 测试步骤 TC_CANTest Diag 2E CF 00 02 00 00 00 00 00 00 00 00 00
+  g_EM_UDS_CAN_Swc_TC_CheckDiagRes("6E CF 00 *"); // 预期结果 TC_CheckDiagRes 6E CF 00 *
+  g_EM_UDS_CAN_Swc_Diag("2E CF 0A 01"); // 测试步骤 TC_CANTest Diag 2E CF 0A 01//KL30唤醒未使能
+  g_EM_UDS_CAN_Swc_TC_CheckDiagRes("6E CF 0A *"); // 预期结果 TC_CheckDiagRes 6E CF 0A *
+  g_EM_UDS_CAN_Swc_Diag("2E CF 0C 01"); // 测试步骤 TC_CANTest Diag 2E CF 0C 01
+  g_EM_UDS_CAN_Swc_Diag("2E A5 F5 00"); // 测试步骤 TC_CANTest Diag 2E A5 F5 00//关闭SOC异常监控
+  g_EM_UDS_CAN_Swc_TC_CheckDiagRes("6E A5 F5 *"); // 预期结果 TC_CheckDiagRes 6E A5 F5 *
+  g_EM_UDS_CAN_Swc_Diag("11 01"); // 测试步骤 TC_CANTest Diag 11 01
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("5"); // 测试步骤 TC_Sleep 5
+}
+
+testcase SYS_CDCU_dianyuanguanliT16_0002()
+{
+  TestDescription("BUB由高电平变为低电平 LOCAL ON");
+  teststep("warning","原始用例id为SYS-CDCU-电源管理T16-0002");
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("6.8&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 6.8&CH1
+  g_EM_Equipment_Swc_TC_IG("ON"); // 测试步骤 TC_IG ON
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt1.I_LDCU_PowerMode 1"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt1.I_LDCU_PowerMode 1
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("5"); // 测试步骤 TC_Sleep 5
+  g_EM_Uart_Swc_Ser_CheckRaw("1070080003"); // 预期结果 TC_CANTest Ser CheckRaw 1070080003// (MCU 通知SOC电源模式切换 OFF)
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("12&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 12&CH1
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("5"); // 测试步骤 TC_Sleep 5
+  g_EM_Uart_Swc_Ser_CheckRaw("1070080001"); // 预期结果 TC_CANTest Ser CheckRaw 1070080001
+  g_EM_Uart_Swc_Ser_Check("MCU_CDU_BACKLIGHT_CTRL.CduBacklightCtrl 1"); // 预期结果 TC_CANTest Ser Check MCU_CDU_BACKLIGHT_CTRL.CduBacklightCtrl 1
+  g_EM_Uart_Swc_Ser_Check("MCU_PSN_BACKLIGHT_CTRL.PsnBacklightCtrl 1"); // 预期结果 TC_CANTest Ser Check MCU_PSN_BACKLIGHT_CTRL.PsnBacklightCtrl 1
+  g_EM_Uart_Swc_Ser_Check("MCU_CDU_BACKLIGHT_CTRL.CduBacklightCtrl 1"); // 预期结果 TC_CANTest Ser Check MCU_CDU_BACKLIGHT_CTRL.CduBacklightCtrl 1
+  g_EM_Uart_Swc_Ser_Check("MCU_PSN_BACKLIGHT_CTRL.PsnBacklightCtrl 1"); // 预期结果 TC_CANTest Ser Check MCU_PSN_BACKLIGHT_CTRL.PsnBacklightCtrl 1
+}
+
+testcase SYS_CDCU_dianyuanguanliT16_0003()
+{
+  TestDescription("恢复环境");
+  teststep("warning","原始用例id为SYS-CDCU-电源管理T16-0003");
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("12&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 12&CH1
+  g_EM_Equipment_Swc_TC_IG("ON"); // 测试步骤 TC_IG ON
+  g_CAN_Bus_Swc_AllCANDataDefaultAllCh(); // 测试步骤 TC_CANTest SET AllCANDataDefaultAllCh
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("3"); // 测试步骤 TC_Sleep 3
+  g_CAN_Bus_Swc_Disable_AllSentMessage(); // 测试步骤 TC_CANTest Disable AllSentMessage
+}

@@ -1,0 +1,228 @@
+/*@!Encoding: 936*/
+
+includes
+{
+}
+
+variables
+{
+}
+
+testcase SYS_CDCU_SOCdianyuanguanliT17_0001()
+{
+  TestDescription("前置环境设置");
+  teststep("warning","原始用例id为SYS-CDCU-SOC电源管理T17-0001");
+  g_EM_Equipment_Swc_TC_IG("ON"); // 测试步骤 TC_IG ON
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("12&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 12&CH1
+  g_CAN_Bus_Swc_AllCANDataDefaultAllCh(); // 测试步骤 TC_CANTest SET AllCANDataDefaultAllCh
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("3"); // 测试步骤 TC_Sleep 3
+  g_CAN_Bus_Swc_Disable_AllSentMessage(); // 测试步骤 TC_CANTest Disable AllSentMessage
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("3"); // 测试步骤 TC_Sleep 3
+  g_EM_UDS_ETH_Swc_DOIP_Disconnect(); // 测试步骤 TC_CANTest DOIP Disconnect
+  g_EM_UDS_CAN_Swc_Diag("10 03"); // 测试步骤 TC_CANTest Diag 10 03
+  g_EM_UDS_CAN_Swc_TC_CheckDiagRes("50 03 *"); // 预期结果 TC_CheckDiagRes 50 03 *
+  g_EM_UDS_CAN_Swc_Diag_SA_01_02(); // 测试步骤 TC_CANTest Diag SA_01_02//一级解锁
+  g_EM_UDS_CAN_Swc_TC_CheckDiagRes("67 02"); // 预期结果 TC_CheckDiagRes 67 02
+  g_EM_UDS_CAN_Swc_Diag("2E CF 00 02 00 00 00 00 00 00 00 00 00"); // 测试步骤 TC_CANTest Diag 2E CF 00 02 00 00 00 00 00 00 00 00 00
+  g_EM_UDS_CAN_Swc_TC_CheckDiagRes("6E CF 00 *"); // 预期结果 TC_CheckDiagRes 6E CF 00 *
+  g_EM_UDS_CAN_Swc_Diag("2E CF 0A 01"); // 测试步骤 TC_CANTest Diag 2E CF 0A 01//KL30唤醒未使能
+  g_EM_UDS_CAN_Swc_TC_CheckDiagRes("6E CF 0A *"); // 预期结果 TC_CheckDiagRes 6E CF 0A *
+  g_EM_UDS_CAN_Swc_Diag("2E CF 0C 01"); // 测试步骤 TC_CANTest Diag 2E CF 0C 01
+  g_EM_UDS_CAN_Swc_Diag("2E A5 F5 00"); // 测试步骤 TC_CANTest Diag 2E A5 F5 00//关闭SOC异常监控
+  g_EM_UDS_CAN_Swc_TC_CheckDiagRes("6E A5 F5 *"); // 预期结果 TC_CheckDiagRes 6E A5 F5 *
+  g_EM_UDS_CAN_Swc_Diag("11 01"); // 测试步骤 TC_CANTest Diag 11 01
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("5"); // 测试步骤 TC_Sleep 5
+}
+
+testcase SYS_CDCU_SOCdianyuanguanliT17_0002()
+{
+  TestDescription("触发诊断指令 31 01 C1 FF 05 正常电压 LOCAL ON");
+  teststep("warning","原始用例id为SYS-CDCU-SOC电源管理T17-0002");
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("12&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 12&CH1
+  g_EM_Equipment_Swc_TC_IG("ON"); // 测试步骤 TC_IG ON
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt1.I_LDCU_PowerMode 1"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt1.I_LDCU_PowerMode 1
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("5"); // 测试步骤 TC_Sleep 5
+  g_EM_Uart_Swc_Ser_CheckRaw("1070080001"); // 预期结果 TC_CANTest Ser CheckRaw 1070080001
+  g_EM_UDS_ETH_Swc_DOIP_Reconnect(); // 测试步骤 TC_CANTest DOIP Reconnect
+  g_EM_UDS_ETH_Swc_DOIP("10 03"); // 测试步骤 TC_CANTest DOIP 10 03
+  g_EM_UDS_ETH_Swc_DOIP_SA_01_02(); // 测试步骤 TC_CANTest DOIP SA_01_02//一级解锁
+  g_EM_UDS_ETH_Swc_DOIP("31 01 C1 FF 05"); // 测试步骤 TC_CANTest DOIP 31 01 C1 FF 05
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("5"); // 测试步骤 TC_Sleep 5
+  g_EM_Uart_Swc_Ser_CheckRaw("1070080003"); // 预期结果 TC_CANTest Ser CheckRaw 1070080003// (MCU 通知SOC电源模式切换 OFF)
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("130"); // 测试步骤 TC_Sleep 130
+}
+
+testcase SYS_CDCU_SOCdianyuanguanliT17_0003()
+{
+  TestDescription("触发诊断指令 31 01 C1 FF 05 一级欠压 LOCAL ON");
+  teststep("warning","原始用例id为SYS-CDCU-SOC电源管理T17-0003");
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("7.8&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 7.8&CH1
+  g_EM_Equipment_Swc_TC_IG("ON"); // 测试步骤 TC_IG ON
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt1.I_LDCU_PowerMode 1"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt1.I_LDCU_PowerMode 1
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("5"); // 测试步骤 TC_Sleep 5
+  g_EM_Uart_Swc_Ser_CheckRaw("1070080001"); // 预期结果 TC_CANTest Ser CheckRaw 1070080001
+  g_EM_UDS_ETH_Swc_DOIP_Reconnect(); // 测试步骤 TC_CANTest DOIP Reconnect
+  g_EM_UDS_ETH_Swc_DOIP("10 03"); // 测试步骤 TC_CANTest DOIP 10 03
+  g_EM_UDS_ETH_Swc_DOIP_SA_01_02(); // 测试步骤 TC_CANTest DOIP SA_01_02//一级解锁
+  g_EM_UDS_ETH_Swc_DOIP("31 01 C1 FF 05"); // 测试步骤 TC_CANTest DOIP 31 01 C1 FF 05
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("5"); // 测试步骤 TC_Sleep 5
+  g_EM_Uart_Swc_Ser_CheckRaw("1070080003"); // 预期结果 TC_CANTest Ser CheckRaw 1070080003// (MCU 通知SOC电源模式切换 OFF)
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("120"); // 测试步骤 TC_Sleep 120
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("12&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 12&CH1
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("5"); // 测试步骤 TC_Sleep 5
+}
+
+testcase SYS_CDCU_SOCdianyuanguanliT17_0004()
+{
+  TestDescription("触发诊断指令 31 01 C1 FF 05 一级过压 LOCAL ON");
+  teststep("warning","原始用例id为SYS-CDCU-SOC电源管理T17-0004");
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("17&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 17&CH1
+  g_EM_Equipment_Swc_TC_IG("ON"); // 测试步骤 TC_IG ON
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt1.I_LDCU_PowerMode 1"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt1.I_LDCU_PowerMode 1
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("5"); // 测试步骤 TC_Sleep 5
+  g_EM_Uart_Swc_Ser_CheckRaw("1070080001"); // 预期结果 TC_CANTest Ser CheckRaw 1070080001
+  g_EM_UDS_ETH_Swc_DOIP_Reconnect(); // 测试步骤 TC_CANTest DOIP Reconnect
+  g_EM_UDS_ETH_Swc_DOIP("10 03"); // 测试步骤 TC_CANTest DOIP 10 03
+  g_EM_UDS_ETH_Swc_DOIP_SA_01_02(); // 测试步骤 TC_CANTest DOIP SA_01_02//一级解锁
+  g_EM_UDS_ETH_Swc_DOIP("31 01 C1 FF 05"); // 测试步骤 TC_CANTest DOIP 31 01 C1 FF 05
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("5"); // 测试步骤 TC_Sleep 5
+  g_EM_Uart_Swc_Ser_CheckRaw("1070080003"); // 预期结果 TC_CANTest Ser CheckRaw 1070080003// (MCU 通知SOC电源模式切换 OFF)
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("120"); // 测试步骤 TC_Sleep 120
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("12&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 12&CH1
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("5"); // 测试步骤 TC_Sleep 5
+}
+
+testcase SYS_CDCU_SOCdianyuanguanliT17_0005()
+{
+  TestDescription("触发诊断指令 31 01 C1 FF 05 正常电压 OFF");
+  teststep("warning","原始用例id为SYS-CDCU-SOC电源管理T17-0005");
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("12&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 12&CH1
+  g_EM_Equipment_Swc_TC_IG("OFF"); // 测试步骤 TC_IG OFF
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt1.I_LDCU_PowerMode 0"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt1.I_LDCU_PowerMode 0
+  g_CAN_Bus_Swc_Set("BL_BLE_NM.BL_BLE_NMActiveWakeupBit 1"); // 测试步骤 TC_CANTest SET BL_BLE_NM.BL_BLE_NMActiveWakeupBit 1
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("5"); // 测试步骤 TC_Sleep 5
+  g_EM_Uart_Swc_Ser_CheckRaw("1070080001"); // 预期结果 TC_CANTest Ser CheckRaw 1070080001
+  g_EM_UDS_ETH_Swc_DOIP_Reconnect(); // 测试步骤 TC_CANTest DOIP Reconnect
+  g_EM_UDS_ETH_Swc_DOIP("10 03"); // 测试步骤 TC_CANTest DOIP 10 03
+  g_EM_UDS_ETH_Swc_DOIP_SA_01_02(); // 测试步骤 TC_CANTest DOIP SA_01_02//一级解锁
+  g_EM_UDS_ETH_Swc_DOIP("31 01 C1 FF 05"); // 测试步骤 TC_CANTest DOIP 31 01 C1 FF 05
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("5"); // 测试步骤 TC_Sleep 5
+  g_EM_Uart_Swc_Ser_CheckRaw("1070080003"); // 预期结果 TC_CANTest Ser CheckRaw 1070080003// (MCU 通知SOC电源模式切换 OFF)
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("120"); // 测试步骤 TC_Sleep 120
+}
+
+testcase SYS_CDCU_SOCdianyuanguanliT17_0006()
+{
+  TestDescription("触发诊断指令 31 01 C1 FF 05 一级欠压 OFF");
+  teststep("warning","原始用例id为SYS-CDCU-SOC电源管理T17-0006");
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("7.8&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 7.8&CH1
+  g_EM_Equipment_Swc_TC_IG("OFF"); // 测试步骤 TC_IG OFF
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt1.I_LDCU_PowerMode 0"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt1.I_LDCU_PowerMode 0
+  g_CAN_Bus_Swc_Set("BL_BLE_NM.BL_BLE_NMActiveWakeupBit 1"); // 测试步骤 TC_CANTest SET BL_BLE_NM.BL_BLE_NMActiveWakeupBit 1
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("5"); // 测试步骤 TC_Sleep 5
+  g_EM_Uart_Swc_Ser_CheckRaw("1070080001"); // 预期结果 TC_CANTest Ser CheckRaw 1070080001
+  g_EM_UDS_ETH_Swc_DOIP_Reconnect(); // 测试步骤 TC_CANTest DOIP Reconnect
+  g_EM_UDS_ETH_Swc_DOIP("10 03"); // 测试步骤 TC_CANTest DOIP 10 03
+  g_EM_UDS_ETH_Swc_DOIP_SA_01_02(); // 测试步骤 TC_CANTest DOIP SA_01_02//一级解锁
+  g_EM_UDS_ETH_Swc_DOIP("31 01 C1 FF 05"); // 测试步骤 TC_CANTest DOIP 31 01 C1 FF 05
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("5"); // 测试步骤 TC_Sleep 5
+  g_EM_Uart_Swc_Ser_CheckRaw("1070080003"); // 预期结果 TC_CANTest Ser CheckRaw 1070080003// (MCU 通知SOC电源模式切换 OFF)
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("120"); // 测试步骤 TC_Sleep 120
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("12&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 12&CH1
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("5"); // 测试步骤 TC_Sleep 5
+}
+
+testcase SYS_CDCU_SOCdianyuanguanliT17_0007()
+{
+  TestDescription("触发诊断指令 31 01 C1 FF 05 一级过压 OFF");
+  teststep("warning","原始用例id为SYS-CDCU-SOC电源管理T17-0007");
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("17&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 17&CH1
+  g_EM_Equipment_Swc_TC_IG("OFF"); // 测试步骤 TC_IG OFF
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt1.I_LDCU_PowerMode 0"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt1.I_LDCU_PowerMode 0
+  g_CAN_Bus_Swc_Set("BL_BLE_NM.BL_BLE_NMActiveWakeupBit 1"); // 测试步骤 TC_CANTest SET BL_BLE_NM.BL_BLE_NMActiveWakeupBit 1
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("5"); // 测试步骤 TC_Sleep 5
+  g_EM_Uart_Swc_Ser_CheckRaw("1070080001"); // 预期结果 TC_CANTest Ser CheckRaw 1070080001
+  g_EM_UDS_ETH_Swc_DOIP_Reconnect(); // 测试步骤 TC_CANTest DOIP Reconnect
+  g_EM_UDS_ETH_Swc_DOIP("10 03"); // 测试步骤 TC_CANTest DOIP 10 03
+  g_EM_UDS_ETH_Swc_DOIP_SA_01_02(); // 测试步骤 TC_CANTest DOIP SA_01_02//一级解锁
+  g_EM_UDS_ETH_Swc_DOIP("31 01 C1 FF 05"); // 测试步骤 TC_CANTest DOIP 31 01 C1 FF 05
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("5"); // 测试步骤 TC_Sleep 5
+  g_EM_Uart_Swc_Ser_CheckRaw("1070080003"); // 预期结果 TC_CANTest Ser CheckRaw 1070080003// (MCU 通知SOC电源模式切换 OFF)
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("120"); // 测试步骤 TC_Sleep 120
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("12&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 12&CH1
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("5"); // 测试步骤 TC_Sleep 5
+}
+
+testcase SYS_CDCU_SOCdianyuanguanliT17_0008()
+{
+  TestDescription("触发诊断指令 31 01 C1 FF 05 一级过压 REMOTE ON");
+  teststep("warning","原始用例id为SYS-CDCU-SOC电源管理T17-0008");
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("17&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 17&CH1
+  g_EM_Equipment_Swc_TC_IG("ON"); // 测试步骤 TC_IG ON
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt1.I_LDCU_PowerMode 2"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt1.I_LDCU_PowerMode 2
+  g_CAN_Bus_Swc_Set("BL_BLE_NM.BL_BLE_NMActiveWakeupBit 1"); // 测试步骤 TC_CANTest SET BL_BLE_NM.BL_BLE_NMActiveWakeupBit 1
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("5"); // 测试步骤 TC_Sleep 5
+  g_EM_Uart_Swc_Ser_CheckRaw("1070080001"); // 预期结果 TC_CANTest Ser CheckRaw 1070080001
+  g_EM_UDS_ETH_Swc_DOIP_Reconnect(); // 测试步骤 TC_CANTest DOIP Reconnect
+  g_EM_UDS_ETH_Swc_DOIP("10 03"); // 测试步骤 TC_CANTest DOIP 10 03
+  g_EM_UDS_ETH_Swc_DOIP_SA_01_02(); // 测试步骤 TC_CANTest DOIP SA_01_02//一级解锁
+  g_EM_UDS_ETH_Swc_DOIP("31 01 C1 FF 05"); // 测试步骤 TC_CANTest DOIP 31 01 C1 FF 05
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("5"); // 测试步骤 TC_Sleep 5
+  g_EM_Uart_Swc_Ser_CheckRaw("1070080003"); // 预期结果 TC_CANTest Ser CheckRaw 1070080003// (MCU 通知SOC电源模式切换 OFF)
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("120"); // 测试步骤 TC_Sleep 120
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("12&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 12&CH1
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("5"); // 测试步骤 TC_Sleep 5
+}
+
+testcase SYS_CDCU_SOCdianyuanguanliT17_0009()
+{
+  TestDescription("触发诊断指令 31 01 C1 FF 05 一级过压 REMOTE ON");
+  teststep("warning","原始用例id为SYS-CDCU-SOC电源管理T17-0009");
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("17&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 17&CH1
+  g_EM_Equipment_Swc_TC_IG("ON"); // 测试步骤 TC_IG ON
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt1.I_LDCU_PowerMode 2"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt1.I_LDCU_PowerMode 2
+  g_CAN_Bus_Swc_Set("BL_BLE_NM.BL_BLE_NMActiveWakeupBit 1"); // 测试步骤 TC_CANTest SET BL_BLE_NM.BL_BLE_NMActiveWakeupBit 1
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("5"); // 测试步骤 TC_Sleep 5
+  g_EM_Uart_Swc_Ser_CheckRaw("1070080001"); // 预期结果 TC_CANTest Ser CheckRaw 1070080001
+  g_EM_UDS_ETH_Swc_DOIP_Reconnect(); // 测试步骤 TC_CANTest DOIP Reconnect
+  g_EM_UDS_ETH_Swc_DOIP("10 03"); // 测试步骤 TC_CANTest DOIP 10 03
+  g_EM_UDS_ETH_Swc_DOIP_SA_01_02(); // 测试步骤 TC_CANTest DOIP SA_01_02//一级解锁
+  g_EM_UDS_ETH_Swc_DOIP("31 01 C1 FF 05"); // 测试步骤 TC_CANTest DOIP 31 01 C1 FF 05
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("5"); // 测试步骤 TC_Sleep 5
+  g_EM_Uart_Swc_Ser_CheckRaw("1070080003"); // 预期结果 TC_CANTest Ser CheckRaw 1070080003// (MCU 通知SOC电源模式切换 OFF)
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("120"); // 测试步骤 TC_Sleep 120
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("12&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 12&CH1
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("5"); // 测试步骤 TC_Sleep 5
+}
+
+testcase SYS_CDCU_SOCdianyuanguanliT17_0010()
+{
+  TestDescription("触发诊断指令 31 01 C1 FF 05 一级过压 REMOTE ON");
+  teststep("warning","原始用例id为SYS-CDCU-SOC电源管理T17-0010");
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("17&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 17&CH1
+  g_EM_Equipment_Swc_TC_IG("ON"); // 测试步骤 TC_IG ON
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt1.I_LDCU_PowerMode 2"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt1.I_LDCU_PowerMode 2
+  g_CAN_Bus_Swc_Set("BL_BLE_NM.BL_BLE_NMActiveWakeupBit 1"); // 测试步骤 TC_CANTest SET BL_BLE_NM.BL_BLE_NMActiveWakeupBit 1
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("5"); // 测试步骤 TC_Sleep 5
+  g_EM_Uart_Swc_Ser_CheckRaw("1070080001"); // 预期结果 TC_CANTest Ser CheckRaw 1070080001
+  g_EM_UDS_ETH_Swc_DOIP_Reconnect(); // 测试步骤 TC_CANTest DOIP Reconnect
+  g_EM_UDS_ETH_Swc_DOIP("10 03"); // 测试步骤 TC_CANTest DOIP 10 03
+  g_EM_UDS_ETH_Swc_DOIP_SA_01_02(); // 测试步骤 TC_CANTest DOIP SA_01_02//一级解锁
+  g_EM_UDS_ETH_Swc_DOIP("31 01 C1 FF 05"); // 测试步骤 TC_CANTest DOIP 31 01 C1 FF 05
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("5"); // 测试步骤 TC_Sleep 5
+  g_EM_Uart_Swc_Ser_CheckRaw("1070080003"); // 预期结果 TC_CANTest Ser CheckRaw 1070080003// (MCU 通知SOC电源模式切换 OFF)
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("120"); // 测试步骤 TC_Sleep 120
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("12&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 12&CH1
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("5"); // 测试步骤 TC_Sleep 5
+}
+
+testcase SYS_CDCU_SOCdianyuanguanliT17_0011()
+{
+  TestDescription("恢复环境");
+  teststep("warning","原始用例id为SYS-CDCU-SOC电源管理T17-0011");
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("12&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 12&CH1
+  g_EM_Equipment_Swc_TC_IG("ON"); // 测试步骤 TC_IG ON
+  g_CAN_Bus_Swc_AllCANDataDefaultAllCh(); // 测试步骤 TC_CANTest SET AllCANDataDefaultAllCh
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("3"); // 测试步骤 TC_Sleep 3
+  g_CAN_Bus_Swc_Disable_AllSentMessage(); // 测试步骤 TC_CANTest Disable AllSentMessage
+}

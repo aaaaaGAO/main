@@ -1,0 +1,246 @@
+/*@!Encoding: 936*/
+
+includes
+{
+}
+
+variables
+{
+}
+
+testcase SYS_CDCU_dianyuanguanliT1_0001()
+{
+  TestDescription("前置环境设置-1");
+  teststep("warning","原始用例id为SYS-CDCU-电源管理T1-0001");
+  g_EM_Equipment_Swc_TC_PW("OFF"); // 测试步骤 TC_PW OFF
+  g_EM_Equipment_Swc_TC_IG("OFF"); // 测试步骤 TC_IG OFF
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("1"); // 测试步骤 TC_Sleep 1
+  g_EM_Equipment_Swc_TC_PW("ON"); // 测试步骤 TC_PW ON
+  g_EM_Equipment_Swc_TC_IG("ON"); // 测试步骤 TC_IG ON
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("3"); // 测试步骤 TC_Sleep 3
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("12&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 12&CH1
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("5"); // 测试步骤 TC_Sleep 5
+  g_EM_UDS_CAN_Swc_Diag("10 03"); // 测试步骤 TC_CANTest Diag 10 03
+  g_EM_UDS_CAN_Swc_TC_CheckDiagRes("50 03 *"); // 预期结果 TC_CheckDiagRes 50 03 *
+  g_EM_UDS_CAN_Swc_Diag_SA_01_02(); // 测试步骤 TC_CANTest Diag SA_01_02//一级解锁
+  g_EM_UDS_CAN_Swc_TC_CheckDiagRes("67 02"); // 预期结果 TC_CheckDiagRes 67 02
+  g_EM_UDS_CAN_Swc_Diag("2E CF 00 00 00 00 00 00 00 00 00 00 00"); // 测试步骤 TC_CANTest Diag 2E CF 00 00 00 00 00 00 00 00 00 00 00
+  g_EM_UDS_CAN_Swc_TC_CheckDiagRes("6E CF 00"); // 预期结果 TC_CheckDiagRes 6E CF 00
+  g_EM_UDS_CAN_Swc_Diag("2E CF 0A 00"); // 测试步骤 TC_CANTest Diag 2E CF 0A 00//KL30 唤醒及屏幕点亮功能使能
+  g_EM_UDS_CAN_Swc_TC_CheckDiagRes("6E CF 0A"); // 预期结果 TC_CheckDiagRes 6E CF 0A
+  g_CAN_Bus_Swc_Disable_AllSentMessage(); // 测试步骤 TC_CANTest Disable AllSentMessage
+}
+
+testcase SYS_CDCU_dianyuanguanliT1_0002()
+{
+  TestDescription("正常电压上电+LDCU_Powermode != Local On+ KL15 状态由 OFF 到 ON");
+  teststep("warning","原始用例id为SYS-CDCU-电源管理T1-0002");
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("12&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 12&CH1
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt1.I_LDCU_PowerMode 0"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt1.I_LDCU_PowerMode 0
+  g_EM_Equipment_Swc_TC_IG("OFF"); // 测试步骤 TC_IG OFF
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("1"); // 测试步骤 TC_Sleep 1
+  g_EM_Equipment_Swc_TC_IG("ON"); // 测试步骤 TC_IG ON
+  g_EM_Uart_Swc_Ser_CheckRaw("1070080001"); // 预期结果 TC_CANTest Ser CheckRaw 1070080001 // (MCU 通知SOC电源模式切换 normal) 每5S打印一次Send SOC Wake Req而后打印SOC Already Wake
+}
+
+testcase SYS_CDCU_dianyuanguanliT1_0003()
+{
+  TestDescription("正常电压上电+LDCU_Powermode != Local On+ ICAN 收到有效NM报文");
+  teststep("warning","原始用例id为SYS-CDCU-电源管理T1-0003");
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("12&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 12&CH1
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt1.I_LDCU_PowerMode 0"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt1.I_LDCU_PowerMode 0
+  g_EM_Equipment_Swc_TC_IG("OFF"); // 测试步骤 TC_IG OFF
+  g_CAN_Bus_Swc_Set("I_LDCU_NM.I_LDCU_NMActiveWakeupBit 1"); // 测试步骤 TC_CANTest SET I_LDCU_NM.I_LDCU_NMActiveWakeupBit 1 //4E0
+  g_EM_Uart_Swc_Ser_CheckRaw("1070080001"); // 预期结果 TC_CANTest Ser CheckRaw 1070080001 // (MCU 通知SOC电源模式切换 normal) 每5S打印一次Send SOC Wake Req而后打印SOC Already Wake
+}
+
+testcase SYS_CDCU_dianyuanguanliT1_0004()
+{
+  TestDescription("正常电压上电+LDCU_Powermode != Local On+ BCAN 收到有效 NM 报文");
+  teststep("warning","原始用例id为SYS-CDCU-电源管理T1-0004");
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("12&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 12&CH1
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt1.I_LDCU_PowerMode 0"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt1.I_LDCU_PowerMode 0
+  g_EM_Equipment_Swc_TC_IG("OFF"); // 测试步骤 TC_IG OFF
+  g_CAN_Bus_Swc_Set("B_B_Virtual_NM.B_B_Virtual_NMActiveWakeupBit 1"); // 测试步骤 TC_CANTest SET B_B_Virtual_NM.B_B_Virtual_NMActiveWakeupBit 1 //422
+  g_EM_Uart_Swc_Ser_CheckRaw("1070080001"); // 预期结果 TC_CANTest Ser CheckRaw 1070080001 // (MCU 通知SOC电源模式切换 normal) 每5S打印一次Send SOC Wake Req而后打印SOC Already Wake
+}
+
+testcase SYS_CDCU_dianyuanguanliT1_0005()
+{
+  TestDescription("正常电压上电+LDCU_Powermode != Local On+ BLCAN 收到有效 NM 报文");
+  teststep("warning","原始用例id为SYS-CDCU-电源管理T1-0005");
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("12&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 12&CH1
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt1.I_LDCU_PowerMode 0"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt1.I_LDCU_PowerMode 0
+  g_EM_Equipment_Swc_TC_IG("OFF"); // 测试步骤 TC_IG OFF
+  g_CAN_Bus_Swc_Set("BL_BLE_NM.BL_BLE_NMActiveWakeupBit 1"); // 测试步骤 TC_CANTest SET BL_BLE_NM.BL_BLE_NMActiveWakeupBit 1 //449
+  g_EM_Uart_Swc_Ser_CheckRaw("1070080001"); // 预期结果 TC_CANTest Ser CheckRaw 1070080001 // (MCU 通知SOC电源模式切换 normal) 每5S打印一次Send SOC Wake Req而后打印SOC Already Wake
+}
+
+testcase SYS_CDCU_dianyuanguanliT1_0006()
+{
+  TestDescription("正常电压上电+REMOTE_IG_ON+ KL15 状态由 OFF 到 ON");
+  teststep("warning","原始用例id为SYS-CDCU-电源管理T1-0006");
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("12&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 12&CH1
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt1.I_LDCU_PowerMode 2"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt1.I_LDCU_PowerMode 2
+  g_EM_Equipment_Swc_TC_IG("OFF"); // 测试步骤 TC_IG OFF
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("1"); // 测试步骤 TC_Sleep 1
+  g_EM_Equipment_Swc_TC_IG("ON"); // 测试步骤 TC_IG ON
+  g_EM_Uart_Swc_Ser_CheckRaw("1070080001"); // 预期结果 TC_CANTest Ser CheckRaw 1070080001 // (MCU 通知SOC电源模式切换 normal) 每5S打印一次Send SOC Wake Req而后打印SOC Already Wake
+}
+
+testcase SYS_CDCU_dianyuanguanliT1_0007()
+{
+  TestDescription("正常电压上电+REMOTE_IG_ON+ ICAN 收到有效NM报文");
+  teststep("warning","原始用例id为SYS-CDCU-电源管理T1-0007");
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("12&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 12&CH1
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt1.I_LDCU_PowerMode 2"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt1.I_LDCU_PowerMode 2
+  g_EM_Equipment_Swc_TC_IG("OFF"); // 测试步骤 TC_IG OFF
+  g_CAN_Bus_Swc_Set("I_LDCU_NM.I_LDCU_NMActiveWakeupBit 1"); // 测试步骤 TC_CANTest SET I_LDCU_NM.I_LDCU_NMActiveWakeupBit 1
+  g_EM_Uart_Swc_Ser_CheckRaw("1070080001"); // 预期结果 TC_CANTest Ser CheckRaw 1070080001 // (MCU 通知SOC电源模式切换 normal) 每5S打印一次Send SOC Wake Req而后打印SOC Already Wake
+}
+
+testcase SYS_CDCU_dianyuanguanliT1_0008()
+{
+  TestDescription("正常电压上电+REMOTE_IG_ON+ BCAN 收到有效NM报文");
+  teststep("warning","原始用例id为SYS-CDCU-电源管理T1-0008");
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("12&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 12&CH1
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt1.I_LDCU_PowerMode 2"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt1.I_LDCU_PowerMode 2
+  g_EM_Equipment_Swc_TC_IG("OFF"); // 测试步骤 TC_IG OFF
+  g_CAN_Bus_Swc_Set("B_B_Virtual_NM.B_B_Virtual_NMActiveWakeupBit 1"); // 测试步骤 TC_CANTest SET B_B_Virtual_NM.B_B_Virtual_NMActiveWakeupBit 1
+  g_EM_Uart_Swc_Ser_CheckRaw("1070080001"); // 预期结果 TC_CANTest Ser CheckRaw 1070080001 // (MCU 通知SOC电源模式切换 normal) 每5S打印一次Send SOC Wake Req而后打印SOC Already Wake
+}
+
+testcase SYS_CDCU_dianyuanguanliT1_0009()
+{
+  TestDescription("正常电压上电+REMOTE_IG_ON+ BLCAN 收到有效NM报文");
+  teststep("warning","原始用例id为SYS-CDCU-电源管理T1-0009");
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("12&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 12&CH1
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt1.I_LDCU_PowerMode 2"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt1.I_LDCU_PowerMode 2
+  g_EM_Equipment_Swc_TC_IG("OFF"); // 测试步骤 TC_IG OFF
+  g_CAN_Bus_Swc_Set("BL_BLE_NM.BL_BLE_NMActiveWakeupBit 1"); // 测试步骤 TC_CANTest SET BL_BLE_NM.BL_BLE_NMActiveWakeupBit 1
+  g_EM_Uart_Swc_Ser_CheckRaw("1070080001"); // 预期结果 TC_CANTest Ser CheckRaw 1070080001 // (MCU 通知SOC电源模式切换 normal) 每5S打印一次Send SOC Wake Req而后打印SOC Already Wake
+}
+
+testcase SYS_CDCU_dianyuanguanliT1_0010()
+{
+  TestDescription("一级欠压上电+IG ON LDCU_PowerMode 2");
+  teststep("warning","原始用例id为SYS-CDCU-电源管理T1-0010");
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("7.8&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 7.8&CH1
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt1.I_LDCU_PowerMode 2"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt1.I_LDCU_PowerMode 2
+  g_EM_Equipment_Swc_TC_IG("OFF"); // 测试步骤 TC_IG OFF
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("1"); // 测试步骤 TC_Sleep 1
+  g_EM_Equipment_Swc_TC_IG("ON"); // 测试步骤 TC_IG ON
+  g_EM_Uart_Swc_Ser_CheckRaw("1070080001"); // 预期结果 TC_CANTest Ser CheckRaw 1070080001 // (MCU 通知SOC电源模式切换 normal) 每5S打印一次Send SOC Wake Req而后打印SOC Already Wake
+}
+
+testcase SYS_CDCU_dianyuanguanliT1_0011()
+{
+  TestDescription("一级欠压上电+IG ON LDCU_PowerMode 0");
+  teststep("warning","原始用例id为SYS-CDCU-电源管理T1-0011");
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("7.8&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 7.8&CH1
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt1.I_LDCU_PowerMode 0"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt1.I_LDCU_PowerMode 0
+  g_EM_Equipment_Swc_TC_IG("OFF"); // 测试步骤 TC_IG OFF
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("1"); // 测试步骤 TC_Sleep 1
+  g_EM_Equipment_Swc_TC_IG("ON"); // 测试步骤 TC_IG ON
+  g_EM_Uart_Swc_Ser_CheckRaw("1070080001"); // 预期结果 TC_CANTest Ser CheckRaw 1070080001 // (MCU 通知SOC电源模式切换 normal) 每5S打印一次Send SOC Wake Req而后打印SOC Already Wake
+}
+
+testcase SYS_CDCU_dianyuanguanliT1_0012()
+{
+  TestDescription("一级欠压上电+BLCAN网络激活");
+  teststep("warning","原始用例id为SYS-CDCU-电源管理T1-0012");
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("7.8&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 7.8&CH1
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt1.I_LDCU_PowerMode 0"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt1.I_LDCU_PowerMode 0
+  g_EM_Equipment_Swc_TC_IG("OFF"); // 测试步骤 TC_IG OFF
+  g_CAN_Bus_Swc_Set("BL_BLE_NM.BL_BLE_NMActiveWakeupBit 1"); // 测试步骤 TC_CANTest SET BL_BLE_NM.BL_BLE_NMActiveWakeupBit 1
+  g_EM_Uart_Swc_Ser_CheckRaw("1070080001"); // 预期结果 TC_CANTest Ser CheckRaw 1070080001 // (MCU 通知SOC电源模式切换 normal) 每5S打印一次Send SOC Wake Req而后打印SOC Already Wake
+}
+
+testcase SYS_CDCU_dianyuanguanliT1_0013()
+{
+  TestDescription("一级欠压上电+ICAN网络激活");
+  teststep("warning","原始用例id为SYS-CDCU-电源管理T1-0013");
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("7.8&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 7.8&CH1
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt1.I_LDCU_PowerMode 0"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt1.I_LDCU_PowerMode 0
+  g_EM_Equipment_Swc_TC_IG("OFF"); // 测试步骤 TC_IG OFF
+  g_CAN_Bus_Swc_Set("I_LDCU_NM.I_LDCU_NMActiveWakeupBit 1"); // 测试步骤 TC_CANTest SET I_LDCU_NM.I_LDCU_NMActiveWakeupBit 1
+  g_EM_Uart_Swc_Ser_CheckRaw("1070080001"); // 预期结果 TC_CANTest Ser CheckRaw 1070080001 // (MCU 通知SOC电源模式切换 normal) 每5S打印一次Send SOC Wake Req而后打印SOC Already Wake
+}
+
+testcase SYS_CDCU_dianyuanguanliT1_0014()
+{
+  TestDescription("一级欠压上电+BCAN网络激活");
+  teststep("warning","原始用例id为SYS-CDCU-电源管理T1-0014");
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("7.8&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 7.8&CH1
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt1.I_LDCU_PowerMode 0"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt1.I_LDCU_PowerMode 0
+  g_EM_Equipment_Swc_TC_IG("OFF"); // 测试步骤 TC_IG OFF
+  g_CAN_Bus_Swc_Set("B_B_Virtual_NM.B_B_Virtual_NMActiveWakeupBit 1"); // 测试步骤 TC_CANTest SET B_B_Virtual_NM.B_B_Virtual_NMActiveWakeupBit 1
+  g_EM_Uart_Swc_Ser_CheckRaw("1070080001"); // 预期结果 TC_CANTest Ser CheckRaw 1070080001 // (MCU 通知SOC电源模式切换 normal) 每5S打印一次Send SOC Wake Req而后打印SOC Already Wake
+}
+
+testcase SYS_CDCU_dianyuanguanliT1_0015()
+{
+  TestDescription("一级过压上电+IG ON");
+  teststep("warning","原始用例id为SYS-CDCU-电源管理T1-0015");
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("17&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 17&CH1
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt1.I_LDCU_PowerMode 2"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt1.I_LDCU_PowerMode 2
+  g_EM_Equipment_Swc_TC_IG("OFF"); // 测试步骤 TC_IG OFF
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("1"); // 测试步骤 TC_Sleep 1
+  g_EM_Equipment_Swc_TC_IG("ON"); // 测试步骤 TC_IG ON
+  g_EM_Uart_Swc_Ser_CheckRaw("1070080001"); // 预期结果 TC_CANTest Ser CheckRaw 1070080001 // (MCU 通知SOC电源模式切换 normal) 每5S打印一次Send SOC Wake Req而后打印SOC Already Wake
+}
+
+testcase SYS_CDCU_dianyuanguanliT1_0016()
+{
+  TestDescription("一级过压上电+BLCAN网络激活");
+  teststep("warning","原始用例id为SYS-CDCU-电源管理T1-0016");
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("17&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 17&CH1
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt1.I_LDCU_PowerMode 2"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt1.I_LDCU_PowerMode 2
+  g_EM_Equipment_Swc_TC_IG("OFF"); // 测试步骤 TC_IG OFF
+  g_CAN_Bus_Swc_Set("BL_BLE_NM.BL_BLE_NMActiveWakeupBit 1"); // 测试步骤 TC_CANTest SET BL_BLE_NM.BL_BLE_NMActiveWakeupBit 1
+  g_EM_Uart_Swc_Ser_CheckRaw("1070080001"); // 预期结果 TC_CANTest Ser CheckRaw 1070080001 // (MCU 通知SOC电源模式切换 normal) 每5S打印一次Send SOC Wake Req而后打印SOC Already Wake
+}
+
+testcase SYS_CDCU_dianyuanguanliT1_0017()
+{
+  TestDescription("一级过压上电+BCAN网络激活");
+  teststep("warning","原始用例id为SYS-CDCU-电源管理T1-0017");
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("17&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 17&CH1
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt1.I_LDCU_PowerMode 2"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt1.I_LDCU_PowerMode 2
+  g_EM_Equipment_Swc_TC_IG("OFF"); // 测试步骤 TC_IG OFF
+  g_CAN_Bus_Swc_Set("B_B_Virtual_NM.B_B_Virtual_NMActiveWakeupBit 1"); // 测试步骤 TC_CANTest SET B_B_Virtual_NM.B_B_Virtual_NMActiveWakeupBit 1
+  g_EM_Uart_Swc_Ser_CheckRaw("1070080001"); // 预期结果 TC_CANTest Ser CheckRaw 1070080001 // (MCU 通知SOC电源模式切换 normal) 每5S打印一次Send SOC Wake Req而后打印SOC Already Wake
+}
+
+testcase SYS_CDCU_dianyuanguanliT1_0018()
+{
+  TestDescription("一级过压上电+ICAN网络激活");
+  teststep("warning","原始用例id为SYS-CDCU-电源管理T1-0018");
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("17&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 17&CH1
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt1.I_LDCU_PowerMode 2"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt1.I_LDCU_PowerMode 2
+  g_EM_Equipment_Swc_TC_IG("OFF"); // 测试步骤 TC_IG OFF
+  g_CAN_Bus_Swc_Set("I_LDCU_NM.I_LDCU_NMActiveWakeupBit 1"); // 测试步骤 TC_CANTest SET I_LDCU_NM.I_LDCU_NMActiveWakeupBit 1
+  g_EM_Uart_Swc_Ser_CheckRaw("1070080001"); // 预期结果 TC_CANTest Ser CheckRaw 1070080001 // (MCU 通知SOC电源模式切换 normal) 每5S打印一次Send SOC Wake Req而后打印SOC Already Wake
+}
+
+testcase SYS_CDCU_dianyuanguanliT1_0019()
+{
+  teststep("warning","原始用例id为SYS-CDCU-电源管理T1-0019");
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("12&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 12&CH1
+  g_EM_Equipment_Swc_TC_PW("OFF"); // 测试步骤 TC_PW OFF
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("1"); // 测试步骤 TC_Sleep 1
+  g_EM_Equipment_Swc_TC_PW("ON"); // 测试步骤 TC_PW ON
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("5"); // 测试步骤 TC_Sleep 5
+  g_EM_Uart_Swc_Ser_CheckRaw("1070080001"); // 预期结果 TC_CANTest Ser CheckRaw 1070080001 // (MCU 通知SOC电源模式切换 normal) 每5S打印一次Send SOC Wake Req而后打印SOC Already Wake
+}
+
+testcase SYS_CDCU_dianyuanguanliT1_0020()
+{
+  TestDescription("恢复环境");
+  teststep("warning","原始用例id为SYS-CDCU-电源管理T1-0020");
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("12&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 12&CH1
+  g_EM_Equipment_Swc_TC_IG("ON"); // 测试步骤 TC_IG ON
+  g_CAN_Bus_Swc_AllCANDataDefaultAllCh(); // 测试步骤 TC_CANTest SET AllCANDataDefaultAllCh
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("3"); // 测试步骤 TC_Sleep 3
+  g_CAN_Bus_Swc_Disable_AllSentMessage(); // 测试步骤 TC_CANTest Disable AllSentMessage
+}

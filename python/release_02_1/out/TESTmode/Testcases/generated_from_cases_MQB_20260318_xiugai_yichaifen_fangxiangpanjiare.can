@@ -1,0 +1,557 @@
+/*@!Encoding: 936*/
+
+includes
+{
+}
+
+variables
+{
+}
+
+testcase SYS_CDCU_fangxiangpanjiare_0001()
+{
+  TestDescription("前提条件");
+  teststep("warning","原始用例id为SYS-CDCU-方向盘加热-0001");
+  g_EM_Equipment_Swc_TC_PW("OFF"); // 测试步骤 TC_PW OFF
+  g_CAN_Bus_Swc_AllCANDataDefaultAllCh(); // 测试步骤 TC_CANTest SET AllCANDataDefaultAllCh
+  g_EM_Equipment_Swc_TC_IG("OFF"); // 测试步骤 TC_IG OFF
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("5"); // 测试步骤 TC_Sleep 5
+  g_EM_Equipment_Swc_TC_PW("ON"); // 测试步骤 TC_PW ON
+  g_EM_Equipment_Swc_TC_IG("ON"); // 测试步骤 TC_IG ON
+  g_EM_SOAClient_Swc_SOA_StopSubPeriod(); // 测试步骤 TC_CANTest SOA StopSubPeriod//停止所有订阅
+  gTC_CANTest_SOA_Set8001Delay("0"); // 测试步骤 TC_CANTest SOA Set8001Delay 0
+  g_EM_SOAClient_Swc_SOA_SubPeriod("Veh_SWSHeatService_ErrGrp 1"); // 测试步骤 TC_CANTest SOA SubPeriod Veh_SWSHeatService_ErrGrp 1
+  g_EM_SOAClient_Swc_SOA_SubPeriod("SWSHeatSt 1"); // 测试步骤 TC_CANTest SOA SubPeriod SWSHeatSt 1
+}
+
+testcase SYS_CDCU_fangxiangpanjiare_0002()
+{
+  TestDescription("方向盘加热 Level 1 && I_LDCU_PowerMode=0-OFF && C_LDCU_EVSysReadySt 0-OFF &&UserID:0x01010001");
+  teststep("warning","原始用例id为SYS-CDCU-方向盘加热-0002");
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("10"); // 测试步骤 TC_Sleep 10
+  g_EM_Equipment_Swc_TC_IG("OFF"); // 测试步骤 TC_IG OFF
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt1.I_LDCU_PowerMode 1"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt1.I_LDCU_PowerMode 1
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("1"); // 测试步骤 TC_Sleep 1
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt1.I_LDCU_PowerMode 0"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt1.I_LDCU_PowerMode 0
+  g_CAN_Bus_Swc_Set("I_LDCU_NM.I_LDCU_NMRepeatMsgReqBit 1"); // 测试步骤 TC_CANTest SET I_LDCU_NM.I_LDCU_NMRepeatMsgReqBit 1 //网络唤醒维持帧
+  g_CAN_Bus_Swc_Set("C_LDCU_SysSt.C_LDCU_EVSysReadySt 0"); // 测试步骤 TC_CANTest SET C_LDCU_SysSt.C_LDCU_EVSysReadySt 0//Not ready
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("SWSHeatStStruct.SWSHeatSt 0"); // 预期结果 TC_CANTest SOA Check SWSHeatStStruct.SWSHeatSt 0
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt2.I_LDCU_SWSHeatSt 0"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt2.I_LDCU_SWSHeatSt 0
+  g_EM_SOAClient_Swc_SOA_CHECK("SWSHeatStStruct.SWSHeatSt 0"); // 预期结果 TC_CANTest SOA Check SWSHeatStStruct.SWSHeatSt 0
+  g_CAN_Bus_Swc_CheckEventStart("I_CDCU_LDCU_BodyCtrl.I_CDCU_LDCU_SWSHeatCmd 1"); // 测试步骤 TC_CANTest CheckEventStart I_CDCU_LDCU_BodyCtrl.I_CDCU_LDCU_SWSHeatCmd 1
+  gTC_CANTest_SOA_CheckReq_Prepare("HighVoltageCtrlStruct.HighVoltageCtrl 2 traceback10"); // 预期结果 TC_CANTest SOA CheckReq HighVoltageCtrlStruct.HighVoltageCtrl 2 traceback10
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_SWSHeatService_ErrStruct.OpeNRC 0 traceback7"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatService_ErrStruct.OpeNRC 0 traceback7 //
+  g_EM_SOAClient_Swc_SOA_REQ("Veh_SWSHeatCmdStruct.Veh_SWSHeatCmd:1&UserID:0x01010001&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ Veh_SWSHeatCmdStruct.Veh_SWSHeatCmd:1&UserID:0x01010001&ServiceExecuteFeedbackFlag:2
+  gTC_CANTest_SOA_CheckReq("HighVoltageCtrlStruct.HighVoltageCtrl 2 traceback10"); // 预期结果 TC_CANTest SOA CheckReq HighVoltageCtrlStruct.HighVoltageCtrl 2 traceback10
+  g_CAN_Bus_Swc_Set("C_LDCU_SysSt.C_LDCU_EVSysReadySt 2"); // 测试步骤 TC_CANTest SET C_LDCU_SysSt.C_LDCU_EVSysReadySt 2//Not ready
+  g_CAN_Bus_Swc_CheckPeriod_FilterStarted("I_CDCU_LDCU_BodyCtrl.I_CDCU_LDCU_SWSHeatCmd 1:0 3;50;50"); // 预期结果 TC_CANTest CheckPeriod_FilterStarted I_CDCU_LDCU_BodyCtrl.I_CDCU_LDCU_SWSHeatCmd 1:0 3;50;50
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt2.I_LDCU_SWSHeatSt 1"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt2.I_LDCU_SWSHeatSt 1
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_SWSHeatService_ErrStruct.OpeNRC 0 traceback7"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatService_ErrStruct.OpeNRC 0 traceback7 //
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("890"); // 测试步骤 TC_Sleep 890
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("SWSHeatStStruct.SWSHeatSt 1"); // 预期结果 TC_CANTest SOA Check SWSHeatStStruct.SWSHeatSt 1
+  g_EM_SOAClient_Swc_SOA_CHECK("SWSHeatStStruct.SWSHeatSt 1"); // 预期结果 TC_CANTest SOA Check SWSHeatStStruct.SWSHeatSt 1
+  g_CAN_Bus_Swc_CheckEventStart("I_CDCU_LDCU_BodyCtrl.I_CDCU_LDCU_SWSHeatCmd 4"); // 测试步骤 TC_CANTest CheckEventStart I_CDCU_LDCU_BodyCtrl.I_CDCU_LDCU_SWSHeatCmd 4
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("10"); // 测试步骤 TC_Sleep 10
+  g_CAN_Bus_Swc_CheckPeriod_FilterStarted("I_CDCU_LDCU_BodyCtrl.I_CDCU_LDCU_SWSHeatCmd 4:0 3;50;50"); // 预期结果 TC_CANTest CheckPeriod_FilterStarted I_CDCU_LDCU_BodyCtrl.I_CDCU_LDCU_SWSHeatCmd 4:0 3;50;50
+  g_CAN_Bus_Swc_Check("I_CDCU_PowerReq.I_CDCU_SWSPowerReq 0"); // 预期结果 TC_CANTest check I_CDCU_PowerReq.I_CDCU_SWSPowerReq 0
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("2"); // 测试步骤 TC_Sleep 2
+}
+
+testcase SYS_CDCU_fangxiangpanjiare_0003()
+{
+  TestDescription("方向盘加热 Level 1 && I_LDCU_PowerMode=0-OFF && C_LDCU_EVSysReadySt 1-HV ON&&UserID:0x01010001");
+  teststep("warning","原始用例id为SYS-CDCU-方向盘加热-0003");
+  g_EM_Equipment_Swc_TC_IG("OFF"); // 测试步骤 TC_IG OFF
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt1.I_LDCU_PowerMode 1"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt1.I_LDCU_PowerMode 1
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("1"); // 测试步骤 TC_Sleep 1
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt1.I_LDCU_PowerMode 0"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt1.I_LDCU_PowerMode 0
+  g_CAN_Bus_Swc_Set("I_LDCU_NM.I_LDCU_NMRepeatMsgReqBit 1"); // 测试步骤 TC_CANTest SET I_LDCU_NM.I_LDCU_NMRepeatMsgReqBit 1 //网络唤醒维持帧
+  g_CAN_Bus_Swc_Set("C_LDCU_SysSt.C_LDCU_EVSysReadySt 1"); // 测试步骤 TC_CANTest SET C_LDCU_SysSt.C_LDCU_EVSysReadySt 1//Not ready
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("SWSHeatStStruct.SWSHeatSt 0"); // 预期结果 TC_CANTest SOA Check SWSHeatStStruct.SWSHeatSt 0
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt2.I_LDCU_SWSHeatSt 0"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt2.I_LDCU_SWSHeatSt 0
+  g_EM_SOAClient_Swc_SOA_CHECK("SWSHeatStStruct.SWSHeatSt 0"); // 预期结果 TC_CANTest SOA Check SWSHeatStStruct.SWSHeatSt 0
+  g_CAN_Bus_Swc_CheckEventStart("I_CDCU_LDCU_BodyCtrl.I_CDCU_LDCU_SWSHeatCmd 1"); // 测试步骤 TC_CANTest CheckEventStart I_CDCU_LDCU_BodyCtrl.I_CDCU_LDCU_SWSHeatCmd 1
+  gTC_CANTest_SOA_CheckReq_Prepare("HighVoltageCtrlStruct.HighVoltageCtrl 2 traceback10"); // 预期结果 TC_CANTest SOA CheckReq HighVoltageCtrlStruct.HighVoltageCtrl 2 traceback10
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_SWSHeatService_ErrStruct.OpeNRC 0 traceback7"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatService_ErrStruct.OpeNRC 0 traceback7 //
+  g_EM_SOAClient_Swc_SOA_REQ("Veh_SWSHeatCmdStruct.Veh_SWSHeatCmd:1&UserID:0x01010001&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ Veh_SWSHeatCmdStruct.Veh_SWSHeatCmd:1&UserID:0x01010001&ServiceExecuteFeedbackFlag:2
+  gTC_CANTest_SOA_CheckReq("HighVoltageCtrlStruct.HighVoltageCtrl 2 traceback10"); // 预期结果 TC_CANTest SOA CheckReq HighVoltageCtrlStruct.HighVoltageCtrl 2 traceback10
+  g_CAN_Bus_Swc_Set("C_LDCU_SysSt.C_LDCU_EVSysReadySt 2"); // 测试步骤 TC_CANTest SET C_LDCU_SysSt.C_LDCU_EVSysReadySt 2//Not ready
+  g_CAN_Bus_Swc_CheckPeriod_FilterStarted("I_CDCU_LDCU_BodyCtrl.I_CDCU_LDCU_SWSHeatCmd 1:0 3;50;50"); // 预期结果 TC_CANTest CheckPeriod_FilterStarted I_CDCU_LDCU_BodyCtrl.I_CDCU_LDCU_SWSHeatCmd 1:0 3;50;50
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt2.I_LDCU_SWSHeatSt 1"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt2.I_LDCU_SWSHeatSt 1
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_SWSHeatService_ErrStruct.OpeNRC 0 traceback7"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatService_ErrStruct.OpeNRC 0 traceback7 //
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("SWSHeatStStruct.SWSHeatSt 1"); // 预期结果 TC_CANTest SOA Check SWSHeatStStruct.SWSHeatSt 1
+  g_EM_Equipment_Swc_TC_IG("ON"); // 测试步骤 TC_IG ON
+  g_EM_SOAClient_Swc_SOA_CHECK("SWSHeatStStruct.SWSHeatSt 1"); // 预期结果 TC_CANTest SOA Check SWSHeatStStruct.SWSHeatSt 1
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("2"); // 测试步骤 TC_Sleep 2
+}
+
+testcase SYS_CDCU_fangxiangpanjiare_0004()
+{
+  TestDescription("方向盘加热 Level 1 && I_LDCU_PowerMode=0-OFF && C_LDCU_EVSysReadySt 2-OFF &&UserID:0x01010001");
+  teststep("warning","原始用例id为SYS-CDCU-方向盘加热-0004");
+  g_EM_Equipment_Swc_TC_IG("OFF"); // 测试步骤 TC_IG OFF
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt1.I_LDCU_PowerMode 1"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt1.I_LDCU_PowerMode 1
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("1"); // 测试步骤 TC_Sleep 1
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt1.I_LDCU_PowerMode 0"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt1.I_LDCU_PowerMode 0
+  g_CAN_Bus_Swc_Set("I_LDCU_NM.I_LDCU_NMRepeatMsgReqBit 1"); // 测试步骤 TC_CANTest SET I_LDCU_NM.I_LDCU_NMRepeatMsgReqBit 1 //网络唤醒维持帧
+  g_CAN_Bus_Swc_Set("C_LDCU_SysSt.C_LDCU_EVSysReadySt 2"); // 测试步骤 TC_CANTest SET C_LDCU_SysSt.C_LDCU_EVSysReadySt 2//Not ready
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("SWSHeatStStruct.SWSHeatSt 0"); // 预期结果 TC_CANTest SOA Check SWSHeatStStruct.SWSHeatSt 0
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt2.I_LDCU_SWSHeatSt 0"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt2.I_LDCU_SWSHeatSt 0
+  g_EM_SOAClient_Swc_SOA_CHECK("SWSHeatStStruct.SWSHeatSt 0"); // 预期结果 TC_CANTest SOA Check SWSHeatStStruct.SWSHeatSt 0
+  g_CAN_Bus_Swc_CheckEventStart("I_CDCU_LDCU_BodyCtrl.I_CDCU_LDCU_SWSHeatCmd 1"); // 测试步骤 TC_CANTest CheckEventStart I_CDCU_LDCU_BodyCtrl.I_CDCU_LDCU_SWSHeatCmd 1
+  gTC_CANTest_SOA_CheckReq_Prepare("HighVoltageCtrlStruct.HighVoltageCtrl 2 traceback10"); // 预期结果 TC_CANTest SOA CheckReq HighVoltageCtrlStruct.HighVoltageCtrl 2 traceback10
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_SWSHeatService_ErrStruct.OpeNRC 0 traceback7"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatService_ErrStruct.OpeNRC 0 traceback7 //
+  g_EM_SOAClient_Swc_SOA_REQ("Veh_SWSHeatCmdStruct.Veh_SWSHeatCmd:1&UserID:0x01010001&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ Veh_SWSHeatCmdStruct.Veh_SWSHeatCmd:1&UserID:0x01010001&ServiceExecuteFeedbackFlag:2
+  gTC_CANTest_SOA_CheckReq("HighVoltageCtrlStruct.HighVoltageCtrl 2 traceback10"); // 预期结果 TC_CANTest SOA CheckReq HighVoltageCtrlStruct.HighVoltageCtrl 2 traceback10
+  g_CAN_Bus_Swc_Set("C_LDCU_SysSt.C_LDCU_EVSysReadySt 2"); // 测试步骤 TC_CANTest SET C_LDCU_SysSt.C_LDCU_EVSysReadySt 2//Not ready
+  g_CAN_Bus_Swc_CheckPeriod_FilterStarted("I_CDCU_LDCU_BodyCtrl.I_CDCU_LDCU_SWSHeatCmd 1:0 3;50;50"); // 预期结果 TC_CANTest CheckPeriod_FilterStarted I_CDCU_LDCU_BodyCtrl.I_CDCU_LDCU_SWSHeatCmd 1:0 3;50;50
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt2.I_LDCU_SWSHeatSt 1"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt2.I_LDCU_SWSHeatSt 1
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_SWSHeatService_ErrStruct.OpeNRC 0 traceback7"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatService_ErrStruct.OpeNRC 0 traceback7 //
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("SWSHeatStStruct.SWSHeatSt 1"); // 预期结果 TC_CANTest SOA Check SWSHeatStStruct.SWSHeatSt 1
+  g_EM_Equipment_Swc_TC_IG("ON"); // 测试步骤 TC_IG ON
+  g_EM_SOAClient_Swc_SOA_CHECK("SWSHeatStStruct.SWSHeatSt 1"); // 预期结果 TC_CANTest SOA Check SWSHeatStStruct.SWSHeatSt 1
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("2"); // 测试步骤 TC_Sleep 2
+}
+
+testcase SYS_CDCU_fangxiangpanjiare_0005()
+{
+  TestDescription("方向盘加热 Level 1 && I_LDCU_PowerMode=1-Local ON && C_LDCU_EVSysReadySt 0-OFF &&UserID:0x01010001");
+  teststep("warning","原始用例id为SYS-CDCU-方向盘加热-0005");
+  g_EM_Equipment_Swc_TC_IG("ON"); // 测试步骤 TC_IG ON
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt1.I_LDCU_PowerMode 1"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt1.I_LDCU_PowerMode 1
+  g_CAN_Bus_Swc_Set("I_LDCU_NM.I_LDCU_NMRepeatMsgReqBit 1"); // 测试步骤 TC_CANTest SET I_LDCU_NM.I_LDCU_NMRepeatMsgReqBit 1 //网络唤醒维持帧
+  g_CAN_Bus_Swc_Set("C_LDCU_SysSt.C_LDCU_EVSysReadySt 0"); // 测试步骤 TC_CANTest SET C_LDCU_SysSt.C_LDCU_EVSysReadySt 0//Not ready
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("SWSHeatStStruct.SWSHeatSt 0"); // 预期结果 TC_CANTest SOA Check SWSHeatStStruct.SWSHeatSt 0
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt2.I_LDCU_SWSHeatSt 0"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt2.I_LDCU_SWSHeatSt 0
+  g_EM_SOAClient_Swc_SOA_CHECK("SWSHeatStStruct.SWSHeatSt 0"); // 预期结果 TC_CANTest SOA Check SWSHeatStStruct.SWSHeatSt 0
+  g_CAN_Bus_Swc_CheckEventStart("I_CDCU_LDCU_BodyCtrl.I_CDCU_LDCU_SWSHeatCmd 1"); // 测试步骤 TC_CANTest CheckEventStart I_CDCU_LDCU_BodyCtrl.I_CDCU_LDCU_SWSHeatCmd 1
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_SWSHeatService_ErrStruct.OpeNRC 0 traceback7"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatService_ErrStruct.OpeNRC 0 traceback7 //
+  g_EM_SOAClient_Swc_SOA_REQ("Veh_SWSHeatCmdStruct.Veh_SWSHeatCmd:1&UserID:0x01000001&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ Veh_SWSHeatCmdStruct.Veh_SWSHeatCmd:1&UserID:0x01000001&ServiceExecuteFeedbackFlag:2
+  g_CAN_Bus_Swc_Set("C_LDCU_SysSt.C_LDCU_EVSysReadySt 2"); // 测试步骤 TC_CANTest SET C_LDCU_SysSt.C_LDCU_EVSysReadySt 2//Not ready
+  g_CAN_Bus_Swc_CheckPeriod_FilterStarted("I_CDCU_LDCU_BodyCtrl.I_CDCU_LDCU_SWSHeatCmd 1:0 3;50;50"); // 预期结果 TC_CANTest CheckPeriod_FilterStarted I_CDCU_LDCU_BodyCtrl.I_CDCU_LDCU_SWSHeatCmd 1:0 3;50;50
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt2.I_LDCU_SWSHeatSt 1"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt2.I_LDCU_SWSHeatSt 1
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_SWSHeatService_ErrStruct.OpeNRC 0 traceback7"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatService_ErrStruct.OpeNRC 0 traceback7 //
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("5"); // 测试步骤 TC_Sleep 5
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("SWSHeatStStruct.SWSHeatSt 1"); // 预期结果 TC_CANTest SOA Check SWSHeatStStruct.SWSHeatSt 1
+  g_EM_SOAClient_Swc_SOA_CHECK("SWSHeatStStruct.SWSHeatSt 1"); // 预期结果 TC_CANTest SOA Check SWSHeatStStruct.SWSHeatSt 1
+}
+
+testcase SYS_CDCU_fangxiangpanjiare_0006()
+{
+  TestDescription("方向盘加热 Level 1 && I_LDCU_PowerMode=0-OFF && C_LDCU_EVSysReadySt 0-OFF &&UserID:0x01010001");
+  teststep("warning","原始用例id为SYS-CDCU-方向盘加热-0006");
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt1.I_LDCU_PowerMode 1"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt1.I_LDCU_PowerMode 1
+  g_CAN_Bus_Swc_Set("I_LDCU_NM.I_LDCU_NMRepeatMsgReqBit 1"); // 测试步骤 TC_CANTest SET I_LDCU_NM.I_LDCU_NMRepeatMsgReqBit 1 //网络唤醒维持帧
+  g_CAN_Bus_Swc_Set("C_LDCU_SysSt.C_LDCU_EVSysReadySt 1"); // 测试步骤 TC_CANTest SET C_LDCU_SysSt.C_LDCU_EVSysReadySt 1//HV ON
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("SWSHeatStStruct.SWSHeatSt 0"); // 预期结果 TC_CANTest SOA Check SWSHeatStStruct.SWSHeatSt 0
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt2.I_LDCU_SWSHeatSt 0"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt2.I_LDCU_SWSHeatSt 0
+  g_EM_SOAClient_Swc_SOA_CHECK("SWSHeatStStruct.SWSHeatSt 0"); // 预期结果 TC_CANTest SOA Check SWSHeatStStruct.SWSHeatSt 0
+  g_CAN_Bus_Swc_CheckEventStart("I_CDCU_LDCU_BodyCtrl.I_CDCU_LDCU_SWSHeatCmd 1"); // 测试步骤 TC_CANTest CheckEventStart I_CDCU_LDCU_BodyCtrl.I_CDCU_LDCU_SWSHeatCmd 1
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_SWSHeatService_ErrStruct.OpeNRC 0 traceback7"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatService_ErrStruct.OpeNRC 0 traceback7 //
+  g_EM_SOAClient_Swc_SOA_REQ("Veh_SWSHeatCmdStruct.Veh_SWSHeatCmd:1&UserID:0x01000001&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ Veh_SWSHeatCmdStruct.Veh_SWSHeatCmd:1&UserID:0x01000001&ServiceExecuteFeedbackFlag:2
+  g_CAN_Bus_Swc_CheckPeriod_FilterStarted("I_CDCU_LDCU_BodyCtrl.I_CDCU_LDCU_SWSHeatCmd 1:0 3;50;50"); // 预期结果 TC_CANTest CheckPeriod_FilterStarted I_CDCU_LDCU_BodyCtrl.I_CDCU_LDCU_SWSHeatCmd 1:0 3;50;50
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("SWSHeatStStruct.SWSHeatSt 1"); // 预期结果 TC_CANTest SOA Check SWSHeatStStruct.SWSHeatSt 1
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt2.I_LDCU_SWSHeatSt 1"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt2.I_LDCU_SWSHeatSt 1
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_SWSHeatService_ErrStruct.OpeNRC 0 traceback7"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatService_ErrStruct.OpeNRC 0 traceback7 //
+  g_EM_SOAClient_Swc_SOA_CHECK("SWSHeatStStruct.SWSHeatSt 1"); // 预期结果 TC_CANTest SOA Check SWSHeatStStruct.SWSHeatSt 1
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("5"); // 测试步骤 TC_Sleep 5
+}
+
+testcase SYS_CDCU_fangxiangpanjiare_0007()
+{
+  TestDescription("方向盘加热 Level 1 && I_LDCU_PowerMode=0-OFF && C_LDCU_EVSysReadySt 0-OFF &&UserID:0x01010001");
+  teststep("warning","原始用例id为SYS-CDCU-方向盘加热-0007");
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt1.I_LDCU_PowerMode 1"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt1.I_LDCU_PowerMode 1
+  g_CAN_Bus_Swc_Set("I_LDCU_NM.I_LDCU_NMRepeatMsgReqBit 1"); // 测试步骤 TC_CANTest SET I_LDCU_NM.I_LDCU_NMRepeatMsgReqBit 1 //网络唤醒维持帧
+  g_CAN_Bus_Swc_Set("C_LDCU_SysSt.C_LDCU_EVSysReadySt 2"); // 测试步骤 TC_CANTest SET C_LDCU_SysSt.C_LDCU_EVSysReadySt 2//Ready
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt2.I_LDCU_SWSHeatSt 0"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt2.I_LDCU_SWSHeatSt 0
+  g_CAN_Bus_Swc_CheckEventStart("I_CDCU_LDCU_BodyCtrl.I_CDCU_LDCU_SWSHeatCmd 1"); // 测试步骤 TC_CANTest CheckEventStart I_CDCU_LDCU_BodyCtrl.I_CDCU_LDCU_SWSHeatCmd 1
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_SWSHeatService_ErrStruct.OpeNRC 0 traceback7"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatService_ErrStruct.OpeNRC 0 traceback7 //
+  g_EM_SOAClient_Swc_SOA_REQ("Veh_SWSHeatCmdStruct.Veh_SWSHeatCmd:1&UserID:0x01000001&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ Veh_SWSHeatCmdStruct.Veh_SWSHeatCmd:1&UserID:0x01000001&ServiceExecuteFeedbackFlag:2
+  g_CAN_Bus_Swc_CheckPeriod_FilterStarted("I_CDCU_LDCU_BodyCtrl.I_CDCU_LDCU_SWSHeatCmd 1:0 3;50;50"); // 预期结果 TC_CANTest CheckPeriod_FilterStarted I_CDCU_LDCU_BodyCtrl.I_CDCU_LDCU_SWSHeatCmd 1:0 3;50;50
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt2.I_LDCU_SWSHeatSt 1"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt2.I_LDCU_SWSHeatSt 1
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_SWSHeatService_ErrStruct.OpeNRC 0 traceback7"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatService_ErrStruct.OpeNRC 0 traceback7 //
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("5"); // 测试步骤 TC_Sleep 5
+}
+
+testcase SYS_CDCU_fangxiangpanjiare_0008()
+{
+  teststep("warning","原始用例id为SYS-CDCU-方向盘加热-0008");
+  g_CAN_Bus_Swc_CheckEventStart("I_CDCU_LDCU_BodyCtrl.I_CDCU_LDCU_SWSHeatCmd 2"); // 测试步骤 TC_CANTest CheckEventStart I_CDCU_LDCU_BodyCtrl.I_CDCU_LDCU_SWSHeatCmd 2
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_SWSHeatService_ErrStruct.OpeNRC 0 traceback7"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatService_ErrStruct.OpeNRC 0 traceback7 //
+  g_EM_SOAClient_Swc_SOA_REQ("Veh_SWSHeatCmdStruct.Veh_SWSHeatCmd:2&UserID:0x01000001&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ Veh_SWSHeatCmdStruct.Veh_SWSHeatCmd:2&UserID:0x01000001&ServiceExecuteFeedbackFlag:2
+  g_CAN_Bus_Swc_CheckPeriod_FilterStarted("I_CDCU_LDCU_BodyCtrl.I_CDCU_LDCU_SWSHeatCmd 2:0 3;50;50"); // 预期结果 TC_CANTest CheckPeriod_FilterStarted I_CDCU_LDCU_BodyCtrl.I_CDCU_LDCU_SWSHeatCmd 2:0 3;50;50
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt2.I_LDCU_SWSHeatSt 2"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt2.I_LDCU_SWSHeatSt 2
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_SWSHeatService_ErrStruct.OpeNRC 0 traceback7"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatService_ErrStruct.OpeNRC 0 traceback7 //
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("5"); // 测试步骤 TC_Sleep 5
+}
+
+testcase SYS_CDCU_fangxiangpanjiare_0009()
+{
+  teststep("warning","原始用例id为SYS-CDCU-方向盘加热-0009");
+  g_CAN_Bus_Swc_CheckEventStart("I_CDCU_LDCU_BodyCtrl.I_CDCU_LDCU_SWSHeatCmd 3"); // 测试步骤 TC_CANTest CheckEventStart I_CDCU_LDCU_BodyCtrl.I_CDCU_LDCU_SWSHeatCmd 3
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_SWSHeatService_ErrStruct.OpeNRC 0 traceback7"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatService_ErrStruct.OpeNRC 0 traceback7 //
+  g_EM_SOAClient_Swc_SOA_REQ("Veh_SWSHeatCmdStruct.Veh_SWSHeatCmd:3&UserID:0x01000001&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ Veh_SWSHeatCmdStruct.Veh_SWSHeatCmd:3&UserID:0x01000001&ServiceExecuteFeedbackFlag:2
+  g_CAN_Bus_Swc_CheckPeriod_FilterStarted("I_CDCU_LDCU_BodyCtrl.I_CDCU_LDCU_SWSHeatCmd 3:0 3;50;50"); // 预期结果 TC_CANTest CheckPeriod_FilterStarted I_CDCU_LDCU_BodyCtrl.I_CDCU_LDCU_SWSHeatCmd 3:0 3;50;50
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt2.I_LDCU_SWSHeatSt 3"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt2.I_LDCU_SWSHeatSt 3
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_SWSHeatService_ErrStruct.OpeNRC 0 traceback7"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatService_ErrStruct.OpeNRC 0 traceback7 //
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("5"); // 测试步骤 TC_Sleep 5
+}
+
+testcase SYS_CDCU_fangxiangpanjiare_0010()
+{
+  TestDescription("关闭方向盘加热");
+  teststep("warning","原始用例id为SYS-CDCU-方向盘加热-0010");
+  g_CAN_Bus_Swc_CheckEventStart("I_CDCU_LDCU_BodyCtrl.I_CDCU_LDCU_SWSHeatCmd 4"); // 测试步骤 TC_CANTest CheckEventStart I_CDCU_LDCU_BodyCtrl.I_CDCU_LDCU_SWSHeatCmd 4
+  g_CAN_Bus_Swc_Set("C_LDCU_SysSt.C_LDCU_EVSysReadySt 0"); // 测试步骤 TC_CANTest SET C_LDCU_SysSt.C_LDCU_EVSysReadySt 0//ready
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_SWSHeatService_ErrStruct.OpeNRC 0 traceback7"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatService_ErrStruct.OpeNRC 0 traceback7 //
+  g_EM_SOAClient_Swc_SOA_REQ("Veh_SWSHeatCmdStruct.Veh_SWSHeatCmd:4&UserID:0x01000001&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ Veh_SWSHeatCmdStruct.Veh_SWSHeatCmd:4&UserID:0x01000001&ServiceExecuteFeedbackFlag:2
+  g_CAN_Bus_Swc_CheckPeriod_FilterStarted("I_CDCU_LDCU_BodyCtrl.I_CDCU_LDCU_SWSHeatCmd 4:0 3;50;50"); // 预期结果 TC_CANTest CheckPeriod_FilterStarted I_CDCU_LDCU_BodyCtrl.I_CDCU_LDCU_SWSHeatCmd 4:0 3;50;50
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt2.I_LDCU_SWSHeatSt 4"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt2.I_LDCU_SWSHeatSt 4
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_SWSHeatService_ErrStruct.OpeNRC 0 traceback7"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatService_ErrStruct.OpeNRC 0 traceback7 //
+}
+
+testcase SYS_CDCU_fangxiangpanjiare_0011()
+{
+  TestDescription("方向盘加热 Level 1 && I_LDCU_PowerMode=2-OFF && C_LDCU_EVSysReadySt 0-OFF &&UserID:0x01010001");
+  teststep("warning","原始用例id为SYS-CDCU-方向盘加热-0011");
+  g_EM_Equipment_Swc_TC_IG("OFF"); // 测试步骤 TC_IG OFF
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt1.I_LDCU_PowerMode 1"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt1.I_LDCU_PowerMode 1
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("1"); // 测试步骤 TC_Sleep 1
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt1.I_LDCU_PowerMode 2"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt1.I_LDCU_PowerMode 2
+  g_CAN_Bus_Swc_Set("I_LDCU_NM.I_LDCU_NMRepeatMsgReqBit 1"); // 测试步骤 TC_CANTest SET I_LDCU_NM.I_LDCU_NMRepeatMsgReqBit 1 //网络唤醒维持帧
+  g_CAN_Bus_Swc_Set("C_LDCU_SysSt.C_LDCU_EVSysReadySt 0"); // 测试步骤 TC_CANTest SET C_LDCU_SysSt.C_LDCU_EVSysReadySt 0//ready
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("SWSHeatStStruct.SWSHeatSt 0"); // 预期结果 TC_CANTest SOA Check SWSHeatStStruct.SWSHeatSt 0
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt2.I_LDCU_SWSHeatSt 0"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt2.I_LDCU_SWSHeatSt 0
+  g_EM_SOAClient_Swc_SOA_CHECK("SWSHeatStStruct.SWSHeatSt 0"); // 预期结果 TC_CANTest SOA Check SWSHeatStStruct.SWSHeatSt 0
+  g_CAN_Bus_Swc_CheckEventStart("I_CDCU_LDCU_BodyCtrl.I_CDCU_LDCU_SWSHeatCmd 1"); // 测试步骤 TC_CANTest CheckEventStart I_CDCU_LDCU_BodyCtrl.I_CDCU_LDCU_SWSHeatCmd 1
+  gTC_CANTest_SOA_CheckReq_Prepare("HighVoltageCtrlStruct.HighVoltageCtrl 2 traceback10"); // 预期结果 TC_CANTest SOA CheckReq HighVoltageCtrlStruct.HighVoltageCtrl 2 traceback10
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_SWSHeatService_ErrStruct.OpeNRC 0 traceback5"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatService_ErrStruct.OpeNRC 0 traceback5 //
+  g_EM_SOAClient_Swc_SOA_REQ("Veh_SWSHeatCmdStruct.Veh_SWSHeatCmd:1&UserID:0x01010001&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ Veh_SWSHeatCmdStruct.Veh_SWSHeatCmd:1&UserID:0x01010001&ServiceExecuteFeedbackFlag:2
+  gTC_CANTest_SOA_CheckReq("HighVoltageCtrlStruct.HighVoltageCtrl 2 traceback10"); // 预期结果 TC_CANTest SOA CheckReq HighVoltageCtrlStruct.HighVoltageCtrl 2 traceback10
+  g_EM_Equipment_Swc_TC_IG("ON"); // 测试步骤 TC_IG ON
+  g_CAN_Bus_Swc_Set("C_LDCU_SysSt.C_LDCU_EVSysReadySt 2"); // 测试步骤 TC_CANTest SET C_LDCU_SysSt.C_LDCU_EVSysReadySt 2//Not ready
+  g_CAN_Bus_Swc_CheckPeriod_FilterStarted("I_CDCU_LDCU_BodyCtrl.I_CDCU_LDCU_SWSHeatCmd 1:0 3;50;50"); // 预期结果 TC_CANTest CheckPeriod_FilterStarted I_CDCU_LDCU_BodyCtrl.I_CDCU_LDCU_SWSHeatCmd 1:0 3;50;50
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("SWSHeatStStruct.SWSHeatSt 1"); // 预期结果 TC_CANTest SOA Check SWSHeatStStruct.SWSHeatSt 1
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt2.I_LDCU_SWSHeatSt 1"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt2.I_LDCU_SWSHeatSt 1
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_SWSHeatService_ErrStruct.OpeNRC 0 traceback5"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatService_ErrStruct.OpeNRC 0 traceback5 //
+  g_EM_SOAClient_Swc_SOA_CHECK("SWSHeatStStruct.SWSHeatSt 1"); // 预期结果 TC_CANTest SOA Check SWSHeatStStruct.SWSHeatSt 1
+  g_EM_Equipment_Swc_TC_IG("ON"); // 测试步骤 TC_IG ON
+}
+
+testcase SYS_CDCU_fangxiangpanjiare_0012()
+{
+  TestDescription("方向盘加热 Level 1 && I_LDCU_PowerMode=2-OFF && C_LDCU_EVSysReadySt 1-OFF &&UserID:0x01010001");
+  teststep("warning","原始用例id为SYS-CDCU-方向盘加热-0012");
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt1.I_LDCU_PowerMode 1"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt1.I_LDCU_PowerMode 1
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("1"); // 测试步骤 TC_Sleep 1
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt1.I_LDCU_PowerMode 2"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt1.I_LDCU_PowerMode 2
+  g_CAN_Bus_Swc_Set("I_LDCU_NM.I_LDCU_NMRepeatMsgReqBit 1"); // 测试步骤 TC_CANTest SET I_LDCU_NM.I_LDCU_NMRepeatMsgReqBit 1 //网络唤醒维持帧
+  g_CAN_Bus_Swc_Set("C_LDCU_SysSt.C_LDCU_EVSysReadySt 1"); // 测试步骤 TC_CANTest SET C_LDCU_SysSt.C_LDCU_EVSysReadySt 1//ready
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("SWSHeatStStruct.SWSHeatSt 0"); // 预期结果 TC_CANTest SOA Check SWSHeatStStruct.SWSHeatSt 0
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt2.I_LDCU_SWSHeatSt 0"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt2.I_LDCU_SWSHeatSt 0
+  g_EM_SOAClient_Swc_SOA_CHECK("SWSHeatStStruct.SWSHeatSt 0"); // 预期结果 TC_CANTest SOA Check SWSHeatStStruct.SWSHeatSt 0
+  g_CAN_Bus_Swc_CheckEventStart("I_CDCU_LDCU_BodyCtrl.I_CDCU_LDCU_SWSHeatCmd 1"); // 测试步骤 TC_CANTest CheckEventStart I_CDCU_LDCU_BodyCtrl.I_CDCU_LDCU_SWSHeatCmd 1
+  g_CAN_Bus_Swc_Set("C_LDCU_SysSt.C_LDCU_EVSysReadySt 2"); // 测试步骤 TC_CANTest SET C_LDCU_SysSt.C_LDCU_EVSysReadySt 2//Not ready
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_SWSHeatService_ErrStruct.OpeNRC 0 traceback5"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatService_ErrStruct.OpeNRC 0 traceback5 //
+  g_EM_SOAClient_Swc_SOA_REQ("Veh_SWSHeatCmdStruct.Veh_SWSHeatCmd:1&UserID:0x01010001&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ Veh_SWSHeatCmdStruct.Veh_SWSHeatCmd:1&UserID:0x01010001&ServiceExecuteFeedbackFlag:2
+  g_CAN_Bus_Swc_CheckPeriod_FilterStarted("I_CDCU_LDCU_BodyCtrl.I_CDCU_LDCU_SWSHeatCmd 1:0 3;50;50"); // 预期结果 TC_CANTest CheckPeriod_FilterStarted I_CDCU_LDCU_BodyCtrl.I_CDCU_LDCU_SWSHeatCmd 1:0 3;50;50
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("SWSHeatStStruct.SWSHeatSt 1"); // 预期结果 TC_CANTest SOA Check SWSHeatStStruct.SWSHeatSt 1
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt2.I_LDCU_SWSHeatSt 1"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt2.I_LDCU_SWSHeatSt 1
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_SWSHeatService_ErrStruct.OpeNRC 0 traceback5"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatService_ErrStruct.OpeNRC 0 traceback5 //
+  g_EM_SOAClient_Swc_SOA_CHECK("SWSHeatStStruct.SWSHeatSt 1"); // 预期结果 TC_CANTest SOA Check SWSHeatStStruct.SWSHeatSt 1
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("5"); // 测试步骤 TC_Sleep 5
+}
+
+testcase SYS_CDCU_fangxiangpanjiare_0013()
+{
+  TestDescription("方向盘加热 Level 1 && I_LDCU_PowerMode=2-OFF && C_LDCU_EVSysReadySt 2-OFF &&UserID:0x01010001");
+  teststep("warning","原始用例id为SYS-CDCU-方向盘加热-0013");
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt1.I_LDCU_PowerMode 1"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt1.I_LDCU_PowerMode 1
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("1"); // 测试步骤 TC_Sleep 1
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt1.I_LDCU_PowerMode 2"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt1.I_LDCU_PowerMode 2
+  g_CAN_Bus_Swc_Set("I_LDCU_NM.I_LDCU_NMRepeatMsgReqBit 1"); // 测试步骤 TC_CANTest SET I_LDCU_NM.I_LDCU_NMRepeatMsgReqBit 1 //网络唤醒维持帧
+  g_CAN_Bus_Swc_Set("C_LDCU_SysSt.C_LDCU_EVSysReadySt 2"); // 测试步骤 TC_CANTest SET C_LDCU_SysSt.C_LDCU_EVSysReadySt 2//ready
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt2.I_LDCU_SWSHeatSt 0"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt2.I_LDCU_SWSHeatSt 0
+  g_CAN_Bus_Swc_CheckEventStart("I_CDCU_LDCU_BodyCtrl.I_CDCU_LDCU_SWSHeatCmd 1"); // 测试步骤 TC_CANTest CheckEventStart I_CDCU_LDCU_BodyCtrl.I_CDCU_LDCU_SWSHeatCmd 1
+  g_CAN_Bus_Swc_Set("C_LDCU_SysSt.C_LDCU_EVSysReadySt 2"); // 测试步骤 TC_CANTest SET C_LDCU_SysSt.C_LDCU_EVSysReadySt 2//Not ready
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_SWSHeatService_ErrStruct.OpeNRC 0 traceback5"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatService_ErrStruct.OpeNRC 0 traceback5 //
+  g_EM_SOAClient_Swc_SOA_REQ("Veh_SWSHeatCmdStruct.Veh_SWSHeatCmd:1&UserID:0x01010001&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ Veh_SWSHeatCmdStruct.Veh_SWSHeatCmd:1&UserID:0x01010001&ServiceExecuteFeedbackFlag:2
+  g_CAN_Bus_Swc_CheckPeriod_FilterStarted("I_CDCU_LDCU_BodyCtrl.I_CDCU_LDCU_SWSHeatCmd 1:0 3;50;50"); // 预期结果 TC_CANTest CheckPeriod_FilterStarted I_CDCU_LDCU_BodyCtrl.I_CDCU_LDCU_SWSHeatCmd 1:0 3;50;50
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt2.I_LDCU_SWSHeatSt 1"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt2.I_LDCU_SWSHeatSt 1
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_SWSHeatService_ErrStruct.OpeNRC 0 traceback5"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatService_ErrStruct.OpeNRC 0 traceback5 //
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("5"); // 测试步骤 TC_Sleep 5
+}
+
+testcase SYS_CDCU_fangxiangpanjiare_0014()
+{
+  TestDescription("方向盘加热 Level 2 && I_LDCU_PowerMode=0-OFF && C_LDCU_EVSysReadySt 0-OFF &&UserID:0x01010001");
+  teststep("warning","原始用例id为SYS-CDCU-方向盘加热-0014");
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt2.I_LDCU_SWSHeatSt 0"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt2.I_LDCU_SWSHeatSt 0
+  g_CAN_Bus_Swc_CheckEventStart("I_CDCU_LDCU_BodyCtrl.I_CDCU_LDCU_SWSHeatCmd 2"); // 测试步骤 TC_CANTest CheckEventStart I_CDCU_LDCU_BodyCtrl.I_CDCU_LDCU_SWSHeatCmd 2
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_SWSHeatService_ErrStruct.OpeNRC 0 traceback5"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatService_ErrStruct.OpeNRC 0 traceback5 //
+  g_EM_SOAClient_Swc_SOA_REQ("Veh_SWSHeatCmdStruct.Veh_SWSHeatCmd:2&UserID:0x01000001&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ Veh_SWSHeatCmdStruct.Veh_SWSHeatCmd:2&UserID:0x01000001&ServiceExecuteFeedbackFlag:2
+  g_CAN_Bus_Swc_CheckPeriod_FilterStarted("I_CDCU_LDCU_BodyCtrl.I_CDCU_LDCU_SWSHeatCmd 2:0 3;50;50"); // 预期结果 TC_CANTest CheckPeriod_FilterStarted I_CDCU_LDCU_BodyCtrl.I_CDCU_LDCU_SWSHeatCmd 2:0 3;50;50
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt2.I_LDCU_SWSHeatSt 2"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt2.I_LDCU_SWSHeatSt 2
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_SWSHeatService_ErrStruct.OpeNRC 0 traceback5"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatService_ErrStruct.OpeNRC 0 traceback5 //
+}
+
+testcase SYS_CDCU_fangxiangpanjiare_0015()
+{
+  TestDescription("方向盘加热 Level 3 && I_LDCU_PowerMode=0-OFF && C_LDCU_EVSysReadySt 0-OFF &&UserID:0x01010001");
+  teststep("warning","原始用例id为SYS-CDCU-方向盘加热-0015");
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt2.I_LDCU_SWSHeatSt 0"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt2.I_LDCU_SWSHeatSt 0
+  g_CAN_Bus_Swc_CheckEventStart("I_CDCU_LDCU_BodyCtrl.I_CDCU_LDCU_SWSHeatCmd 3"); // 测试步骤 TC_CANTest CheckEventStart I_CDCU_LDCU_BodyCtrl.I_CDCU_LDCU_SWSHeatCmd 3
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_SWSHeatService_ErrStruct.OpeNRC 0 traceback5"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatService_ErrStruct.OpeNRC 0 traceback5 //
+  g_EM_SOAClient_Swc_SOA_REQ("Veh_SWSHeatCmdStruct.Veh_SWSHeatCmd:3&UserID:0x01000001&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ Veh_SWSHeatCmdStruct.Veh_SWSHeatCmd:3&UserID:0x01000001&ServiceExecuteFeedbackFlag:2
+  g_CAN_Bus_Swc_CheckPeriod_FilterStarted("I_CDCU_LDCU_BodyCtrl.I_CDCU_LDCU_SWSHeatCmd 3:0 3;50;50"); // 预期结果 TC_CANTest CheckPeriod_FilterStarted I_CDCU_LDCU_BodyCtrl.I_CDCU_LDCU_SWSHeatCmd 3:0 3;50;50
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt2.I_LDCU_SWSHeatSt 3"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt2.I_LDCU_SWSHeatSt 3
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_SWSHeatService_ErrStruct.OpeNRC 0 traceback5"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatService_ErrStruct.OpeNRC 0 traceback5 //
+}
+
+testcase SYS_CDCU_fangxiangpanjiare_0016()
+{
+  TestDescription("方向盘加热 Level 4 && I_LDCU_PowerMode=0-OFF && C_LDCU_EVSysReadySt 0-OFF &&UserID:0x01010001");
+  teststep("warning","原始用例id为SYS-CDCU-方向盘加热-0016");
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt2.I_LDCU_SWSHeatSt 2"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt2.I_LDCU_SWSHeatSt 2
+  g_CAN_Bus_Swc_CheckEventStart("I_CDCU_LDCU_BodyCtrl.I_CDCU_LDCU_SWSHeatCmd 4"); // 测试步骤 TC_CANTest CheckEventStart I_CDCU_LDCU_BodyCtrl.I_CDCU_LDCU_SWSHeatCmd 4
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_SWSHeatService_ErrStruct.OpeNRC 0 traceback5"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatService_ErrStruct.OpeNRC 0 traceback5 //
+  g_EM_SOAClient_Swc_SOA_REQ("Veh_SWSHeatCmdStruct.Veh_SWSHeatCmd:4&UserID:0x01000001&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ Veh_SWSHeatCmdStruct.Veh_SWSHeatCmd:4&UserID:0x01000001&ServiceExecuteFeedbackFlag:2
+  g_CAN_Bus_Swc_CheckPeriod_FilterStarted("I_CDCU_LDCU_BodyCtrl.I_CDCU_LDCU_SWSHeatCmd 4:0 3;50;50"); // 预期结果 TC_CANTest CheckPeriod_FilterStarted I_CDCU_LDCU_BodyCtrl.I_CDCU_LDCU_SWSHeatCmd 4:0 3;50;50
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt2.I_LDCU_SWSHeatSt 4"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt2.I_LDCU_SWSHeatSt 4
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_SWSHeatService_ErrStruct.OpeNRC 0 traceback5"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatService_ErrStruct.OpeNRC 0 traceback5 //
+}
+
+testcase SYS_CDCU_fangxiangpanjiare_0017()
+{
+  TestDescription("开启 控制成功 条件： 1.引擎下发1档加热。 2.LIN回复1档 期望： 1. NRC：0 2. OpeErrInfo：0x00C8 3. OpeNRC：0");
+  teststep("warning","原始用例id为SYS-CDCU-方向盘加热-0017");
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt1.I_LDCU_PowerMode 1"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt1.I_LDCU_PowerMode 1
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("1"); // 测试步骤 TC_Sleep 1
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt1.I_LDCU_PowerMode 2"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt1.I_LDCU_PowerMode 2
+  gTC_CANTest_SOA_Set8001Delay("20"); // 测试步骤 TC_CANTest SOA Set8001Delay 20
+  g_CAN_Bus_Swc_Set("I_LDCU_NM.I_LDCU_NMRepeatMsgReqBit 1"); // 测试步骤 TC_CANTest SET I_LDCU_NM.I_LDCU_NMRepeatMsgReqBit 1 //网络唤醒维持帧
+  g_CAN_Bus_Swc_Set("C_LDCU_SysSt.C_LDCU_EVSysReadySt 1"); // 测试步骤 TC_CANTest SET C_LDCU_SysSt.C_LDCU_EVSysReadySt 1//ready
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt2.I_LDCU_SWSHeatSt 0"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt2.I_LDCU_SWSHeatSt 0
+  g_CAN_Bus_Swc_CheckEventStart("I_CDCU_LDCU_BodyCtrl.I_CDCU_LDCU_SWSHeatCmd 1"); // 测试步骤 TC_CANTest CheckEventStart I_CDCU_LDCU_BodyCtrl.I_CDCU_LDCU_SWSHeatCmd 1
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_SWSHeatService_ErrStruct.OpeErrInfo[0-1]:0x00C8 traceback20"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatService_ErrStruct.OpeErrInfo[0-1]:0x00C8 traceback20
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_SWSHeatService_ErrStruct.OpeNRC 0 traceback7"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatService_ErrStruct.OpeNRC 0 traceback7
+  g_EM_SOAClient_Swc_SOA_REQ("Veh_SWSHeatCmdStruct.Veh_SWSHeatCmd:1&UserID:0x01010001&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ Veh_SWSHeatCmdStruct.Veh_SWSHeatCmd:1&UserID:0x01010001&ServiceExecuteFeedbackFlag:2
+  g_CAN_Bus_Swc_Set("C_LDCU_SysSt.C_LDCU_EVSysReadySt 2"); // 测试步骤 TC_CANTest SET C_LDCU_SysSt.C_LDCU_EVSysReadySt 2//Not ready
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_SWSHeatCmdRespStruct.RespCode 0"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatCmdRespStruct.RespCode 0
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt2.I_LDCU_SWSHeatSt 1"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt2.I_LDCU_SWSHeatSt 1
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_SWSHeatCmdRespStruct.RespCode 0"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatCmdRespStruct.RespCode 0
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_SWSHeatService_ErrStruct.OpeErrInfo[0-1]:0x00C8 traceback20"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatService_ErrStruct.OpeErrInfo[0-1]:0x00C8 traceback20
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_SWSHeatService_ErrStruct.OpeNRC 0 traceback7"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatService_ErrStruct.OpeNRC 0 traceback7
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("10"); // 测试步骤 TC_Sleep 10
+}
+
+testcase SYS_CDCU_fangxiangpanjiare_0018()
+{
+  TestDescription("关闭控制成功 条件： 1.引擎下发1档加热。 2.LIN回复1档 期望： 1. NRC：0 2. OpeErrInfo：0x00C8 3. OpeNRC：0");
+  teststep("warning","原始用例id为SYS-CDCU-方向盘加热-0018");
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt1.I_LDCU_PowerMode 1"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt1.I_LDCU_PowerMode 1
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("1"); // 测试步骤 TC_Sleep 1
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt1.I_LDCU_PowerMode 2"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt1.I_LDCU_PowerMode 2
+  gTC_CANTest_SOA_Set8001Delay("20"); // 测试步骤 TC_CANTest SOA Set8001Delay 20
+  g_CAN_Bus_Swc_Set("I_LDCU_NM.I_LDCU_NMRepeatMsgReqBit 1"); // 测试步骤 TC_CANTest SET I_LDCU_NM.I_LDCU_NMRepeatMsgReqBit 1 //网络唤醒维持帧
+  g_CAN_Bus_Swc_Set("C_LDCU_SysSt.C_LDCU_EVSysReadySt 1"); // 测试步骤 TC_CANTest SET C_LDCU_SysSt.C_LDCU_EVSysReadySt 1//ready
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt2.I_LDCU_SWSHeatSt 1"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt2.I_LDCU_SWSHeatSt 1
+  g_CAN_Bus_Swc_CheckEventStart("I_CDCU_LDCU_BodyCtrl.I_CDCU_LDCU_SWSHeatCmd 4"); // 测试步骤 TC_CANTest CheckEventStart I_CDCU_LDCU_BodyCtrl.I_CDCU_LDCU_SWSHeatCmd 4
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_SWSHeatService_ErrStruct.OpeErrInfo[0-1]:0x00C8 traceback20"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatService_ErrStruct.OpeErrInfo[0-1]:0x00C8 traceback20
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_SWSHeatService_ErrStruct.OpeNRC 0 traceback7"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatService_ErrStruct.OpeNRC 0 traceback7
+  g_EM_SOAClient_Swc_SOA_REQ("Veh_SWSHeatCmdStruct.Veh_SWSHeatCmd:4&UserID:0x01010001&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ Veh_SWSHeatCmdStruct.Veh_SWSHeatCmd:4&UserID:0x01010001&ServiceExecuteFeedbackFlag:2
+  g_CAN_Bus_Swc_Set("C_LDCU_SysSt.C_LDCU_EVSysReadySt 2"); // 测试步骤 TC_CANTest SET C_LDCU_SysSt.C_LDCU_EVSysReadySt 2//Not ready
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_SWSHeatCmdRespStruct.RespCode 0"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatCmdRespStruct.RespCode 0
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt2.I_LDCU_SWSHeatSt 4"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt2.I_LDCU_SWSHeatSt 4
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_SWSHeatCmdRespStruct.RespCode 0"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatCmdRespStruct.RespCode 0
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_SWSHeatService_ErrStruct.OpeErrInfo[0-1]:0x00C8 traceback20"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatService_ErrStruct.OpeErrInfo[0-1]:0x00C8 traceback20
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_SWSHeatService_ErrStruct.OpeNRC 0 traceback7"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatService_ErrStruct.OpeNRC 0 traceback7
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("10"); // 测试步骤 TC_Sleep 10
+}
+
+testcase SYS_CDCU_fangxiangpanjiare_0019()
+{
+  TestDescription("方向盘加热档位调节失败 条件： 1.引擎下发1档加热。 2.LIN回复2档 期望： 1. NRC：0 2. OpeErrInfo：0x332E 3. OpeNRC：0x102 - 原子服务返回失败");
+  teststep("warning","原始用例id为SYS-CDCU-方向盘加热-0019");
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt1.I_LDCU_PowerMode 1"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt1.I_LDCU_PowerMode 1
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("1"); // 测试步骤 TC_Sleep 1
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt1.I_LDCU_PowerMode 2"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt1.I_LDCU_PowerMode 2
+  g_CAN_Bus_Swc_Set("I_LDCU_NM.I_LDCU_NMRepeatMsgReqBit 1"); // 测试步骤 TC_CANTest SET I_LDCU_NM.I_LDCU_NMRepeatMsgReqBit 1 //网络唤醒维持帧
+  g_CAN_Bus_Swc_Set("C_LDCU_SysSt.C_LDCU_EVSysReadySt 1"); // 测试步骤 TC_CANTest SET C_LDCU_SysSt.C_LDCU_EVSysReadySt 1//ready
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt2.I_LDCU_SWSHeatSt 0"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt2.I_LDCU_SWSHeatSt 0
+  g_CAN_Bus_Swc_CheckEventStart("I_CDCU_LDCU_BodyCtrl.I_CDCU_LDCU_SWSHeatCmd 1"); // 测试步骤 TC_CANTest CheckEventStart I_CDCU_LDCU_BodyCtrl.I_CDCU_LDCU_SWSHeatCmd 1
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_SWSHeatService_ErrStruct.OpeErrInfo[0-1]:0x332E traceback20"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatService_ErrStruct.OpeErrInfo[0-1]:0x332E traceback20
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_SWSHeatService_ErrStruct.OpeNRC 0xC0 traceback20"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatService_ErrStruct.OpeNRC 0xC0 traceback20
+  g_EM_SOAClient_Swc_SOA_REQ("Veh_SWSHeatCmdStruct.Veh_SWSHeatCmd:1&UserID:0x01010001&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ Veh_SWSHeatCmdStruct.Veh_SWSHeatCmd:1&UserID:0x01010001&ServiceExecuteFeedbackFlag:2
+  g_CAN_Bus_Swc_Set("C_LDCU_SysSt.C_LDCU_EVSysReadySt 2"); // 测试步骤 TC_CANTest SET C_LDCU_SysSt.C_LDCU_EVSysReadySt 2//Not ready
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_SWSHeatCmdRespStruct.RespCode 0"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatCmdRespStruct.RespCode 0
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt2.I_LDCU_SWSHeatSt 2"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt2.I_LDCU_SWSHeatSt 2
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_SWSHeatCmdRespStruct.RespCode 0"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatCmdRespStruct.RespCode 0
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("10"); // 测试步骤 TC_Sleep 10
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_SWSHeatService_ErrStruct.OpeErrInfo[0-1]:0x332E traceback20"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatService_ErrStruct.OpeErrInfo[0-1]:0x332E traceback20
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_SWSHeatService_ErrStruct.OpeNRC 0xC0 traceback20"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatService_ErrStruct.OpeNRC 0xC0 traceback20
+}
+
+testcase SYS_CDCU_fangxiangpanjiare_0020()
+{
+  TestDescription("高压启动失败 条件： 1.引擎下发1档加热。 2.C_LDCU_EVSysReadySt Not Ready 期望： 1. NRC：1 2. OpeErrInfo：0x06 3. OpeNRC：0x1");
+  teststep("warning","原始用例id为SYS-CDCU-方向盘加热-0020");
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("10"); // 测试步骤 TC_Sleep 10
+  g_EM_Equipment_Swc_TC_IG("OFF"); // 测试步骤 TC_IG OFF
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt1.I_LDCU_PowerMode 1"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt1.I_LDCU_PowerMode 1
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("1"); // 测试步骤 TC_Sleep 1
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt1.I_LDCU_PowerMode 0"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt1.I_LDCU_PowerMode 0
+  g_CAN_Bus_Swc_Set("I_LDCU_NM.I_LDCU_NMRepeatMsgReqBit 1"); // 测试步骤 TC_CANTest SET I_LDCU_NM.I_LDCU_NMRepeatMsgReqBit 1 //网络唤醒维持帧
+  g_CAN_Bus_Swc_Set("C_LDCU_SysSt.C_LDCU_EVSysReadySt 0"); // 测试步骤 TC_CANTest SET C_LDCU_SysSt.C_LDCU_EVSysReadySt 0//Not ready
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt2.I_LDCU_SWSHeatSt 0"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt2.I_LDCU_SWSHeatSt 0
+  g_CAN_Bus_Swc_CheckEventStart("I_CDCU_LDCU_BodyCtrl.I_CDCU_LDCU_SWSHeatCmd 1"); // 测试步骤 TC_CANTest CheckEventStart I_CDCU_LDCU_BodyCtrl.I_CDCU_LDCU_SWSHeatCmd 1
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_SWSHeatCmdRespStruct.RespCode 0"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatCmdRespStruct.RespCode 0
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_SWSHeatService_ErrStruct.OpeErrInfo[0-1]:0x06 traceback20"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatService_ErrStruct.OpeErrInfo[0-1]:0x06 traceback20
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_SWSHeatService_ErrStruct.OpeNRC 0x4 traceback20"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatService_ErrStruct.OpeNRC 0x4 traceback20
+  g_EM_SOAClient_Swc_SOA_REQ("Veh_SWSHeatCmdStruct.Veh_SWSHeatCmd:1&UserID:0x01010001&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ Veh_SWSHeatCmdStruct.Veh_SWSHeatCmd:1&UserID:0x01010001&ServiceExecuteFeedbackFlag:2
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_SWSHeatCmdRespStruct.RespCode 0"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatCmdRespStruct.RespCode 0
+  g_EM_Equipment_Swc_TC_IG("ON"); // 测试步骤 TC_IG ON
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt2.I_LDCU_SWSHeatSt 1"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt2.I_LDCU_SWSHeatSt 1
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_SWSHeatService_ErrStruct.OpeErrInfo[0-1]:0x06 traceback20"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatService_ErrStruct.OpeErrInfo[0-1]:0x06 traceback20
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_SWSHeatService_ErrStruct.OpeNRC 0x4 traceback20"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatService_ErrStruct.OpeNRC 0x4 traceback20
+  g_EM_Equipment_Swc_TC_IG("ON"); // 测试步骤 TC_IG ON
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("2"); // 测试步骤 TC_Sleep 2
+}
+
+testcase SYS_CDCU_fangxiangpanjiare_0021()
+{
+  TestDescription("车辆已启动，为了车内人员安全，暂不可远程控制 条件： 1.引擎下发1档加热。 2.C_LDCU_EVSysReadySt Not Ready 期望： 1. NRC：1 2. OpeErrInfo：0x09 3. OpeNRC：0xFF");
+  teststep("warning","原始用例id为SYS-CDCU-方向盘加热-0021");
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt1.I_LDCU_PowerMode 1"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt1.I_LDCU_PowerMode 1
+  g_CAN_Bus_Swc_Set("C_LDCU_SysSt.C_LDCU_EVSysReadySt 2"); // 测试步骤 TC_CANTest SET C_LDCU_SysSt.C_LDCU_EVSysReadySt 2//ready
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt2.I_LDCU_SWSHeatSt 0"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt2.I_LDCU_SWSHeatSt 0
+  g_CAN_Bus_Swc_CheckEventStart("I_CDCU_LDCU_BodyCtrl.I_CDCU_LDCU_SWSHeatCmd 1"); // 测试步骤 TC_CANTest CheckEventStart I_CDCU_LDCU_BodyCtrl.I_CDCU_LDCU_SWSHeatCmd 1
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_SWSHeatCmdRespStruct.RespCode 0"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatCmdRespStruct.RespCode 0
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_SWSHeatService_ErrStruct.OpeErrInfo[0-1]:0x09 traceback20"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatService_ErrStruct.OpeErrInfo[0-1]:0x09 traceback20
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_SWSHeatService_ErrStruct.OpeNRC 1 traceback20"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatService_ErrStruct.OpeNRC 1 traceback20
+  g_EM_SOAClient_Swc_SOA_REQ("Veh_SWSHeatCmdStruct.Veh_SWSHeatCmd:1&UserID:0x01010001&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ Veh_SWSHeatCmdStruct.Veh_SWSHeatCmd:1&UserID:0x01010001&ServiceExecuteFeedbackFlag:2
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_SWSHeatCmdRespStruct.RespCode 0"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatCmdRespStruct.RespCode 0
+  g_CAN_Bus_Swc_Set("C_LDCU_SysSt.C_LDCU_EVSysReadySt 2"); // 测试步骤 TC_CANTest SET C_LDCU_SysSt.C_LDCU_EVSysReadySt 2//Not ready
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt2.I_LDCU_SWSHeatSt 1"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt2.I_LDCU_SWSHeatSt 1
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_SWSHeatService_ErrStruct.OpeErrInfo[0-1]:0x09 traceback20"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatService_ErrStruct.OpeErrInfo[0-1]:0x09 traceback20
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_SWSHeatService_ErrStruct.OpeNRC 1 traceback20"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatService_ErrStruct.OpeNRC 1 traceback20
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("10"); // 测试步骤 TC_Sleep 10
+}
+
+testcase SYS_CDCU_fangxiangpanjiare_0022()
+{
+  TestDescription("请求高压上电后10s内未能检测到SWS响应lin通信调度，则判定veh服务执行失败，中止后续业务，并跳转至最后步骤（返回Service_Err） 条件： 1.引擎下发1档加热。 2.LIN回复1档 期望： 1. NRC：0 2. OpeErrInfo：0x332E 3. OpeNRC：258");
+  teststep("warning","原始用例id为SYS-CDCU-方向盘加热-0022");
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt1.I_LDCU_PowerMode 1"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt1.I_LDCU_PowerMode 1
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("1"); // 测试步骤 TC_Sleep 1
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt1.I_LDCU_PowerMode 2"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt1.I_LDCU_PowerMode 2
+  g_CAN_Bus_Swc_Set("I_LDCU_NM.I_LDCU_NMRepeatMsgReqBit 1"); // 测试步骤 TC_CANTest SET I_LDCU_NM.I_LDCU_NMRepeatMsgReqBit 1 //网络唤醒维持帧
+  g_CAN_Bus_Swc_Set("C_LDCU_SysSt.C_LDCU_EVSysReadySt 1"); // 测试步骤 TC_CANTest SET C_LDCU_SysSt.C_LDCU_EVSysReadySt 1//ready
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt2.I_LDCU_SWSHeatSt 0"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt2.I_LDCU_SWSHeatSt 0
+  g_CAN_Bus_Swc_CheckEventStart("I_CDCU_LDCU_BodyCtrl.I_CDCU_LDCU_SWSHeatCmd 1"); // 测试步骤 TC_CANTest CheckEventStart I_CDCU_LDCU_BodyCtrl.I_CDCU_LDCU_SWSHeatCmd 1
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_SWSHeatService_ErrStruct.OpeErrInfo[0-1]:0x332E traceback20"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatService_ErrStruct.OpeErrInfo[0-1]:0x332E traceback20
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_SWSHeatService_ErrStruct.OpeNRC 0xC0 traceback20"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatService_ErrStruct.OpeNRC 0xC0 traceback20
+  g_EM_SOAClient_Swc_SOA_REQ("Veh_SWSHeatCmdStruct.Veh_SWSHeatCmd:1&UserID:0x01010001&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ Veh_SWSHeatCmdStruct.Veh_SWSHeatCmd:1&UserID:0x01010001&ServiceExecuteFeedbackFlag:2
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_SWSHeatCmdRespStruct.RespCode 0"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatCmdRespStruct.RespCode 0
+  g_CAN_Bus_Swc_Set("C_LDCU_SysSt.C_LDCU_EVSysReadySt 2"); // 测试步骤 TC_CANTest SET C_LDCU_SysSt.C_LDCU_EVSysReadySt 2//Not ready
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_SWSHeatCmdRespStruct.RespCode 0"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatCmdRespStruct.RespCode 0
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("10"); // 测试步骤 TC_Sleep 10
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_SWSHeatService_ErrStruct.OpeErrInfo[0-1]:0x332E traceback20"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatService_ErrStruct.OpeErrInfo[0-1]:0x332E traceback20
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt2.I_LDCU_SWSHeatSt 1"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt2.I_LDCU_SWSHeatSt 1
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_SWSHeatService_ErrStruct.OpeNRC 0xC0 traceback20"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatService_ErrStruct.OpeNRC 0xC0 traceback20
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("10"); // 测试步骤 TC_Sleep 10
+}
+
+testcase SYS_CDCU_fangxiangpanjiare_0023()
+{
+  TestDescription("发出打开加热cmd后SWS Lin状态在10s内未能按照预期跳变，则判定veh服务执行失败，中止后续业务，并跳转至最后步骤（返回Service_Err） 条件： 1.引擎下发1档加热。 2.LIN回复1档 期望： 1. NRC：0 2. OpeErrInfo：0x00C8 3. OpeNRC：0");
+  teststep("warning","原始用例id为SYS-CDCU-方向盘加热-0023");
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt1.I_LDCU_PowerMode 1"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt1.I_LDCU_PowerMode 1
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("1"); // 测试步骤 TC_Sleep 1
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt1.I_LDCU_PowerMode 2"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt1.I_LDCU_PowerMode 2
+  g_CAN_Bus_Swc_Set("I_LDCU_NM.I_LDCU_NMRepeatMsgReqBit 1"); // 测试步骤 TC_CANTest SET I_LDCU_NM.I_LDCU_NMRepeatMsgReqBit 1 //网络唤醒维持帧
+  g_CAN_Bus_Swc_Set("C_LDCU_SysSt.C_LDCU_EVSysReadySt 1"); // 测试步骤 TC_CANTest SET C_LDCU_SysSt.C_LDCU_EVSysReadySt 1//ready
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt2.I_LDCU_SWSHeatSt 0"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt2.I_LDCU_SWSHeatSt 0
+  g_CAN_Bus_Swc_CheckEventStart("I_CDCU_LDCU_BodyCtrl.I_CDCU_LDCU_SWSHeatCmd 1"); // 测试步骤 TC_CANTest CheckEventStart I_CDCU_LDCU_BodyCtrl.I_CDCU_LDCU_SWSHeatCmd 1
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_SWSHeatService_ErrStruct.OpeErrInfo[0-1]:0x00C8 traceback20"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatService_ErrStruct.OpeErrInfo[0-1]:0x00C8 traceback20
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_SWSHeatService_ErrStruct.OpeNRC 0 traceback7"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatService_ErrStruct.OpeNRC 0 traceback7
+  g_EM_SOAClient_Swc_SOA_REQ("Veh_SWSHeatCmdStruct.Veh_SWSHeatCmd:1&UserID:0x01010001&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ Veh_SWSHeatCmdStruct.Veh_SWSHeatCmd:1&UserID:0x01010001&ServiceExecuteFeedbackFlag:2
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_SWSHeatCmdRespStruct.RespCode 0"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatCmdRespStruct.RespCode 0
+  g_CAN_Bus_Swc_Set("C_LDCU_SysSt.C_LDCU_EVSysReadySt 2"); // 测试步骤 TC_CANTest SET C_LDCU_SysSt.C_LDCU_EVSysReadySt 2//Not ready
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_SWSHeatCmdRespStruct.RespCode 0"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatCmdRespStruct.RespCode 0
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt2.I_LDCU_SWSHeatSt 1"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt2.I_LDCU_SWSHeatSt 1
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_SWSHeatService_ErrStruct.OpeErrInfo[0-1]:0x00C8 traceback20"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatService_ErrStruct.OpeErrInfo[0-1]:0x00C8 traceback20
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_SWSHeatService_ErrStruct.OpeNRC 0 traceback7"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatService_ErrStruct.OpeNRC 0 traceback7
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("10"); // 测试步骤 TC_Sleep 10
+}
+
+testcase SYS_CDCU_fangxiangpanjiare_0024()
+{
+  TestDescription("取消计时 条件： 1.引擎下发1档加热。 2.LIN回复1档 期望： 1. NRC：0 2. OpeErrInfo：0x00C8 3. OpeNRC：0");
+  teststep("warning","原始用例id为SYS-CDCU-方向盘加热-0024");
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt1.I_LDCU_PowerMode 1"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt1.I_LDCU_PowerMode 1
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("1"); // 测试步骤 TC_Sleep 1
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt1.I_LDCU_PowerMode 2"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt1.I_LDCU_PowerMode 2
+  gTC_CANTest_SOA_Set8001Delay("20"); // 测试步骤 TC_CANTest SOA Set8001Delay 20
+  g_CAN_Bus_Swc_Set("I_LDCU_NM.I_LDCU_NMRepeatMsgReqBit 1"); // 测试步骤 TC_CANTest SET I_LDCU_NM.I_LDCU_NMRepeatMsgReqBit 1 //网络唤醒维持帧
+  g_CAN_Bus_Swc_Set("C_LDCU_SysSt.C_LDCU_EVSysReadySt 1"); // 测试步骤 TC_CANTest SET C_LDCU_SysSt.C_LDCU_EVSysReadySt 1//ready
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt2.I_LDCU_SWSHeatSt 0"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt2.I_LDCU_SWSHeatSt 0
+  g_CAN_Bus_Swc_CheckEventStart("I_CDCU_LDCU_BodyCtrl.I_CDCU_LDCU_SWSHeatCmd 1"); // 测试步骤 TC_CANTest CheckEventStart I_CDCU_LDCU_BodyCtrl.I_CDCU_LDCU_SWSHeatCmd 1
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_SWSHeatService_ErrStruct.OpeErrInfo[0-1]:0x00C8 traceback20"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatService_ErrStruct.OpeErrInfo[0-1]:0x00C8 traceback20
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_SWSHeatService_ErrStruct.OpeNRC 0 traceback7"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatService_ErrStruct.OpeNRC 0 traceback7
+  g_EM_SOAClient_Swc_SOA_REQ("Veh_SWSHeatCmdStruct.Veh_SWSHeatCmd:1&UserID:0x01010001&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ Veh_SWSHeatCmdStruct.Veh_SWSHeatCmd:1&UserID:0x01010001&ServiceExecuteFeedbackFlag:2
+  g_CAN_Bus_Swc_Set("C_LDCU_SysSt.C_LDCU_EVSysReadySt 2"); // 测试步骤 TC_CANTest SET C_LDCU_SysSt.C_LDCU_EVSysReadySt 2//Not ready
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_SWSHeatCmdRespStruct.RespCode 0"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatCmdRespStruct.RespCode 0
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt2.I_LDCU_SWSHeatSt 1"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt2.I_LDCU_SWSHeatSt 1
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_SWSHeatCmdRespStruct.RespCode 0"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatCmdRespStruct.RespCode 0
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatCmdRespStruct.Veh_SWSHeatCmdNRC 0 traceback5
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_SWSHeatService_ErrStruct.OpeErrInfo[0-1]:0x00C8 traceback20"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatService_ErrStruct.OpeErrInfo[0-1]:0x00C8 traceback20
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_SWSHeatService_ErrStruct.OpeNRC 0 traceback7"); // 预期结果 TC_CANTest SOA check Veh_SWSHeatService_ErrStruct.OpeNRC 0 traceback7
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("10"); // 测试步骤 TC_Sleep 10
+}

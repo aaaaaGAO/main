@@ -21,6 +21,7 @@ from services.config_constants import (
     OPTION_INPUTS,
     OPTION_OUTPUT_DIR,
     OPTION_UART_EXCEL,
+    OPTION_XML_INPUT_EXCEL,
     SECTION_CENTRAL,
     SECTION_DID_CONFIG,
     SECTION_DTC,
@@ -34,7 +35,49 @@ if TYPE_CHECKING:
 
 
 class RunValidator:
+    DOMAIN_DISPLAY_NAMES = {
+        DEFAULT_DOMAIN_LR_REAR: "左右后域",
+        SECTION_CENTRAL: "中央域",
+        SECTION_DTC: "DTC域",
+    }
+
+    @classmethod
+    def domain_display_name(cls, domain: str) -> str:
+        return cls.DOMAIN_DISPLAY_NAMES.get(domain, domain)
+
+    @classmethod
+    def extract_first_path(cls, raw_value: str) -> str:
+        text = (raw_value or "").strip()
+        if not text:
+            return ""
+        return text.replace(";", "|").split("|")[0].strip()
+
+    @classmethod
+    def append_required_file_issue(
+        cls,
+        errors: List[str],
+        *,
+        domain: str,
+        missing_labels: List[str],
+        not_found_pairs: List[Tuple[str, str]],
+    ) -> None:
+        domain_name = cls.domain_display_name(domain)
+        if missing_labels:
+            errors.append(
+                f"【{domain_name}】必要输入文件未选择：{'、'.join(missing_labels)}。请先补齐后再运行。"
+            )
+        if not_found_pairs:
+            details = "；".join(f"{label}（{path}）" for label, path in not_found_pairs)
+            errors.append(f"【{domain_name}】必要输入文件不存在：{details}。请检查文件路径后再运行。")
+
     """运行前校验器：对各域的必填路径、可写性做前置校验。"""
+
+    @staticmethod
+    def check_required_path_configured(target_path: str, label: str) -> Tuple[bool, str]:
+        """检查必填路径是否已配置。"""
+        if target_path and target_path.strip():
+            return True, ""
+        return False, f"{label} 未配置。"
 
     @staticmethod
     def resolve_config_path(raw: str, base_dir: str) -> str:
@@ -83,6 +126,20 @@ class RunValidator:
             return True, ""
         return False, f"{label} 不存在：{target_path}"
 
+    @staticmethod
+    def check_path_kind(target_path: str, *, expect: str, label: str) -> Tuple[bool, str]:
+        """检查路径类型：expect=file|dir|either。未配置路径时视为通过。"""
+        if not target_path or not target_path.strip():
+            return True, ""
+        normalized_expect = (expect or "either").strip().lower()
+        if normalized_expect == "file":
+            return (True, "") if os.path.isfile(target_path) else (False, f"{label} 需要是文件：{target_path}")
+        if normalized_expect == "dir":
+            return (True, "") if os.path.isdir(target_path) else (False, f"{label} 需要是文件夹：{target_path}")
+        if os.path.isfile(target_path) or os.path.isdir(target_path):
+            return True, ""
+        return False, f"{label} 不存在：{target_path}"
+
     @classmethod
     def validate_for_domain(
         cls,
@@ -90,6 +147,11 @@ class RunValidator:
         base_dir: str,
         config_path: str,
         config_manager: "ConfigManager",
+        *,
+        run_can: bool = False,
+        run_xml: bool = False,
+        run_did: bool = False,
+        run_cin: bool = False,
     ) -> Tuple[bool, List[str]]:
         """按域校验运行前必填项：输出目录必填且可写；输入路径（若已配置）须存在。
         参数：domain — 业务域（LR_REAR / CENTRAL / DTC）；base_dir — 工程根目录；config_path — 配置文件路径（保留接口）；config_manager — 已初始化的 ConfigManager，用于 _reload() 读配置。
@@ -105,6 +167,8 @@ class RunValidator:
         section = dict(config.items(domain))
         output_dir_raw = section.get(OPTION_OUTPUT_DIR, "").strip()
         output_dir = cls.resolve_config_path(output_dir_raw, base_dir) if output_dir_raw else ""
+        missing_required_labels: List[str] = []
+        not_found_required_pairs: List[Tuple[str, str]] = []
 
         # 1. 输出目录必填且可写
         if not output_dir:
@@ -116,14 +180,33 @@ class RunValidator:
 
         # 2. 输入路径（用例/Excel）：若已配置则必须存在
         input_excel_raw = section.get(OPTION_INPUT_EXCEL, "").strip()
+        require_input_excel = run_can or run_xml
+        if require_input_excel and not input_excel_raw:
+            missing_required_labels.append("主输入表(input_excel)")
         if input_excel_raw:
             input_path = cls.resolve_config_path(input_excel_raw, base_dir)
             is_valid, validation_message = cls.check_path_exists(input_path, f"[{domain}] 输入用例路径")
             if not is_valid:
-                errors.append(validation_message)
+                if require_input_excel:
+                    not_found_required_pairs.append(("主输入表(input_excel)", input_path))
+                else:
+                    errors.append(validation_message)
+            else:
+                is_valid, validation_message = cls.check_path_kind(
+                    input_path,
+                    expect="either",
+                    label=f"[{domain}] 输入用例路径",
+                )
+                if not is_valid:
+                    errors.append(validation_message)
 
         # 3. LR_REAR 额外校验：DID/CIN/IO 若配置了则存在
         if domain == DEFAULT_DOMAIN_LR_REAR:
+            if run_cin:
+                cin_required = section.get(OPTION_CIN_INPUT_EXCEL, "").strip()
+                if not cin_required:
+                    missing_required_labels.append("关键字配置表(cin_excel)")
+
             if config.has_section(SECTION_DID_CONFIG):
                 did_excel = (config.get(SECTION_DID_CONFIG, OPTION_INPUT_EXCEL, fallback="") or "").strip()
                 if did_excel:
@@ -154,9 +237,12 @@ class RunValidator:
                 resolved_path = cls.resolve_config_path(cin_excel, base_dir)
                 is_valid, validation_message = cls.check_path_exists(resolved_path, "关键字集 Clib 配置表")
                 if not is_valid:
-                    errors.append(validation_message)
+                    if run_cin:
+                        not_found_required_pairs.append(("关键字配置表(cin_excel)", resolved_path))
+                    else:
+                        errors.append(validation_message)
 
-        # 4. CENTRAL 域额外校验：uart_excel、xml_input_excel 若已配置则须存在
+        # 4. CENTRAL 域额外校验：补齐必填项（9-2）与类型校验
         if domain == SECTION_CENTRAL:
             uart_excel_raw = section.get(OPTION_UART_EXCEL, "").strip()
             if uart_excel_raw:
@@ -164,15 +250,42 @@ class RunValidator:
                 is_valid, validation_message = cls.check_path_exists(resolved_path, "[CENTRAL] UART 通信矩阵 Excel")
                 if not is_valid:
                     errors.append(validation_message)
-            xml_input_raw = section.get("xml_input_excel", "").strip()
+                else:
+                    is_valid, validation_message = cls.check_path_kind(
+                        resolved_path,
+                        expect="file",
+                        label="[CENTRAL] UART 通信矩阵 Excel",
+                    )
+                    if not is_valid:
+                        errors.append(validation_message)
+
+            xml_input_raw = section.get(OPTION_XML_INPUT_EXCEL, "").strip()
+            if run_xml and not xml_input_raw:
+                missing_required_labels.append("XML输入表(xml_input_excel)")
             if xml_input_raw:
                 resolved_path = cls.resolve_config_path(xml_input_raw, base_dir)
                 is_valid, validation_message = cls.check_path_exists(resolved_path, "[CENTRAL] XML 输入 Excel")
                 if not is_valid:
-                    errors.append(validation_message)
+                    if run_xml:
+                        not_found_required_pairs.append(("XML输入表(xml_input_excel)", resolved_path))
+                    else:
+                        errors.append(validation_message)
+                else:
+                    is_valid, validation_message = cls.check_path_kind(
+                        resolved_path,
+                        expect="either",
+                        label="[CENTRAL] XML 输入 Excel",
+                    )
+                    if not is_valid:
+                        errors.append(validation_message)
 
         # 5. DTC 域：DTC 专用 IO/DID 节（若存在）
         if domain == SECTION_DTC:
+            if run_cin:
+                cin_required = section.get(OPTION_CIN_INPUT_EXCEL, "").strip()
+                if not cin_required:
+                    missing_required_labels.append("关键字配置表(d_cin_excel)")
+
             if config.has_section(SECTION_DTC_IOMAPPING):
                 io_inputs = (config.get(SECTION_DTC_IOMAPPING, OPTION_INPUTS, fallback="") or "").strip()
                 if io_inputs:
@@ -191,6 +304,31 @@ class RunValidator:
                         is_valid, validation_message = cls.check_path_exists(resolved_path, "DTC DID_Config 配置表")
                         if not is_valid:
                             errors.append(validation_message)
+
+            didinfo_raw = section.get(OPTION_DIDINFO_INPUTS, "").strip()
+            if didinfo_raw:
+                first_didinfo_path = cls.extract_first_path(didinfo_raw)
+                if first_didinfo_path:
+                    resolved_path = cls.resolve_config_path(first_didinfo_path, base_dir)
+                    is_valid, validation_message = cls.check_path_exists(resolved_path, "DTC DIDInfo 配置表")
+                    if not is_valid:
+                        errors.append(validation_message)
+            cin_excel = section.get(OPTION_CIN_INPUT_EXCEL, "").strip()
+            if cin_excel:
+                resolved_path = cls.resolve_config_path(cin_excel, base_dir)
+                is_valid, validation_message = cls.check_path_exists(resolved_path, "DTC 关键字集 Clib 配置表")
+                if not is_valid:
+                    if run_cin:
+                        not_found_required_pairs.append(("关键字配置表(d_cin_excel)", resolved_path))
+                    else:
+                        errors.append(validation_message)
+
+        cls.append_required_file_issue(
+            errors,
+            domain=domain,
+            missing_labels=missing_required_labels,
+            not_found_pairs=not_found_required_pairs,
+        )
 
         return (len(errors) == 0, errors)
 

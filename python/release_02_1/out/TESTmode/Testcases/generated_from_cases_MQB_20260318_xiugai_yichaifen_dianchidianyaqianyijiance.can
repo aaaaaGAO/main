@@ -1,0 +1,379 @@
+/*@!Encoding: 936*/
+
+includes
+{
+}
+
+variables
+{
+}
+
+testcase SYS_CDCU_dianchidianyaqianyijiance_0001()
+{
+  TestDescription("前置环境设置");
+  teststep("warning","原始用例id为SYS-CDCU-电池电压迁移检测-0001");
+  g_EM_Equipment_Swc_TC_PW("OFF"); // 测试步骤 TC_PW OFF
+  g_EM_Equipment_Swc_TC_IG("OFF"); // 测试步骤 TC_IG OFF//断电重启-KL15
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("1"); // 测试步骤 TC_Sleep 1
+  g_EM_Equipment_Swc_TC_PW("ON"); // 测试步骤 TC_PW ON
+  g_EM_Equipment_Swc_TC_IG("ON"); // 测试步骤 TC_IG ON
+  g_CAN_Bus_Swc_AllCANDataDefaultAllCh(); // 测试步骤 TC_CANTest SET AllCANDataDefaultAllCh
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("1"); // 测试步骤 TC_Sleep 1
+  g_CAN_Bus_Swc_Disable_AllSentMessage(); // 测试步骤 TC_CANTest Disable AllSentMessage
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("1"); // 测试步骤 TC_Sleep 1
+  g_CAN_Bus_Swc_ClearCheckEvent(); // 测试步骤 TC_CANTest ClearCheckEvent
+}
+
+testcase SYS_CDCU_dianchidianyaqianyijiance_0002()
+{
+  TestDescription("前置环境设置");
+  teststep("warning","原始用例id为SYS-CDCU-电池电压迁移检测-0002");
+  g_EM_UDS_ETH_Swc_DOIP_Reconnect(); // 测试步骤 TC_CANTest DOIP Reconnect
+  g_EM_UDS_ETH_Swc_DOIP("10 03"); // 测试步骤 TC_CANTest DOIP 10 03
+  g_EM_UDS_CAN_Swc_TC_CheckDiagRes("50 03 *"); // 预期结果 TC_CheckDiagRes 50 03 *
+  g_EM_UDS_ETH_Swc_DOIP_SA_01_02(); // 测试步骤 TC_CANTest DOIP SA_01_02//一级解锁
+  g_EM_UDS_CAN_Swc_TC_CheckDiagRes("67 02"); // 预期结果 TC_CheckDiagRes 67 02
+  g_EM_UDS_ETH_Swc_DOIP("2E CF 00 03 00 00 00 00 00 00 04 00 00"); // 测试步骤 TC_CANTest DOIP 2E CF 00 03 00 00 00 00 00 00 04 00 00
+  g_EM_UDS_CAN_Swc_TC_CheckDiagRes("6E CF 00 *"); // 预期结果 TC_CheckDiagRes 6E CF 00 *
+  g_EM_UDS_ETH_Swc_DOIP("2E CF 0A 01"); // 测试步骤 TC_CANTest DOIP 2E CF 0A 01//KL30唤醒未使能
+  g_EM_UDS_CAN_Swc_TC_CheckDiagRes("6E CF 0A *"); // 预期结果 TC_CheckDiagRes 6E CF 0A *
+  g_EM_UDS_ETH_Swc_DOIP("2E A5 F5 00"); // 测试步骤 TC_CANTest DOIP 2E A5 F5 00//关闭SOC异常监控
+  g_EM_UDS_CAN_Swc_TC_CheckDiagRes("6E A5 F5 *"); // 预期结果 TC_CheckDiagRes 6E A5 F5 *
+  g_EM_UDS_ETH_Swc_DOIP("14 FF FF FF"); // 测试步骤 TC_CANTest DOIP 14 FF FF FF
+  g_EM_UDS_CAN_Swc_TC_CheckDiagRes("54"); // 预期结果 TC_CheckDiagRes 54
+  g_EM_UDS_ETH_Swc_DOIP("11 01"); // 测试步骤 TC_CANTest DOIP 11 01
+  g_EM_UDS_CAN_Swc_TC_CheckDiagRes("51 01"); // 预期结果 TC_CheckDiagRes 51 01
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("5"); // 测试步骤 TC_Sleep 5
+}
+
+testcase SYS_CDCU_dianchidianyaqianyijiance_0003()
+{
+  TestDescription("电压检测-1");
+  teststep("warning","原始用例id为SYS-CDCU-电池电压迁移检测-0003");
+  g_EM_Equipment_Swc_TC_IG("OFF"); // 测试步骤 TC_IG OFF//断电-KL15
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("3"); // 测试步骤 TC_Sleep 3
+  g_EM_Equipment_Swc_TC_PW("ON"); // 测试步骤 TC_PW ON//上电-KL30
+  g_EM_Equipment_Swc_TC_IG("ON"); // 测试步骤 TC_IG ON//上电-KL15
+  g_EM_UDS_CAN_Swc_Diag("14 FF FF FF"); // 测试步骤 TC_CANTest Diag 14 FF FF FF
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("9.1&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 9.1&CH1
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("5"); // 测试步骤 TC_Sleep 5
+  g_EM_Uart_Swc_Ser_CheckRaw("0770010004"); // 预期结果 TC_CANTest Ser CheckRaw 0770010004//（normal）SOC Power Normal
+  g_CAN_Bus_Swc_Check("I_CDCU_State.I_CDCU_Batt_state 4"); // 预期结果 TC_CANTest Check I_CDCU_State.I_CDCU_Batt_state 4//0x4:BATT_NORMAL
+  g_EM_UDS_CAN_Swc_Diag("19 04 EF 10 17 FF"); // 测试步骤 TC_CANTest Diag 19 04 EF 10 17 FF//过压
+  g_EM_UDS_CAN_Swc_TC_CheckDiagRes("59 04 EF 10 17 00"); // 预期结果 TC_CheckDiagRes 59 04 EF 10 17 00
+  g_EM_UDS_CAN_Swc_Diag("19 04 EF 11 16 FF"); // 测试步骤 TC_CANTest Diag 19 04 EF 11 16 FF//欠压
+  g_EM_UDS_CAN_Swc_TC_CheckDiagRes("59 04 EF 11 16 00"); // 预期结果 TC_CheckDiagRes 59 04 EF 11 16 00
+}
+
+testcase SYS_CDCU_dianchidianyaqianyijiance_0004()
+{
+  TestDescription("电压检测-2");
+  teststep("warning","原始用例id为SYS-CDCU-电池电压迁移检测-0004");
+  g_EM_Equipment_Swc_TC_IG("OFF"); // 测试步骤 TC_IG OFF//断电-KL15
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("3"); // 测试步骤 TC_Sleep 3
+  g_EM_Equipment_Swc_TC_PW("ON"); // 测试步骤 TC_PW ON//上电-KL30
+  g_EM_Equipment_Swc_TC_IG("ON"); // 测试步骤 TC_IG ON//上电-KL15
+  g_EM_UDS_CAN_Swc_Diag("14 FF FF FF"); // 测试步骤 TC_CANTest Diag 14 FF FF FF
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("9.6&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 9.6&CH1
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("5"); // 测试步骤 TC_Sleep 5
+  g_EM_Uart_Swc_Ser_CheckRaw("0770010004"); // 预期结果 TC_CANTest Ser CheckRaw 0770010004//（normal）SOC Power Normal
+  g_CAN_Bus_Swc_Check("I_CDCU_State.I_CDCU_Batt_state 4"); // 预期结果 TC_CANTest Check I_CDCU_State.I_CDCU_Batt_state 4//0x4:BATT_NORMAL
+  g_EM_UDS_CAN_Swc_Diag("19 04 EF 10 17 FF"); // 测试步骤 TC_CANTest Diag 19 04 EF 10 17 FF//过压
+  g_EM_UDS_CAN_Swc_TC_CheckDiagRes("59 04 EF 10 17 00"); // 预期结果 TC_CheckDiagRes 59 04 EF 10 17 00
+  g_EM_UDS_CAN_Swc_Diag("19 04 EF 11 16 FF"); // 测试步骤 TC_CANTest Diag 19 04 EF 11 16 FF//欠压
+  g_EM_UDS_CAN_Swc_TC_CheckDiagRes("59 04 EF 11 16 00"); // 预期结果 TC_CheckDiagRes 59 04 EF 11 16 00
+}
+
+testcase SYS_CDCU_dianchidianyaqianyijiance_0005()
+{
+  TestDescription("电压检测-3");
+  teststep("warning","原始用例id为SYS-CDCU-电池电压迁移检测-0005");
+  g_EM_Equipment_Swc_TC_IG("OFF"); // 测试步骤 TC_IG OFF//断电-KL15
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("3"); // 测试步骤 TC_Sleep 3
+  g_EM_Equipment_Swc_TC_PW("ON"); // 测试步骤 TC_PW ON//上电-KL30
+  g_EM_Equipment_Swc_TC_IG("ON"); // 测试步骤 TC_IG ON//上电-KL15
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("12&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 12&CH1
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("5"); // 测试步骤 TC_Sleep 5
+  g_EM_Uart_Swc_Ser_CheckRaw("0770010004"); // 预期结果 TC_CANTest Ser CheckRaw 0770010004//（normal）SOC Power Normal
+  g_CAN_Bus_Swc_Check("I_CDCU_State.I_CDCU_Batt_state 4"); // 预期结果 TC_CANTest Check I_CDCU_State.I_CDCU_Batt_state 4//0x4:BATT_NORMAL
+  g_EM_UDS_CAN_Swc_Diag("19 04 EF 10 17 FF"); // 测试步骤 TC_CANTest Diag 19 04 EF 10 17 FF//过压
+  g_EM_UDS_CAN_Swc_TC_CheckDiagRes("59 04 EF 10 17 00"); // 预期结果 TC_CheckDiagRes 59 04 EF 10 17 00
+  g_EM_UDS_CAN_Swc_Diag("19 04 EF 11 16 FF"); // 测试步骤 TC_CANTest Diag 19 04 EF 11 16 FF//欠压
+  g_EM_UDS_CAN_Swc_TC_CheckDiagRes("59 04 EF 11 16 00"); // 预期结果 TC_CheckDiagRes 59 04 EF 11 16 00
+}
+
+testcase SYS_CDCU_dianchidianyaqianyijiance_0006()
+{
+  TestDescription("电压检测-4");
+  teststep("warning","原始用例id为SYS-CDCU-电池电压迁移检测-0006");
+  g_EM_Equipment_Swc_TC_IG("OFF"); // 测试步骤 TC_IG OFF//断电-KL15
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("3"); // 测试步骤 TC_Sleep 3
+  g_EM_Equipment_Swc_TC_PW("ON"); // 测试步骤 TC_PW ON//上电-KL30
+  g_EM_Equipment_Swc_TC_IG("ON"); // 测试步骤 TC_IG ON//上电-KL15
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("15.3&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 15.3&CH1
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("5"); // 测试步骤 TC_Sleep 5
+  g_EM_Uart_Swc_Ser_CheckRaw("0770010004"); // 预期结果 TC_CANTest Ser CheckRaw 0770010004//（normal）SOC Power Normal
+  g_CAN_Bus_Swc_Check("I_CDCU_State.I_CDCU_Batt_state 4"); // 预期结果 TC_CANTest Check I_CDCU_State.I_CDCU_Batt_state 4//0x4:BATT_NORMAL
+  g_EM_UDS_CAN_Swc_Diag("19 04 EF 10 17 FF"); // 测试步骤 TC_CANTest Diag 19 04 EF 10 17 FF//过压
+  g_EM_UDS_CAN_Swc_TC_CheckDiagRes("59 04 EF 10 17 00"); // 预期结果 TC_CheckDiagRes 59 04 EF 10 17 00
+  g_EM_UDS_CAN_Swc_Diag("19 04 EF 11 16 FF"); // 测试步骤 TC_CANTest Diag 19 04 EF 11 16 FF//欠压
+  g_EM_UDS_CAN_Swc_TC_CheckDiagRes("59 04 EF 11 16 00"); // 预期结果 TC_CheckDiagRes 59 04 EF 11 16 00
+}
+
+testcase SYS_CDCU_dianchidianyaqianyijiance_0007()
+{
+  TestDescription("电压检测-5");
+  teststep("warning","原始用例id为SYS-CDCU-电池电压迁移检测-0007");
+  g_EM_Equipment_Swc_TC_IG("OFF"); // 测试步骤 TC_IG OFF//断电-KL15
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("3"); // 测试步骤 TC_Sleep 3
+  g_EM_Equipment_Swc_TC_PW("ON"); // 测试步骤 TC_PW ON//上电-KL30
+  g_EM_Equipment_Swc_TC_IG("ON"); // 测试步骤 TC_IG ON//上电-KL15
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("15.9&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 15.9&CH1
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("5"); // 测试步骤 TC_Sleep 5
+  g_EM_Uart_Swc_Ser_CheckRaw("0770010004"); // 预期结果 TC_CANTest Ser CheckRaw 0770010004//（normal）SOC Power Normal
+  g_CAN_Bus_Swc_Check("I_CDCU_State.I_CDCU_Batt_state 4"); // 预期结果 TC_CANTest Check I_CDCU_State.I_CDCU_Batt_state 4//0x4:BATT_NORMAL
+  g_EM_UDS_CAN_Swc_Diag("19 04 EF 10 17 FF"); // 测试步骤 TC_CANTest Diag 19 04 EF 10 17 FF//过压
+  g_EM_UDS_CAN_Swc_TC_CheckDiagRes("59 04 EF 10 17 00"); // 预期结果 TC_CheckDiagRes 59 04 EF 10 17 00
+  g_EM_UDS_CAN_Swc_Diag("19 04 EF 11 16 FF"); // 测试步骤 TC_CANTest Diag 19 04 EF 11 16 FF//欠压
+  g_EM_UDS_CAN_Swc_TC_CheckDiagRes("59 04 EF 11 16 00"); // 预期结果 TC_CheckDiagRes 59 04 EF 11 16 00
+}
+
+testcase SYS_CDCU_dianchidianyaqianyijiance_0008()
+{
+  TestDescription("电压检测-6");
+  teststep("warning","原始用例id为SYS-CDCU-电池电压迁移检测-0008");
+  g_EM_Equipment_Swc_TC_IG("OFF"); // 测试步骤 TC_IG OFF//断电-KL15
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("3"); // 测试步骤 TC_Sleep 3
+  g_EM_Equipment_Swc_TC_PW("ON"); // 测试步骤 TC_PW ON//上电-KL30
+  g_EM_Equipment_Swc_TC_IG("ON"); // 测试步骤 TC_IG ON//上电-KL15
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("8.5&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 8.5&CH1//KL30-欠压
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("8"); // 测试步骤 TC_Sleep 8
+  g_EM_Uart_Swc_Ser_CheckRaw("0770010004"); // 预期结果 TC_CANTest Ser CheckRaw 0770010004//（normal）SOC Power Normal
+  g_CAN_Bus_Swc_Check("I_CDCU_State.I_CDCU_Batt_state 4"); // 预期结果 TC_CANTest Check I_CDCU_State.I_CDCU_Batt_state 4//0x4:BATT_NORMAL
+  g_EM_UDS_CAN_Swc_Diag("19 04 EF 11 16 FF"); // 测试步骤 TC_CANTest Diag 19 04 EF 11 16 FF//欠压
+  g_EM_UDS_CAN_Swc_TC_CheckDiagRes("59 04 EF 11 16 29 01|59 04 EF 11 16 21"); // 预期结果 TC_CheckDiagRes 59 04 EF 11 16 29 01|59 04 EF 11 16 21
+}
+
+testcase SYS_CDCU_dianchidianyaqianyijiance_0009()
+{
+  TestDescription("电压检测-7");
+  teststep("warning","原始用例id为SYS-CDCU-电池电压迁移检测-0009");
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("9.5&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 9.5&CH1//KL30- 9.3V
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("3"); // 测试步骤 TC_Sleep 3
+  g_EM_Uart_Swc_Ser_CheckRaw("0770010004"); // 预期结果 TC_CANTest Ser CheckRaw 0770010004//（normal）SOC Power Normal
+  g_CAN_Bus_Swc_Check("I_CDCU_State.I_CDCU_Batt_state 4"); // 预期结果 TC_CANTest Check I_CDCU_State.I_CDCU_Batt_state 4//0x4:BATT_NORMAL
+  g_EM_UDS_CAN_Swc_Diag("19 04 EF 11 16 FF"); // 测试步骤 TC_CANTest Diag 19 04 EF 11 16 FF//欠压
+  g_EM_UDS_CAN_Swc_TC_CheckDiagRes("59 04 EF 11 16 29 01|59 04 EF 11 16 21"); // 预期结果 TC_CheckDiagRes 59 04 EF 11 16 29 01|59 04 EF 11 16 21
+}
+
+testcase SYS_CDCU_dianchidianyaqianyijiance_0010()
+{
+  TestDescription("电压检测-8");
+  teststep("warning","原始用例id为SYS-CDCU-电池电压迁移检测-0010");
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("3"); // 测试步骤 TC_Sleep 3
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("10.3&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 10.3&CH1//KL30-10.2V
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("5"); // 测试步骤 TC_Sleep 5
+  g_EM_Uart_Swc_Ser_CheckRaw("0770010004"); // 预期结果 TC_CANTest Ser CheckRaw 0770010004//（normal）SOC Power Normal
+  g_CAN_Bus_Swc_Check("I_CDCU_State.I_CDCU_Batt_state 4"); // 预期结果 TC_CANTest Check I_CDCU_State.I_CDCU_Batt_state 4//0x4:BATT_NORMAL
+  g_EM_UDS_CAN_Swc_Diag("19 04 EF 11 16 FF"); // 测试步骤 TC_CANTest Diag 19 04 EF 11 16 FF//欠压
+  g_EM_UDS_CAN_Swc_TC_CheckDiagRes("59 04 EF 11 16 28 01|59 04 EF 11 16 20"); // 预期结果 TC_CheckDiagRes 59 04 EF 11 16 28 01|59 04 EF 11 16 20
+}
+
+testcase SYS_CDCU_dianchidianyaqianyijiance_0011()
+{
+  TestDescription("电压检测-9");
+  teststep("warning","原始用例id为SYS-CDCU-电池电压迁移检测-0011");
+  g_EM_Equipment_Swc_TC_IG("OFF"); // 测试步骤 TC_IG OFF//断电-KL15
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("3"); // 测试步骤 TC_Sleep 3
+  g_EM_Equipment_Swc_TC_PW("ON"); // 测试步骤 TC_PW ON//上电-KL30
+  g_EM_Equipment_Swc_TC_IG("ON"); // 测试步骤 TC_IG ON//上电-KL15
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("3"); // 测试步骤 TC_Sleep 3
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("16.5&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 16.5&CH1//上电-KL30
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("5"); // 测试步骤 TC_Sleep 5
+  g_EM_Uart_Swc_Ser_CheckRaw("0770010004"); // 预期结果 TC_CANTest Ser CheckRaw 0770010004//（normal）SOC Power Normal
+  g_CAN_Bus_Swc_Check("I_CDCU_State.I_CDCU_Batt_state 4"); // 预期结果 TC_CANTest Check I_CDCU_State.I_CDCU_Batt_state 4//0x4:BATT_NORMAL
+  g_EM_UDS_CAN_Swc_Diag("19 04 EF 10 17 FF"); // 测试步骤 TC_CANTest Diag 19 04 EF 10 17 FF//过压
+  g_EM_UDS_CAN_Swc_TC_CheckDiagRes("59 04 EF 10 17 29 01|59 04 EF 10 17 21"); // 预期结果 TC_CheckDiagRes 59 04 EF 10 17 29 01|59 04 EF 10 17 21
+}
+
+testcase SYS_CDCU_dianchidianyaqianyijiance_0012()
+{
+  TestDescription("电压检测-10");
+  teststep("warning","原始用例id为SYS-CDCU-电池电压迁移检测-0012");
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("3"); // 测试步骤 TC_Sleep 3
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("15.3&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 15.3&CH1//断电-KL30
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("3"); // 测试步骤 TC_Sleep 3
+  g_EM_Uart_Swc_Ser_CheckRaw("0770010004"); // 预期结果 TC_CANTest Ser CheckRaw 0770010004//（normal）SOC Power Normal
+  g_CAN_Bus_Swc_Check("I_CDCU_State.I_CDCU_Batt_state 4"); // 预期结果 TC_CANTest Check I_CDCU_State.I_CDCU_Batt_state 4//0x4:BATT_NORMAL
+  g_EM_UDS_CAN_Swc_Diag("19 04 EF 10 17 FF"); // 测试步骤 TC_CANTest Diag 19 04 EF 10 17 FF//過压
+  g_EM_UDS_CAN_Swc_TC_CheckDiagRes("59 04 EF 10 17 29 01|59 04 EF 10 17 21"); // 预期结果 TC_CheckDiagRes 59 04 EF 10 17 29 01|59 04 EF 10 17 21
+}
+
+testcase SYS_CDCU_dianchidianyaqianyijiance_0013()
+{
+  TestDescription("电压检测-11");
+  teststep("warning","原始用例id为SYS-CDCU-电池电压迁移检测-0013");
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("3"); // 测试步骤 TC_Sleep 3
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("14.5&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 14.5&CH1//断电-KL30
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("5"); // 测试步骤 TC_Sleep 5
+  g_EM_Uart_Swc_Ser_CheckRaw("0770010004"); // 预期结果 TC_CANTest Ser CheckRaw 0770010004//（normal）SOC Power Normal
+  g_CAN_Bus_Swc_Check("I_CDCU_State.I_CDCU_Batt_state 4"); // 预期结果 TC_CANTest Check I_CDCU_State.I_CDCU_Batt_state 4//0x4:BATT_NORMAL
+  g_EM_UDS_CAN_Swc_Diag("19 04 EF 10 17 FF"); // 测试步骤 TC_CANTest Diag 19 04 EF 10 17 FF//过压
+  g_EM_UDS_CAN_Swc_TC_CheckDiagRes("59 04 EF 10 17 28 01|59 04 EF 10 17 20"); // 预期结果 TC_CheckDiagRes 59 04 EF 10 17 28 01|59 04 EF 10 17 20
+}
+
+testcase SYS_CDCU_dianchidianyaqianyijiance_0014()
+{
+  TestDescription("电压检测-12");
+  teststep("warning","原始用例id为SYS-CDCU-电池电压迁移检测-0014");
+  g_EM_Equipment_Swc_TC_IG("OFF"); // 测试步骤 TC_IG OFF//断电-KL15
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("3"); // 测试步骤 TC_Sleep 3
+  g_EM_Equipment_Swc_TC_PW("ON"); // 测试步骤 TC_PW ON
+  g_EM_Equipment_Swc_TC_IG("ON"); // 测试步骤 TC_IG ON
+  g_EM_UDS_CAN_Swc_Diag("14 FF FF FF"); // 测试步骤 TC_CANTest Diag 14 FF FF FF
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("12&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 12&CH1
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("3"); // 测试步骤 TC_Sleep 3
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("7.5&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 7.5&CH1//一級欠壓
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("1"); // 测试步骤 TC_Sleep 1
+  g_CAN_Bus_Swc_Check("I_CDCU_State.I_CDCU_Batt_state 3"); // 预期结果 TC_CANTest Check I_CDCU_State.I_CDCU_Batt_state 3//BATT_ONE_LEVEL_LOW
+  g_EM_Uart_Swc_Ser_CheckRaw("0770010003"); // 预期结果 TC_CANTest Ser CheckRaw 0770010003//BATT_ONE_LEVEL_LOW
+}
+
+testcase SYS_CDCU_dianchidianyaqianyijiance_0015()
+{
+  TestDescription("电压检测-13");
+  teststep("warning","原始用例id为SYS-CDCU-电池电压迁移检测-0015");
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("3"); // 测试步骤 TC_Sleep 3
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("6.4&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 6.4&CH1//KL30-二級欠壓
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("1"); // 测试步骤 TC_Sleep 1
+  g_CAN_Bus_Swc_Check("I_CDCU_State.I_CDCU_Batt_state 2"); // 预期结果 TC_CANTest Check I_CDCU_State.I_CDCU_Batt_state 2//BATT_TWO_LEVEL_LOW
+  g_EM_Uart_Swc_Ser_CheckRaw("0770010002"); // 预期结果 TC_CANTest Ser CheckRaw 0770010002//BATT_TWO_LEVEL_LOW
+}
+
+testcase SYS_CDCU_dianchidianyaqianyijiance_0016()
+{
+  TestDescription("电压检测-14");
+  teststep("warning","原始用例id为SYS-CDCU-电池电压迁移检测-0016");
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("3"); // 测试步骤 TC_Sleep 3
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("5.8&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 5.8&CH1//断电-KL30
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("1"); // 测试步骤 TC_Sleep 1
+}
+
+testcase SYS_CDCU_dianchidianyaqianyijiance_0017()
+{
+  TestDescription("电压检测-15");
+  teststep("warning","原始用例id为SYS-CDCU-电池电压迁移检测-0017");
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("3"); // 测试步骤 TC_Sleep 3
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("7&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 7&CH1//断电-KL30
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("0.3"); // 测试步骤 TC_Sleep 0.3
+  g_CAN_Bus_Swc_Check("I_CDCU_State.I_CDCU_Batt_state 2"); // 预期结果 TC_CANTest Check I_CDCU_State.I_CDCU_Batt_state 2//BATT_TWO_LEVEL_LOW
+  g_EM_Uart_Swc_Ser_CheckRaw("0770010002"); // 预期结果 TC_CANTest Ser CheckRaw 0770010002//（LOW2）
+}
+
+testcase SYS_CDCU_dianchidianyaqianyijiance_0018()
+{
+  TestDescription("电压检测-16");
+  teststep("warning","原始用例id为SYS-CDCU-电池电压迁移检测-0018");
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("3"); // 测试步骤 TC_Sleep 3
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("8&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 8&CH1//断电-KL30
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("0.3"); // 测试步骤 TC_Sleep 0.3
+  g_CAN_Bus_Swc_Check("I_CDCU_State.I_CDCU_Batt_state 3"); // 预期结果 TC_CANTest Check I_CDCU_State.I_CDCU_Batt_state 3//BATT_THIRD_LEVEL_LOW
+  g_EM_Uart_Swc_Ser_CheckRaw("0770010003"); // 预期结果 TC_CANTest Ser CheckRaw 0770010003//（LOW1）
+}
+
+testcase SYS_CDCU_dianchidianyaqianyijiance_0019()
+{
+  TestDescription("电压检测-17");
+  teststep("warning","原始用例id为SYS-CDCU-电池电压迁移检测-0019");
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("3"); // 测试步骤 TC_Sleep 3
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("9.3&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 9.3&CH1//断电-KL30
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("0.3"); // 测试步骤 TC_Sleep 0.3
+  g_CAN_Bus_Swc_Check("I_CDCU_State.I_CDCU_Batt_state 4"); // 预期结果 TC_CANTest Check I_CDCU_State.I_CDCU_Batt_state 4
+  g_EM_Uart_Swc_Ser_CheckRaw("0770010004"); // 预期结果 TC_CANTest Ser CheckRaw 0770010004//（normal）SOC Power Normal
+}
+
+testcase SYS_CDCU_dianchidianyaqianyijiance_0020()
+{
+  TestDescription("电压检测-18");
+  teststep("warning","原始用例id为SYS-CDCU-电池电压迁移检测-0020");
+  g_EM_Equipment_Swc_TC_IG("OFF"); // 测试步骤 TC_IG OFF//断电-KL15
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("1"); // 测试步骤 TC_Sleep 1
+  g_EM_Equipment_Swc_TC_PW("ON"); // 测试步骤 TC_PW ON//上电-KL30
+  g_EM_Equipment_Swc_TC_IG("ON"); // 测试步骤 TC_IG ON//上电-KL15
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("12&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 12&CH1
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("3"); // 测试步骤 TC_Sleep 3
+  g_EM_Uart_Swc_Ser_CheckRaw("0770010004"); // 预期结果 TC_CANTest Ser CheckRaw 0770010004//（normal）SOC Power Normal
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("17.2&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 17.2&CH1//上电-KL30
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("0.2"); // 测试步骤 TC_Sleep 0.2
+  g_CAN_Bus_Swc_Check("I_CDCU_State.I_CDCU_Batt_state 5"); // 预期结果 TC_CANTest Check I_CDCU_State.I_CDCU_Batt_state 5//5:BATT_ONE_LEVEL_OVER
+  g_EM_Uart_Swc_Ser_CheckRaw("0770010005"); // 预期结果 TC_CANTest Ser CheckRaw 0770010005//（OVER1）BATT_ONE_LEVEL_OVER
+}
+
+testcase SYS_CDCU_dianchidianyaqianyijiance_0021()
+{
+  TestDescription("电压检测-19");
+  teststep("warning","原始用例id为SYS-CDCU-电池电压迁移检测-0021");
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("3"); // 测试步骤 TC_Sleep 3
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("19.2&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 19.2&CH1//上电-KL30
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("0.2"); // 测试步骤 TC_Sleep 0.2
+  g_CAN_Bus_Swc_Check("I_CDCU_State.I_CDCU_Batt_state 6"); // 预期结果 TC_CANTest Check I_CDCU_State.I_CDCU_Batt_state 6//6:BATT_TWO_LEVEL_OVER
+  g_EM_Uart_Swc_Ser_CheckRaw("0770010006"); // 预期结果 TC_CANTest Ser CheckRaw 0770010006//（OVER2）BATT_TWO_LEVEL_OVER
+}
+
+testcase SYS_CDCU_dianchidianyaqianyijiance_0022()
+{
+  TestDescription("电压检测-20");
+  teststep("warning","原始用例id为SYS-CDCU-电池电压迁移检测-0022");
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("3"); // 测试步骤 TC_Sleep 3
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("20.5&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 20.5&CH1//上电-KL30
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("0.2"); // 测试步骤 TC_Sleep 0.2
+}
+
+testcase SYS_CDCU_dianchidianyaqianyijiance_0023()
+{
+  TestDescription("电压检测-21");
+  teststep("warning","原始用例id为SYS-CDCU-电池电压迁移检测-0023");
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("3"); // 测试步骤 TC_Sleep 3
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("18.5&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 18.5&CH1//上电-KL30
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("0.3"); // 测试步骤 TC_Sleep 0.3
+  g_CAN_Bus_Swc_Check("I_CDCU_State.I_CDCU_Batt_state 6"); // 预期结果 TC_CANTest Check I_CDCU_State.I_CDCU_Batt_state 6//6:BATT_TWO_LEVEL_OVER
+  g_EM_Uart_Swc_Ser_CheckRaw("0770010006"); // 预期结果 TC_CANTest Ser CheckRaw 0770010006//（OVER2）BATT_TWO_LEVEL_OVER
+}
+
+testcase SYS_CDCU_dianchidianyaqianyijiance_0024()
+{
+  TestDescription("电压检测-22");
+  teststep("warning","原始用例id为SYS-CDCU-电池电压迁移检测-0024");
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("3"); // 测试步骤 TC_Sleep 3
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("16.8&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 16.8&CH1//上电-KL30
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("0.3"); // 测试步骤 TC_Sleep 0.3
+  g_CAN_Bus_Swc_Check("I_CDCU_State.I_CDCU_Batt_state 5"); // 预期结果 TC_CANTest Check I_CDCU_State.I_CDCU_Batt_state 5//5:BATT_ONE_LEVEL_OVER
+  g_EM_Uart_Swc_Ser_CheckRaw("0770010005"); // 预期结果 TC_CANTest Ser CheckRaw 0770010005//（OVER1）BATT_ONE_LEVEL_OVER
+}
+
+testcase SYS_CDCU_dianchidianyaqianyijiance_0025()
+{
+  TestDescription("电压检测-23");
+  teststep("warning","原始用例id为SYS-CDCU-电池电压迁移检测-0025");
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("3"); // 测试步骤 TC_Sleep 3
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("15.5&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 15.5&CH1//上电-KL30
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("0.3"); // 测试步骤 TC_Sleep 0.3
+  g_CAN_Bus_Swc_Check("I_CDCU_State.I_CDCU_Batt_state 4"); // 预期结果 TC_CANTest Check I_CDCU_State.I_CDCU_Batt_state 4
+  g_EM_Uart_Swc_Ser_CheckRaw("0770010004"); // 预期结果 TC_CANTest Ser CheckRaw 0770010004//（normal）SOC Power Normal
+}
+
+testcase SYS_CDCU_dianchidianyaqianyijiance_0026()
+{
+  TestDescription("电压检测-24");
+  teststep("warning","原始用例id为SYS-CDCU-电池电压迁移检测-0026");
+  g_EM_Equipment_Swc_TC_PW("OFF"); // 测试步骤 TC_PW OFF//断电-KL30
+  g_EM_Equipment_Swc_TC_IG("OFF"); // 测试步骤 TC_IG OFF//断电-KL15
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("3"); // 测试步骤 TC_Sleep 3
+  g_EM_Equipment_Swc_TC_Set_InputVolt_V_WithCh("12&CH1"); // 测试步骤 TC_Set_InputVolt_V_WithCh 12&CH1//上电-KL30
+  g_EM_Equipment_Swc_TC_PW("ON"); // 测试步骤 TC_PW ON//KL30-12V
+  g_EM_Equipment_Swc_TC_IG("ON"); // 测试步骤 TC_IG ON//KL15-12V
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("5"); // 测试步骤 TC_Sleep 5
+  g_CAN_Bus_Swc_Disable_AllSentMessage(); // 测试步骤 TC_CANTest Disable AllSentMessage//停發事件報文
+  g_CAN_Bus_Swc_ClearCheckEvent(); // 测试步骤 TC_CANTest ClearCheckEvent//清除時間緩存
+  g_EM_UDS_CAN_Swc_Diag("14 FF FF FF"); // 测试步骤 TC_CANTest Diag 14 FF FF FF//清除故障DTC碼
+}

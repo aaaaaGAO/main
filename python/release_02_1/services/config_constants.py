@@ -44,6 +44,7 @@ OPTION_CASE_TARGET_VERSIONS = "case_target_versions"
 OPTION_DIDINFO_INPUTS = "didinfo_inputs"
 OPTION_CIN_INPUT_EXCEL = "cin_input_excel"
 OPTION_UART_EXCEL = "uart_excel"
+OPTION_XML_INPUT_EXCEL = "xml_input_excel"
 OPTION_IGN_WAITTIME = "ign_waittime"
 OPTION_IGN_CURRENT = "ign_current"
 OPTION_LOGIN_USERNAME = "login_username"
@@ -56,6 +57,10 @@ OPTION_IGNITION_CYCLE_WAIT_TIME = "waitTime"
 OPTION_IGNITION_CYCLE_CURRENT = "current"
 
 DEFAULT_DID_CONFIG_FILENAME = "DIDConfig.txt"
+DEFAULT_UDS_FILENAME = "uds.txt"
+DEFAULT_POWER_RELAY_CONFIG_FILENAME = "PowerRelayConfig.txt"
+DEFAULT_IGNITION_CYCLE_FILENAME = "IgnitionCycle.txt"
+DEFAULT_LOGIN_FILENAME = "login.txt"
 DEFAULT_DOMAIN_LR_REAR = SECTION_LR_REAR
 VALID_LOG_LEVELS: tuple[str, ...] = ("info", "warning", "error")
 

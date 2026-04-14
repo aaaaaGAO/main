@@ -1,0 +1,1981 @@
+/*@!Encoding: 936*/
+
+includes
+{
+}
+
+variables
+{
+}
+
+testcase SYS_RDCU_light_001()
+{
+  TestDescription("初始化车型配置-1");
+  // Step Set_Config abcdfe 1322 // 测试步骤Configuration 解析失败: Name 未找到: abcdfe
+  teststep("step","Step Set_Config abcdfe 1322");
+  teststepfail("fail","Configuration 解析失败: Name 未找到: abcdfe");
+  // Step Set_Config hhhhh 1322 // 测试步骤Configuration 解析失败: Name 未找到: hhhhh
+  teststep("step","Step Set_Config hhhhh 1322");
+  teststepfail("fail","Configuration 解析失败: Name 未找到: hhhhh");
+  g_HIL_UDS_Swc_Set_Config("DomeLightModeSetSource 0"); // 测试步骤 Step Set_Config DomeLightModeSetSource 0//0x0LIN节点触发  0x1 CDCU屏控触发
+  g_HIL_UDS_Swc_Set_Config("HandleTypeConfig 1"); // 测试步骤 Step Set_Config HandleTypeConfig 1//0x0 Electric Handle 电动门把手 0x1机械门把手
+  g_HIL_Bus_Swc_Check("VTS::VT2516_2_Ch3::DigitalOutput 1"); // 测试步骤 Step Check J_PI_LeftLeverHALLFb1  1
+}
+
+testcase SYS_RDCU_light_001_1()
+{
+  TestDescription("LINdA信号赋值");
+  teststep("warning","原始用例id为SYS-RDCU-light-001");
+  g_HIL_Clib_Swc_Clib_BrkLocalON(); // 测试步骤 Step Clib BrkLocalON
+  g_HIL_Bus_Swc_Check("VTS::VT2516_2_Ch1::DigitalOutput"); // 预期结果 Step Check J_PI_RightLeverHALLFb1
+  g_HIL_Gen_Swc_Wait("1000 ms"); // 测试步骤 Step Wait 1000 ms
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Dimmzeit 10"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Dimmzeit 10
+  // Step Check J_PI_LeftLeverHALLFb1  open // 测试步骤io_mapping 解析失败: Values 为空: Name=J_PI_LeftLeverHALLFb1, Value=open
+  teststep("step","Step Check J_PI_LeftLeverHALLFb1  open");
+  teststepfail("fail","io_mapping 解析失败: Values 为空: Name=J_PI_LeftLeverHALLFb1, Value=open");
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zeitbasis 0"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zeitbasis 0
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Klemme_30G_aktiv eingeschaltet"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Klemme_30G_aktiv eingeschaltet
+  // Step Check J_ECANH open // 测试步骤io_mapping 解析失败: Name 未找到: J_ECANH
+  teststep("step","Step Check J_ECANH open");
+  teststepfail("fail","io_mapping 解析失败: Name 未找到: J_ECANH");
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_Klemme_15 1"); // 预期结果 Step Check L5_LINDae_01::L5_Klemme_15 1//1 EIN 0 AUS
+  g_HIL_Clib_Swc_Clib_OFF(); // 测试步骤 Step Clib OFF
+  g_HIL_Bus_Swc_Check("abc 1"); // 预期结果 Step Check abc 1
+  g_HIL_Gen_Swc_Wait("100 ms"); // 测试步骤 Step Wait 100 ms
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_Klemme_15 0"); // 预期结果 Step Check L5_LINDae_01::L5_Klemme_15 0
+  // Step abc 1 // 测试步骤abc关键字不存在
+  teststep("step","Step abc 1");
+  teststepfail("fail","abc关键字不存在");
+  // Step Check J_ECANL 1 // 预期结果io_mapping 解析失败: Name 未找到: J_ECANL
+  teststep("step","Step Check J_ECANL 1");
+  teststepfail("fail","io_mapping 解析失败: Name 未找到: J_ECANL");
+}
+
+testcase SYS_LDCU_SOA_001()
+{
+  TestDescription("SOA订阅");
+  teststep("warning","原始用例id为SYS-LDCU-SOA() -001");
+  g_HIL_Clib_Swc_Clib_BrkLocalON(); // 测试步骤 Step Clib BrkLocalON
+  g_HIL_Bus_Swc_Check("VTS::VT2848_2_Ch5::CurBit 1"); // 预期结果 Step Check J_Hbridge_LeftLeverCtr+ 1
+  g_EM_SOAClient_Swc_SOA_SubPeriod("InteriorLightState 1"); // 测试步骤 TC_CANTest SOA SubPeriod InteriorLightState 1
+  g_HIL_Bus_Swc_Check("VTS::VT2848_2_Ch5::CurBit 1"); // 预期结果 Step Check J_Hbridge_LeftLeverCtr+ open
+  g_EM_SOAClient_Swc_SOA_SubPeriod("InteriorLightService_ErrGrp 1"); // 测试步骤 TC_CANTest SOA SubPeriod InteriorLightService_ErrGrp 1
+  // Step  Set_config CF05Reserved01 open // 预期结果Configuration 解析失败: Values 为空: Name=CF05Reserved01, Value=open
+  teststep("step","Step  Set_config CF05Reserved01 open");
+  teststepfail("fail","Configuration 解析失败: Values 为空: Name=CF05Reserved01, Value=open");
+  g_HIL_UDS_Swc_Set_Config("CF05Reserved01 1"); // 预期结果 Step  Set_config CF05Reserved01 1
+}
+
+testcase SYS_LDCU_DomeLight_001()
+{
+  TestDescription("LINDA顶灯模式设置- CDCU屏控触发");
+  teststep("warning","原始用例id为SYS-LDCU-DomeLight -001");
+  g_HIL_UDS_Swc_Set_Config("DomeLightDrvType 1"); // 测试步骤 Step Set_Config DomeLightDrvType 1//域控直驱
+  // Step Set_config  abc 1 // 预期结果Configuration 解析失败: Name 未找到: abc
+  teststep("step","Step Set_config  abc 1");
+  teststepfail("fail","Configuration 解析失败: Name 未找到: abc");
+  g_HIL_UDS_Swc_Set_Config("VehicleType 2"); // 测试步骤 Step Set_Config VehicleType 2//CMP21 06
+  g_HIL_Bus_Swc_Check("abc 1"); // 预期结果 Step Check abc 1
+  g_HIL_UDS_Swc_Set_Config("DomeLightModeSetSource 1"); // 测试步骤 Step Set_Config DomeLightModeSetSource 1//CDCU屏控触发
+  g_HIL_Bus_Swc_Set("I_CDCU_LDCU_BodyCtrl::I_CDCU_DomeLightMode 1"); // 测试步骤 Step Set I_CDCU_LDCU_BodyCtrl::I_CDCU_DomeLightMode 1 //0x0:No command,0x1:Dome,0x2:ON,0x3:OFF,
+  g_HIL_Gen_Swc_Wait("500 ms"); // 测试步骤 Step Wait 500 ms
+  g_HIL_Bus_Swc_Set("I_CDCU_LDCU_BodyCtrl::I_CDCU_DomeLightMode 0"); // 测试步骤 Step Set I_CDCU_LDCU_BodyCtrl::I_CDCU_DomeLightMode 0 //0x0:No command,0x1:Dome,0x2:ON,0x3:OFF,
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_DomeLightModeFb 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_DomeLightModeFb 0 // 0 Dome 1 ON 2 OFF
+  g_HIL_Gen_Swc_Wait("500 ms"); // 测试步骤 Step Wait 500 ms
+  g_HIL_Bus_Swc_Set("I_CDCU_LDCU_BodyCtrl::I_CDCU_DomeLightMode 3"); // 测试步骤 Step Set I_CDCU_LDCU_BodyCtrl::I_CDCU_DomeLightMode 3 //0x0:No command,0x1:Dome,0x2:ON,0x3:OFF,
+  g_HIL_Gen_Swc_Wait("500 ms"); // 测试步骤 Step Wait 500 ms
+  g_HIL_Bus_Swc_Set("I_CDCU_LDCU_BodyCtrl::I_CDCU_DomeLightMode 0"); // 测试步骤 Step Set I_CDCU_LDCU_BodyCtrl::I_CDCU_DomeLightMode 0 //0x0:No command,0x1:Dome,0x2:ON,0x3:OFF,
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_DomeLightModeFb 2"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_DomeLightModeFb 2 // 0 Dome 1 ON 2 OFF
+  g_HIL_Gen_Swc_Wait("500 ms"); // 测试步骤 Step Wait 500 ms
+  g_HIL_Bus_Swc_Set("I_CDCU_LDCU_BodyCtrl::I_CDCU_DomeLightMode 1"); // 测试步骤 Step Set I_CDCU_LDCU_BodyCtrl::I_CDCU_DomeLightMode 1 //0x0:No command,0x1:Dome,0x2:ON,0x3:OFF,
+  g_HIL_Gen_Swc_Wait("500 ms"); // 测试步骤 Step Wait 500 ms
+  g_HIL_Bus_Swc_Set("I_CDCU_LDCU_BodyCtrl::I_CDCU_DomeLightMode 0"); // 测试步骤 Step Set I_CDCU_LDCU_BodyCtrl::I_CDCU_DomeLightMode 0 //0x0:No command,0x1:Dome,0x2:ON,0x3:OFF,
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_DomeLightModeFb 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_DomeLightModeFb 0 // 0 Dome 1 ON 2 OFF
+  g_HIL_Gen_Swc_Wait("500 ms"); // 测试步骤 Step Wait 500 ms
+  g_HIL_UDS_Swc_Set_Config("DomeLightDrvType 0"); // 测试步骤 Step Set_Config DomeLightDrvType 0//0x1域控直驱 0x0Lin节点驱动 CF08 Byte12
+  g_HIL_Clib_Swc_Clib_OFF(); // 测试步骤 Step Clib OFF
+}
+
+testcase SYS_LDCU_DomeLight_002()
+{
+  TestDescription("LINDA顶灯模式设置-Dome关闭");
+  g_HIL_Clib_Swc_Clib_BrkLocalON(); // 测试步骤 Step Clib BrkLocalON
+  g_EM_SOAClient_Swc_SOA_SubPeriod("InteriorLightState 1"); // 测试步骤 TC_CANTest SOA SubPeriod InteriorLightState 1
+  g_EM_SOAClient_Swc_SOA_SubPeriod("InteriorLightService_ErrGrp 1"); // 测试步骤 TC_CANTest SOA SubPeriod InteriorLightService_ErrGrp 1
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("SetDomeLightModeRespStruct.SetDomeLightModeNRC 0&RespCode 0"); // 预期结果 TC_CANTest SOA check SetDomeLightModeRespStruct.SetDomeLightModeNRC 0&RespCode 0
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("InteriorLightState1Struct.DomeLightModeFb 0"); // 预期结果 TC_CANTest SOA check InteriorLightState1Struct.DomeLightModeFb 0//0x0:Dome,0x1:ON,0x2:OFF,
+  g_EM_SOAClient_Swc_SOA_REQ("SetDomeLightModeStruct.DomeLightModeCfg:1&ServiceExecuteFeedbackFlag:1"); // 测试步骤 TC_CANTest SOA REQ SetDomeLightModeStruct.DomeLightModeCfg:1&ServiceExecuteFeedbackFlag:1 //0x0:No Command 0x1:Dome 0x2:Dome off
+  g_EM_SOAClient_Swc_SOA_CHECK("SetDomeLightModeRespStruct.SetDomeLightModeNRC 0&RespCode 0"); // 预期结果 TC_CANTest SOA check SetDomeLightModeRespStruct.SetDomeLightModeNRC 0&RespCode 0
+  g_EM_SOAClient_Swc_SOA_CHECK("InteriorLightState1Struct.DomeLightModeFb 0"); // 预期结果 TC_CANTest SOA check InteriorLightState1Struct.DomeLightModeFb 0//0x0:Dome,0x1:ON,0x2:OFF,
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_DomeLightModeFb 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_DomeLightModeFb 0 // 0 Dome 1 ON 2 OFF
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_Tuerkontakt_Innenlicht_Status 1"); // 预期结果 Step Check L5_LINDae_01::L5_Tuerkontakt_Innenlicht_Status 1 //0:Tuerkontakt_nicht_gesetzt  1:Tuerkontakt_gesetzt
+  g_HIL_Bus_Swc_Set("L5_LINDas_01::L5_Tuerkontakt_Innenlicht_Taste 1"); // 测试步骤 Step Set L5_LINDas_01::L5_Tuerkontakt_Innenlicht_Taste 1 //   0:Taste_unbetaetigt    1:Taste_betaetigt
+  g_HIL_Gen_Swc_Wait("2000 ms"); // 测试步骤 Step Wait 2000 ms
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("InteriorLightState1Struct.DomeLightModeFb 2"); // 预期结果 TC_CANTest SOA check InteriorLightState1Struct.DomeLightModeFb 2//0x0:Dome,0x1:ON,0x2:OFF,
+  g_HIL_Bus_Swc_Set("L5_LINDas_01::L5_Tuerkontakt_Innenlicht_Taste 0"); // 测试步骤 Step Set L5_LINDas_01::L5_Tuerkontakt_Innenlicht_Taste 0 //   0:Taste_unbetaetigt    1:Taste_betaetigt
+  g_EM_SOAClient_Swc_SOA_CHECK("InteriorLightState1Struct.DomeLightModeFb 2"); // 预期结果 TC_CANTest SOA check InteriorLightState1Struct.DomeLightModeFb 2//0x0:Dome,0x1:ON,0x2:OFF,
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_DomeLightModeFb 2"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_DomeLightModeFb 2 // 0 Dome 1 ON 2 OFF
+  g_HIL_Clib_Swc_Clib_Reset(); // 测试步骤 Step Clib Reset//确认复位后是否记忆
+  g_HIL_Gen_Swc_Wait("300 ms"); // 测试步骤 Step Wait 300 ms
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("InteriorLightState1Struct.DomeLightModeFb 2"); // 预期结果 TC_CANTest SOA check InteriorLightState1Struct.DomeLightModeFb 2//0x0:Dome,0x1:ON,0x2:OFF,
+  g_EM_SOAClient_Swc_SOA_SubPeriod("InteriorLightState 1"); // 测试步骤 TC_CANTest SOA SubPeriod InteriorLightState 1
+  g_EM_SOAClient_Swc_SOA_CHECK("InteriorLightState1Struct.DomeLightModeFb 2"); // 预期结果 TC_CANTest SOA check InteriorLightState1Struct.DomeLightModeFb 2//0x0:Dome,0x1:ON,0x2:OFF,
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_DomeLightModeFb 2"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_DomeLightModeFb 2 // 0 Dome 1 ON 2 OFF
+  g_HIL_Clib_Swc_Clib_OFF(); // 测试步骤 Step Clib OFF
+  gTC_CANTest_SOA_StopSomeipPeriod(); // 测试步骤 TC_CANTest SOA StopSomeipPeriod
+}
+
+testcase SYS_LDCU_DomeLight_003()
+{
+  TestDescription("LINDA顶灯模式设置-Dome开启(须先关闭)");
+  g_HIL_Clib_Swc_Clib_BrkLocalON(); // 测试步骤 Step Clib BrkLocalON
+  g_EM_SOAClient_Swc_SOA_SubPeriod("InteriorLightState 1"); // 测试步骤 TC_CANTest SOA SubPeriod InteriorLightState 1
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("InteriorLightState1Struct.DomeLightModeFb 2"); // 预期结果 TC_CANTest SOA check InteriorLightState1Struct.DomeLightModeFb 2//0x0:Dome,0x1:ON,0x2:OFF,
+  g_EM_SOAClient_Swc_SOA_SubPeriod("InteriorLightService_ErrGrp 1"); // 测试步骤 TC_CANTest SOA SubPeriod InteriorLightService_ErrGrp 1
+  g_EM_SOAClient_Swc_SOA_CHECK("InteriorLightState1Struct.DomeLightModeFb 2"); // 预期结果 TC_CANTest SOA check InteriorLightState1Struct.DomeLightModeFb 2//0x0:Dome,0x1:ON,0x2:OFF,
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_DomeLightModeFb 2"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_DomeLightModeFb 2 // 0 Dome 1 ON 2 OFF
+  g_HIL_Bus_Swc_Set("L5_LINDas_01::L5_Tuerkontakt_Innenlicht_Taste 1"); // 测试步骤 Step Set L5_LINDas_01::L5_Tuerkontakt_Innenlicht_Taste 1 //   0:Taste_unbetaetigt    1:Taste_betaetigt
+  g_HIL_Gen_Swc_Wait("1000 ms"); // 测试步骤 Step Wait 1000 ms
+  g_HIL_Bus_Swc_Set("L5_LINDas_01::L5_Tuerkontakt_Innenlicht_Taste 0"); // 测试步骤 Step Set L5_LINDas_01::L5_Tuerkontakt_Innenlicht_Taste 0 //   0:Taste_unbetaetigt    1:Taste_betaetigt
+  g_HIL_Gen_Swc_Wait("300 ms"); // 测试步骤 Step Wait 300 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_DomeLightModeFb 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_DomeLightModeFb 0// 0 Dome 1 ON 2 OFF
+  g_HIL_Clib_Swc_Clib_Reset(); // 测试步骤 Step Clib Reset//确认复位后是否记忆
+  g_HIL_Gen_Swc_Wait("300 ms"); // 测试步骤 Step Wait 300 ms
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("InteriorLightState1Struct.DomeLightModeFb 0"); // 预期结果 TC_CANTest SOA check InteriorLightState1Struct.DomeLightModeFb 0//0x0:Dome,0x1:ON,0x2:OFF,
+  g_EM_SOAClient_Swc_SOA_CHECK("InteriorLightState1Struct.DomeLightModeFb 0"); // 预期结果 TC_CANTest SOA check InteriorLightState1Struct.DomeLightModeFb 0//0x0:Dome,0x1:ON,0x2:OFF,
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_DomeLightModeFb 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_DomeLightModeFb 0 // 0 Dome 1 ON 2 OFF
+  g_HIL_Clib_Swc_Clib_OFF(); // 测试步骤 Step Clib OFF
+  gTC_CANTest_SOA_StopSomeipPeriod(); // 测试步骤 TC_CANTest SOA StopSomeipPeriod
+}
+
+testcase SYS_LDCU_DomeLight_004()
+{
+  TestDescription("Dome关闭后开门不亮灯");
+  g_HIL_Clib_Swc_Clib_BrkLocalON(); // 测试步骤 Step Clib BrkLocalON
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_DomeLightModeFb 2"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_DomeLightModeFb 2 // 0 Dome 1 ON 2 OFF
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_EnvrMode 2"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_EnvrMode 2// NIGHT
+  g_HIL_Gen_Swc_Wait("300 ms"); // 测试步骤 Step Wait 300 ms
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 1"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 1//1 open
+  g_HIL_Gen_Swc_Wait("150 ms"); // 测试步骤 Step Wait 150 ms
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 0"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 0
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_EnvrMode 0"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_EnvrMode 0// Day
+  g_HIL_Clib_Swc_Clib_OFF(); // 测试步骤 Step Clib OFF
+}
+
+testcase SYS_LDCU_DomeLight_005()
+{
+  TestDescription("Dome响应门信号顶灯点亮---LIN信号发布规则");
+  g_HIL_Clib_Swc_Clib_BrkLocalON(); // 测试步骤 Step Clib BrkLocalON
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_DomeLightModeFb 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_DomeLightModeFb 0 // 0 Dome 1 ON 2 OFF
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_EnvrMode 2"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_EnvrMode 2// NIGHT
+  g_HIL_Gen_Swc_Wait("300 ms"); // 测试步骤 Step Wait 300 ms
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 1"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 1//1 open
+  g_HIL_Gen_Swc_Wait("150 ms"); // 测试步骤 Step Wait 150 ms
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Adressat 0x3F"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Adressat 0x3F
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Dimmzeit 9"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Dimmzeit 9
+  g_HIL_Gen_Swc_Wait("300 ms"); // 测试步骤 Step Wait 300 ms
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Adressat 0x3F"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Adressat 0x3F
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0//0 close
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Dimmzeit 10"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Dimmzeit 10
+  g_HIL_Clib_Swc_Clib_OFF(); // 测试步骤 Step Clib OFF
+}
+
+testcase SYS_LDCU_DomeLight_006()
+{
+  TestDescription("Dome响应门信号顶灯点亮500ms内黑夜---LIN信号发布规则");
+  g_HIL_Clib_Swc_Clib_BrkLocalON(); // 测试步骤 Step Clib BrkLocalON
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_EnvrMode 0"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_EnvrMode 0// Day
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_DomeLightModeFb 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_DomeLightModeFb 0 // 0 Dome 1 ON 2 OFF
+  g_HIL_Gen_Swc_Wait("300 ms"); // 测试步骤 Step Wait 300 ms
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 1"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 1//1 open
+  g_HIL_Gen_Swc_Wait("50 ms"); // 测试步骤 Step Wait 50 ms
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_EnvrMode 2"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_EnvrMode 2// NIGHT
+  g_HIL_Gen_Swc_Wait("150 ms"); // 测试步骤 Step Wait 150 ms
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Adressat 0x3F"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Adressat 0x3F
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Dimmzeit 9"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Dimmzeit 9
+  g_HIL_Gen_Swc_Wait("300 ms"); // 测试步骤 Step Wait 300 ms
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Adressat 0x3F"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Adressat 0x3F
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Dimmzeit 10"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Dimmzeit 10
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0//0 close
+  g_HIL_Clib_Swc_Clib_OFF(); // 测试步骤 Step Clib OFF
+}
+
+testcase SYS_LDCU_DomeLight_007()
+{
+  TestDescription("开门后500ms内黑夜足灯储物灯应点亮");
+  g_HIL_Clib_Swc_Clib_BrkLocalON(); // 测试步骤 Step Clib BrkLocalON
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_DomeLightModeFb 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_DomeLightModeFb 0 // 0 Dome 1 ON 2 OFF
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_EnvrMode 0"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_EnvrMode 0// Day
+  g_HIL_Gen_Swc_Wait("300 ms"); // 测试步骤 Step Wait 300 ms
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 1"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 1//1 open
+  g_HIL_Gen_Swc_Wait("50 ms"); // 测试步骤 Step Wait 50 ms
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_EnvrMode 2"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_EnvrMode 2// NIGHT
+  g_HIL_Gen_Swc_Wait("150 ms"); // 测试步骤 Step Wait 150 ms
+  g_HIL_Bus_Swc_Check("VTS::VT2516_4_Ch12::PWMDC 0 1 s"); // 预期结果 Step Check J_PO_LS_DoorStorageLight_Duty Level6 1 s//占空比0%
+  g_HIL_Bus_Swc_Check("I_LDCU_CycleEventCtrl::I_LDCU_LFootLightCtr 6 1 s"); // 预期结果 Step Check I_LDCU_CycleEventCtrl::I_LDCU_LFootLightCtr 6 1 s //lev 6
+  g_HIL_Bus_Swc_Check("I_LDCU_CycleEventCtrl::I_LDCU_RFootLightCtr 6 1 s"); // 预期结果 Step Check I_LDCU_CycleEventCtrl::I_LDCU_RFootLightCtr 6 1 s //lev 6
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch10::PWMDC 0 1 s"); // 预期结果 Step Check J_PO_LS_LFootLight_Duty level6 1 s //占空比0%
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_LFootLightOutput 2"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_LFootLightOutput 2  //2:ON 0:OFF
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0//0 close
+  g_HIL_Clib_Swc_Clib_OFF(); // 测试步骤 Step Clib OFF
+}
+
+testcase SYS_LDCU_DomeLight_008()
+{
+  TestDescription("顶灯熄灭---LIN信号发布规则");
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_EnvrMode 0"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_EnvrMode 0// Day
+  g_HIL_Gen_Swc_Wait("150 ms"); // 测试步骤 Step Wait 150 ms
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Adressat 0x3F"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Adressat 0x3F
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 0"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 0
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Dimmzeit 9"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Dimmzeit 9
+  g_HIL_Gen_Swc_Wait("300 ms"); // 测试步骤 Step Wait 300 ms
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Adressat 0x3F"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Adressat 0x3F
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 0"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 0
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Dimmzeit 10"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Dimmzeit 10
+}
+
+testcase SYS_LDCU_DomeLight_027()
+{
+  TestDescription("响应CDCU信号顶灯档位设置SOA——Dome,并响应门信号顶灯点亮");
+  g_HIL_Bus_Swc_Set("VTS::VT2848_3_Ch34::DigitalOutput 0"); // 测试步骤 Step Set J_DI_FLDoorAjarSW_LS Close
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_DriverDoorAjarSt 0"); // 预期结果 Step Check  I_LDCU_BodySysSt1::I_LDCU_DriverDoorAjarSt 0 //0 close
+  g_HIL_Clib_Swc_Clib_BrkLocalON(); // 测试步骤 Step Clib BrkLocalON
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch31::DigitalOutput 0"); // 测试步骤 Step Set J_DI_RLDoorAjarSW_LS Close
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_RLDoorAjarSt 0"); // 预期结果 Step Check  I_LDCU_BodySysSt1::I_LDCU_RLDoorAjarSt 0 //0 close
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0// 0 close
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_RRDoorAjarSt 0"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_RRDoorAjarSt 0// 0 close
+  g_EM_SOAClient_Swc_SOA_SubPeriod("InteriorLightState 1"); // 测试步骤 TC_CANTest SOA SubPeriod InteriorLightState 1
+  g_EM_SOAClient_Swc_SOA_SubPeriod("InteriorLightService_ErrGrp 1"); // 测试步骤 TC_CANTest SOA SubPeriod InteriorLightService_ErrGrp 1
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("SetDomeLightModeRespStruct.SetDomeLightModeNRC 0&RespCode 0"); // 预期结果 TC_CANTest SOA check SetDomeLightModeRespStruct.SetDomeLightModeNRC 0&RespCode 0
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("InteriorLightState1Struct.DomeLightModeFb 0"); // 预期结果 TC_CANTest SOA check InteriorLightState1Struct.DomeLightModeFb 0//0x0:Dome,0x1:ON,0x2:OFF,
+  g_EM_SOAClient_Swc_SOA_REQ("SetDomeLightModeStruct.DomeLightModeCfg:1&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ SetDomeLightModeStruct.DomeLightModeCfg:1&ServiceExecuteFeedbackFlag:2 //0x0:No Command 0x1:Dome 0x2:Dome off
+  g_EM_SOAClient_Swc_SOA_CHECK("SetDomeLightModeRespStruct.SetDomeLightModeNRC 0&RespCode 0"); // 预期结果 TC_CANTest SOA check SetDomeLightModeRespStruct.SetDomeLightModeNRC 0&RespCode 0
+  g_EM_SOAClient_Swc_SOA_CHECK("InteriorLightState1Struct.DomeLightModeFb 0"); // 预期结果 TC_CANTest SOA check InteriorLightState1Struct.DomeLightModeFb 0//0x0:Dome,0x1:ON,0x2:OFF,
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_DomeLightModeFb 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_DomeLightModeFb 0 // 0 Dome 1 ON 2 OFF
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 0"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 0
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_EnvrMode 2"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_EnvrMode 2// NIGHT
+  g_HIL_Gen_Swc_Wait("300 ms"); // 测试步骤 Step Wait 300 ms
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 1"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 1//1 open
+  g_HIL_Gen_Swc_Wait("150 ms"); // 测试步骤 Step Wait 150 ms
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Dimmzeit 9"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Dimmzeit 9
+  g_HIL_Gen_Swc_Wait("300 ms"); // 测试步骤 Step Wait 300 ms
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Dimmzeit 10"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Dimmzeit 10
+  gTC_CANTest_SOA_StopSomeipPeriod(); // 测试步骤 TC_CANTest SOA StopSomeipPeriod
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_EnvrMode 0"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_EnvrMode 0// Day
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0//0 close
+}
+
+testcase SYS_LDCU_DomeLight_033()
+{
+  TestDescription("控制LINDA顶灯点亮信号发送规则");
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_EnvrMode 2"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_EnvrMode 2// NIGHT
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_DomeLightModeFb 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_DomeLightModeFb 0 // 0 Dome 1 ON 2 OFF
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 1"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 1//1 open
+  g_HIL_Gen_Swc_Wait("150 ms"); // 测试步骤 Step Wait 150 ms
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Adressat 0x3F 1 s"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Adressat 0x3F 1 s
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100 1 s"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100 1 s
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Dimmzeit 9 1 s"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Dimmzeit 9 1 s
+  g_HIL_Gen_Swc_Wait("300 ms"); // 测试步骤 Step Wait 300 ms
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Adressat 0x3F 1 s"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Adressat 0x3F 1 s
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100 1 s"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100 1 s
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Dimmzeit 10 1 s"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Dimmzeit 10 1 s
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0//0 close
+}
+
+testcase SYS_LDCU_DomeLight_034()
+{
+  TestDescription("控制LINDA顶灯熄灭信号发送规则");
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 1"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 1//1 open
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_DomeLightModeFb 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_DomeLightModeFb 0 // 0 Dome 1 ON 2 OFF
+  g_HIL_Gen_Swc_Wait("3 s"); // 测试步骤 Step Wait 3 s
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0//0 close
+  g_HIL_Gen_Swc_Wait("30 s"); // 测试步骤 Step Wait 30 s
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Adressat 0x3F 1 s"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Adressat 0x3F 1 s
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 0 2 s"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 0 2 s// 之前出现过闭锁后1.6S发生亮灯
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Dimmzeit 9 1 s"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Dimmzeit 9 1 s
+  g_HIL_Gen_Swc_Wait("300 ms"); // 测试步骤 Step Wait 300 ms
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Adressat 0x3F 1 s"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Adressat 0x3F 1 s
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 0 2 s"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 0 2 s// 之前出现过闭锁后1.6S发生亮灯
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Dimmzeit 10 1 s"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Dimmzeit 10 1 s
+}
+
+testcase SYS_LDCU_DomeLight_035()
+{
+  TestDescription("响应门信号顶灯熄灭---白天（须和点亮一起测试）");
+  g_HIL_Clib_Swc_Clib_AllDoorClosed(); // 测试步骤 Step Clib AllDoorClosed
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_DriverDoorAjarSt 0"); // 预期结果 Step Check  I_LDCU_BodySysSt1::I_LDCU_DriverDoorAjarSt 0 //0 close
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_RLDoorAjarSt 0"); // 预期结果 Step Check  I_LDCU_BodySysSt1::I_LDCU_RLDoorAjarSt 0 //0 close
+  g_HIL_Bus_Swc_Set("I_TBOX_SysSt::I_TBOX_AirbagMemorySt 0"); // 测试步骤 Step Set I_TBOX_SysSt::I_TBOX_AirbagMemorySt 0
+  g_HIL_Bus_Swc_Set("C_SRS_SysSt::C_SRS_CrashOutputSt 0"); // 测试步骤 Step Set C_SRS_SysSt::C_SRS_CrashOutputSt 0// 1 ACTIVE
+  g_HIL_Bus_Swc_Check("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0"); // 预期结果 Step Check I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0// 0 close
+  g_HIL_Bus_Swc_Set("I_XPU_Event::I_XPU_LDCU_InnerlightReq 0"); // 测试步骤 Step Set I_XPU_Event::I_XPU_LDCU_InnerlightReq 0 //1 request
+  g_HIL_Bus_Swc_Check("I_RDCU_BodySysSt1::I_RDCU_RRDoorAjarSt 0"); // 预期结果 Step Check I_RDCU_BodySysSt1::I_RDCU_RRDoorAjarSt 0// 0 close
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_DomeLightModeFb 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_DomeLightModeFb 0 // 0 Dome 1 ON 2 OFF
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_EnvrMode 2"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_EnvrMode 2// NIGHT
+  g_HIL_Gen_Swc_Wait("300 ms"); // 测试步骤 Step Wait 300 ms
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 1"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 1//1 open
+  g_HIL_Gen_Swc_Wait("300 ms"); // 测试步骤 Step Wait 300 ms
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_EnvrMode 0"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_EnvrMode 0// Day
+  g_HIL_Gen_Swc_Wait("350 ms"); // 测试步骤 Step Wait 350 ms
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 0"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 0
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0//0 close
+}
+
+testcase SYS_LDCU_DomeLight_036()
+{
+  TestDescription("响应门信号顶灯熄灭---关门超时（须和点亮一起测试）");
+  g_HIL_Clib_Swc_Clib_AllDoorClosed(); // 测试步骤 Step Clib AllDoorClosed
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_DriverDoorAjarSt 0"); // 预期结果 Step Check  I_LDCU_BodySysSt1::I_LDCU_DriverDoorAjarSt 0 //0 close
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_RLDoorAjarSt 0"); // 预期结果 Step Check  I_LDCU_BodySysSt1::I_LDCU_RLDoorAjarSt 0 //0 close
+  g_HIL_Bus_Swc_Set("I_TBOX_SysSt::I_TBOX_AirbagMemorySt 0"); // 测试步骤 Step Set I_TBOX_SysSt::I_TBOX_AirbagMemorySt 0
+  g_HIL_Bus_Swc_Set("C_SRS_SysSt::C_SRS_CrashOutputSt 0"); // 测试步骤 Step Set C_SRS_SysSt::C_SRS_CrashOutputSt 0// 1 ACTIVE
+  g_HIL_Bus_Swc_Check("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0"); // 预期结果 Step Check I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0// 0 close
+  g_HIL_Bus_Swc_Set("I_XPU_Event::I_XPU_LDCU_InnerlightReq 0"); // 测试步骤 Step Set I_XPU_Event::I_XPU_LDCU_InnerlightReq 0 //1 request
+  g_HIL_Bus_Swc_Check("I_RDCU_BodySysSt1::I_RDCU_RRDoorAjarSt 0"); // 预期结果 Step Check I_RDCU_BodySysSt1::I_RDCU_RRDoorAjarSt 0// 0 close
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_DomeLightModeFb 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_DomeLightModeFb 0 // 0 Dome 1 ON 2 OFF
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_EnvrMode 2"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_EnvrMode 2// NIGHT
+  g_HIL_Gen_Swc_Wait("300 ms"); // 测试步骤 Step Wait 300 ms
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 1"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 1//1 open
+  g_HIL_Gen_Swc_Wait("300 ms"); // 测试步骤 Step Wait 300 ms
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0//0 close
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100
+  g_HIL_Gen_Swc_Wait("30 s"); // 测试步骤 Step Wait 30 s
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 0 2 s"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 0 2 s// 之前出现过闭锁后1.6S发生亮灯
+}
+
+testcase SYS_LDCU_DomeLight_037()
+{
+  TestDescription("响应门信号顶灯熄灭---关门超时（须和点亮一起测试）（有车门从开到关变化并且所有车门关闭后开始计时，有任意车门开启清零计数））");
+  g_HIL_Clib_Swc_Clib_AllDoorClosed(); // 测试步骤 Step Clib AllDoorClosed
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_DriverDoorAjarSt 0"); // 预期结果 Step Check  I_LDCU_BodySysSt1::I_LDCU_DriverDoorAjarSt 0 //0 close
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_RLDoorAjarSt 0"); // 预期结果 Step Check  I_LDCU_BodySysSt1::I_LDCU_RLDoorAjarSt 0 //0 close
+  g_HIL_Bus_Swc_Set("I_TBOX_SysSt::I_TBOX_AirbagMemorySt 0"); // 测试步骤 Step Set I_TBOX_SysSt::I_TBOX_AirbagMemorySt 0
+  g_HIL_Bus_Swc_Set("C_SRS_SysSt::C_SRS_CrashOutputSt 0"); // 测试步骤 Step Set C_SRS_SysSt::C_SRS_CrashOutputSt 0// 1 ACTIVE
+  g_HIL_Bus_Swc_Check("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0"); // 预期结果 Step Check I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0// 0 close
+  g_HIL_Bus_Swc_Set("I_XPU_Event::I_XPU_LDCU_InnerlightReq 0"); // 测试步骤 Step Set I_XPU_Event::I_XPU_LDCU_InnerlightReq 0 //1 request
+  g_HIL_Bus_Swc_Check("I_RDCU_BodySysSt1::I_RDCU_RRDoorAjarSt 0"); // 预期结果 Step Check I_RDCU_BodySysSt1::I_RDCU_RRDoorAjarSt 0// 0 close
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_DomeLightModeFb 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_DomeLightModeFb 0 // 0 Dome 1 ON 2 OFF
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_EnvrMode 2"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_EnvrMode 2// NIGHT
+  g_HIL_Gen_Swc_Wait("300 ms"); // 测试步骤 Step Wait 300 ms
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 1"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 1//1 open
+  g_HIL_Gen_Swc_Wait("300 ms"); // 测试步骤 Step Wait 300 ms
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0//0 close
+  g_HIL_Gen_Swc_Wait("10 s"); // 测试步骤 Step Wait 10 s
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_RRDoorAjarSt 1"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_RRDoorAjarSt 1//1 open
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_RRDoorAjarSt 0"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_RRDoorAjarSt 0//0 close
+  g_HIL_Gen_Swc_Wait("20 s"); // 测试步骤 Step Wait 20 s
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100
+  g_HIL_Gen_Swc_Wait("10 s"); // 测试步骤 Step Wait 10 s
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 0 2 s"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 0 2 s// 之前出现过闭锁后1.6S发生亮灯
+}
+
+testcase SYS_LDCU_DomeLight_038()
+{
+  TestDescription("响应门信号顶灯熄灭---开门超时（须和点亮一起测试）");
+  g_HIL_Clib_Swc_Clib_AllDoorClosed(); // 测试步骤 Step Clib AllDoorClosed
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_DriverDoorAjarSt 0"); // 预期结果 Step Check  I_LDCU_BodySysSt1::I_LDCU_DriverDoorAjarSt 0 //0 close
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_RLDoorAjarSt 0"); // 预期结果 Step Check  I_LDCU_BodySysSt1::I_LDCU_RLDoorAjarSt 0 //0 close
+  g_HIL_Bus_Swc_Check("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0"); // 预期结果 Step Check I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0// 0 close
+  g_HIL_Bus_Swc_Check("I_RDCU_BodySysSt1::I_RDCU_RRDoorAjarSt 0"); // 预期结果 Step Check I_RDCU_BodySysSt1::I_RDCU_RRDoorAjarSt 0// 0 close
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_DomeLightModeFb 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_DomeLightModeFb 0 // 0 Dome 1 ON 2 OFF
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_Tuerkontakt_Innenlicht_Status 1"); // 预期结果 Step Check L5_LINDae_01::L5_Tuerkontakt_Innenlicht_Status 1 //0:Tuerkontakt_nicht_gesetzt  1:Tuerkontakt_gesetzt
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_EnvrMode 2"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_EnvrMode 2// NIGHT
+  g_HIL_Gen_Swc_Wait("300 ms"); // 测试步骤 Step Wait 300 ms
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 1"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 1//1 open
+  g_HIL_Gen_Swc_Wait("150 ms"); // 测试步骤 Step Wait 150 ms
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100
+  g_HIL_Gen_Swc_Wait("300 ms"); // 测试步骤 Step Wait 300 ms
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100
+  g_HIL_Gen_Swc_Wait("100 s"); // 测试步骤 Step Wait 100 s //门开后10min
+  g_HIL_Gen_Swc_Wait("100 s"); // 测试步骤 Step Wait 100 s //门开后10min
+  g_HIL_Gen_Swc_Wait("100 s"); // 测试步骤 Step Wait 100 s //门开后10min
+  g_HIL_Gen_Swc_Wait("100 s"); // 测试步骤 Step Wait 100 s //门开后10min
+  g_HIL_Gen_Swc_Wait("100 s"); // 测试步骤 Step Wait 100 s //门开后10min
+  g_HIL_Gen_Swc_Wait("100 s"); // 测试步骤 Step Wait 100 s //门开后10min
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 0"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 0
+  g_HIL_Gen_Swc_Wait("300 ms"); // 测试步骤 Step Wait 300 ms
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0//0 close
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 0"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 0
+}
+
+testcase SYS_LDCU_DomeLight_039()
+{
+  TestDescription("响应门信号顶灯熄灭---切D档（须和点亮一起测试）(先切D档后关门)");
+  g_HIL_Clib_Swc_Clib_AllDoorClosed(); // 测试步骤 Step Clib AllDoorClosed
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_DriverDoorAjarSt 0"); // 预期结果 Step Check  I_LDCU_BodySysSt1::I_LDCU_DriverDoorAjarSt 0 //0 close
+  g_HIL_Clib_Swc_Clib_INTLGT_Gear_P(); // 测试步骤 Step Clib INTLGT_Gear_P //P档
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_RLDoorAjarSt 0"); // 预期结果 Step Check  I_LDCU_BodySysSt1::I_LDCU_RLDoorAjarSt 0 //0 close
+  g_HIL_Bus_Swc_Check("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0"); // 预期结果 Step Check I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0// 0 close
+  g_HIL_Bus_Swc_Check("I_RDCU_BodySysSt1::I_RDCU_RRDoorAjarSt 0"); // 预期结果 Step Check I_RDCU_BodySysSt1::I_RDCU_RRDoorAjarSt 0// 0 close
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_DomeLightModeFb 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_DomeLightModeFb 0 // 0 Dome 1 ON 2 OFF
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_Tuerkontakt_Innenlicht_Status 1"); // 预期结果 Step Check L5_LINDae_01::L5_Tuerkontakt_Innenlicht_Status 1 //0:Tuerkontakt_nicht_gesetzt  1:Tuerkontakt_gesetzt
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_EnvrMode 2"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_EnvrMode 2// NIGHT
+  g_HIL_Gen_Swc_Wait("300 ms"); // 测试步骤 Step Wait 300 ms
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 1"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 1//1 open
+  g_HIL_Gen_Swc_Wait("150 ms"); // 测试步骤 Step Wait 150 ms
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100
+  g_HIL_Clib_Swc_Clib_INTLGT_Gear_D(); // 测试步骤 Step Clib INTLGT_Gear_D//  D GearLev
+  g_HIL_Gen_Swc_Wait("300 ms"); // 测试步骤 Step Wait 300 ms
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0//0 close
+  g_HIL_Gen_Swc_Wait("300 ms"); // 测试步骤 Step Wait 300 ms
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 0"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 0
+  g_HIL_Clib_Swc_Clib_INTLGT_Gear_P(); // 测试步骤 Step Clib INTLGT_Gear_P //P档
+}
+
+testcase SYS_LDCU_DomeLight_040()
+{
+  TestDescription("响应门信号顶灯熄灭---切D档（须和点亮一起测试）(先关门后切D档)");
+  g_HIL_Clib_Swc_Clib_AllDoorClosed(); // 测试步骤 Step Clib AllDoorClosed
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_DriverDoorAjarSt 0"); // 预期结果 Step Check  I_LDCU_BodySysSt1::I_LDCU_DriverDoorAjarSt 0 //0 close
+  g_HIL_Clib_Swc_Clib_INTLGT_Gear_P(); // 测试步骤 Step Clib INTLGT_Gear_P //P档
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_RLDoorAjarSt 0"); // 预期结果 Step Check  I_LDCU_BodySysSt1::I_LDCU_RLDoorAjarSt 0 //0 close
+  g_HIL_Bus_Swc_Check("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0"); // 预期结果 Step Check I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0// 0 close
+  g_HIL_Bus_Swc_Check("I_RDCU_BodySysSt1::I_RDCU_RRDoorAjarSt 0"); // 预期结果 Step Check I_RDCU_BodySysSt1::I_RDCU_RRDoorAjarSt 0// 0 close
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_DomeLightModeFb 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_DomeLightModeFb 0 // 0 Dome 1 ON 2 OFF
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_Tuerkontakt_Innenlicht_Status 1"); // 预期结果 Step Check L5_LINDae_01::L5_Tuerkontakt_Innenlicht_Status 1 //0:Tuerkontakt_nicht_gesetzt  1:Tuerkontakt_gesetzt
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_EnvrMode 2"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_EnvrMode 2// NIGHT
+  g_HIL_Gen_Swc_Wait("300 ms"); // 测试步骤 Step Wait 300 ms
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 1"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 1//1 open
+  g_HIL_Gen_Swc_Wait("150 ms"); // 测试步骤 Step Wait 150 ms
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0//0 close
+  g_HIL_Gen_Swc_Wait("300 ms"); // 测试步骤 Step Wait 300 ms
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100
+  g_HIL_Clib_Swc_Clib_INTLGT_Gear_D(); // 测试步骤 Step Clib INTLGT_Gear_D//  D GearLev
+  g_HIL_Gen_Swc_Wait("300 ms"); // 测试步骤 Step Wait 300 ms
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 0"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 0
+  g_HIL_Clib_Swc_Clib_INTLGT_Gear_P(); // 测试步骤 Step Clib INTLGT_Gear_P //P档
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 0"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 0
+}
+
+testcase SYS_LDCU_DomeLight_041()
+{
+  TestDescription("SOA亮灯后切D档灭灯");
+  g_HIL_Clib_Swc_Clib_AllDoorClosed(); // 测试步骤 Step Clib AllDoorClosed
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_DriverDoorAjarSt 0"); // 预期结果 Step Check  I_LDCU_BodySysSt1::I_LDCU_DriverDoorAjarSt 0 //0 close
+  g_HIL_Clib_Swc_Clib_INTLGT_Gear_P(); // 测试步骤 Step Clib INTLGT_Gear_P //P档
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_RLDoorAjarSt 0"); // 预期结果 Step Check  I_LDCU_BodySysSt1::I_LDCU_RLDoorAjarSt 0 //0 close
+  g_HIL_Bus_Swc_Check("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0"); // 预期结果 Step Check I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0// 0 close
+  g_HIL_Bus_Swc_Check("I_RDCU_BodySysSt1::I_RDCU_RRDoorAjarSt 0"); // 预期结果 Step Check I_RDCU_BodySysSt1::I_RDCU_RRDoorAjarSt 0// 0 close
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_DomeLightModeFb 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_DomeLightModeFb 0 // 0 Dome 1 ON 2 OFF
+  g_EM_SOAClient_Swc_SOA_SubPeriod("InteriorLightState 1"); // 测试步骤 TC_CANTest SOA SubPeriod InteriorLightState 1
+  g_EM_SOAClient_Swc_SOA_SubPeriod("InteriorLightService_ErrGrp 1"); // 测试步骤 TC_CANTest SOA SubPeriod InteriorLightService_ErrGrp 1
+  g_EM_SOAClient_Swc_SOA_REQ("DomeLightCtrlStruct.DomeLightCmd:1&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ DomeLightCtrlStruct.DomeLightCmd:1&ServiceExecuteFeedbackFlag:2 //0x0:no command 0x1:ON 0x2:OFF
+  g_HIL_Gen_Swc_Wait("1000 ms"); // 测试步骤 Step Wait 1000 ms
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100
+  g_HIL_Gen_Swc_Wait("300 ms"); // 测试步骤 Step Wait 300 ms
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100
+  gTC_CANTest_SOA_StopSomeipPeriod(); // 测试步骤 TC_CANTest SOA StopSomeipPeriod
+  g_HIL_Clib_Swc_Clib_INTLGT_Gear_D(); // 测试步骤 Step Clib INTLGT_Gear_D//  D GearLev
+  g_HIL_Gen_Swc_Wait("300 ms"); // 测试步骤 Step Wait 300 ms
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 0"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 0
+  g_HIL_Clib_Swc_Clib_INTLGT_Gear_P(); // 测试步骤 Step Clib INTLGT_Gear_P //P档
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 0"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 0
+}
+
+testcase SYS_LDCU_DomeLight_042()
+{
+  TestDescription("SOA亮左前顶灯后切D档灭灯");
+  g_HIL_Clib_Swc_Clib_AllDoorClosed(); // 测试步骤 Step Clib AllDoorClosed
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_DriverDoorAjarSt 0"); // 预期结果 Step Check  I_LDCU_BodySysSt1::I_LDCU_DriverDoorAjarSt 0 //0 close
+  g_HIL_Clib_Swc_Clib_INTLGT_Gear_P(); // 测试步骤 Step Clib INTLGT_Gear_P //P档
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_RLDoorAjarSt 0"); // 预期结果 Step Check  I_LDCU_BodySysSt1::I_LDCU_RLDoorAjarSt 0 //0 close
+  g_HIL_Bus_Swc_Check("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0"); // 预期结果 Step Check I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0// 0 close
+  g_HIL_Bus_Swc_Check("I_RDCU_BodySysSt1::I_RDCU_RRDoorAjarSt 0"); // 预期结果 Step Check I_RDCU_BodySysSt1::I_RDCU_RRDoorAjarSt 0// 0 close
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_DomeLightModeFb 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_DomeLightModeFb 0 // 0 Dome 1 ON 2 OFF
+  g_EM_SOAClient_Swc_SOA_SubPeriod("InteriorLightState 1"); // 测试步骤 TC_CANTest SOA SubPeriod InteriorLightState 1
+  g_EM_SOAClient_Swc_SOA_SubPeriod("InteriorLightService_ErrGrp 1"); // 测试步骤 TC_CANTest SOA SubPeriod InteriorLightService_ErrGrp 1
+  g_EM_SOAClient_Swc_SOA_REQ("FLDomeLightCtrlStruct.FLDomeLightCmd:1&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ FLDomeLightCtrlStruct.FLDomeLightCmd:1&ServiceExecuteFeedbackFlag:2 //0x0:no command 0x1:ON 0x2:OFF
+  g_HIL_Gen_Swc_Wait("1000 ms"); // 测试步骤 Step Wait 1000 ms
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100
+  gTC_CANTest_SOA_StopSomeipPeriod(); // 测试步骤 TC_CANTest SOA StopSomeipPeriod
+  g_HIL_Clib_Swc_Clib_INTLGT_Gear_D(); // 测试步骤 Step Clib INTLGT_Gear_D//  D GearLev
+  g_HIL_Gen_Swc_Wait("300 ms"); // 测试步骤 Step Wait 300 ms
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 0"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 0
+  g_HIL_Clib_Swc_Clib_INTLGT_Gear_P(); // 测试步骤 Step Clib INTLGT_Gear_P //P档
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 0"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 0
+}
+
+testcase SYS_LDCU_DomeLight_044()
+{
+  TestDescription("顶灯跟随闭锁熄灭");
+  g_HIL_Clib_Swc_Clib_AllDoorClosed(); // 测试步骤 Step Clib AllDoorClosed
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_DriverDoorAjarSt 0"); // 预期结果 Step Check  I_LDCU_BodySysSt1::I_LDCU_DriverDoorAjarSt 0 //0 close
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_RLDoorAjarSt 0"); // 预期结果 Step Check  I_LDCU_BodySysSt1::I_LDCU_RLDoorAjarSt 0 //0 close
+  g_HIL_Bus_Swc_Check("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0"); // 预期结果 Step Check I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0// 0 close
+  g_HIL_Bus_Swc_Check("I_RDCU_BodySysSt1::I_RDCU_RRDoorAjarSt 0"); // 预期结果 Step Check I_RDCU_BodySysSt1::I_RDCU_RRDoorAjarSt 0// 0 close
+  g_HIL_Clib_Swc_Clib_Unlock(); // 测试步骤 Step Clib Unlock
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_LockLogicSt 0"); // 预期结果 Step Check  I_LDCU_BodySysSt1::I_LDCU_LockLogicSt 0 //0 unlock
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_DomeLightModeFb 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_DomeLightModeFb 0 // 0 Dome 1 ON 2 OFF
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_EnvrMode 2"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_EnvrMode 2// NIGHT
+  g_HIL_Gen_Swc_Wait("300 ms"); // 测试步骤 Step Wait 300 ms
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 1"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 1//1 open
+  g_HIL_Gen_Swc_Wait("1 s"); // 测试步骤 Step Wait 1 s
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Adressat 0x3F"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Adressat 0x3F
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Dimmzeit 10"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Dimmzeit 10
+  g_HIL_Bus_Swc_Set("L5_LINDas_01::L5_Tuerkontakt_Innenlicht_Taste 1"); // 测试步骤 Step Set L5_LINDas_01::L5_Tuerkontakt_Innenlicht_Taste 1 //   0:Taste_unbetaetigt    1:Taste_betaetigt
+  g_HIL_Gen_Swc_Wait("1000 ms"); // 测试步骤 Step Wait 1000 ms
+  g_HIL_Bus_Swc_Set("L5_LINDas_01::L5_Tuerkontakt_Innenlicht_Taste 0"); // 测试步骤 Step Set L5_LINDas_01::L5_Tuerkontakt_Innenlicht_Taste 0 //   0:Taste_unbetaetigt    1:Taste_betaetigt
+  g_HIL_Gen_Swc_Wait("300 ms"); // 测试步骤 Step Wait 300 ms   //关闭DOME模式
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_DomeLightModeFb 2"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_DomeLightModeFb 2 // 0 Dome 1 ON 2 OFF
+  g_HIL_Bus_Swc_Set("VTS::VT2516_1_Ch4::DigitalOutput 1"); // 测试步骤 Step Set J_AI_DrvSeatSBRSt Unoccupied
+  g_HIL_Bus_Swc_Set("I_CDCU_AssistSysSwSt::I_DrvSeatOccupancySt 0"); // 测试步骤 Step Set I_CDCU_AssistSysSwSt::I_DrvSeatOccupancySt 0
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_DrvSeatOccupancySt 0"); // 预期结果 Step Check  I_LDCU_BodySysSt1::I_LDCU_DrvSeatOccupancySt 0 //未占座
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0//0 close
+  g_HIL_Bus_Swc_Set("I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 0"); // 测试步骤 Step Set I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 0
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_LockLogicSt 0"); // 预期结果 Step Check  I_LDCU_BodySysSt1::I_LDCU_LockLogicSt 0 //0 unlock
+  g_HIL_Bus_Swc_Set("I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 3"); // 测试步骤 Step Set I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 3//0x3:BLE Door lock
+  g_HIL_Gen_Swc_Wait("200 ms"); // 测试步骤 Step Wait 200 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_LockLogicSt 1"); // 预期结果 Step Check  I_LDCU_BodySysSt1::I_LDCU_LockLogicSt 1 //1 lock
+  g_HIL_Gen_Swc_Wait("1 s"); // 测试步骤 Step Wait 1 s
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 0"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 0
+  g_HIL_Gen_Swc_Wait("1 s"); // 测试步骤 Step Wait 1 s
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 0"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 0
+  g_HIL_Gen_Swc_Wait("1 s"); // 测试步骤 Step Wait 1 s
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 0 2 s"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 0 2 s// 之前出现过闭锁后1.6S发生亮灯
+  g_HIL_Gen_Swc_Wait("1 s"); // 测试步骤 Step Wait 1 s
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 0 2 s"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 0 2 s// 之前出现过闭锁后1.6S发生亮灯
+  g_HIL_Bus_Swc_Set("I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 4"); // 测试步骤 Step Set I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 4// Unlock
+  g_HIL_Bus_Swc_Set("I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 0"); // 测试步骤 Step Set I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 0
+}
+
+testcase SYS_LDCU_DomeLight_048()
+{
+  TestDescription("门打开10min后关灯（（任何一个门开启开始计时，中途有门再开启重置计时，所有门都关闭计时停止））");
+  g_HIL_Clib_Swc_Clib_BrkLocalON(); // 测试步骤 Step Clib BrkLocalON
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_DomeLightModeFb 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_DomeLightModeFb 0 // 0 Dome 1 ON 2 OFF
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_EnvrMode 2"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_EnvrMode 2// NIGHT
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 1"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 1//open
+  g_HIL_Gen_Swc_Wait("300 s"); // 测试步骤 Step Wait 300 s
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_RRDoorAjarSt 1"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_RRDoorAjarSt 1// 0 close
+  g_HIL_Gen_Swc_Wait("300 s"); // 测试步骤 Step Wait 300 s
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100
+  g_HIL_Gen_Swc_Wait("1500 ms"); // 测试步骤 Step Wait 1500 ms
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100
+  g_HIL_Gen_Swc_Wait("300 s"); // 测试步骤 Step Wait 300 s
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 0"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 0
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0//close
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_RRDoorAjarSt 0"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_RRDoorAjarSt 0// 0 close
+}
+
+testcase SYS_LDCU_DomeLight_049()
+{
+  TestDescription("门打开10min后关灯（即使后来开的门已关闭了也会将计时更改");
+  g_HIL_Clib_Swc_Clib_BrkLocalON(); // 测试步骤 Step Clib BrkLocalON
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_DomeLightModeFb 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_DomeLightModeFb 0 // 0 Dome 1 ON 2 OFF
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_EnvrMode 2"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_EnvrMode 2// NIGHT
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 1"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 1//open
+  g_HIL_Gen_Swc_Wait("300 s"); // 测试步骤 Step Wait 300 s
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_RRDoorAjarSt 1"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_RRDoorAjarSt 1// 0 close
+  g_HIL_Gen_Swc_Wait("200 s"); // 测试步骤 Step Wait 200 s
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_RRDoorAjarSt 0"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_RRDoorAjarSt 0// 0 close
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100
+  g_HIL_Gen_Swc_Wait("100 s"); // 测试步骤 Step Wait 100 s
+  g_HIL_Gen_Swc_Wait("1500 ms"); // 测试步骤 Step Wait 1500 ms
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100
+  g_HIL_Gen_Swc_Wait("300 s"); // 测试步骤 Step Wait 300 s
+  g_HIL_Gen_Swc_Wait("1500 ms"); // 测试步骤 Step Wait 1500 ms
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 0"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 0
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0
+}
+
+testcase SYS_LDCU_DomeLight_051()
+{
+  TestDescription("不取消碰撞后关门挂D档，灯不熄灭");
+  g_HIL_Clib_Swc_Clib_BrkLocalON(); // 测试步骤 Step Clib BrkLocalON
+  g_HIL_Bus_Swc_Set("I_TBOX_SysSt::I_TBOX_AirbagMemorySt 1"); // 测试步骤 Step Set I_TBOX_SysSt::I_TBOX_AirbagMemorySt 1
+  g_HIL_Gen_Swc_Wait("300 ms"); // 测试步骤 Step Wait 300 ms
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 1"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 1//open
+  g_HIL_Gen_Swc_Wait("150 ms"); // 测试步骤 Step Wait 150 ms
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100
+  g_HIL_Clib_Swc_Clib_INTLGT_Gear_D(); // 测试步骤 Step Clib INTLGT_Gear_D//  D GearLev
+  g_HIL_Gen_Swc_Wait("10000 ms"); // 测试步骤 Step Wait 10000 ms
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0//close
+  g_HIL_Gen_Swc_Wait("150 ms"); // 测试步骤 Step Wait 150 ms
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100
+  g_HIL_Bus_Swc_Set("I_TBOX_SysSt::I_TBOX_AirbagMemorySt 0"); // 测试步骤 Step Set I_TBOX_SysSt::I_TBOX_AirbagMemorySt 0
+  g_HIL_Gen_Swc_Wait("300 ms"); // 测试步骤 Step Wait 300 ms
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100
+  g_HIL_Clib_Swc_Clib_INTLGT_Gear_P(); // 测试步骤 Step Clib INTLGT_Gear_P//  P GearLev
+  g_HIL_Gen_Swc_Wait("30 s"); // 测试步骤 Step Wait 30 s
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 0"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 0
+  g_HIL_Clib_Swc_Clib_Clean_DTC(); // 测试步骤 Step Clib Clean_DTC
+  g_HIL_Clib_Swc_Clib_OFF(); // 测试步骤 Step Clib OFF
+}
+
+testcase SYS_LDCU_DomeLight_052()
+{
+  TestDescription("NGX点亮车内灯光1");
+  g_HIL_Clib_Swc_Clib_BrkLocalON(); // 测试步骤 Step Clib BrkLocalON
+  g_HIL_Bus_Swc_Set("I_XPU_Event::I_XPU_LDCU_InnerlightReq 1"); // 测试步骤 Step Set I_XPU_Event::I_XPU_LDCU_InnerlightReq 1 //1 request
+  g_HIL_Gen_Swc_Wait("150 ms"); // 测试步骤 Step Wait 150 ms
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100
+  g_HIL_Bus_Swc_Set("I_XPU_Event::I_XPU_LDCU_InnerlightReq 0"); // 测试步骤 Step Set I_XPU_Event::I_XPU_LDCU_InnerlightReq 0 //1 request
+  g_HIL_Gen_Swc_Wait("200 ms"); // 测试步骤 Step Wait 200 ms
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100
+  g_HIL_Bus_Swc_Set("I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 3"); // 测试步骤 Step Set I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 3//0x3:BLE Door lock
+  g_HIL_Gen_Swc_Wait("200 ms"); // 测试步骤 Step Wait 200 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_LockLogicSt 1"); // 预期结果 Step Check  I_LDCU_BodySysSt1::I_LDCU_LockLogicSt 1 //1 lock
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 0"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 0
+}
+
+testcase SYS_LDCU_DomeLight_053()
+{
+  TestDescription("NGX点亮车内灯光2---四门关闭30s后不关灯");
+  g_HIL_Clib_Swc_Clib_BrkLocalON(); // 测试步骤 Step Clib BrkLocalON
+  g_HIL_Bus_Swc_Set("I_XPU_Event::I_XPU_LDCU_InnerlightReq 1"); // 测试步骤 Step Set I_XPU_Event::I_XPU_LDCU_InnerlightReq 1 //1 request
+  g_HIL_Gen_Swc_Wait("150 ms"); // 测试步骤 Step Wait 150 ms
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 1"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 1//open
+  g_HIL_Gen_Swc_Wait("300 ms"); // 测试步骤 Step Wait 300 ms
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0//0 close
+  g_HIL_Gen_Swc_Wait("30 s"); // 测试步骤 Step Wait 30 s
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100
+  g_HIL_Bus_Swc_Set("I_XPU_Event::I_XPU_LDCU_InnerlightReq 0"); // 测试步骤 Step Set I_XPU_Event::I_XPU_LDCU_InnerlightReq 0 //1 request
+}
+
+testcase SYS_LDCU_DomeLight_054()
+{
+  TestDescription("NGX点亮车内灯光2----门打开10min后不关灯");
+  g_HIL_Clib_Swc_Clib_BrkLocalON(); // 测试步骤 Step Clib BrkLocalON
+  g_HIL_Bus_Swc_Set("I_XPU_Event::I_XPU_LDCU_InnerlightReq 1"); // 测试步骤 Step Set I_XPU_Event::I_XPU_LDCU_InnerlightReq 1 //1 request
+  g_HIL_Gen_Swc_Wait("150 ms"); // 测试步骤 Step Wait 150 ms
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 1"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 1//open
+  g_HIL_Gen_Swc_Wait("300 ms"); // 测试步骤 Step Wait 300 ms
+  g_HIL_Gen_Swc_Wait("600 s"); // 测试步骤 Step Wait 600 s
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100
+  g_HIL_Bus_Swc_Set("I_XPU_Event::I_XPU_LDCU_InnerlightReq 0"); // 测试步骤 Step Set I_XPU_Event::I_XPU_LDCU_InnerlightReq 0 //1 request
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0//0 close
+}
+
+testcase SYS_LDCU_DomeLight_055()
+{
+  TestDescription("左前顶灯控制点亮&熄灭");
+  // Step Set_CF08 DomeLightDrvType 1//0x1 域控直驱 byte12 // 测试步骤Set_CF08关键字不存在
+  teststep("step","Step Set_CF08 DomeLightDrvType 1//0x1 域控直驱 byte12");
+  teststepfail("fail","Set_CF08关键字不存在");
+  g_HIL_Bus_Swc_Set("VTS::VT2516_2_Ch13::DigitalOutput 10"); // 测试步骤 Step Set J_DI_FLTopLightSw_LS 10
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Set("VTS::VT2516_2_Ch13::DigitalOutput 0"); // 测试步骤 Step Set J_DI_FLTopLightSw_LS 0
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Set("VTS::VT2516_2_Ch13::DigitalOutput 10"); // 测试步骤 Step Set J_DI_FLTopLightSw_LS 10
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_FLDomeLightSwSt 1"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_FLDomeLightSwSt 1//0x1 Pressed
+  g_HIL_Bus_Swc_Check("VTS::VT2516_5_Ch5::CurBit 0"); // 预期结果 Step Check J_DO_LS_FLTopLight 0//Active
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_FLDomeLightOutput 2"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_FLDomeLightOutput 2//0x2 On
+  g_HIL_Gen_Swc_Wait("1 s"); // 测试步骤 Step Wait 1 s
+  g_HIL_Bus_Swc_Set("VTS::VT2516_2_Ch13::DigitalOutput 0"); // 测试步骤 Step Set J_DI_FLTopLightSw_LS 0
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Set("VTS::VT2516_2_Ch13::DigitalOutput 10"); // 测试步骤 Step Set J_DI_FLTopLightSw_LS 10
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_FLDomeLightSwSt 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_FLDomeLightSwSt 0//0x0 Not Pressed
+  g_HIL_Bus_Swc_Check("VTS::VT2516_5_Ch5::CurBit 1"); // 预期结果 Step Check J_DO_LS_FLTopLight 1//Inactive
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_FLDomeLightOutput 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_FLDomeLightOutput 0//0x0 OFF
+}
+
+testcase SYS_LDCU_DomeLight_056()
+{
+  TestDescription("左后顶灯控制点亮&熄灭");
+  g_HIL_Bus_Swc_Set("VTS::VT2848_3_Ch39::DigitalOutput 10"); // 测试步骤 Step Set J_DI_RLTopLightSw_LS 10
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Set("VTS::VT2848_3_Ch39::DigitalOutput 0"); // 测试步骤 Step Set J_DI_RLTopLightSw_LS 0
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Set("VTS::VT2848_3_Ch39::DigitalOutput 10"); // 测试步骤 Step Set J_DI_RLTopLightSw_LS 10
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_RLDomeLightSwSt 1"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_RLDomeLightSwSt 1//0x1 Pressed
+  g_HIL_Bus_Swc_Check("VTS::VT2848_2_Ch22::CurBit 0"); // 预期结果 Step Check J_DO_LS_RLTopLight 0//Active
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_RLDomeLightOutput 2"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_RLDomeLightOutput 2//0x2 On
+  g_HIL_Gen_Swc_Wait("1 s"); // 测试步骤 Step Wait 1 s
+  g_HIL_Bus_Swc_Set("VTS::VT2848_3_Ch39::DigitalOutput 0"); // 测试步骤 Step Set J_DI_RLTopLightSw_LS 0
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Set("VTS::VT2848_3_Ch39::DigitalOutput 10"); // 测试步骤 Step Set J_DI_RLTopLightSw_LS 10
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_RLDomeLightSwSt 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_RLDomeLightSwSt 0//0x0 Not Pressed
+  g_HIL_Bus_Swc_Check("VTS::VT2848_2_Ch22::CurBit 1"); // 预期结果 Step Check J_DO_LS_RLTopLight 1//Inactive
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_RLDomeLightOutput 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_RLDomeLightOutput 0//0x0 OFF
+}
+
+testcase SYS_LDCU_DomeLight_061()
+{
+  TestDescription("响应SOA请求点亮和熄灭车内阅读灯（SOA）-On");
+  g_HIL_Clib_Swc_Clib_BrkLocalON(); // 测试步骤 Step Clib BrkLocalON
+  g_EM_SOAClient_Swc_SOA_SubPeriod("InteriorLightState 1"); // 测试步骤 TC_CANTest SOA SubPeriod InteriorLightState 1
+  g_EM_SOAClient_Swc_SOA_SubPeriod("InteriorLightService_ErrGrp 1"); // 测试步骤 TC_CANTest SOA SubPeriod InteriorLightService_ErrGrp 1
+  g_EM_SOAClient_Swc_SOA_REQ("DomeLightCtrlStruct.DomeLightCmd:1&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ DomeLightCtrlStruct.DomeLightCmd:1&ServiceExecuteFeedbackFlag:2 //0x0:no command 0x1:ON 0x2:OFF
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100
+  g_HIL_Gen_Swc_Wait("300 ms"); // 测试步骤 Step Wait 300 ms
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100
+  gTC_CANTest_SOA_StopSomeipPeriod(); // 测试步骤 TC_CANTest SOA StopSomeipPeriod
+}
+
+testcase SYS_LDCU_DomeLight_062()
+{
+  TestDescription("响应SOA请求点亮和熄灭车内阅读灯（SOA）-Off");
+  g_EM_SOAClient_Swc_SOA_SubPeriod("InteriorLightState 1"); // 测试步骤 TC_CANTest SOA SubPeriod InteriorLightState 1
+  g_EM_SOAClient_Swc_SOA_SubPeriod("InteriorLightService_ErrGrp 1"); // 测试步骤 TC_CANTest SOA SubPeriod InteriorLightService_ErrGrp 1
+  g_EM_SOAClient_Swc_SOA_REQ("DomeLightCtrlStruct.DomeLightCmd:2&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ DomeLightCtrlStruct.DomeLightCmd:2&ServiceExecuteFeedbackFlag:2 //0x0:no command 0x1:ON 0x2:OFF
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 0"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 0
+  g_HIL_Gen_Swc_Wait("300 ms"); // 测试步骤 Step Wait 300 ms
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 0"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 0
+  gTC_CANTest_SOA_StopSomeipPeriod(); // 测试步骤 TC_CANTest SOA StopSomeipPeriod
+}
+
+testcase SYS_LDCU_DomeLight_063()
+{
+  TestDescription("响应SOA请求左前顶灯开关控制（SOA）-点亮");
+  g_EM_SOAClient_Swc_SOA_SubPeriod("InteriorLightState 1"); // 测试步骤 TC_CANTest SOA SubPeriod InteriorLightState 1
+  g_EM_SOAClient_Swc_SOA_SubPeriod("InteriorLightService_ErrGrp 1"); // 测试步骤 TC_CANTest SOA SubPeriod InteriorLightService_ErrGrp 1
+  g_EM_SOAClient_Swc_SOA_REQ("FLDomeLightCtrlStruct.FLDomeLightCmd:1&userid:1&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ FLDomeLightCtrlStruct.FLDomeLightCmd:1&userid:1&ServiceExecuteFeedbackFlag:2 //0x0:no command 0x1:ON 0x2:OFF
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Adressat 0x01"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Adressat 0x01
+  g_HIL_Gen_Swc_Wait("300 ms"); // 测试步骤 Step Wait 300 ms
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Adressat 0x01"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Adressat 0x01
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100
+  gTC_CANTest_SOA_StopSomeipPeriod(); // 测试步骤 TC_CANTest SOA StopSomeipPeriod
+}
+
+testcase SYS_LDCU_DomeLight_064()
+{
+  TestDescription("响应SOA请求左前顶灯开关控制（SOA）-熄灭");
+  g_EM_SOAClient_Swc_SOA_SubPeriod("InteriorLightState 1"); // 测试步骤 TC_CANTest SOA SubPeriod InteriorLightState 1
+  g_EM_SOAClient_Swc_SOA_SubPeriod("InteriorLightService_ErrGrp 1"); // 测试步骤 TC_CANTest SOA SubPeriod InteriorLightService_ErrGrp 1
+  g_EM_SOAClient_Swc_SOA_REQ("FLDomeLightCtrlStruct.FLDomeLightCmd:2&userid:1&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ FLDomeLightCtrlStruct.FLDomeLightCmd:2&userid:1&ServiceExecuteFeedbackFlag:2 //0x0:no command 0x1:ON 0x2:OFF
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Adressat 0x01"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Adressat 0x01
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 0"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 0
+  g_HIL_Gen_Swc_Wait("300 ms"); // 测试步骤 Step Wait 300 ms
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Adressat 0x01"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Adressat 0x01
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 0"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 0
+  gTC_CANTest_SOA_StopSomeipPeriod(); // 测试步骤 TC_CANTest SOA StopSomeipPeriod
+}
+
+testcase SYS_LDCU_DomeLight_065()
+{
+  TestDescription("响应SOA请求右前顶灯开关控制（SOA）-点亮");
+  g_EM_SOAClient_Swc_SOA_SubPeriod("InteriorLightState 1"); // 测试步骤 TC_CANTest SOA SubPeriod InteriorLightState 1
+  g_EM_SOAClient_Swc_SOA_SubPeriod("InteriorLightService_ErrGrp 1"); // 测试步骤 TC_CANTest SOA SubPeriod InteriorLightService_ErrGrp 1
+  g_EM_SOAClient_Swc_SOA_REQ("FRDomeLightCtrlStruct.FRDomeLightCmd:1&userid:1&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ FRDomeLightCtrlStruct.FRDomeLightCmd:1&userid:1&ServiceExecuteFeedbackFlag:2 //0x0:no command 0x1:ON 0x2:OFF
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Adressat 0x02"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Adressat 0x02
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100
+  g_HIL_Gen_Swc_Wait("300 ms"); // 测试步骤 Step Wait 300 ms
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Adressat 0x02"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Adressat 0x02
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100
+  gTC_CANTest_SOA_StopSomeipPeriod(); // 测试步骤 TC_CANTest SOA StopSomeipPeriod
+}
+
+testcase SYS_LDCU_DomeLight_066()
+{
+  TestDescription("响应SOA请求右前顶灯开关控制（SOA）-熄灭");
+  g_EM_SOAClient_Swc_SOA_SubPeriod("InteriorLightState 1"); // 测试步骤 TC_CANTest SOA SubPeriod InteriorLightState 1
+  g_EM_SOAClient_Swc_SOA_SubPeriod("InteriorLightService_ErrGrp 1"); // 测试步骤 TC_CANTest SOA SubPeriod InteriorLightService_ErrGrp 1
+  g_EM_SOAClient_Swc_SOA_REQ("FRDomeLightCtrlStruct.FRDomeLightCmd:2&userid:1&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ FRDomeLightCtrlStruct.FRDomeLightCmd:2&userid:1&ServiceExecuteFeedbackFlag:2 //0x0:no command 0x1:ON 0x2:OFF
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Adressat 0x02"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Adressat 0x02
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 0"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 0
+  g_HIL_Gen_Swc_Wait("300 ms"); // 测试步骤 Step Wait 300 ms
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Adressat 0x02"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Adressat 0x02
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 0"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 0
+  gTC_CANTest_SOA_StopSomeipPeriod(); // 测试步骤 TC_CANTest SOA StopSomeipPeriod
+}
+
+testcase SYS_LDCU_DomeLight_067()
+{
+  TestDescription("响应SOA请求左后顶灯开关控制（SOA）-点亮");
+  g_EM_SOAClient_Swc_SOA_SubPeriod("InteriorLightState 1"); // 测试步骤 TC_CANTest SOA SubPeriod InteriorLightState 1
+  g_EM_SOAClient_Swc_SOA_SubPeriod("InteriorLightService_ErrGrp 1"); // 测试步骤 TC_CANTest SOA SubPeriod InteriorLightService_ErrGrp 1
+  g_EM_SOAClient_Swc_SOA_REQ("RLDomeLightCtrlStruct.RLDomeLightCmd:1&userid:1&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ RLDomeLightCtrlStruct.RLDomeLightCmd:1&userid:1&ServiceExecuteFeedbackFlag:2 //0x0:no command 0x1:ON 0x2:OFF
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Adressat 0x04"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Adressat 0x04
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100
+  g_HIL_Gen_Swc_Wait("300 ms"); // 测试步骤 Step Wait 300 ms
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Adressat 0x04"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Adressat 0x04
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100
+  gTC_CANTest_SOA_StopSomeipPeriod(); // 测试步骤 TC_CANTest SOA StopSomeipPeriod
+}
+
+testcase SYS_LDCU_DomeLight_068()
+{
+  TestDescription("响应SOA请求左后顶灯开关控制（SOA）-熄灭");
+  g_EM_SOAClient_Swc_SOA_SubPeriod("InteriorLightState 1"); // 测试步骤 TC_CANTest SOA SubPeriod InteriorLightState 1
+  g_EM_SOAClient_Swc_SOA_SubPeriod("InteriorLightService_ErrGrp 1"); // 测试步骤 TC_CANTest SOA SubPeriod InteriorLightService_ErrGrp 1
+  g_EM_SOAClient_Swc_SOA_REQ("RLDomeLightCtrlStruct.RLDomeLightCmd:2&userid:1&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ RLDomeLightCtrlStruct.RLDomeLightCmd:2&userid:1&ServiceExecuteFeedbackFlag:2 //0x0:no command 0x1:ON 0x2:OFF
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Adressat 0x04"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Adressat 0x04
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 0"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 0
+  g_HIL_Gen_Swc_Wait("300 ms"); // 测试步骤 Step Wait 300 ms
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Adressat 0x04"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Adressat 0x04
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 0"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 0
+  gTC_CANTest_SOA_StopSomeipPeriod(); // 测试步骤 TC_CANTest SOA StopSomeipPeriod
+}
+
+testcase SYS_LDCU_DomeLight_069()
+{
+  TestDescription("响应SOA请求右后顶灯开关控制（SOA）-点亮");
+  g_EM_SOAClient_Swc_SOA_SubPeriod("InteriorLightState 1"); // 测试步骤 TC_CANTest SOA SubPeriod InteriorLightState 1
+  g_EM_SOAClient_Swc_SOA_SubPeriod("InteriorLightService_ErrGrp 1"); // 测试步骤 TC_CANTest SOA SubPeriod InteriorLightService_ErrGrp 1
+  g_EM_SOAClient_Swc_SOA_REQ("RRDomeLightCtrlStruct.RRDomeLightCmd:1&userid:1&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ RRDomeLightCtrlStruct.RRDomeLightCmd:1&userid:1&ServiceExecuteFeedbackFlag:2 //0x0:no command 0x1:ON 0x2:OFF
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Adressat 0x08"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Adressat 0x08
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100
+  g_HIL_Gen_Swc_Wait("300 ms"); // 测试步骤 Step Wait 300 ms
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Adressat 0x08"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Adressat 0x08
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 100
+  gTC_CANTest_SOA_StopSomeipPeriod(); // 测试步骤 TC_CANTest SOA StopSomeipPeriod
+}
+
+testcase SYS_LDCU_DomeLight_070()
+{
+  TestDescription("响应SOA请求右后顶灯开关控制（SOA）-熄灭");
+  g_EM_SOAClient_Swc_SOA_SubPeriod("InteriorLightState 1"); // 测试步骤 TC_CANTest SOA SubPeriod InteriorLightState 1
+  g_EM_SOAClient_Swc_SOA_SubPeriod("InteriorLightService_ErrGrp 1"); // 测试步骤 TC_CANTest SOA SubPeriod InteriorLightService_ErrGrp 1
+  g_EM_SOAClient_Swc_SOA_REQ("RRDomeLightCtrlStruct.RRDomeLightCmd:2&userid:1&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ RRDomeLightCtrlStruct.RRDomeLightCmd:2&userid:1&ServiceExecuteFeedbackFlag:2 //0x0:no command 0x1:ON 0x2:OFF
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Adressat 0x08"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Adressat 0x08
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 0"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 0
+  g_HIL_Gen_Swc_Wait("300 ms"); // 测试步骤 Step Wait 300 ms
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Adressat 0x08"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Adressat 0x08
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 0"); // 预期结果 Step Check L5_LINDae_01::L5_IL_Dachkonsole_Zielhelligkeit 0
+  gTC_CANTest_SOA_StopSomeipPeriod(); // 测试步骤 TC_CANTest SOA StopSomeipPeriod
+}
+
+testcase SYS_LDCU_TrunkLight_001()
+{
+  TestDescription("行李箱灯控制（SOA）-点亮");
+  g_EM_SOAClient_Swc_SOA_SubPeriod("InteriorLightState 1"); // 测试步骤 TC_CANTest SOA SubPeriod InteriorLightState 1
+  g_EM_SOAClient_Swc_SOA_SubPeriod("InteriorLightService_ErrGrp 1"); // 测试步骤 TC_CANTest SOA SubPeriod InteriorLightService_ErrGrp 1
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("TrunkLightCtrlRespStruct.TrunkLightCtrlNRC 0&RespCode 0"); // 预期结果 TC_CANTest SOA check TrunkLightCtrlRespStruct.TrunkLightCtrlNRC 0&RespCode 0
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("InteriorLightService_ErrStruct.OpeNRC 0"); // 预期结果 TC_CANTest SOA check InteriorLightService_ErrStruct.OpeNRC 0
+  g_EM_SOAClient_Swc_SOA_REQ("TrunkLightCtrlStruct.TrunkLightCmd:1&userid:1&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ TrunkLightCtrlStruct.TrunkLightCmd:1&userid:1&ServiceExecuteFeedbackFlag:2 //0x0:no command 0x1:ON 0x2:OFF
+  g_EM_SOAClient_Swc_SOA_CHECK("TrunkLightCtrlRespStruct.TrunkLightCtrlNRC 0&RespCode 0"); // 预期结果 TC_CANTest SOA check TrunkLightCtrlRespStruct.TrunkLightCtrlNRC 0&RespCode 0
+  g_EM_SOAClient_Swc_SOA_CHECK("InteriorLightService_ErrStruct.OpeNRC 0"); // 预期结果 TC_CANTest SOA check InteriorLightService_ErrStruct.OpeNRC 0
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch11::Cur 0"); // 预期结果 Step Check J_PO_LS_TrunkLight active //占空比0%
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_TrunkLightOutput 1"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_TrunkLightOutput 1// 1 active
+  gTC_CANTest_SOA_StopSomeipPeriod(); // 测试步骤 TC_CANTest SOA StopSomeipPeriod
+}
+
+testcase SYS_LDCU_TrunkLight_002()
+{
+  TestDescription("行李箱灯控制（SOA）-熄灭");
+  g_EM_SOAClient_Swc_SOA_SubPeriod("InteriorLightState 1"); // 测试步骤 TC_CANTest SOA SubPeriod InteriorLightState 1
+  g_EM_SOAClient_Swc_SOA_SubPeriod("InteriorLightService_ErrGrp 1"); // 测试步骤 TC_CANTest SOA SubPeriod InteriorLightService_ErrGrp 1
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("TrunkLightCtrlRespStruct.TrunkLightCtrlNRC 0&RespCode 0"); // 预期结果 TC_CANTest SOA check TrunkLightCtrlRespStruct.TrunkLightCtrlNRC 0&RespCode 0
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("InteriorLightService_ErrStruct.OpeNRC 0"); // 预期结果 TC_CANTest SOA check InteriorLightService_ErrStruct.OpeNRC 0
+  g_EM_SOAClient_Swc_SOA_REQ("TrunkLightCtrlStruct.TrunkLightCmd:2&userid:1&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ TrunkLightCtrlStruct.TrunkLightCmd:2&userid:1&ServiceExecuteFeedbackFlag:2 //0x0:no command 0x1:ON 0x2:OFF
+  g_EM_SOAClient_Swc_SOA_CHECK("TrunkLightCtrlRespStruct.TrunkLightCtrlNRC 0&RespCode 0"); // 预期结果 TC_CANTest SOA check TrunkLightCtrlRespStruct.TrunkLightCtrlNRC 0&RespCode 0
+  g_EM_SOAClient_Swc_SOA_CHECK("InteriorLightService_ErrStruct.OpeNRC 0"); // 预期结果 TC_CANTest SOA check InteriorLightService_ErrStruct.OpeNRC 0
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch11::Cur 1"); // 预期结果 Step Check J_PO_LS_TrunkLight Inactive //占空比100%
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_TrunkLightOutput 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_TrunkLightOutput 0// 0  inactive
+  gTC_CANTest_SOA_StopSomeipPeriod(); // 测试步骤 TC_CANTest SOA StopSomeipPeriod
+}
+
+testcase SYS_LDCU_TrunkLight_003()
+{
+  TestDescription("行李箱灯控制（开门）-熄灭");
+  g_HIL_Clib_Swc_Clib_TrnkOpened(); // 测试步骤 Step Clib TrnkOpened
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch11::Cur 0"); // 预期结果 Step Check J_PO_LS_TrunkLight active //占空比0%
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_TrunkLightOutput 1"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_TrunkLightOutput 1// 1 active
+  g_HIL_Clib_Swc_Clib_TrnkFullClosed(); // 测试步骤 Step Clib TrnkFullClosed
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch11::Cur 1"); // 预期结果 Step Check J_PO_LS_TrunkLight Inactive //占空比100%
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_TrunkLightOutput 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_TrunkLightOutput 0// 0  inactive
+}
+
+testcase SYS_LDCU_TrunkLight_004()
+{
+  TestDescription("行李箱灯控制（开门）-节能");
+  g_HIL_Clib_Swc_Clib_TrnkOpened(); // 测试步骤 Step Clib TrnkOpened
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch11::Cur 0 1 s"); // 预期结果 Step Check J_PO_LS_TrunkLight active 1 s //占空比0%
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_TrunkLightOutput 1 1 s"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_TrunkLightOutput 1 1 s// 1 active
+  g_HIL_Gen_Swc_Wait("295 s"); // 测试步骤 Step Wait 295 s
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch11::Cur 0 1 s"); // 预期结果 Step Check J_PO_LS_TrunkLight active 1 s //占空比0%
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_TrunkLightOutput 1 1 s"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_TrunkLightOutput 1 1 s// 1 active
+  g_HIL_Gen_Swc_Wait("300 s"); // 测试步骤 Step Wait 300 s
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch11::Cur 0 1 s"); // 预期结果 Step Check J_PO_LS_TrunkLight active 1 s //占空比0%
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_TrunkLightOutput 1 1 s"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_TrunkLightOutput 1 1 s// 1 active
+  g_HIL_Gen_Swc_Wait("6 s"); // 测试步骤 Step Wait 6 s
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch11::Cur 1 1 s"); // 预期结果 Step Check J_PO_LS_TrunkLight Inactive 1 s //占空比100%
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_TrunkLightOutput 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_TrunkLightOutput 0// 0  inactive
+  g_HIL_Clib_Swc_Clib_TrnkFullClosed(); // 测试步骤 Step Clib TrnkFullClosed
+}
+
+testcase SYS_LDCU_TrunkLight_005()
+{
+  TestDescription("行李箱灯控制（SOA）-点亮后节能");
+  g_EM_SOAClient_Swc_SOA_SubPeriod("InteriorLightState 1"); // 测试步骤 TC_CANTest SOA SubPeriod InteriorLightState 1
+  g_EM_SOAClient_Swc_SOA_SubPeriod("InteriorLightService_ErrGrp 1"); // 测试步骤 TC_CANTest SOA SubPeriod InteriorLightService_ErrGrp 1
+  g_EM_SOAClient_Swc_SOA_REQ("TrunkLightCtrlStruct.TrunkLightCmd:1&userid:1&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ TrunkLightCtrlStruct.TrunkLightCmd:1&userid:1&ServiceExecuteFeedbackFlag:2 //0x0:no command 0x1:ON 0x2:OFF
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("TrunkLightCtrlRespStruct.TrunkLightCtrlNRC 0&RespCode 0"); // 预期结果 TC_CANTest SOA check TrunkLightCtrlRespStruct.TrunkLightCtrlNRC 0&RespCode 0
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("InteriorLightService_ErrStruct.OpeNRC 0"); // 预期结果 TC_CANTest SOA check InteriorLightService_ErrStruct.OpeNRC 0
+  g_EM_SOAClient_Swc_SOA_CHECK("TrunkLightCtrlRespStruct.TrunkLightCtrlNRC 0&RespCode 0"); // 预期结果 TC_CANTest SOA check TrunkLightCtrlRespStruct.TrunkLightCtrlNRC 0&RespCode 0
+  g_EM_SOAClient_Swc_SOA_CHECK("InteriorLightService_ErrStruct.OpeNRC 0"); // 预期结果 TC_CANTest SOA check InteriorLightService_ErrStruct.OpeNRC 0
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch11::Cur 0"); // 预期结果 Step Check J_PO_LS_TrunkLight active //占空比0%
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_TrunkLightOutput 1"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_TrunkLightOutput 1// 1 active
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 1"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 1//1 open
+  g_HIL_Gen_Swc_Wait("595 s"); // 测试步骤 Step Wait 595 s
+  g_HIL_Gen_Swc_Wait("6 s"); // 测试步骤 Step Wait 6 s
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch11::Cur 1 1 s"); // 预期结果 Step Check J_PO_LS_TrunkLight Inactive 1 s //占空比100%
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_TrunkLightOutput 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_TrunkLightOutput 0// 0  inactive
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0//1 open
+}
+
+testcase SYS_LDCU_FLFootLight_001()
+{
+  TestDescription("响应SOA请求左前足灯点亮或熄灭（SOA）-点亮");
+  g_EM_SOAClient_Swc_SOA_SubPeriod("InteriorLightState 1"); // 测试步骤 TC_CANTest SOA SubPeriod InteriorLightState 1
+  g_EM_SOAClient_Swc_SOA_SubPeriod("InteriorLightService_ErrGrp 1"); // 测试步骤 TC_CANTest SOA SubPeriod InteriorLightService_ErrGrp 1
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("FLFootLightCtrlRespStruct.FLFootLightCtrlNRC 0&RespCode 0"); // 预期结果 TC_CANTest SOA check FLFootLightCtrlRespStruct.FLFootLightCtrlNRC 0&RespCode 0
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("InteriorLightService_ErrStruct.OpeNRC 0"); // 预期结果 TC_CANTest SOA check InteriorLightService_ErrStruct.OpeNRC 0
+  g_EM_SOAClient_Swc_SOA_REQ("FLFootLightCtrlStruct.FLFootLightCmd:1&userid:1&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ FLFootLightCtrlStruct.FLFootLightCmd:1&userid:1&ServiceExecuteFeedbackFlag:2 //0x0:no command 0x1:ON 0x2:OFF
+  g_EM_SOAClient_Swc_SOA_CHECK("FLFootLightCtrlRespStruct.FLFootLightCtrlNRC 0&RespCode 0"); // 预期结果 TC_CANTest SOA check FLFootLightCtrlRespStruct.FLFootLightCtrlNRC 0&RespCode 0
+  g_EM_SOAClient_Swc_SOA_CHECK("InteriorLightService_ErrStruct.OpeNRC 0"); // 预期结果 TC_CANTest SOA check InteriorLightService_ErrStruct.OpeNRC 0
+  g_HIL_Bus_Swc_Check("I_LDCU_CycleEventCtrl::I_LDCU_LFootLightCtr 6 1 s"); // 预期结果 Step Check I_LDCU_CycleEventCtrl::I_LDCU_LFootLightCtr 6 1 s//lev 6
+  g_HIL_Gen_Swc_Wait("5000 ms"); // 测试步骤 Step Wait 5000 ms
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("FLFootLightCtrlRespStruct.FLFootLightCtrlNRC 0&RespCode 0"); // 预期结果 TC_CANTest SOA check FLFootLightCtrlRespStruct.FLFootLightCtrlNRC 0&RespCode 0
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("InteriorLightService_ErrStruct.OpeNRC 0"); // 预期结果 TC_CANTest SOA check InteriorLightService_ErrStruct.OpeNRC 0
+  g_EM_SOAClient_Swc_SOA_REQ("FLFootLightCtrlStruct.FLFootLightCmd:2&userid:1&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ FLFootLightCtrlStruct.FLFootLightCmd:2&userid:1&ServiceExecuteFeedbackFlag:2 //0x0:no command 0x1:ON 0x2:OFF
+  g_EM_SOAClient_Swc_SOA_CHECK("FLFootLightCtrlRespStruct.FLFootLightCtrlNRC 0&RespCode 0"); // 预期结果 TC_CANTest SOA check FLFootLightCtrlRespStruct.FLFootLightCtrlNRC 0&RespCode 0
+  g_EM_SOAClient_Swc_SOA_CHECK("InteriorLightService_ErrStruct.OpeNRC 0"); // 预期结果 TC_CANTest SOA check InteriorLightService_ErrStruct.OpeNRC 0
+  gTC_CANTest_SOA_StopSomeipPeriod(); // 测试步骤 TC_CANTest SOA StopSomeipPeriod
+  g_HIL_Bus_Swc_Check("I_LDCU_CycleEventCtrl::I_LDCU_LFootLightCtr 7"); // 预期结果 Step Check I_LDCU_CycleEventCtrl::I_LDCU_LFootLightCtr 7 //  0 nocommad  7off
+}
+
+testcase SYS_LDCU_FLFootLight_002()
+{
+  TestDescription("响应SOA请求右前足灯点亮或熄灭（SOA）-点亮");
+  g_HIL_Clib_Swc_Clib_OFF(); // 测试步骤 Step Clib OFF
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_EnvrMode 0"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_EnvrMode 0// Day
+  g_HIL_Clib_Swc_Clib_BrkLocalON(); // 测试步骤 Step Clib BrkLocalON
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_ParkinglightOutputSt 1"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_ParkinglightOutputSt 1// 1 ACTIVE
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 1"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 1//1 open
+  g_HIL_Gen_Swc_Wait("1000 ms"); // 测试步骤 Step Wait 1000 ms
+  g_HIL_Bus_Swc_Check("VTS::VT2516_4_Ch12::PWMDC 0 1 s"); // 预期结果 Step Check J_PO_LS_DoorStorageLight_Duty Level6 1 s//占空比0%
+  g_HIL_Clib_Swc_Clib_OFF(); // 测试步骤 Step Clib OFF
+  g_HIL_Gen_Swc_Wait("1000 ms"); // 测试步骤 Step Wait 1000 ms
+  g_HIL_Bus_Swc_Check("VTS::VT2516_4_Ch12::PWMDC > 0.95 1 s"); // 预期结果 Step Check J_PO_LS_DoorStorageLight_Duty OFF 1 s//占空比100%
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0//1 open
+}
+
+testcase SYS_LDCU_DoorStorageLight_001()
+{
+  TestDescription("四门储物灯-点亮_位置灯点亮且电源处于本地上电_下电后熄灭");
+  g_HIL_Clib_Swc_Clib_OFF(); // 测试步骤 Step Clib OFF
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_EnvrMode 0"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_EnvrMode 0// Day
+  g_HIL_Clib_Swc_Clib_BrkLocalON(); // 测试步骤 Step Clib BrkLocalON
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_ParkinglightOutputSt 1"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_ParkinglightOutputSt 1// 1 ACTIVE
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 1"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 1//1 open
+  g_HIL_Gen_Swc_Wait("1000 ms"); // 测试步骤 Step Wait 1000 ms
+  g_HIL_Bus_Swc_Check("VTS::VT2516_4_Ch12::PWMDC 0 1 s"); // 预期结果 Step Check J_PO_LS_DoorStorageLight_Duty Level6 1 s//占空比0%
+  g_HIL_Clib_Swc_Clib_OFF(); // 测试步骤 Step Clib OFF
+  g_HIL_Gen_Swc_Wait("1000 ms"); // 测试步骤 Step Wait 1000 ms
+  g_HIL_Bus_Swc_Check("VTS::VT2516_4_Ch12::PWMDC > 0.95 1 s"); // 预期结果 Step Check J_PO_LS_DoorStorageLight_Duty OFF 1 s//占空比100%
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0//1 open
+}
+
+testcase SYS_LDCU_DoorStorageLight_002()
+{
+  TestDescription("四门储物灯-点亮_黑夜且电源处于本地上电_下电后熄灭");
+  g_HIL_Clib_Swc_Clib_OFF(); // 测试步骤 Step Clib OFF
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_EnvrMode 0"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_EnvrMode 0// Day
+  g_HIL_Clib_Swc_Clib_BrkLocalON(); // 测试步骤 Step Clib BrkLocalON
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_ParkinglightOutputSt 1"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_ParkinglightOutputSt 1// 1 ACTIVE
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 1"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 1//1 open
+  g_HIL_Gen_Swc_Wait("1000 ms"); // 测试步骤 Step Wait 1000 ms
+  g_HIL_Bus_Swc_Check("VTS::VT2516_4_Ch12::PWMDC 0 1 s"); // 预期结果 Step Check J_PO_LS_DoorStorageLight_Duty Level6 1 s//占空比0%
+  g_HIL_Clib_Swc_Clib_OFF(); // 测试步骤 Step Clib OFF
+  g_HIL_Gen_Swc_Wait("1000 ms"); // 测试步骤 Step Wait 1000 ms
+  g_HIL_Bus_Swc_Check("VTS::VT2516_4_Ch12::PWMDC > 0.95 1 s"); // 预期结果 Step Check J_PO_LS_DoorStorageLight_Duty OFF 1 s//占空比100%
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0//1 open
+}
+
+testcase SYS_LDCU_DoorStorageLight_003()
+{
+  TestDescription("四门储物灯-点亮_位置灯点亮且电源处于本地上电_下电后熄灭_主驾门开");
+  g_HIL_Clib_Swc_Clib_OFF(); // 测试步骤 Step Clib OFF
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_EnvrMode 0"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_EnvrMode 0// Day
+  g_HIL_Clib_Swc_Clib_BrkLocalON(); // 测试步骤 Step Clib BrkLocalON
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_ParkinglightOutputSt 1"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_ParkinglightOutputSt 1// 1 ACTIVE
+  g_HIL_Bus_Swc_Set("VTS::VT2848_3_Ch34::DigitalOutput 1"); // 测试步骤 Step Set J_DI_FLDoorAjarSW_LS Open
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_DriverDoorAjarSt 1 1 s"); // 预期结果 Step Check  I_LDCU_BodySysSt1::I_LDCU_DriverDoorAjarSt 1 1 s//1 open
+  g_HIL_Gen_Swc_Wait("1000 ms"); // 测试步骤 Step Wait 1000 ms
+  g_HIL_Bus_Swc_Check("VTS::VT2516_4_Ch12::PWMDC 0 1 s"); // 预期结果 Step Check J_PO_LS_DoorStorageLight_Duty Level6 1 s//占空比0%
+  g_HIL_Clib_Swc_Clib_OFF(); // 测试步骤 Step Clib OFF
+  g_HIL_Gen_Swc_Wait("1000 ms"); // 测试步骤 Step Wait 1000 ms
+  g_HIL_Bus_Swc_Check("VTS::VT2516_4_Ch12::PWMDC > 0.95 1 s"); // 预期结果 Step Check J_PO_LS_DoorStorageLight_Duty OFF 1 s//占空比100%
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_ParkinglightOutputSt 0"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_ParkinglightOutputSt 0// 1 ACTIVE
+  g_HIL_Bus_Swc_Set("VTS::VT2848_3_Ch34::DigitalOutput 0"); // 测试步骤 Step Set J_DI_FLDoorAjarSW_LS Close
+}
+
+testcase SYS_LDCU_DoorStorageLight_004()
+{
+  TestDescription("四门储物灯-点亮_黑夜且电源处于本地上电_下电后熄灭_左后门开");
+  g_HIL_Clib_Swc_Clib_BrkLocalON(); // 测试步骤 Step Clib BrkLocalON
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_EnvrMode 2"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_EnvrMode 2// NIGHT
+  g_HIL_Gen_Swc_Wait("1000 ms"); // 测试步骤 Step Wait 1000 ms
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch31::DigitalOutput 1"); // 测试步骤 Step Set J_DI_RLDoorAjarSW_LS Open
+  g_HIL_Gen_Swc_Wait("1000 ms"); // 测试步骤 Step Wait 1000 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_RLDoorAjarSt 1"); // 预期结果 Step Check  I_LDCU_BodySysSt1::I_LDCU_RLDoorAjarSt 1 //1 open
+  g_HIL_Bus_Swc_Check("VTS::VT2516_4_Ch12::PWMDC 0 1 s"); // 预期结果 Step Check J_PO_LS_DoorStorageLight_Duty Level6 1 s//占空比0%
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch31::DigitalOutput 0"); // 测试步骤 Step Set J_DI_RLDoorAjarSW_LS Close
+  g_HIL_Clib_Swc_Clib_OFF(); // 测试步骤 Step Clib OFF
+  g_HIL_Gen_Swc_Wait("1000 ms"); // 测试步骤 Step Wait 1000 ms
+  g_HIL_Bus_Swc_Check("VTS::VT2516_4_Ch12::PWMDC > 0.95 1 s"); // 预期结果 Step Check J_PO_LS_DoorStorageLight_Duty OFF 1 s//占空比100%
+}
+
+testcase SYS_LDCU_DoorStorageLight_005()
+{
+  TestDescription("四门储物灯-熄灭_位置灯熄灭且电源处于本地上电_白天_1");
+  g_HIL_Clib_Swc_Clib_OFF(); // 测试步骤 Step Clib OFF
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_EnvrMode 0"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_EnvrMode 0// Day
+  g_HIL_Clib_Swc_Clib_BrkLocalON(); // 测试步骤 Step Clib BrkLocalON
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_ParkinglightOutputSt 1"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_ParkinglightOutputSt 1// 1 ACTIVE
+  g_HIL_Bus_Swc_Set("VTS::VT2848_3_Ch34::DigitalOutput 1"); // 测试步骤 Step Set J_DI_FLDoorAjarSW_LS Open
+  g_HIL_Gen_Swc_Wait("1000 ms"); // 测试步骤 Step Wait 1000 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_DriverDoorAjarSt 1"); // 预期结果 Step Check  I_LDCU_BodySysSt1::I_LDCU_DriverDoorAjarSt 1 //1 open
+  g_HIL_Bus_Swc_Check("VTS::VT2516_4_Ch12::PWMDC 0 1 s"); // 预期结果 Step Check J_PO_LS_DoorStorageLight_Duty Level6 1 s//占空比0%
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_ParkinglightOutputSt 0"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_ParkinglightOutputSt 0// 0 INACTIVE
+  g_HIL_Gen_Swc_Wait("1000 ms"); // 测试步骤 Step Wait 1000 ms
+  g_HIL_Bus_Swc_Check("VTS::VT2516_4_Ch12::PWMDC > 0.95 1 s"); // 预期结果 Step Check J_PO_LS_DoorStorageLight_Duty OFF 1 s//占空比0%
+  g_HIL_Bus_Swc_Set("VTS::VT2848_3_Ch34::DigitalOutput 0"); // 测试步骤 Step Set J_DI_FLDoorAjarSW_LS Close
+}
+
+testcase SYS_LDCU_DoorStorageLight_006()
+{
+  TestDescription("四门储物灯-熄灭_位置灯熄灭且电源处于本地上电_白天_2");
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_EnvrMode 0"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_EnvrMode 0// Day
+  g_HIL_Clib_Swc_Clib_BrkLocalON(); // 测试步骤 Step Clib BrkLocalON
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_ParkinglightOutputSt 1"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_ParkinglightOutputSt 1// 1 ACTIVE
+  g_HIL_Bus_Swc_Set("VTS::VT2848_3_Ch34::DigitalOutput 1"); // 测试步骤 Step Set J_DI_FLDoorAjarSW_LS Open
+  g_HIL_Gen_Swc_Wait("1000 ms"); // 测试步骤 Step Wait 1000 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_DriverDoorAjarSt 1"); // 预期结果 Step Check  I_LDCU_BodySysSt1::I_LDCU_DriverDoorAjarSt 1 //1 open
+  g_HIL_Bus_Swc_Check("VTS::VT2516_4_Ch12::PWMDC 0 1 s"); // 预期结果 Step Check J_PO_LS_DoorStorageLight_Duty Level6 1 s//占空比0%
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_ParkinglightOutputSt 0"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_ParkinglightOutputSt 0// 0 INACTIVE
+  g_HIL_Gen_Swc_Wait("1000 ms"); // 测试步骤 Step Wait 1000 ms
+  g_HIL_Bus_Swc_Check("VTS::VT2516_4_Ch12::PWMDC > 0.95 1 s"); // 预期结果 Step Check J_PO_LS_DoorStorageLight_Duty OFF 1 s//占空比0%
+  g_HIL_Bus_Swc_Set("VTS::VT2848_3_Ch34::DigitalOutput 0"); // 测试步骤 Step Set J_DI_FLDoorAjarSW_LS Close
+}
+
+testcase SYS_LDCU_DoorStorageLight_007()
+{
+  TestDescription("四门储物灯-点亮_黑夜且电源处于本地上电_远程上电后熄灭");
+  g_HIL_Clib_Swc_Clib_BrkLocalON(); // 测试步骤 Step Clib BrkLocalON
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_EnvrMode 2"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_EnvrMode 2// NIGHT
+  g_HIL_Gen_Swc_Wait("1000 ms"); // 测试步骤 Step Wait 1000 ms
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 1"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 1//1 open
+  g_HIL_Gen_Swc_Wait("1000 ms"); // 测试步骤 Step Wait 1000 ms
+  g_HIL_Bus_Swc_Check("VTS::VT2516_4_Ch12::PWMDC 0 1 s"); // 预期结果 Step Check J_PO_LS_DoorStorageLight_Duty Level6 1 s//占空比0%
+  g_HIL_Clib_Swc_Clib_RemoteON(); // 测试步骤 Step Clib RemoteON
+  g_HIL_Gen_Swc_Wait("1000 ms"); // 测试步骤 Step Wait 1000 ms
+  g_HIL_Bus_Swc_Check("VTS::VT2516_4_Ch12::PWMDC > 0.95 1 s"); // 预期结果 Step Check J_PO_LS_DoorStorageLight_Duty OFF 1 s //占空比100%
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0//0 close
+  g_HIL_Clib_Swc_Clib_OFF(); // 测试步骤 Step Clib OFF
+}
+
+testcase SYS_LDCU_DoorStorageLight_008()
+{
+  TestDescription("四门储物灯-点亮_黑夜且电源处于本地上电_开启节能后熄灭");
+  g_HIL_Clib_Swc_Clib_BrkLocalON(); // 测试步骤 Step Clib BrkLocalON
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_EnvrMode 2"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_EnvrMode 2// NIGHT
+  g_HIL_Gen_Swc_Wait("1000 ms"); // 测试步骤 Step Wait 1000 ms
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 1"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 1//1 open
+  g_HIL_Gen_Swc_Wait("1000 ms"); // 测试步骤 Step Wait 1000 ms
+  g_HIL_Bus_Swc_Check("VTS::VT2516_4_Ch12::PWMDC 0 1 s"); // 预期结果 Step Check J_PO_LS_DoorStorageLight_Duty Level6 1 s //占空比0%
+  g_HIL_Gen_Swc_Wait("595 s"); // 测试步骤 Step Wait 595 s
+  g_HIL_Bus_Swc_Check("VTS::VT2516_4_Ch12::PWMDC 0 1 s"); // 预期结果 Step Check J_PO_LS_DoorStorageLight_Duty Level6 1 s //占空比0%
+  g_HIL_Gen_Swc_Wait("6 s"); // 测试步骤 Step Wait 6 s
+  g_HIL_Bus_Swc_Check("VTS::VT2516_4_Ch12::PWMDC > 0.95 1 s"); // 预期结果 Step Check J_PO_LS_DoorStorageLight_Duty OFF 1 s //占空比100%
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0//0 close
+}
+
+testcase SYS_LDCU_DoorStorageLight_009()
+{
+  TestDescription("四门储物灯-点亮_黑夜且电源处于本地上电_开启节能后再开门计时重置");
+  g_HIL_Clib_Swc_Clib_BrkLocalON(); // 测试步骤 Step Clib BrkLocalON
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_EnvrMode 2"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_EnvrMode 2// NIGHT
+  g_HIL_Gen_Swc_Wait("1000 ms"); // 测试步骤 Step Wait 1000 ms
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 1"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 1//1 open
+  g_HIL_Gen_Swc_Wait("180 s"); // 测试步骤 Step Wait 180 s
+  g_HIL_Bus_Swc_Check("VTS::VT2516_4_Ch12::PWMDC 0 1 s"); // 预期结果 Step Check J_PO_LS_DoorStorageLight_Duty Level6 1 s //占空比0%
+  g_HIL_Bus_Swc_Set("VTS::VT2848_3_Ch34::DigitalOutput 1"); // 测试步骤 Step Set J_DI_FLDoorAjarSW_LS Open
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_DriverDoorAjarSt 1 1 s"); // 预期结果 Step Check  I_LDCU_BodySysSt1::I_LDCU_DriverDoorAjarSt 1 1 s//1 open
+  g_HIL_Gen_Swc_Wait("480 s"); // 测试步骤 Step Wait 480 s
+  g_HIL_Bus_Swc_Check("VTS::VT2516_4_Ch12::PWMDC 0 1 s"); // 预期结果 Step Check J_PO_LS_DoorStorageLight_Duty Level6 1 s //占空比0%
+  g_HIL_Gen_Swc_Wait("121 s"); // 测试步骤 Step Wait 121 s
+  g_HIL_Bus_Swc_Check("VTS::VT2516_4_Ch12::PWMDC > 0.95 1 s"); // 预期结果 Step Check J_PO_LS_DoorStorageLight_Duty OFF 1 s //占空比100%
+  g_HIL_Bus_Swc_Set("VTS::VT2848_3_Ch34::DigitalOutput 0"); // 测试步骤 Step Set J_DI_FLDoorAjarSW_LS Close
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0//1 open
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_EnvrMode 0"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_EnvrMode 0// Day
+  g_HIL_Clib_Swc_Clib_OFF(); // 测试步骤 Step Clib OFF
+}
+
+testcase SYS_LDCU_DoorStorageLight_010()
+{
+  TestDescription("四门储物灯-点亮_黑夜且电源处于本地上电_外部闭锁后熄灭");
+  g_HIL_Clib_Swc_Clib_BrkLocalON(); // 测试步骤 Step Clib BrkLocalON
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_LockLogicSt 0"); // 预期结果 Step Check  I_LDCU_BodySysSt1::I_LDCU_LockLogicSt 0 //0 unlock
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_EnvrMode 2"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_EnvrMode 2// NIGHT
+  g_HIL_Gen_Swc_Wait("300 ms"); // 测试步骤 Step Wait 300 ms
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 1"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 1//1 open
+  g_HIL_Gen_Swc_Wait("1000 ms"); // 测试步骤 Step Wait 1000 ms
+  g_HIL_Bus_Swc_Check("VTS::VT2516_4_Ch12::PWMDC 0 1 s"); // 预期结果 Step Check J_PO_LS_DoorStorageLight_Duty Level6 1 s //占空比0%
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0//0 close
+  g_HIL_Bus_Swc_Set("I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 0"); // 测试步骤 Step Set I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 0
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_LockLogicSt 0"); // 预期结果 Step Check  I_LDCU_BodySysSt1::I_LDCU_LockLogicSt 0 //0 unlock
+  g_HIL_Gen_Swc_Wait("300 ms"); // 测试步骤 Step Wait 300 ms
+  g_HIL_Bus_Swc_Set("I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 3"); // 测试步骤 Step Set I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 3//0x3:BLE Door lock
+  g_HIL_Gen_Swc_Wait("1000 ms"); // 测试步骤 Step Wait 1000 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_LockLogicSt 1"); // 预期结果 Step Check  I_LDCU_BodySysSt1::I_LDCU_LockLogicSt 1 //1 lock
+  g_HIL_Bus_Swc_Set("I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 0"); // 测试步骤 Step Set I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 0
+  g_HIL_Bus_Swc_Check("VTS::VT2516_4_Ch12::PWMDC > 0.95 1 s"); // 预期结果 Step Check J_PO_LS_DoorStorageLight_Duty OFF 1 s //占空比100%
+}
+
+testcase SYS_LDCU_DoorStorageLight_011()
+{
+  TestDescription("四门储物灯-点亮_亮度调节_档位");
+  g_HIL_Clib_Swc_Clib_BrkLocalON(); // 测试步骤 Step Clib BrkLocalON
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_EnvrMode 2"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_EnvrMode 2// NIGHT
+  g_HIL_Gen_Swc_Wait("1500 ms"); // 测试步骤 Step Wait 1500 ms
+  g_HIL_Bus_Swc_Check("VTS::VT2516_4_Ch12::PWMDC 0 1 s"); // 预期结果 Step Check J_PO_LS_DoorStorageLight_Duty Level6 1 s//占空比0%
+  g_HIL_Clib_Swc_Clib_INTLGT_Gear_P(); // 测试步骤 Step Clib INTLGT_Gear_P//  P GearLev
+  g_HIL_Gen_Swc_Wait("10000 ms"); // 测试步骤 Step Wait 10000 ms
+  g_HIL_Bus_Swc_Check("VTS::VT2516_4_Ch12::PWMDC 0 1 s"); // 预期结果 Step Check J_PO_LS_DoorStorageLight_Duty Level6 1 s//占空比0%
+  g_HIL_Clib_Swc_Clib_INTLGT_Gear_D(); // 测试步骤 Step Clib INTLGT_Gear_D//  D GearLev
+  g_HIL_Gen_Swc_Wait("10000 ms"); // 测试步骤 Step Wait 10000 ms
+  g_HIL_Bus_Swc_Check("VTS::VT2516_4_Ch12::PWMDC > 0.68 and < 0.7 1 s"); // 预期结果 Step Check J_PO_LS_DoorStorageLight_Duty Level2 1 s //占空比69% Lev2
+  g_HIL_Clib_Swc_Clib_INTLGT_Gear_R(); // 测试步骤 Step Clib INTLGT_Gear_R//  R GearLev
+  g_HIL_Gen_Swc_Wait("10000 ms"); // 测试步骤 Step Wait 10000 ms
+  g_HIL_Bus_Swc_Check("VTS::VT2516_4_Ch12::PWMDC 0 1 s"); // 预期结果 Step Check J_PO_LS_DoorStorageLight_Duty Level6 1 s//占空比0%
+  g_HIL_Clib_Swc_Clib_INTLGT_Gear_D(); // 测试步骤 Step Clib INTLGT_Gear_D//  D GearLev
+  g_HIL_Gen_Swc_Wait("10000 ms"); // 测试步骤 Step Wait 10000 ms
+  g_HIL_Bus_Swc_Check("VTS::VT2516_4_Ch12::PWMDC > 0.68 and < 0.7 1 s"); // 预期结果 Step Check J_PO_LS_DoorStorageLight_Duty Level2 1 s //占空比69% Lev2
+  g_HIL_Clib_Swc_Clib_INTLGT_Gear_P(); // 测试步骤 Step Clib INTLGT_Gear_P//  P GearLev
+  g_HIL_Gen_Swc_Wait("10000 ms"); // 测试步骤 Step Wait 10000 ms
+  g_HIL_Bus_Swc_Check("VTS::VT2516_4_Ch12::PWMDC 0 1 s"); // 预期结果 Step Check J_PO_LS_DoorStorageLight_Duty Level6 1 s//占空比0%
+  g_HIL_Bus_Swc_Set("I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 3"); // 测试步骤 Step Set I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 3//0x3:BLE Door lock
+  g_HIL_Clib_Swc_Clib_OFF(); // 测试步骤 Step Clib OFF
+  g_HIL_Bus_Swc_Set("I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 0"); // 测试步骤 Step Set I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 0
+}
+
+testcase SYS_LDCU_FootLight_001()
+{
+  TestDescription("前足灯管理_点亮熄灭 上电&黑夜  开任意车门");
+  g_HIL_Clib_Swc_Clib_BrkLocalON(); // 测试步骤 Step Clib BrkLocalON
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_EnvrMode 2"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_EnvrMode 2// NIGHT
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_ParkinglightOutputSt 0"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_ParkinglightOutputSt 0//0x0 INACTIVE
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0//0 close
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 1"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 1//1 open
+  g_HIL_Gen_Swc_Wait("1000 ms"); // 测试步骤 Step Wait 1000 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_CycleEventCtrl::I_LDCU_LFootLightCtr 6 1 s"); // 预期结果 Step Check I_LDCU_CycleEventCtrl::I_LDCU_LFootLightCtr 6 1 s//lev 6
+  g_HIL_Bus_Swc_Check("I_LDCU_CycleEventCtrl::I_LDCU_RFootLightCtr 6 1 s"); // 预期结果 Step Check I_LDCU_CycleEventCtrl::I_LDCU_RFootLightCtr 6 1 s//lev 6
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch10::PWMDC 0 1 s"); // 预期结果 Step Check J_PO_LS_LFootLight_Duty level6 1 s //占空比0%
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_LFootLightOutput 2"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_LFootLightOutput 2  //2:ON 0:OFF
+  g_HIL_Clib_Swc_Clib_OFF(); // 测试步骤 Step Clib OFF
+  g_HIL_Gen_Swc_Wait("1000 ms"); // 测试步骤 Step Wait 1000 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_CycleEventCtrl::I_LDCU_LFootLightCtr 7"); // 预期结果 Step Check I_LDCU_CycleEventCtrl::I_LDCU_LFootLightCtr 7 //
+  g_HIL_Bus_Swc_Check("I_LDCU_CycleEventCtrl::I_LDCU_RFootLightCtr 7"); // 预期结果 Step Check I_LDCU_CycleEventCtrl::I_LDCU_RFootLightCtr 7//
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch10::PWMDC > 0.95 1 s"); // 预期结果 Step Check J_PO_LS_LFootLight_Duty OFF 1 s //占空比100%
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_LFootLightOutput 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_LFootLightOutput 0 //2:ON 0:OFF
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0//0 close
+}
+
+testcase SYS_LDCU_FootLight_002()
+{
+  TestDescription("前足灯管理_点亮熄灭 上电&位置灯激活 非D&电源模式为ON");
+  g_HIL_Clib_Swc_Clib_BrkLocalON(); // 测试步骤 Step Clib BrkLocalON
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_EnvrMode 0"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_EnvrMode 0// Day
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_ParkinglightOutputSt 1"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_ParkinglightOutputSt 1// 1 ACTIVE
+  g_HIL_Clib_Swc_Clib_INTLGT_Gear_R(); // 测试步骤 Step Clib INTLGT_Gear_R//  R GearLev
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 1"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 1//1 open
+  g_HIL_Gen_Swc_Wait("1000 ms"); // 测试步骤 Step Wait 1000 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_CycleEventCtrl::I_LDCU_LFootLightCtr 6 1 s"); // 预期结果 Step Check I_LDCU_CycleEventCtrl::I_LDCU_LFootLightCtr 6 1 s//lev 6
+  g_HIL_Bus_Swc_Check("I_LDCU_CycleEventCtrl::I_LDCU_RFootLightCtr 6 1 s"); // 预期结果 Step Check I_LDCU_CycleEventCtrl::I_LDCU_RFootLightCtr 6 1 s//lev 6
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch10::PWMDC 0 1 s"); // 预期结果 Step Check J_PO_LS_LFootLight_Duty level6 1 s //占空比0%
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_LFootLightOutput 2"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_LFootLightOutput 2  //2:ON 0:OFF
+  g_HIL_Clib_Swc_Clib_RemoteON(); // 测试步骤 Step Clib RemoteON
+  g_HIL_Gen_Swc_Wait("1000 ms"); // 测试步骤 Step Wait 1000 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_CycleEventCtrl::I_LDCU_LFootLightCtr 7"); // 预期结果 Step Check I_LDCU_CycleEventCtrl::I_LDCU_LFootLightCtr 7 //
+  g_HIL_Bus_Swc_Check("I_LDCU_CycleEventCtrl::I_LDCU_RFootLightCtr 7"); // 预期结果 Step Check I_LDCU_CycleEventCtrl::I_LDCU_RFootLightCtr 7//
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch10::PWMDC > 0.95 1 s"); // 预期结果 Step Check J_PO_LS_LFootLight_Duty OFF 1 s //占空比100%
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_LFootLightOutput 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_LFootLightOutput 0 //2:ON 0:OFF
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_ParkinglightOutputSt 0"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_ParkinglightOutputSt 0// 0 INACTIVE
+  g_HIL_Clib_Swc_Clib_OFF(); // 测试步骤 Step Clib OFF
+}
+
+testcase SYS_LDCU_FootLight_003()
+{
+  TestDescription("前足灯管理_点亮熄灭 上电&夜晚 节能熄灭");
+  g_HIL_Clib_Swc_Clib_BrkLocalON(); // 测试步骤 Step Clib BrkLocalON
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_EnvrMode 2"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_EnvrMode 2// NIGHT
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_ParkinglightOutputSt 0"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_ParkinglightOutputSt 0//0x0 INACTIVE
+  g_HIL_Clib_Swc_Clib_AllDoorClosed(); // 测试步骤 Step Clib AllDoorClosed
+  g_HIL_Clib_Swc_Clib_INTLGT_Gear_P(); // 测试步骤 Step Clib INTLGT_Gear_P //P档
+  g_HIL_Bus_Swc_Set("VTS::VT2848_3_Ch34::DigitalOutput 1"); // 测试步骤 Step Set J_DI_FLDoorAjarSW_LS 0//0x0 open
+  g_HIL_Bus_Swc_Set("VTS::VT2848_3_Ch34::DigitalOutput 0"); // 测试步骤 Step Set J_DI_FLDoorAjarSW_LS 1//0x1 close
+  g_HIL_Gen_Swc_Wait("1000 ms"); // 测试步骤 Step Wait 1000 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_CycleEventCtrl::I_LDCU_LFootLightCtr 6 1 s"); // 预期结果 Step Check I_LDCU_CycleEventCtrl::I_LDCU_LFootLightCtr 6 1 s//lev 6
+  g_HIL_Bus_Swc_Check("I_LDCU_CycleEventCtrl::I_LDCU_RFootLightCtr 6 1 s"); // 预期结果 Step Check I_LDCU_CycleEventCtrl::I_LDCU_RFootLightCtr 6 1 s//lev 6
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch10::PWMDC 0 1 s"); // 预期结果 Step Check J_PO_LS_LFootLight_Duty level6 1 s //占空比0%
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_LFootLightOutput 2"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_LFootLightOutput 2  //2:ON 0:OFF
+  g_HIL_Gen_Swc_Wait("120 s"); // 测试步骤 Step Wait 120 s
+  g_HIL_Bus_Swc_Check("I_LDCU_CycleEventCtrl::I_LDCU_LFootLightCtr 6 1 s"); // 预期结果 Step Check I_LDCU_CycleEventCtrl::I_LDCU_LFootLightCtr 6 1 s//lev 6
+  g_HIL_Bus_Swc_Check("I_LDCU_CycleEventCtrl::I_LDCU_RFootLightCtr 6 1 s"); // 预期结果 Step Check I_LDCU_CycleEventCtrl::I_LDCU_RFootLightCtr 6 1 s//lev 6
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch10::PWMDC 0 1 s"); // 预期结果 Step Check J_PO_LS_LFootLight_Duty level6 1 s //占空比0%
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_LFootLightOutput 2"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_LFootLightOutput 2  //2:ON 0:OFF
+  g_HIL_Bus_Swc_Set("VTS::VT2848_3_Ch34::DigitalOutput 1"); // 测试步骤 Step Set J_DI_FLDoorAjarSW_LS 0//0x0 open
+  g_HIL_Bus_Swc_Set("VTS::VT2848_3_Ch34::DigitalOutput 0"); // 测试步骤 Step Set J_DI_FLDoorAjarSW_LS 1//0x1 close
+  g_HIL_Gen_Swc_Wait("480 s"); // 测试步骤 Step Wait 480 s
+  g_HIL_Bus_Swc_Check("I_LDCU_CycleEventCtrl::I_LDCU_LFootLightCtr 6 1 s"); // 预期结果 Step Check I_LDCU_CycleEventCtrl::I_LDCU_LFootLightCtr 6 1 s//lev 6
+  g_HIL_Bus_Swc_Check("I_LDCU_CycleEventCtrl::I_LDCU_RFootLightCtr 6 1 s"); // 预期结果 Step Check I_LDCU_CycleEventCtrl::I_LDCU_RFootLightCtr 6 1 s//lev 6
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch10::PWMDC 0 1 s"); // 预期结果 Step Check J_PO_LS_LFootLight_Duty level6 1 s //占空比0%
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_LFootLightOutput 2"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_LFootLightOutput 2  //2:ON 0:OFF
+  g_HIL_Gen_Swc_Wait("121 s"); // 测试步骤 Step Wait 121 s
+  g_HIL_Bus_Swc_Check("I_LDCU_CycleEventCtrl::I_LDCU_LFootLightCtr 7"); // 预期结果 Step Check I_LDCU_CycleEventCtrl::I_LDCU_LFootLightCtr 7 //
+  g_HIL_Bus_Swc_Check("I_LDCU_CycleEventCtrl::I_LDCU_RFootLightCtr 7"); // 预期结果 Step Check I_LDCU_CycleEventCtrl::I_LDCU_RFootLightCtr 7//
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch10::PWMDC > 0.95 1 s"); // 预期结果 Step Check J_PO_LS_LFootLight_Duty OFF 1 s //占空比100%
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_LFootLightOutput 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_LFootLightOutput 0 //2:ON 0:OFF
+}
+
+testcase SYS_LDCU_FootLight_004()
+{
+  TestDescription("前足灯管理_点亮熄灭 上电&夜晚 四门关闭&跳变非D档");
+  g_HIL_Clib_Swc_Clib_BrkLocalON(); // 测试步骤 Step Clib BrkLocalON
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_EnvrMode 2"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_EnvrMode 2// NIGHT
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_ParkinglightOutputSt 0"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_ParkinglightOutputSt 0// 0 INACTIVE
+  g_HIL_Clib_Swc_Clib_INTLGT_Gear_D(); // 测试步骤 Step Clib INTLGT_Gear_D//  D GearLev
+  g_HIL_Clib_Swc_Clib_INTLGT_Gear_N(); // 测试步骤 Step Clib INTLGT_Gear_N
+  g_HIL_Gen_Swc_Wait("1000 ms"); // 测试步骤 Step Wait 1000 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_CycleEventCtrl::I_LDCU_LFootLightCtr 6 1 s"); // 预期结果 Step Check I_LDCU_CycleEventCtrl::I_LDCU_LFootLightCtr 6 1 s//lev 6
+  g_HIL_Bus_Swc_Check("I_LDCU_CycleEventCtrl::I_LDCU_RFootLightCtr 6 1 s"); // 预期结果 Step Check I_LDCU_CycleEventCtrl::I_LDCU_RFootLightCtr 6 1 s//lev 6
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch10::PWMDC 0 1 s"); // 预期结果 Step Check J_PO_LS_LFootLight_Duty level6 1 s //占空比0%
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_LFootLightOutput 2"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_LFootLightOutput 2  //2:ON 0:OFF
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_EnvrMode 0"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_EnvrMode 0// Day
+  g_HIL_Gen_Swc_Wait("1000 ms"); // 测试步骤 Step Wait 1000 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_CycleEventCtrl::I_LDCU_LFootLightCtr 7"); // 预期结果 Step Check I_LDCU_CycleEventCtrl::I_LDCU_LFootLightCtr 7 //
+  g_HIL_Bus_Swc_Check("I_LDCU_CycleEventCtrl::I_LDCU_RFootLightCtr 7"); // 预期结果 Step Check I_LDCU_CycleEventCtrl::I_LDCU_RFootLightCtr 7//
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch10::PWMDC > 0.95 1 s"); // 预期结果 Step Check J_PO_LS_LFootLight_Duty OFF 1 s //占空比100%
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_LFootLightOutput 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_LFootLightOutput 0 //2:ON 0:OFF
+}
+
+testcase SYS_LDCU_FootLight_005()
+{
+  TestDescription("前足灯管理_点亮熄灭 上电&夜晚 最后一扇车门关闭-主驾关闭");
+  g_HIL_Clib_Swc_Clib_BrkLocalON(); // 测试步骤 Step Clib BrkLocalON
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_EnvrMode 2"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_EnvrMode 2// NIGHT
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_ParkinglightOutputSt 0"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_ParkinglightOutputSt 0//0x0 INACTIVE
+  g_HIL_Clib_Swc_Clib_AllDoorClosed(); // 测试步骤 Step Clib AllDoorClosed
+  g_HIL_Clib_Swc_Clib_INTLGT_Gear_P(); // 测试步骤 Step Clib INTLGT_Gear_P //P档
+  g_HIL_Bus_Swc_Set("VTS::VT2848_3_Ch34::DigitalOutput 1"); // 测试步骤 Step Set J_DI_FLDoorAjarSW_LS 0//0x0 open
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_DriverDoorAjarSt 1"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_DriverDoorAjarSt 1//0x1 open
+  g_HIL_Bus_Swc_Set("VTS::VT2848_3_Ch34::DigitalOutput 0"); // 测试步骤 Step Set J_DI_FLDoorAjarSW_LS 1//0x1 close
+  g_HIL_Gen_Swc_Wait("1000 ms"); // 测试步骤 Step Wait 1000 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_CycleEventCtrl::I_LDCU_LFootLightCtr 6 1 s"); // 预期结果 Step Check I_LDCU_CycleEventCtrl::I_LDCU_LFootLightCtr 6 1 s //lev 6
+  g_HIL_Bus_Swc_Check("I_LDCU_CycleEventCtrl::I_LDCU_RFootLightCtr 6 1 s"); // 预期结果 Step Check I_LDCU_CycleEventCtrl::I_LDCU_RFootLightCtr 6 1 s //lev 6
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch10::PWMDC 0 1 s"); // 预期结果 Step Check J_PO_LS_LFootLight_Duty level6 1 s //占空比0%
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_LFootLightOutput 2"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_LFootLightOutput 2  //2:ON 0:OFF
+  g_HIL_Clib_Swc_Clib_OFF(); // 测试步骤 Step Clib OFF
+  g_HIL_Gen_Swc_Wait("1000 ms"); // 测试步骤 Step Wait 1000 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_CycleEventCtrl::I_LDCU_LFootLightCtr 7"); // 预期结果 Step Check I_LDCU_CycleEventCtrl::I_LDCU_LFootLightCtr 7 //
+  g_HIL_Bus_Swc_Check("I_LDCU_CycleEventCtrl::I_LDCU_RFootLightCtr 7"); // 预期结果 Step Check I_LDCU_CycleEventCtrl::I_LDCU_RFootLightCtr 7//
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch10::PWMDC > 0.95 1 s"); // 预期结果 Step Check J_PO_LS_LFootLight_Duty OFF 1 s //占空比100%
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_LFootLightOutput 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_LFootLightOutput 0 //2:ON 0:OFF
+}
+
+testcase SYS_LDCU_FootLight_006()
+{
+  TestDescription("前足灯管理_点亮熄灭 上电&夜晚 最后一扇车门关闭-副驾关闭");
+  g_HIL_Clib_Swc_Clib_BrkLocalON(); // 测试步骤 Step Clib BrkLocalON
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_EnvrMode 2"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_EnvrMode 2// NIGHT
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_ParkinglightOutputSt 0"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_ParkinglightOutputSt 0//0x0 INACTIVE
+  g_HIL_Clib_Swc_Clib_AllDoorClosed(); // 测试步骤 Step Clib AllDoorClosed
+  g_HIL_Clib_Swc_Clib_INTLGT_Gear_N(); // 测试步骤 Step Clib INTLGT_Gear_N
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 1"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 1//1 open
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0//0 close
+  g_HIL_Gen_Swc_Wait("1000 ms"); // 测试步骤 Step Wait 1000 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_CycleEventCtrl::I_LDCU_LFootLightCtr 6 1 s"); // 预期结果 Step Check I_LDCU_CycleEventCtrl::I_LDCU_LFootLightCtr 6 1 s //lev 6
+  g_HIL_Bus_Swc_Check("I_LDCU_CycleEventCtrl::I_LDCU_RFootLightCtr 6 1 s"); // 预期结果 Step Check I_LDCU_CycleEventCtrl::I_LDCU_RFootLightCtr 6 1 s //lev 6
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch10::PWMDC 0 1 s"); // 预期结果 Step Check J_PO_LS_LFootLight_Duty level6 1 s //占空比0%
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_LFootLightOutput 2"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_LFootLightOutput 2  //2:ON 0:OFF
+  g_HIL_Clib_Swc_Clib_OFF(); // 测试步骤 Step Clib OFF
+  g_HIL_Gen_Swc_Wait("1000 ms"); // 测试步骤 Step Wait 1000 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_CycleEventCtrl::I_LDCU_LFootLightCtr 7"); // 预期结果 Step Check I_LDCU_CycleEventCtrl::I_LDCU_LFootLightCtr 7 //
+  g_HIL_Bus_Swc_Check("I_LDCU_CycleEventCtrl::I_LDCU_RFootLightCtr 7"); // 预期结果 Step Check I_LDCU_CycleEventCtrl::I_LDCU_RFootLightCtr 7//
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch10::PWMDC > 0.95 1 s"); // 预期结果 Step Check J_PO_LS_LFootLight_Duty OFF 1 s //占空比100%
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_LFootLightOutput 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_LFootLightOutput 0 //2:ON 0:OFF
+}
+
+testcase SYS_LDCU_FootLight_007()
+{
+  TestDescription("前足灯管理_点亮熄灭 上电&夜晚 最后一扇车门关闭-左后关闭");
+  g_HIL_Clib_Swc_Clib_BrkLocalON(); // 测试步骤 Step Clib BrkLocalON
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_EnvrMode 2"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_EnvrMode 2// NIGHT
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_ParkinglightOutputSt 0"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_ParkinglightOutputSt 0//0x0 INACTIVE
+  g_HIL_Clib_Swc_Clib_AllDoorClosed(); // 测试步骤 Step Clib AllDoorClosed
+  g_HIL_Clib_Swc_Clib_INTLGT_Gear_R(); // 测试步骤 Step Clib INTLGT_Gear_R//  R GearLev
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch31::DigitalOutput 1"); // 测试步骤 Step Set J_DI_RLDoorAjarSW_LS 0//0x0 open
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_RLDoorAjarSt 1 1 s"); // 预期结果 Step Check  I_LDCU_BodySysSt1::I_LDCU_RLDoorAjarSt 1 1 s //1 OPEN
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch31::DigitalOutput 0"); // 测试步骤 Step Set J_DI_RLDoorAjarSW_LS 1//0x1 close
+  g_HIL_Gen_Swc_Wait("1000 ms"); // 测试步骤 Step Wait 1000 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_CycleEventCtrl::I_LDCU_LFootLightCtr 6 1 s"); // 预期结果 Step Check I_LDCU_CycleEventCtrl::I_LDCU_LFootLightCtr 6 1 s //lev 6
+  g_HIL_Bus_Swc_Check("I_LDCU_CycleEventCtrl::I_LDCU_RFootLightCtr 6 1 s"); // 预期结果 Step Check I_LDCU_CycleEventCtrl::I_LDCU_RFootLightCtr 6 1 s //lev 6
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch10::PWMDC 0 1 s"); // 预期结果 Step Check J_PO_LS_LFootLight_Duty level6 1 s //占空比0%
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_LFootLightOutput 2"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_LFootLightOutput 2  //2:ON 0:OFF
+  g_HIL_Clib_Swc_Clib_OFF(); // 测试步骤 Step Clib OFF
+  g_HIL_Gen_Swc_Wait("1000 ms"); // 测试步骤 Step Wait 1000 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_CycleEventCtrl::I_LDCU_LFootLightCtr 7"); // 预期结果 Step Check I_LDCU_CycleEventCtrl::I_LDCU_LFootLightCtr 7 //
+  g_HIL_Bus_Swc_Check("I_LDCU_CycleEventCtrl::I_LDCU_RFootLightCtr 7"); // 预期结果 Step Check I_LDCU_CycleEventCtrl::I_LDCU_RFootLightCtr 7//
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch10::PWMDC > 0.95 1 s"); // 预期结果 Step Check J_PO_LS_LFootLight_Duty OFF 1 s //占空比100%
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_LFootLightOutput 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_LFootLightOutput 0 //2:ON 0:OFF
+}
+
+testcase SYS_LDCU_FootLight_008()
+{
+  TestDescription("前足灯管理_点亮熄灭 上电&夜晚 最后一扇车门关闭-右后关闭");
+  g_HIL_Clib_Swc_Clib_BrkLocalON(); // 测试步骤 Step Clib BrkLocalON
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_EnvrMode 2"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_EnvrMode 2// NIGHT
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_ParkinglightOutputSt 0"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_ParkinglightOutputSt 0//0x0 INACTIVE
+  g_HIL_Clib_Swc_Clib_AllDoorClosed(); // 测试步骤 Step Clib AllDoorClosed
+  g_HIL_Clib_Swc_Clib_INTLGT_Gear_P(); // 测试步骤 Step Clib INTLGT_Gear_P//  P GearLev
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_RRDoorAjarSt 1"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_RRDoorAjarSt 1//0x1 open
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_RRDoorAjarSt 0"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_RRDoorAjarSt 0//0x0 close
+  g_HIL_Gen_Swc_Wait("1000 ms"); // 测试步骤 Step Wait 1000 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_CycleEventCtrl::I_LDCU_LFootLightCtr 6 1 s"); // 预期结果 Step Check I_LDCU_CycleEventCtrl::I_LDCU_LFootLightCtr 6 1 s //lev 6
+  g_HIL_Bus_Swc_Check("I_LDCU_CycleEventCtrl::I_LDCU_RFootLightCtr 6 1 s"); // 预期结果 Step Check I_LDCU_CycleEventCtrl::I_LDCU_RFootLightCtr 6 1 s //lev 6
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch10::PWMDC 0 1 s"); // 预期结果 Step Check J_PO_LS_LFootLight_Duty level6 1 s //占空比0%
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_LFootLightOutput 2"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_LFootLightOutput 2  //2:ON 0:OFF
+  g_HIL_Clib_Swc_Clib_OFF(); // 测试步骤 Step Clib OFF
+  g_HIL_Gen_Swc_Wait("1000 ms"); // 测试步骤 Step Wait 1000 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_CycleEventCtrl::I_LDCU_LFootLightCtr 7"); // 预期结果 Step Check I_LDCU_CycleEventCtrl::I_LDCU_LFootLightCtr 7 //
+  g_HIL_Bus_Swc_Check("I_LDCU_CycleEventCtrl::I_LDCU_RFootLightCtr 7"); // 预期结果 Step Check I_LDCU_CycleEventCtrl::I_LDCU_RFootLightCtr 7//
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch10::PWMDC > 0.95 1 s"); // 预期结果 Step Check J_PO_LS_LFootLight_Duty OFF 1 s //占空比100%
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_LFootLightOutput 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_LFootLightOutput 0 //2:ON 0:OFF
+}
+
+testcase SYS_LDCU_FootLight_009()
+{
+  TestDescription("前足灯管理_点亮熄灭 上电&夜晚 尾门打开 关闭最后一扇车门");
+  g_HIL_Clib_Swc_Clib_BrkLocalON(); // 测试步骤 Step Clib BrkLocalON
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_EnvrMode 2"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_EnvrMode 2// NIGHT
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_ParkinglightOutputSt 0"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_ParkinglightOutputSt 0//0x0 INACTIVE
+  g_HIL_Clib_Swc_Clib_AllDoorClosed(); // 测试步骤 Step Clib AllDoorClosed
+  g_HIL_Clib_Swc_Clib_INTLGT_Gear_P(); // 测试步骤 Step Clib INTLGT_Gear_P//  P GearLev
+  g_HIL_Bus_Swc_Set("I_LDCU_TgateSysSts::I_TgatePosSts 4"); // 测试步骤 Step Set I_LDCU_TgateSysSts::I_TgatePosSts 4//0x4 full open
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_RRDoorAjarSt 1"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_RRDoorAjarSt 1//0x1 open
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_RRDoorAjarSt 0"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_RRDoorAjarSt 0//0x0 close
+  g_HIL_Gen_Swc_Wait("1000 ms"); // 测试步骤 Step Wait 1000 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_CycleEventCtrl::I_LDCU_LFootLightCtr 6 1 s"); // 预期结果 Step Check I_LDCU_CycleEventCtrl::I_LDCU_LFootLightCtr 6 1 s //lev 6
+  g_HIL_Bus_Swc_Check("I_LDCU_CycleEventCtrl::I_LDCU_RFootLightCtr 6 1 s"); // 预期结果 Step Check I_LDCU_CycleEventCtrl::I_LDCU_RFootLightCtr 6 1 s //lev 6
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch10::PWMDC 0 1 s"); // 预期结果 Step Check J_PO_LS_LFootLight_Duty level6 1 s //占空比0%
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_LFootLightOutput 2"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_LFootLightOutput 2  //2:ON 0:OFF
+  g_HIL_Clib_Swc_Clib_OFF(); // 测试步骤 Step Clib OFF
+  g_HIL_Gen_Swc_Wait("1000 ms"); // 测试步骤 Step Wait 1000 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_CycleEventCtrl::I_LDCU_LFootLightCtr 7"); // 预期结果 Step Check I_LDCU_CycleEventCtrl::I_LDCU_LFootLightCtr 7 //
+  g_HIL_Bus_Swc_Check("I_LDCU_CycleEventCtrl::I_LDCU_RFootLightCtr 7"); // 预期结果 Step Check I_LDCU_CycleEventCtrl::I_LDCU_RFootLightCtr 7//
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch10::PWMDC > 0.95 1 s"); // 预期结果 Step Check J_PO_LS_LFootLight_Duty OFF 1 s //占空比100%
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_LFootLightOutput 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_LFootLightOutput 0 //2:ON 0:OFF
+  g_HIL_Bus_Swc_Set("I_LDCU_TgateSysSts::I_TgatePosSts 1"); // 测试步骤 Step Set I_LDCU_TgateSysSts::I_TgatePosSts 1//0x1 full closed
+}
+
+testcase SYS_LDCU_FootLight_010()
+{
+  TestDescription("前足灯管理 亮度调节 上电&夜晚 四门关闭&跳变到D档");
+  g_HIL_Clib_Swc_Clib_BrkLocalON(); // 测试步骤 Step Clib BrkLocalON
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_ParkinglightOutputSt 0"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_ParkinglightOutputSt 0// 0x0 Not active
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_EnvrMode 2"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_EnvrMode 2// NIGHT
+  g_HIL_Clib_Swc_Clib_AllDoorClosed(); // 测试步骤 Step Clib AllDoorClosed
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_ParkinglightOutputSt 1"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_ParkinglightOutputSt 1// 0x1 active
+  g_HIL_Clib_Swc_Clib_INTLGT_Gear_P(); // 测试步骤 Step Clib INTLGT_Gear_P//  P GearLev
+  g_HIL_Clib_Swc_Clib_INTLGT_Gear_D(); // 测试步骤 Step Clib INTLGT_Gear_D//  D GearLev
+  g_HIL_Gen_Swc_Wait("300 ms"); // 测试步骤 Step Wait 300 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_CycleEventCtrl::I_LDCU_LFootLightCtr 3 1 s"); // 预期结果 Step Check I_LDCU_CycleEventCtrl::I_LDCU_LFootLightCtr 3 1 s //lev 3
+  g_HIL_Bus_Swc_Check("I_LDCU_CycleEventCtrl::I_LDCU_RFootLightCtr 2 1 s"); // 预期结果 Step Check I_LDCU_CycleEventCtrl::I_LDCU_RFootLightCtr 2 1 s //lev 2
+  // Step Check J_PO_LS_LFootLight level3 // 预期结果io_mapping 解析失败: Name 未找到: J_PO_LS_LFootLight
+  teststep("step","Step Check J_PO_LS_LFootLight level3");
+  teststepfail("fail","io_mapping 解析失败: Name 未找到: J_PO_LS_LFootLight");
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_LFootLightOutput 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_LFootLightOutput 0 //2:ON 0:OFF
+  g_HIL_Clib_Swc_Clib_OFF(); // 测试步骤 Step Clib OFF
+  g_HIL_Gen_Swc_Wait("300 ms"); // 测试步骤 Step Wait 300 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_CycleEventCtrl::I_LDCU_LFootLightCtr 7"); // 预期结果 Step Check I_LDCU_CycleEventCtrl::I_LDCU_LFootLightCtr 7 //
+  g_HIL_Bus_Swc_Check("I_LDCU_CycleEventCtrl::I_LDCU_RFootLightCtr 7"); // 预期结果 Step Check I_LDCU_CycleEventCtrl::I_LDCU_RFootLightCtr 7//
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch10::PWMDC > 0.95 1 s"); // 预期结果 Step Check J_PO_LS_LFootLight_Duty OFF 1 s //占空比100%
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_LFootLightOutput 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_LFootLightOutput 0 //2:ON 0:OFF
+}
+
+testcase SYS_LDCU_FootLight_011()
+{
+  TestDescription("前足灯管理 亮度调节 上电&夜晚 D档主驾车门关闭");
+  g_HIL_Clib_Swc_Clib_BrkLocalON(); // 测试步骤 Step Clib BrkLocalON
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_ParkinglightOutputSt 0"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_ParkinglightOutputSt 0// 0x0 Not active
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_EnvrMode 2"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_EnvrMode 2// NIGHT
+  g_HIL_Clib_Swc_Clib_INTLGT_Gear_D(); // 测试步骤 Step Clib INTLGT_Gear_D//  D GearLev
+  g_HIL_Clib_Swc_Clib_AllDoorClosed(); // 测试步骤 Step Clib AllDoorClosed
+  g_HIL_Bus_Swc_Set("VTS::VT2848_3_Ch34::DigitalOutput 1"); // 测试步骤 Step Set J_DI_FLDoorAjarSW_LS 0//0x0 open
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_DriverDoorAjarSt 1"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_DriverDoorAjarSt 1//0x1 open
+  g_HIL_Bus_Swc_Set("VTS::VT2848_3_Ch34::DigitalOutput 0"); // 测试步骤 Step Set J_DI_FLDoorAjarSW_LS 1//0x1 close
+  g_HIL_Gen_Swc_Wait("300 ms"); // 测试步骤 Step Wait 300 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_CycleEventCtrl::I_LDCU_LFootLightCtr 3 1 s"); // 预期结果 Step Check I_LDCU_CycleEventCtrl::I_LDCU_LFootLightCtr 3 1 s //lev 3
+  g_HIL_Bus_Swc_Check("I_LDCU_CycleEventCtrl::I_LDCU_RFootLightCtr 2 1 s"); // 预期结果 Step Check I_LDCU_CycleEventCtrl::I_LDCU_RFootLightCtr 2 1 s //lev 2
+  // Step Check J_PO_LS_LFootLight level3 // 预期结果io_mapping 解析失败: Name 未找到: J_PO_LS_LFootLight
+  teststep("step","Step Check J_PO_LS_LFootLight level3");
+  teststepfail("fail","io_mapping 解析失败: Name 未找到: J_PO_LS_LFootLight");
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_LFootLightOutput 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_LFootLightOutput 0 //2:ON 0:OFF
+  g_HIL_Clib_Swc_Clib_OFF(); // 测试步骤 Step Clib OFF
+  g_HIL_Gen_Swc_Wait("300 ms"); // 测试步骤 Step Wait 300 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_CycleEventCtrl::I_LDCU_LFootLightCtr 7"); // 预期结果 Step Check I_LDCU_CycleEventCtrl::I_LDCU_LFootLightCtr 7 //
+  g_HIL_Bus_Swc_Check("I_LDCU_CycleEventCtrl::I_LDCU_RFootLightCtr 7"); // 预期结果 Step Check I_LDCU_CycleEventCtrl::I_LDCU_RFootLightCtr 7//
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch10::PWMDC > 0.95 1 s"); // 预期结果 Step Check J_PO_LS_LFootLight_Duty OFF 1 s //占空比100%
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_LFootLightOutput 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_LFootLightOutput 0 //2:ON 0:OFF
+}
+
+testcase SYS_LDCU_FootLight_012()
+{
+  TestDescription("前足灯管理 亮度调节 上电&夜晚 D档副驾车门关闭");
+  g_HIL_Clib_Swc_Clib_BrkLocalON(); // 测试步骤 Step Clib BrkLocalON
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_ParkinglightOutputSt 0"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_ParkinglightOutputSt 0// 0x0 Not active
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_EnvrMode 2"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_EnvrMode 2// NIGHT
+  g_HIL_Clib_Swc_Clib_INTLGT_Gear_D(); // 测试步骤 Step Clib INTLGT_Gear_D//  D GearLev
+  g_HIL_Clib_Swc_Clib_AllDoorClosed(); // 测试步骤 Step Clib AllDoorClosed
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 1"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 1//1 open
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0//0 close
+  g_HIL_Gen_Swc_Wait("300 ms"); // 测试步骤 Step Wait 300 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_CycleEventCtrl::I_LDCU_LFootLightCtr 3 1 s"); // 预期结果 Step Check I_LDCU_CycleEventCtrl::I_LDCU_LFootLightCtr 3 1 s //lev 3
+  g_HIL_Bus_Swc_Check("I_LDCU_CycleEventCtrl::I_LDCU_RFootLightCtr 2 1 s"); // 预期结果 Step Check I_LDCU_CycleEventCtrl::I_LDCU_RFootLightCtr 2 1 s //lev 2
+  // Step Check J_PO_LS_LFootLight level3 // 预期结果io_mapping 解析失败: Name 未找到: J_PO_LS_LFootLight
+  teststep("step","Step Check J_PO_LS_LFootLight level3");
+  teststepfail("fail","io_mapping 解析失败: Name 未找到: J_PO_LS_LFootLight");
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_LFootLightOutput 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_LFootLightOutput 0 //2:ON 0:OFF
+  g_HIL_Clib_Swc_Clib_OFF(); // 测试步骤 Step Clib OFF
+  g_HIL_Gen_Swc_Wait("300 ms"); // 测试步骤 Step Wait 300 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_CycleEventCtrl::I_LDCU_LFootLightCtr 7"); // 预期结果 Step Check I_LDCU_CycleEventCtrl::I_LDCU_LFootLightCtr 7 //
+  g_HIL_Bus_Swc_Check("I_LDCU_CycleEventCtrl::I_LDCU_RFootLightCtr 7"); // 预期结果 Step Check I_LDCU_CycleEventCtrl::I_LDCU_RFootLightCtr 7//
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch10::PWMDC > 0.95 1 s"); // 预期结果 Step Check J_PO_LS_LFootLight_Duty OFF 1 s //占空比100%
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_LFootLightOutput 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_LFootLightOutput 0 //2:ON 0:OFF
+}
+
+testcase SYS_LDCU_FootLight_013()
+{
+  TestDescription("前足灯管理 亮度调节 上电&夜晚 D档左后车门关闭");
+  g_HIL_Clib_Swc_Clib_BrkLocalON(); // 测试步骤 Step Clib BrkLocalON
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_ParkinglightOutputSt 0"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_ParkinglightOutputSt 0// 0x0 Not active
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_EnvrMode 2"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_EnvrMode 2// NIGHT
+  g_HIL_Clib_Swc_Clib_INTLGT_Gear_D(); // 测试步骤 Step Clib INTLGT_Gear_D//  D GearLev
+  g_HIL_Clib_Swc_Clib_AllDoorClosed(); // 测试步骤 Step Clib AllDoorClosed
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch31::DigitalOutput 1"); // 测试步骤 Step Set J_DI_RLDoorAjarSW_LS 0//0x0 open
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_RLDoorAjarSt 1 1 s"); // 预期结果 Step Check  I_LDCU_BodySysSt1::I_LDCU_RLDoorAjarSt 1 1 s //1 OPEN
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch31::DigitalOutput 0"); // 测试步骤 Step Set J_DI_RLDoorAjarSW_LS 1//0x1 close
+  g_HIL_Gen_Swc_Wait("300 ms"); // 测试步骤 Step Wait 300 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_CycleEventCtrl::I_LDCU_LFootLightCtr 3 1 s"); // 预期结果 Step Check I_LDCU_CycleEventCtrl::I_LDCU_LFootLightCtr 3 1 s //lev 3
+  g_HIL_Bus_Swc_Check("I_LDCU_CycleEventCtrl::I_LDCU_RFootLightCtr 2 1 s"); // 预期结果 Step Check I_LDCU_CycleEventCtrl::I_LDCU_RFootLightCtr 2 1 s //lev 2
+  // Step Check J_PO_LS_LFootLight level3 // 预期结果io_mapping 解析失败: Name 未找到: J_PO_LS_LFootLight
+  teststep("step","Step Check J_PO_LS_LFootLight level3");
+  teststepfail("fail","io_mapping 解析失败: Name 未找到: J_PO_LS_LFootLight");
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_LFootLightOutput 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_LFootLightOutput 0 //2:ON 0:OFF
+  g_HIL_Clib_Swc_Clib_OFF(); // 测试步骤 Step Clib OFF
+  g_HIL_Gen_Swc_Wait("300 ms"); // 测试步骤 Step Wait 300 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_CycleEventCtrl::I_LDCU_LFootLightCtr 7"); // 预期结果 Step Check I_LDCU_CycleEventCtrl::I_LDCU_LFootLightCtr 7 //
+  g_HIL_Bus_Swc_Check("I_LDCU_CycleEventCtrl::I_LDCU_RFootLightCtr 7"); // 预期结果 Step Check I_LDCU_CycleEventCtrl::I_LDCU_RFootLightCtr 7//
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch10::PWMDC > 0.95 1 s"); // 预期结果 Step Check J_PO_LS_LFootLight_Duty OFF 1 s //占空比100%
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_LFootLightOutput 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_LFootLightOutput 0 //2:ON 0:OFF
+}
+
+testcase SYS_LDCU_FootLight_014()
+{
+  TestDescription("前足灯管理 亮度调节 上电&夜晚 D档右后车门关闭");
+  g_HIL_Clib_Swc_Clib_BrkLocalON(); // 测试步骤 Step Clib BrkLocalON
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_ParkinglightOutputSt 0"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_ParkinglightOutputSt 0// 0x0 Not active
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_EnvrMode 2"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_EnvrMode 2// NIGHT
+  g_HIL_Clib_Swc_Clib_INTLGT_Gear_D(); // 测试步骤 Step Clib INTLGT_Gear_D//  D GearLev
+  g_HIL_Clib_Swc_Clib_AllDoorClosed(); // 测试步骤 Step Clib AllDoorClosed
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_RRDoorAjarSt 1"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_RRDoorAjarSt 1//0x1 open
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_RRDoorAjarSt 0"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_RRDoorAjarSt 0//0x0 close
+  g_HIL_Gen_Swc_Wait("300 ms"); // 测试步骤 Step Wait 300 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_CycleEventCtrl::I_LDCU_LFootLightCtr 3 1 s"); // 预期结果 Step Check I_LDCU_CycleEventCtrl::I_LDCU_LFootLightCtr 3 1 s //lev 3
+  g_HIL_Bus_Swc_Check("I_LDCU_CycleEventCtrl::I_LDCU_RFootLightCtr 2 1 s"); // 预期结果 Step Check I_LDCU_CycleEventCtrl::I_LDCU_RFootLightCtr 2 1 s //lev 2
+  // Step Check J_PO_LS_LFootLight level3 // 预期结果io_mapping 解析失败: Name 未找到: J_PO_LS_LFootLight
+  teststep("step","Step Check J_PO_LS_LFootLight level3");
+  teststepfail("fail","io_mapping 解析失败: Name 未找到: J_PO_LS_LFootLight");
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_LFootLightOutput 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_LFootLightOutput 0 //2:ON 0:OFF
+  g_HIL_Clib_Swc_Clib_OFF(); // 测试步骤 Step Clib OFF
+  g_HIL_Gen_Swc_Wait("300 ms"); // 测试步骤 Step Wait 300 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_CycleEventCtrl::I_LDCU_LFootLightCtr 7"); // 预期结果 Step Check I_LDCU_CycleEventCtrl::I_LDCU_LFootLightCtr 7 //
+  g_HIL_Bus_Swc_Check("I_LDCU_CycleEventCtrl::I_LDCU_RFootLightCtr 7"); // 预期结果 Step Check I_LDCU_CycleEventCtrl::I_LDCU_RFootLightCtr 7//
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch10::PWMDC > 0.95 1 s"); // 预期结果 Step Check J_PO_LS_LFootLight_Duty OFF 1 s //占空比100%
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_LFootLightOutput 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_LFootLightOutput 0 //2:ON 0:OFF
+}
+
+testcase SYS_LDCU_FootLight_015()
+{
+  TestDescription("前足灯管理 亮度调节 上电&夜晚 开启尾门");
+  g_HIL_Clib_Swc_Clib_BrkLocalON(); // 测试步骤 Step Clib BrkLocalON
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_ParkinglightOutputSt 0"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_ParkinglightOutputSt 0// 0x0 Not active
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_EnvrMode 2"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_EnvrMode 2// NIGHT
+  g_HIL_Clib_Swc_Clib_INTLGT_Gear_D(); // 测试步骤 Step Clib INTLGT_Gear_D//  D GearLev
+  g_HIL_Clib_Swc_Clib_AllDoorClosed(); // 测试步骤 Step Clib AllDoorClosed
+  g_HIL_Bus_Swc_Set("I_LDCU_TgateSysSts::I_TgatePosSts 4"); // 测试步骤 Step Set I_LDCU_TgateSysSts::I_TgatePosSts 4//0x4 full open
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_RRDoorAjarSt 1"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_RRDoorAjarSt 1//0x1 open
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_RRDoorAjarSt 0"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_RRDoorAjarSt 0//0x0 close
+  g_HIL_Gen_Swc_Wait("300 ms"); // 测试步骤 Step Wait 300 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_CycleEventCtrl::I_LDCU_LFootLightCtr 3 1 s"); // 预期结果 Step Check I_LDCU_CycleEventCtrl::I_LDCU_LFootLightCtr 3 1 s //lev 3
+  g_HIL_Bus_Swc_Check("I_LDCU_CycleEventCtrl::I_LDCU_RFootLightCtr 2 1 s"); // 预期结果 Step Check I_LDCU_CycleEventCtrl::I_LDCU_RFootLightCtr 2 1 s //lev 2
+  // Step Check J_PO_LS_LFootLight level3 // 预期结果io_mapping 解析失败: Name 未找到: J_PO_LS_LFootLight
+  teststep("step","Step Check J_PO_LS_LFootLight level3");
+  teststepfail("fail","io_mapping 解析失败: Name 未找到: J_PO_LS_LFootLight");
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_LFootLightOutput 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_LFootLightOutput 0 //2:ON 0:OFF
+  g_HIL_Clib_Swc_Clib_OFF(); // 测试步骤 Step Clib OFF
+  g_HIL_Gen_Swc_Wait("300 ms"); // 测试步骤 Step Wait 300 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_CycleEventCtrl::I_LDCU_LFootLightCtr 7"); // 预期结果 Step Check I_LDCU_CycleEventCtrl::I_LDCU_LFootLightCtr 7 //
+  g_HIL_Bus_Swc_Check("I_LDCU_CycleEventCtrl::I_LDCU_RFootLightCtr 7"); // 预期结果 Step Check I_LDCU_CycleEventCtrl::I_LDCU_RFootLightCtr 7//
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch10::PWMDC > 0.95 1 s"); // 预期结果 Step Check J_PO_LS_LFootLight_Duty OFF 1 s //占空比100%
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_LFootLightOutput 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_LFootLightOutput 0 //2:ON 0:OFF
+  g_HIL_Bus_Swc_Set("I_LDCU_TgateSysSts::I_TgatePosSts 1"); // 测试步骤 Step Set I_LDCU_TgateSysSts::I_TgatePosSts 1//0x1 full closed
+}
+
+testcase SYS_LDCU_FootLight_016()
+{
+  TestDescription("前足灯管理-熄灭 不关联氛围灯开关&&外部闭锁");
+  // Step Set_CF05 ATLEnableConfigure 0//disable // 测试步骤Set_CF05关键字不存在
+  teststep("step","Step Set_CF05 ATLEnableConfigure 0//disable");
+  teststepfail("fail","Set_CF05关键字不存在");
+  g_HIL_Clib_Swc_Clib_BrkLocalON(); // 测试步骤 Step Clib BrkLocalON
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_EnvrMode 2"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_EnvrMode 2// NIGHT
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_ParkinglightOutputSt 0"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_ParkinglightOutputSt 0// 0x0 Not active
+  g_HIL_Clib_Swc_Clib_INTLGT_Gear_P(); // 测试步骤 Step Clib INTLGT_Gear_P //P档
+  g_HIL_Clib_Swc_Clib_AllDoorClosed(); // 测试步骤 Step Clib AllDoorClosed
+  g_HIL_Bus_Swc_Set("I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 4"); // 测试步骤 Step Set I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 4//0x4 BLE Door unlock
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 1"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 1//1 open
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0//0 close
+  g_HIL_Gen_Swc_Wait("1000 ms"); // 测试步骤 Step Wait 1000 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_CycleEventCtrl::I_LDCU_LFootLightCtr 6 1 s"); // 预期结果 Step Check I_LDCU_CycleEventCtrl::I_LDCU_LFootLightCtr 6 1 s //lev 6
+  g_HIL_Bus_Swc_Check("I_LDCU_CycleEventCtrl::I_LDCU_RFootLightCtr 6 1 s"); // 预期结果 Step Check I_LDCU_CycleEventCtrl::I_LDCU_RFootLightCtr 6 1 s //lev 6
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch10::PWMDC 0 1 s"); // 预期结果 Step Check J_PO_LS_LFootLight_Duty level6 1 s //占空比0%
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_LFootLightOutput 2"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_LFootLightOutput 2  //2:ON 0:OFF
+  g_HIL_Bus_Swc_Set("I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 0"); // 测试步骤 Step Set I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 0//0x0 No operation
+  g_HIL_Bus_Swc_Set("I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 3"); // 测试步骤 Step Set I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 3//0x3:BLE Door lock
+  g_HIL_Gen_Swc_Wait("1000 ms"); // 测试步骤 Step Wait 1000 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_DoorLockEvent 1"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_DoorLockEvent 1//0x1 lock
+  g_HIL_Bus_Swc_Check("I_LDCU_CycleEventCtrl::I_LDCU_LFootLightCtr 7"); // 预期结果 Step Check I_LDCU_CycleEventCtrl::I_LDCU_LFootLightCtr 7 //
+  g_HIL_Bus_Swc_Check("I_LDCU_CycleEventCtrl::I_LDCU_RFootLightCtr 7"); // 预期结果 Step Check I_LDCU_CycleEventCtrl::I_LDCU_RFootLightCtr 7//
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch10::PWMDC > 0.95 1 s"); // 预期结果 Step Check J_PO_LS_LFootLight_Duty OFF 1 s //占空比100%
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_LFootLightOutput 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_LFootLightOutput 0 //2:ON 0:OFF
+}
+
+testcase SYS_LDCU_FootLight_017()
+{
+  TestDescription("前足灯管理-熄灭 关联氛围灯开关=OFF&&外部闭锁");
+  // Step Set_CF05 ATLEnableConfigure 1//enable // 测试步骤Set_CF05关键字不存在
+  teststep("step","Step Set_CF05 ATLEnableConfigure 1//enable");
+  teststepfail("fail","Set_CF05关键字不存在");
+  g_HIL_Clib_Swc_Clib_BrkLocalON(); // 测试步骤 Step Clib BrkLocalON
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_EnvrMode 2"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_EnvrMode 2// NIGHT
+  g_HIL_Bus_Swc_Set("I_CDCU_State::I_AmbientLightSwSt 0"); // 测试步骤 Step Set I_CDCU_State::I_AmbientLightSwSt 0//0x0 OFF
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_ParkinglightOutputSt 0"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_ParkinglightOutputSt 0// 0x0 Not active
+  g_HIL_Clib_Swc_Clib_INTLGT_Gear_P(); // 测试步骤 Step Clib INTLGT_Gear_P //P档
+  g_HIL_Clib_Swc_Clib_AllDoorClosed(); // 测试步骤 Step Clib AllDoorClosed
+  g_HIL_Bus_Swc_Set("I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 4"); // 测试步骤 Step Set I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 4//0x4 BLE Door unlock
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 1"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 1//1 open
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0//0 close
+  g_HIL_Gen_Swc_Wait("1000 ms"); // 测试步骤 Step Wait 1000 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_CycleEventCtrl::I_LDCU_LFootLightCtr 6 1 s"); // 预期结果 Step Check I_LDCU_CycleEventCtrl::I_LDCU_LFootLightCtr 6 1 s //lev 6
+  g_HIL_Bus_Swc_Check("I_LDCU_CycleEventCtrl::I_LDCU_RFootLightCtr 6 1 s"); // 预期结果 Step Check I_LDCU_CycleEventCtrl::I_LDCU_RFootLightCtr 6 1 s //lev 6
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch10::PWMDC 0 1 s"); // 预期结果 Step Check J_PO_LS_LFootLight_Duty level6 1 s //占空比0%
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_LFootLightOutput 2"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_LFootLightOutput 2  //2:ON 0:OFF
+  g_HIL_Bus_Swc_Set("I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 0"); // 测试步骤 Step Set I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 0//0x0 No operation
+  g_HIL_Bus_Swc_Set("I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 3"); // 测试步骤 Step Set I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 3//0x3:BLE Door lock
+  g_HIL_Gen_Swc_Wait("1000 ms"); // 测试步骤 Step Wait 1000 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_DoorLockEvent 1"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_DoorLockEvent 1//0x1 lock
+  g_HIL_Bus_Swc_Check("I_LDCU_CycleEventCtrl::I_LDCU_LFootLightCtr 7"); // 预期结果 Step Check I_LDCU_CycleEventCtrl::I_LDCU_LFootLightCtr 7 //
+  g_HIL_Bus_Swc_Check("I_LDCU_CycleEventCtrl::I_LDCU_RFootLightCtr 7"); // 预期结果 Step Check I_LDCU_CycleEventCtrl::I_LDCU_RFootLightCtr 7//
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch10::PWMDC > 0.95 1 s"); // 预期结果 Step Check J_PO_LS_LFootLight_Duty OFF 1 s //占空比100%
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_LFootLightOutput 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_LFootLightOutput 0 //2:ON 0:OFF
+}
+
+testcase SYS_LDCU_FootLight_018()
+{
+  TestDescription("前足灯管理-熄灭 关联氛围灯开关=ON&&外部闭锁");
+  // Step Set_CF05 ATLEnableConfigure 1//enable // 测试步骤Set_CF05关键字不存在
+  teststep("step","Step Set_CF05 ATLEnableConfigure 1//enable");
+  teststepfail("fail","Set_CF05关键字不存在");
+  g_HIL_Clib_Swc_Clib_BrkLocalON(); // 测试步骤 Step Clib BrkLocalON
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_EnvrMode 2"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_EnvrMode 2// NIGHT
+  g_HIL_Bus_Swc_Set("I_CDCU_State::I_AmbientLightSwSt 1"); // 测试步骤 Step Set I_CDCU_State::I_AmbientLightSwSt 1//0x1 ON
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_ParkinglightOutputSt 0"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_ParkinglightOutputSt 0// 0x0 Not active
+  g_HIL_Clib_Swc_Clib_INTLGT_Gear_P(); // 测试步骤 Step Clib INTLGT_Gear_P //P档
+  g_HIL_Clib_Swc_Clib_AllDoorClosed(); // 测试步骤 Step Clib AllDoorClosed
+  g_HIL_Bus_Swc_Set("I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 4"); // 测试步骤 Step Set I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 4//0x4 BLE Door unlock
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 1"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 1//1 open
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0//0 close
+  g_HIL_Gen_Swc_Wait("1000 ms"); // 测试步骤 Step Wait 1000 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_CycleEventCtrl::I_LDCU_LFootLightCtr 6 1 s"); // 预期结果 Step Check I_LDCU_CycleEventCtrl::I_LDCU_LFootLightCtr 6 1 s //lev 6
+  g_HIL_Bus_Swc_Check("I_LDCU_CycleEventCtrl::I_LDCU_RFootLightCtr 6 1 s"); // 预期结果 Step Check I_LDCU_CycleEventCtrl::I_LDCU_RFootLightCtr 6 1 s //lev 6
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch10::PWMDC 0 1 s"); // 预期结果 Step Check J_PO_LS_LFootLight_Duty level6 1 s //占空比0%
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_LFootLightOutput 2"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_LFootLightOutput 2  //2:ON 0:OFF
+  g_HIL_Bus_Swc_Set("I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 0"); // 测试步骤 Step Set I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 0//0x0 No operation
+  g_HIL_Bus_Swc_Set("I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 3"); // 测试步骤 Step Set I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 3//0x3:BLE Door lock
+  g_HIL_Gen_Swc_Wait("1000 ms"); // 测试步骤 Step Wait 1000 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_DoorLockEvent 1"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_DoorLockEvent 1//0x1 lock
+  g_HIL_Bus_Swc_Check("I_LDCU_CycleEventCtrl::I_LDCU_LFootLightCtr 7"); // 预期结果 Step Check I_LDCU_CycleEventCtrl::I_LDCU_LFootLightCtr 7 //
+  g_HIL_Bus_Swc_Check("I_LDCU_CycleEventCtrl::I_LDCU_RFootLightCtr 7"); // 预期结果 Step Check I_LDCU_CycleEventCtrl::I_LDCU_RFootLightCtr 7//
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch10::PWMDC > 0.95 1 s"); // 预期结果 Step Check J_PO_LS_LFootLight_Duty OFF 1 s //占空比100%
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_LFootLightOutput 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_LFootLightOutput 0 //2:ON 0:OFF
+  g_HIL_Bus_Swc_Set("I_CDCU_State::I_AmbientLightSwSt 0"); // 测试步骤 Step Set I_CDCU_State::I_AmbientLightSwSt 0//0x0 OFF
+}
+
+testcase SYS_LDCU_DoorHandleLight_001()
+{
+  TestDescription("门把手指示灯-点亮---熄灭 隐藏门把手");
+  // Step Set_CF08 HandleTypeConfig 0//0x0 Electric Handle // 测试步骤Set_CF08关键字不存在
+  teststep("step","Step Set_CF08 HandleTypeConfig 0//0x0 Electric Handle");
+  teststepfail("fail","Set_CF08关键字不存在");
+  g_HIL_Clib_Swc_Clib_AllDoorClosed(); // 测试步骤 Step Clib AllDoorClosed
+  g_HIL_Bus_Swc_Set("I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 3"); // 测试步骤 Step Set I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 3
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt4::I_RDCU_RFHandlePos 1"); // 测试步骤 Step Set I_RDCU_BodySysSt4::I_RDCU_RFHandlePos 1//0x1:Extracted,  0x0:Retracted,
+  g_HIL_Bus_Swc_Check("VTS::VT2516_5_Ch4::PWMDC 0"); // 预期结果 Step Check J_PO_LS_LDoorHandleLight_Duty level10
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt4::I_RDCU_RFHandlePos 0"); // 测试步骤 Step Set I_RDCU_BodySysSt4::I_RDCU_RFHandlePos 0//0x1:Extracted,  0x0:Retracted,
+  g_HIL_Bus_Swc_Check("VTS::VT2516_5_Ch4::PWMDC > 0.95"); // 预期结果 Step Check J_PO_LS_LDoorHandleLight_Duty OFF
+}
+
+testcase SYS_LDCU_DoorHandleLight_002()
+{
+  TestDescription("门把手指示灯-点亮---熄灭 机械门把手 （开门超时熄灭）");
+  // Step Set_CF08 HandleTypeConfig 1//0x1 Mechanic Handle // 测试步骤Set_CF08关键字不存在
+  teststep("step","Step Set_CF08 HandleTypeConfig 1//0x1 Mechanic Handle");
+  teststepfail("fail","Set_CF08关键字不存在");
+  g_HIL_Clib_Swc_Clib_AllDoorClosed(); // 测试步骤 Step Clib AllDoorClosed
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Set("I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 3"); // 测试步骤 Step Set I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 3//0x3:BLE Door lock
+  g_HIL_Gen_Swc_Wait("201 ms"); // 测试步骤 Step Wait 201 ms
+  g_HIL_Bus_Swc_Set("I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 4"); // 测试步骤 Step Set I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 4//0x4 BLE Door unlock
+  g_HIL_Bus_Swc_Check("VTS::VT2516_5_Ch4::PWMDC 0"); // 预期结果 Step Check J_PO_LS_LDoorHandleLight_Duty level10//最亮
+  g_HIL_Bus_Swc_Set("VTS::VT2848_3_Ch34::DigitalOutput 1"); // 测试步骤 Step Set J_DI_FLDoorAjarSW_LS 0//0x0 open
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_DriverDoorAjarSt 1 1 s"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_DriverDoorAjarSt 1 1 s//0x1 open
+  g_HIL_Gen_Swc_Wait("180 s"); // 测试步骤 Step Wait 180 s
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 1"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 1//0x1 open
+  g_HIL_Gen_Swc_Wait("420 s"); // 测试步骤 Step Wait 420 s
+  g_HIL_Bus_Swc_Check("VTS::VT2516_5_Ch4::PWMDC 0"); // 预期结果 Step Check J_PO_LS_LDoorHandleLight_Duty Level10 //最亮
+  g_HIL_Gen_Swc_Wait("180 s"); // 测试步骤 Step Wait 180 s
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Check("VTS::VT2516_5_Ch4::PWMDC > 0.95"); // 预期结果 Step Check J_PO_LS_LDoorHandleLight_Duty OFF //
+}
+
+testcase SYS_LDCU_DoorHandleLight_003()
+{
+  TestDescription("门把手指示灯-点亮---熄灭 机械门把手 （闭锁熄灭）");
+  g_HIL_Clib_Swc_Clib_AllDoorClosed(); // 测试步骤 Step Clib AllDoorClosed
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Set("I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 3"); // 测试步骤 Step Set I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 3//0x3:BLE Door lock
+  g_HIL_Gen_Swc_Wait("201 ms"); // 测试步骤 Step Wait 201 ms
+  g_HIL_Bus_Swc_Set("I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 4"); // 测试步骤 Step Set I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 4//0x4 BLE Door unlock
+  g_HIL_Bus_Swc_Check("VTS::VT2516_5_Ch4::PWMDC 0 1 s"); // 预期结果 Step Check J_PO_LS_LDoorHandleLight_Duty level10 1 s//最亮
+  g_HIL_Bus_Swc_Set("I_LDCU_BodySysSt1::I_LDCU_CentralLockCtrlSwSt 1"); // 测试步骤 Step Set  I_LDCU_BodySysSt1::I_LDCU_CentralLockCtrlSwSt 1//0x1 lock
+  g_HIL_Bus_Swc_Check("VTS::VT2516_5_Ch4::PWMDC > 0.95 1 s"); // 预期结果 Step Check J_PO_LS_LDoorHandleLight_Duty OFF 1 s
+}
+
+testcase SYS_LDCU_DoorHandleLight_004()
+{
+  TestDescription("门把手指示灯-点亮---熄灭 机械门把手 （下电熄灭）");
+  g_HIL_Clib_Swc_Clib_BrkLocalON(); // 测试步骤 Step Clib BrkLocalON
+  g_HIL_Clib_Swc_Clib_AllDoorClosed(); // 测试步骤 Step Clib AllDoorClosed
+  g_HIL_Bus_Swc_Set("I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 3"); // 测试步骤 Step Set I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 3//0x3:BLE Door lock
+  g_HIL_Gen_Swc_Wait("201 ms"); // 测试步骤 Step Wait 201 ms
+  g_HIL_Bus_Swc_Set("I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 4"); // 测试步骤 Step Set I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 4//0x4 BLE Door unlock
+  g_HIL_Bus_Swc_Check("VTS::VT2516_5_Ch4::PWMDC 0 1 s"); // 预期结果 Step Check J_PO_LS_LDoorHandleLight_Duty level10 1 s//最亮
+  g_HIL_Clib_Swc_Clib_OFF(); // 测试步骤 Step Clib OFF
+  g_HIL_Bus_Swc_Check("VTS::VT2516_5_Ch4::PWMDC > 0.95 1 s"); // 预期结果 Step Check J_PO_LS_LDoorHandleLight_Duty OFF 1 s// 熄灭
+}
+
+testcase SYS_LDCU_DoorHandleLight_005()
+{
+  TestDescription("门把手指示灯-点亮---熄灭 车速非0km/h-机械门把手 （新需求-下电熄灭）");
+  g_HIL_Clib_Swc_Clib_AllDoorClosed(); // 测试步骤 Step Clib AllDoorClosed
+  g_HIL_Bus_Swc_Set("C_IPB_SpdInfoF::C_IPB_VehSpdVD 1"); // 测试步骤 Step Set C_IPB_SpdInfoF::C_IPB_VehSpdVD 1//0x1 valid
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Set("I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 3"); // 测试步骤 Step Set I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 3//0x3:BLE Door lock
+  g_HIL_Gen_Swc_Wait("201 ms"); // 测试步骤 Step Wait 201 ms
+  g_HIL_Bus_Swc_Set("I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 4"); // 测试步骤 Step Set I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 4//0x4 BLE Door unlock
+  g_HIL_Bus_Swc_Check("VTS::VT2516_5_Ch4::PWMDC 0 1 s"); // 预期结果 Step Check J_PO_LS_LDoorHandleLight_Duty level10 1 s//最亮
+  g_HIL_Bus_Swc_Set("C_IPB_SpdInfoF::C_IPB_VehSpd 0"); // 测试步骤 Step Set C_IPB_SpdInfoF::C_IPB_VehSpd 0
+  g_HIL_Bus_Swc_Set("C_IPB_SpdInfoF::C_IPB_VehSpd 10"); // 测试步骤 Step Set C_IPB_SpdInfoF::C_IPB_VehSpd 10
+  g_HIL_Bus_Swc_Check("VTS::VT2516_5_Ch4::PWMDC > 0.95 1 s"); // 预期结果 Step Check J_PO_LS_LDoorHandleLight_Duty OFF 1 s// 熄灭
+}
+
+testcase SYS_LDCU_backLight_001()
+{
+  TestDescription("左侧功能背光管理&控制 Local on&位置灯激活    Day");
+  g_HIL_Clib_Swc_Clib_OFF(); // 测试步骤 Step Clib OFF
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_EnvrMode 0"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_EnvrMode 0// Day
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_ParkinglightOutputSt 0"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_ParkinglightOutputSt 0// 0 INACTIVE
+  g_HIL_Clib_Swc_Clib_BrkLocalON(); // 测试步骤 Step Clib BrkLocalON
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_ParkinglightOutputSt 1"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_ParkinglightOutputSt 1// 0x1 active
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_LBackLightOutput 1 1 s"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_LBackLightOutput 1 1 s  //0x0:Not Acitve 0x1:Active
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_DI_KL_58xt 96 1 s"); // 预期结果 Step Check L5_LINDae_01::L5_DI_KL_58xt 96 1 s
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_DI_KL_58xd 150 1 s"); // 预期结果 Step Check L5_LINDae_01::L5_DI_KL_58xd 150 1 s
+  g_HIL_Gen_Swc_Wait("201 ms"); // 测试步骤 Step Wait 201 ms
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_ParkinglightOutputSt 0"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_ParkinglightOutputSt 0// 0 INACTIVE
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_LBackLightOutput 1 1 s"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_LBackLightOutput 1 1 s  //0x0:Not Acitve 0x1:Active
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_DI_KL_58xt 96 1 s"); // 预期结果 Step Check L5_LINDae_01::L5_DI_KL_58xt 96 1 s
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_DI_KL_58xd 253 1 s"); // 预期结果 Step Check L5_LINDae_01::L5_DI_KL_58xd 253 1 s
+  g_HIL_Gen_Swc_Wait("201 ms"); // 测试步骤 Step Wait 201 ms
+  g_HIL_Clib_Swc_Clib_OFF(); // 测试步骤 Step Clib OFF
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_LBackLightOutput 0 1 s"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_LBackLightOutput 0 1 s  //0x0:Not Acitve 0x1:Active
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_DI_KL_58xt 0 1 s"); // 预期结果 Step Check L5_LINDae_01::L5_DI_KL_58xt 0 1 s
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_DI_KL_58xd 0 1 s"); // 预期结果 Step Check L5_LINDae_01::L5_DI_KL_58xd 0 1 s
+}
+
+testcase SYS_LDCU_backLight_002()
+{
+  TestDescription("左侧功能背光管理&控制 Local on&Night    位置灯未激活");
+  g_HIL_Clib_Swc_Clib_OFF(); // 测试步骤 Step Clib OFF
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_EnvrMode 0"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_EnvrMode 0// Day
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_ParkinglightOutputSt 0"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_ParkinglightOutputSt 0// 0 INACTIVE
+  g_HIL_Clib_Swc_Clib_BrkLocalON(); // 测试步骤 Step Clib BrkLocalON
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_EnvrMode 2"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_EnvrMode 2// Night
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_LBackLightOutput 1 1 s"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_LBackLightOutput 1 1 s  //0x0:Not Acitve 0x1:Active
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_DI_KL_58xt 96 1 s"); // 预期结果 Step Check L5_LINDae_01::L5_DI_KL_58xt 96 1 s
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_DI_KL_58xd 150 1 s"); // 预期结果 Step Check L5_LINDae_01::L5_DI_KL_58xd 150 1 s
+  g_HIL_Clib_Swc_Clib_OFF(); // 测试步骤 Step Clib OFF
+  g_HIL_Gen_Swc_Wait("201 ms"); // 测试步骤 Step Wait 201 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_LBackLightOutput 0 1 s"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_LBackLightOutput 0 1 s  //0x0:Not Acitve 0x1:Active
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_DI_KL_58xt 0 1 s"); // 预期结果 Step Check L5_LINDae_01::L5_DI_KL_58xt 0 1 s
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_DI_KL_58xd 0 1 s"); // 预期结果 Step Check L5_LINDae_01::L5_DI_KL_58xd 0 1 s
+}
+
+testcase SYS_LDCU_backLight_003()
+{
+  TestDescription("左侧功能背光管理&控制 Local on&Night    位置灯激活");
+  g_HIL_Clib_Swc_Clib_OFF(); // 测试步骤 Step Clib OFF
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_EnvrMode 0"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_EnvrMode 0// Day
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_ParkinglightOutputSt 0"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_ParkinglightOutputSt 0// 0 INACTIVE
+  g_HIL_Clib_Swc_Clib_BrkLocalON(); // 测试步骤 Step Clib BrkLocalON
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_EnvrMode 2"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_EnvrMode 2// Night
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt2::I_RDCU_ParkinglightOutputSt 1"); // 测试步骤 Step Set I_RDCU_BodySysSt2::I_RDCU_ParkinglightOutputSt 1// 0x1 active
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_LBackLightOutput 1 1 s"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_LBackLightOutput 1 1 s  //0x0:Not Acitve 0x1:Active
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_DI_KL_58xt 96 1 s"); // 预期结果 Step Check L5_LINDae_01::L5_DI_KL_58xt 96 1 s
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_DI_KL_58xd 150 1 s"); // 预期结果 Step Check L5_LINDae_01::L5_DI_KL_58xd 150 1 s
+  g_HIL_Clib_Swc_Clib_OFF(); // 测试步骤 Step Clib OFF
+  g_HIL_Gen_Swc_Wait("201 ms"); // 测试步骤 Step Wait 201 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_LBackLightOutput 0 1 s"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_LBackLightOutput 0 1 s  //0x0:Not Acitve 0x1:Active
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_DI_KL_58xt 0 1 s"); // 预期结果 Step Check L5_LINDae_01::L5_DI_KL_58xt 0 1 s
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_DI_KL_58xd 0 1 s"); // 预期结果 Step Check L5_LINDae_01::L5_DI_KL_58xd 0 1 s
+}
+
+testcase SYS_LDCU_backLight_004()
+{
+  TestDescription("搜索背光控制");
+  g_HIL_Bus_Swc_Set("I_RDCU_BodyCtrl2::I_RDCU_BacklightBrightCtr 0"); // 测试步骤 Step Set I_RDCU_BodyCtrl2::I_RDCU_BacklightBrightCtr 0 // Not active
+  g_HIL_Clib_Swc_Clib_BrkLocalON(); // 测试步骤 Step Clib BrkLocalON
+  g_HIL_Bus_Swc_Set("I_RDCU_BodyCtrl2::I_RDCU_BacklightBrightCtr 1"); // 测试步骤 Step Set I_RDCU_BodyCtrl2::I_RDCU_BacklightBrightCtr 1 //0x0:Not active 0x1:Active
+  g_HIL_Gen_Swc_Wait("1000 ms"); // 测试步骤 Step Wait 1000 ms
+  g_HIL_Bus_Swc_Check("VTS::VT2516_4_Ch2::CurBit 1 1 s"); // 预期结果 Step Check J_DO_HS_Backlight Active 1 s
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_DI_KL_58xs 96 1 s"); // 预期结果 Step Check L5_LINDae_01::L5_DI_KL_58xs 96 1 s
+  g_HIL_Bus_Swc_Set("I_RDCU_BodyCtrl2::I_RDCU_BacklightBrightCtr 0"); // 测试步骤 Step Set I_RDCU_BodyCtrl2::I_RDCU_BacklightBrightCtr 0 //0x0:Not active 0x1:Active
+  g_HIL_Gen_Swc_Wait("1000 ms"); // 测试步骤 Step Wait 1000 ms
+  g_HIL_Bus_Swc_Check("VTS::VT2516_4_Ch2::CurBit 0 1 s"); // 预期结果 Step Check J_DO_HS_Backlight InActive 1 s
+  g_HIL_Bus_Swc_Check("L5_LINDae_01::L5_DI_KL_58xs 0 1 s"); // 预期结果 Step Check L5_LINDae_01::L5_DI_KL_58xs 0 1 s
+}
+
+testcase SYS_LDCU_SWSlogoLight_001()
+{
+  TestDescription("方向盘Logo灯管理-----主驾进入模式 开门1s内上电激活");
+  g_HIL_Bus_Swc_Set("I_CDCU_State::I_LogoLightSwitchSt 1"); // 测试步骤 Step Set I_CDCU_State::I_LogoLightSwitchSt 1 //1:Active
+  g_HIL_Clib_Swc_Clib_OFF(); // 测试步骤 Step clib OFF
+  g_HIL_Bus_Swc_Set("VTS::VT2848_3_Ch34::DigitalOutput 0"); // 测试步骤 Step Set J_DI_FLDoorAjarSW_LS Close
+  g_HIL_Bus_Swc_Set("VTS::VT2848_3_Ch34::DigitalOutput 1"); // 测试步骤 Step Set J_DI_FLDoorAjarSW_LS Open
+  g_HIL_Clib_Swc_Clib_BrkLocalON(); // 测试步骤 Step Clib BrkLocalON
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch9::Cur > 0.75 and < 0.85 1 s"); // 预期结果 Step Check J_PO_LS_SWSlogoLight_Duty level8 1 s//0.75-0.85最亮
+  g_HIL_Gen_Swc_Wait("500 ms"); // 测试步骤 Step Wait 500 ms
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch9::Cur > 0.95 1 s"); // 预期结果 Step Check J_PO_LS_SWSlogoLight_Duty Level10 1 s//OFF
+  g_HIL_Gen_Swc_Wait("500 ms"); // 测试步骤 Step Wait 500 ms
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch9::Cur > 0.75 and < 0.85 1 s"); // 预期结果 Step Check J_PO_LS_SWSlogoLight_Duty level8 1 s//0.75-0.85最亮
+  g_HIL_Gen_Swc_Wait("500 ms"); // 测试步骤 Step Wait 500 ms
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch9::Cur > 0.95 1 s"); // 预期结果 Step Check J_PO_LS_SWSlogoLight_Duty Level10 1 s//OFF
+  g_HIL_Gen_Swc_Wait("500 ms"); // 测试步骤 Step Wait 500 ms
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch9::Cur > 0.75 and < 0.85 1 s"); // 预期结果 Step Check J_PO_LS_SWSlogoLight_Duty level8 1 s//0.75-0.85最亮
+  g_HIL_Gen_Swc_Wait("500 ms"); // 测试步骤 Step Wait 500 ms
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch9::Cur > 0.95 1 s"); // 预期结果 Step Check J_PO_LS_SWSlogoLight_Duty Level10 1 s//OFF
+}
+
+testcase SYS_LDCU_SWSlogoLight_002()
+{
+  TestDescription("方向盘Logo灯管理-----主驾进入模式 上电开门激活");
+  g_HIL_Clib_Swc_Clib_BrkLocalON(); // 测试步骤 Step Clib BrkLocalON
+  g_HIL_Bus_Swc_Set("I_CDCU_State::I_LogoLightSwitchSt 1"); // 测试步骤 Step Set I_CDCU_State::I_LogoLightSwitchSt 1 //1:Active
+  g_HIL_Bus_Swc_Set("VTS::VT2848_3_Ch34::DigitalOutput 0"); // 测试步骤 Step Set J_DI_FLDoorAjarSW_LS 1//0x1 close
+  g_HIL_Gen_Swc_Wait("2 s"); // 测试步骤 Step Wait 2 s
+  g_HIL_Bus_Swc_Set("VTS::VT2848_3_Ch34::DigitalOutput 1"); // 测试步骤 Step Set J_DI_FLDoorAjarSW_LS 0//0x0 open
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch9::Cur > 0.75 and < 0.85 1 s"); // 预期结果 Step Check J_PO_LS_SWSlogoLight_Duty level8 1 s//0.75-0.85最亮
+  g_HIL_Gen_Swc_Wait("500 ms"); // 测试步骤 Step Wait 500 ms
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch9::Cur > 0.95 1 s"); // 预期结果 Step Check J_PO_LS_SWSlogoLight_Duty Level10 1 s//OFF
+  g_HIL_Gen_Swc_Wait("500 ms"); // 测试步骤 Step Wait 500 ms
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch9::Cur > 0.75 and < 0.85 1 s"); // 预期结果 Step Check J_PO_LS_SWSlogoLight_Duty level8 1 s//0.75-0.85最亮
+  g_HIL_Gen_Swc_Wait("500 ms"); // 测试步骤 Step Wait 500 ms
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch9::Cur > 0.95 1 s"); // 预期结果 Step Check J_PO_LS_SWSlogoLight_Duty Level10 1 s//OFF
+  g_HIL_Gen_Swc_Wait("500 ms"); // 测试步骤 Step Wait 500 ms
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch9::Cur > 0.75 and < 0.85 1 s"); // 预期结果 Step Check J_PO_LS_SWSlogoLight_Duty level8 1 s//0.75-0.85最亮
+  g_HIL_Gen_Swc_Wait("500 ms"); // 测试步骤 Step Wait 500 ms
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch9::Cur > 0.95 1 s"); // 预期结果 Step Check J_PO_LS_SWSlogoLight_Duty Level10 1 s//OFF
+}
+
+testcase SYS_LDCU_SWSlogoLight_003()
+{
+  TestDescription("方向盘Logo灯管理-----Goodbye模式");
+  g_HIL_Clib_Swc_Clib_BrkLocalON(); // 测试步骤 Step Clib BrkLocalON
+  g_HIL_Bus_Swc_Set("I_CDCU_State::I_LogoLightSwitchSt 1"); // 测试步骤 Step Set I_CDCU_State::I_LogoLightSwitchSt 1 //1:Active
+  g_HIL_Clib_Swc_Clib_INTLGT_Gear_N(); // 测试步骤 Step Clib INTLGT_Gear_N //非 P档
+  g_HIL_Bus_Swc_Check("C_LDCU_SysSt::C_LDCU_CurrentGearLev 2"); // 预期结果 Step Check C_LDCU_SysSt::C_LDCU_CurrentGearLev 2 //N
+  g_HIL_Clib_Swc_Clib_INTLGT_Gear_P(); // 测试步骤 Step Clib INTLGT_Gear_P
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch9::Cur > 0.75 and < 0.85 1 s"); // 预期结果 Step Check J_PO_LS_SWSlogoLight_Duty level8 1 s//0.75-0.85最亮
+  g_HIL_Gen_Swc_Wait("500 ms"); // 测试步骤 Step Wait 500 ms
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch9::Cur > 0.95 1 s"); // 预期结果 Step Check J_PO_LS_SWSlogoLight_Duty Level10 1 s//OFF
+  g_HIL_Gen_Swc_Wait("500 ms"); // 测试步骤 Step Wait 500 ms
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch9::Cur > 0.75 and < 0.85 1 s"); // 预期结果 Step Check J_PO_LS_SWSlogoLight_Duty level8 1 s//0.75-0.85最亮
+  g_HIL_Gen_Swc_Wait("500 ms"); // 测试步骤 Step Wait 500 ms
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch9::Cur > 0.95 1 s"); // 预期结果 Step Check J_PO_LS_SWSlogoLight_Duty Level10 1 s//OFF
+  g_HIL_Gen_Swc_Wait("500 ms"); // 测试步骤 Step Wait 500 ms
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch9::Cur > 0.75 and < 0.85 1 s"); // 预期结果 Step Check J_PO_LS_SWSlogoLight_Duty level8 1 s//0.75-0.85最亮
+  g_HIL_Gen_Swc_Wait("500 ms"); // 测试步骤 Step Wait 500 ms
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch9::Cur > 0.95 1 s"); // 预期结果 Step Check J_PO_LS_SWSlogoLight_Duty Level10 1 s//OFF
+  g_HIL_Bus_Swc_Set("I_CDCU_State::I_LogoLightSwitchSt 0"); // 测试步骤 Step Set I_CDCU_State::I_LogoLightSwitchSt 0//0 Not active
+}
+
+testcase SYS_LDCU_SWSlogoLight_004()
+{
+  TestDescription("方向盘Logo灯管理-----来电flash");
+  g_HIL_Clib_Swc_Clib_BrkLocalON(); // 测试步骤 Step Clib BrkLocalON
+  g_HIL_Bus_Swc_Set("I_CDCU_State::I_LogoLightSwitchSt 1"); // 测试步骤 Step Set I_CDCU_State::I_LogoLightSwitchSt 1 //1:Active
+  g_HIL_Bus_Swc_Set("I_CDCU_State::I_IncommingCall 0"); // 测试步骤 Step Set I_CDCU_State::I_IncommingCall 0 //0：Not  active
+  g_HIL_Bus_Swc_Set("I_CDCU_State::I_IncommingCall 1"); // 测试步骤 Step Set I_CDCU_State::I_IncommingCall 1 //1：Active
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch9::Cur > 0.75 and < 0.85 1 s"); // 预期结果 Step Check J_PO_LS_SWSlogoLight_Duty Level8 1 s
+  g_HIL_Gen_Swc_Wait("600 ms"); // 测试步骤 Step Wait 600 ms
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch9::Cur > 0.95"); // 预期结果 Step Check J_PO_LS_SWSlogoLight_Duty Level10//周期一
+  g_HIL_Gen_Swc_Wait("500 ms"); // 测试步骤 Step Wait 500 ms
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch9::Cur > 0.75 and < 0.85"); // 预期结果 Step Check J_PO_LS_SWSlogoLight_Duty Level8
+  g_HIL_Gen_Swc_Wait("500 ms"); // 测试步骤 Step Wait 500 ms
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch9::Cur > 0.95"); // 预期结果 Step Check J_PO_LS_SWSlogoLight_Duty Level10//周期二
+  g_HIL_Gen_Swc_Wait("500 ms"); // 测试步骤 Step Wait 500 ms
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch9::Cur > 0.75 and < 0.85"); // 预期结果 Step Check J_PO_LS_SWSlogoLight_Duty Level8
+  g_HIL_Gen_Swc_Wait("500 ms"); // 测试步骤 Step Wait 500 ms
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch9::Cur > 0.95"); // 预期结果 Step Check J_PO_LS_SWSlogoLight_Duty Level10//周期三
+  g_HIL_Gen_Swc_Wait("1 s"); // 测试步骤 Step Wait 1 s
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch9::Cur > 0.95"); // 预期结果 Step Check J_PO_LS_SWSlogoLight_Duty Level10
+  g_HIL_Bus_Swc_Set("I_CDCU_State::I_IncommingCall 0"); // 测试步骤 Step Set I_CDCU_State::I_IncommingCall 0 //0:Not  active
+  g_HIL_Bus_Swc_Set("I_CDCU_State::I_LogoLightSwitchSt 0"); // 测试步骤 Step Set I_CDCU_State::I_LogoLightSwitchSt 0//0 Not active
+}
+
+testcase SYS_LDCU_SWSlogoLight_005()
+{
+  TestDescription("方向盘Logo灯管理-----语音助手-flash");
+  g_HIL_Clib_Swc_Clib_BrkLocalON(); // 测试步骤 Step Clib BrkLocalON
+  g_HIL_Bus_Swc_Set("I_CDCU_State::I_LogoLightSwitchSt 1"); // 测试步骤 Step Set I_CDCU_State::I_LogoLightSwitchSt 1 //1:Active
+  g_HIL_Bus_Swc_Set("I_CDCU_State::I_SDSSwSt 0"); // 测试步骤 Step Set I_CDCU_State::I_SDSSwSt   0 //0:Not Active
+  g_HIL_Bus_Swc_Set("I_CDCU_State::I_SDSSwSt 1"); // 测试步骤 Step Set I_CDCU_State::I_SDSSwSt   1 //1:Active
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch9::Cur > 0.75 and < 0.85 1 s"); // 预期结果 Step Check J_PO_LS_SWSlogoLight_Duty Level8 1 s
+  g_HIL_Gen_Swc_Wait("500 ms"); // 测试步骤 Step Wait 500 ms
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch9::Cur > 0.95"); // 预期结果 Step Check J_PO_LS_SWSlogoLight_Duty Level10//周期一
+  g_HIL_Gen_Swc_Wait("500 ms"); // 测试步骤 Step Wait 500 ms
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch9::Cur > 0.75 and < 0.85"); // 预期结果 Step Check J_PO_LS_SWSlogoLight_Duty Level8
+  g_HIL_Gen_Swc_Wait("500 ms"); // 测试步骤 Step Wait 500 ms
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch9::Cur > 0.95"); // 预期结果 Step Check J_PO_LS_SWSlogoLight_Duty Level10//周期二
+  g_HIL_Gen_Swc_Wait("500 ms"); // 测试步骤 Step Wait 500 ms
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch9::Cur > 0.75 and < 0.85"); // 预期结果 Step Check J_PO_LS_SWSlogoLight_Duty Level8
+  g_HIL_Gen_Swc_Wait("500 ms"); // 测试步骤 Step Wait 500 ms
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch9::Cur > 0.95"); // 预期结果 Step Check J_PO_LS_SWSlogoLight_Duty Level10//周期三
+  g_HIL_Gen_Swc_Wait("1 s"); // 测试步骤 Step Wait 1 s
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch9::Cur > 0.95"); // 预期结果 Step Check J_PO_LS_SWSlogoLight_Duty Level10
+  g_HIL_Bus_Swc_Set("I_CDCU_State::I_SDSSwSt 0"); // 测试步骤 Step Set I_CDCU_State::I_SDSSwSt   0 //0:Not Active
+  g_HIL_Bus_Swc_Set("I_CDCU_State::I_LogoLightSwitchSt 0"); // 测试步骤 Step Set I_CDCU_State::I_LogoLightSwitchSt 0//0 Not active
+}
+
+testcase SYS_LDCU_SWSlogoLight_008()
+{
+  TestDescription("方向盘Logo灯-开启L2++以上自动驾驶模式-I_XPU_ACCSt");
+  g_HIL_Clib_Swc_Clib_BrkLocalON(); // 测试步骤 Step Clib BrkLocalON
+  g_HIL_Bus_Swc_Set("I_CDCU_State::I_LogoLightSwitchSt 1"); // 测试步骤 Step Set I_CDCU_State::I_LogoLightSwitchSt 1 //1:Active
+  g_HIL_Bus_Swc_Set("I_XPU_AssistSysSt::I_XPU_ACCSt 2"); // 测试步骤 Step Set I_XPU_AssistSysSt::I_XPU_ACCSt 2//Standby
+  g_HIL_Bus_Swc_Set("I_XPU_AssistSysSt::I_XPU_ACCSt 3"); // 测试步骤 Step Set I_XPU_AssistSysSt::I_XPU_ACCSt 3//Active
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch9::Cur > 0.75 and < 0.85 1 s"); // 预期结果 Step Check J_PO_LS_SWSlogoLight_Duty level8 1 s//0.75-0.85最亮
+  g_HIL_Gen_Swc_Wait("500 ms"); // 测试步骤 Step Wait 500 ms
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch9::Cur > 0.95 1 s"); // 预期结果 Step Check J_PO_LS_SWSlogoLight_Duty Level10 1 s//OFF
+  g_HIL_Bus_Swc_Set("I_XPU_AssistSysSt::I_XPU_ACCSt 4"); // 测试步骤 Step Set I_XPU_AssistSysSt::I_XPU_ACCSt 4//Brake only
+  g_HIL_Bus_Swc_Set("I_XPU_AssistSysSt::I_XPU_ACCSt 5"); // 测试步骤 Step Set I_XPU_AssistSysSt::I_XPU_ACCSt 5//Override
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch9::Cur > 0.75 and < 0.85 1 s"); // 预期结果 Step Check J_PO_LS_SWSlogoLight_Duty level8 1 s//0.75-0.85最亮
+  g_HIL_Gen_Swc_Wait("500 ms"); // 测试步骤 Step Wait 500 ms
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch9::Cur > 0.95 1 s"); // 预期结果 Step Check J_PO_LS_SWSlogoLight_Duty Level10 1 s//OFF
+  g_HIL_Bus_Swc_Set("I_XPU_AssistSysSt::I_XPU_ACCSt 0"); // 测试步骤 Step Set I_XPU_AssistSysSt::I_XPU_ACCSt 0//OFF
+  g_HIL_Bus_Swc_Set("I_CDCU_State::I_LogoLightSwitchSt 0"); // 测试步骤 Step Set I_CDCU_State::I_LogoLightSwitchSt 0//0 Not active
+  g_HIL_Clib_Swc_Clib_BrkLocalON(); // 测试步骤 Step Clib BrkLocalON
+}
+
+testcase SYS_LDCU_SWSlogoLight_009()
+{
+  TestDescription("方向盘Logo灯-开启L2++以上自动驾驶模式-I_XPU_XPilotSt");
+  g_HIL_Bus_Swc_Set("I_CDCU_State::I_LogoLightSwitchSt 1"); // 测试步骤 Step Set I_CDCU_State::I_LogoLightSwitchSt 1 //1:Active
+  g_HIL_Bus_Swc_Set("I_XPU_AssistSysSt::I_XPU_XPilotSt 3"); // 测试步骤 Step Set I_XPU_AssistSysSt::I_XPU_XPilotSt 3//Active only ACC
+  g_HIL_Bus_Swc_Set("I_XPU_AssistSysSt::I_XPU_XPilotSt 4"); // 测试步骤 Step Set I_XPU_AssistSysSt::I_XPU_XPilotSt 4//Active by line
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch9::Cur > 0.75 and < 0.85 1 s"); // 预期结果 Step Check J_PO_LS_SWSlogoLight_Duty level8 1 s//0.75-0.85最亮
+  g_HIL_Gen_Swc_Wait("500 ms"); // 测试步骤 Step Wait 500 ms
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch9::Cur > 0.95 1 s"); // 预期结果 Step Check J_PO_LS_SWSlogoLight_Duty Level10 1 s//OFF
+  g_HIL_Bus_Swc_Set("I_XPU_AssistSysSt::I_XPU_XPilotSt 7"); // 测试步骤 Step Set I_XPU_AssistSysSt::I_XPU_XPilotSt 7//Permanent failure
+  g_HIL_Bus_Swc_Set("I_XPU_AssistSysSt::I_XPU_XPilotSt 8"); // 测试步骤 Step Set I_XPU_AssistSysSt::I_XPU_XPilotSt 8//LCC suspend
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch9::Cur > 0.75 and < 0.85 1 s"); // 预期结果 Step Check J_PO_LS_SWSlogoLight_Duty level8 1 s//0.75-0.85最亮
+  g_HIL_Gen_Swc_Wait("500 ms"); // 测试步骤 Step Wait 500 ms
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch9::Cur > 0.95 1 s"); // 预期结果 Step Check J_PO_LS_SWSlogoLight_Duty Level10 1 s//OFF
+  g_HIL_Bus_Swc_Set("I_XPU_AssistSysSt::I_XPU_XPilotSt 0"); // 测试步骤 Step Set I_XPU_AssistSysSt::I_XPU_XPilotSt 0//OFF
+  g_HIL_Bus_Swc_Set("I_CDCU_State::I_LogoLightSwitchSt 0"); // 测试步骤 Step Set I_CDCU_State::I_LogoLightSwitchSt 0//0 Not active
+}
+
+testcase SYS_LDCU_SWSlogoLight_010()
+{
+  TestDescription("方向盘Logo灯-开启L2++以上自动驾驶模式-XPU_CDCU_NGPIconSt");
+  g_HIL_Clib_Swc_Clib_BrkLocalON(); // 测试步骤 Step Clib BrkLocalON
+  g_HIL_Bus_Swc_Set("I_CDCU_State::I_LogoLightSwitchSt 1"); // 测试步骤 Step Set I_CDCU_State::I_LogoLightSwitchSt 1 //1:Active
+  g_HIL_Bus_Swc_Set("I_XPU_NGPInfo::I_XPU_CDCU_NGPIconSt 1"); // 测试步骤 Step Set I_XPU_NGPInfo::I_XPU_CDCU_NGPIconSt 1//NGP standby Grey Icon
+  g_HIL_Bus_Swc_Set("I_XPU_NGPInfo::I_XPU_CDCU_NGPIconSt 2"); // 测试步骤 Step Set I_XPU_NGPInfo::I_XPU_CDCU_NGPIconSt 2//NGP Active Blue Icon
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch9::Cur > 0.75 and < 0.85 1 s"); // 预期结果 Step Check J_PO_LS_SWSlogoLight_Duty level8 1 s//0.75-0.85最亮
+  g_HIL_Gen_Swc_Wait("500 ms"); // 测试步骤 Step Wait 500 ms
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch9::Cur > 0.95 1 s"); // 预期结果 Step Check J_PO_LS_SWSlogoLight_Duty Level10 1 s//OFF
+  g_HIL_Bus_Swc_Set("I_XPU_NGPInfo::I_XPU_CDCU_NGPIconSt 3"); // 测试步骤 Step Set I_XPU_NGPInfo::I_XPU_CDCU_NGPIconSt 3//3 Reserved
+  g_HIL_Bus_Swc_Set("I_XPU_NGPInfo::I_XPU_CDCU_NGPIconSt 4"); // 测试步骤 Step Set I_XPU_NGPInfo::I_XPU_CDCU_NGPIconSt 4//NGP resume Icon twinkle
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch9::Cur > 0.75 and < 0.85 1 s"); // 预期结果 Step Check J_PO_LS_SWSlogoLight_Duty level8 1 s//0.75-0.85最亮
+  g_HIL_Gen_Swc_Wait("500 ms"); // 测试步骤 Step Wait 500 ms
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch9::Cur > 0.95 1 s"); // 预期结果 Step Check J_PO_LS_SWSlogoLight_Duty Level10 1 s//OFF
+  g_HIL_Bus_Swc_Set("I_XPU_AssistSysSt::I_XPU_XPilotSt 0"); // 测试步骤 Step Set I_XPU_AssistSysSt::I_XPU_XPilotSt 0//OFF
+  g_HIL_Bus_Swc_Set("I_CDCU_State::I_LogoLightSwitchSt 0"); // 测试步骤 Step Set I_CDCU_State::I_LogoLightSwitchSt 0//0 Not active
+}
+
+testcase SYS_LDCU_SWSlogoLight_011()
+{
+  TestDescription("方向盘Logo灯-Always on模式+ 熄灭（下电熄灭）");
+  g_HIL_Clib_Swc_Clib_BrkLocalON(); // 测试步骤 Step Clib BrkLocalON
+  g_HIL_Bus_Swc_Set("I_CDCU_State::I_AmbientLightbrightness 0xA"); // 测试步骤 Step Set I_CDCU_State::I_AmbientLightbrightness 0xA//0xA 100%PWM 20%亮度
+  g_HIL_Bus_Swc_Set("I_CDCU_State::I_AmbientLightSwSt 1"); // 测试步骤 Step Set I_CDCU_State::I_AmbientLightSwSt 1 //1:ON  默认OFF 0
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch9::Cur > 0.75 and < 0.85 1 s"); // 预期结果 Step Check J_PO_LS_SWSlogoLight_Duty Level8 1 s// 20%最亮
+  g_HIL_Gen_Swc_Wait("500 ms"); // 测试步骤 Step Wait 500 ms
+  g_HIL_Clib_Swc_Clib_OFF(); // 测试步骤 Step Clib OFF
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch9::Cur > 0.95 1 s"); // 预期结果 Step Check J_PO_LS_SWSlogoLight_Duty Level10 1 s
+  g_HIL_Gen_Swc_Wait("1 s"); // 测试步骤 Step Wait 1 s
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch9::Cur > 0.95 1 s"); // 预期结果 Step Check J_PO_LS_SWSlogoLight_Duty Level10 1 s
+  g_HIL_Bus_Swc_Set("I_CDCU_State::I_AmbientLightSwSt 0"); // 测试步骤 Step Set I_CDCU_State::I_AmbientLightSwSt 0 //1:ON  默认OFF 0
+  g_HIL_Bus_Swc_Set("I_CDCU_State::I_AmbientLightbrightness 0"); // 测试步骤 Step Set I_CDCU_State::I_AmbientLightbrightness 0//0x0 No Comment
+}
+
+testcase SYS_LDCU_SWSlogoLight_012()
+{
+  TestDescription("方向盘Logo灯-Always on模式+ 熄灭（氛围灯OFF熄灭）");
+  g_HIL_Clib_Swc_Clib_BrkLocalON(); // 测试步骤 Step Clib BrkLocalON
+  g_HIL_Bus_Swc_Set("I_CDCU_State::I_AmbientLightbrightness 0xA"); // 测试步骤 Step Set I_CDCU_State::I_AmbientLightbrightness 0xA//100%PWM 20%亮度
+  g_HIL_Bus_Swc_Set("I_CDCU_State::I_AmbientLightSwSt 1"); // 测试步骤 Step Set I_CDCU_State::I_AmbientLightSwSt 1 //1:ON  默认OFF 0
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch9::Cur > 0.75 and < 0.85 1 s"); // 预期结果 Step Check J_PO_LS_SWSlogoLight_Duty Level8 1 s// 20%最亮
+  g_HIL_Gen_Swc_Wait("500 ms"); // 测试步骤 Step Wait 500 ms
+  g_HIL_Bus_Swc_Set("I_CDCU_State::I_AmbientLightSwSt 0"); // 测试步骤 Step Set I_CDCU_State::I_AmbientLightSwSt 0 //1:ON  默认OFF 1
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch9::Cur > 0.95 1 S"); // 预期结果 Step Check J_PO_LS_SWSlogoLight_Duty Level10  1 S
+  g_HIL_Gen_Swc_Wait("1 s"); // 测试步骤 Step Wait 1 s
+  g_HIL_Bus_Swc_Check("VTS::VT2516_3_Ch9::Cur > 0.95 1 S"); // 预期结果 Step Check J_PO_LS_SWSlogoLight_Duty Level10  1 S
+  g_HIL_Bus_Swc_Set("I_CDCU_State::I_AmbientLightbrightness 0"); // 测试步骤 Step Set I_CDCU_State::I_AmbientLightbrightness 0//0x0 No Comment
+}

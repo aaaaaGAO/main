@@ -18,6 +18,11 @@ from services.config_constants import (
     SECTION_LR_REAR,
     SECTION_PATHS,
 )
+from .constants import (
+    DEFAULT_CIN_OUTPUT_DIR,
+    DEFAULT_CIN_OUTPUT_FILENAME,
+    DEFAULT_KEYWORD_SHEET_NAME,
+)
 class CINEntrypointSupport:
     """收拢 CIN 入口阶段的路径、配置与上下文初始化。"""
 
@@ -57,8 +62,10 @@ class CINEntrypointSupport:
             mapping_excel_file = gconfig.get(
                 SECTION_PATHS,
                 "Cin_Mapping_Excel",
-                fallback="input/关键字-CAPL函数映射表.xlsx",
+                fallback="",
             )
+        if not mapping_excel_file or not str(mapping_excel_file).strip():
+            raise ValueError("未配置 cin_mapping_excel / unified_mapping_excel / Cin_Mapping_Excel")
 
         cin_mapping_sheet = gconfig.get_fixed("cin_mapping_sheet") or gconfig.get(
             SECTION_PATHS, "Cin_Mapping_Sheet", fallback=""
@@ -66,12 +73,12 @@ class CINEntrypointSupport:
         sheet_names_str = gconfig.get_fixed("mapping_sheets") or gconfig.get(
             SECTION_PATHS,
             "Mapping_Sheets",
-            fallback="HIL用例关键字说明,EM_CAN&Uart&LIN,EM_SOA,EM_总线测试专用,EM_设备&其他",
+            fallback="",
         )
         if (
             cin_mapping_sheet
             and str(cin_mapping_sheet).strip()
-            and str(cin_mapping_sheet).strip() != "HIL用例关键字说明"
+            and str(cin_mapping_sheet).strip() != DEFAULT_KEYWORD_SHEET_NAME
         ):
             sheet_names_str = str(cin_mapping_sheet).strip()
 
@@ -93,10 +100,10 @@ class CINEntrypointSupport:
         if output_dir_cin and str(output_dir_cin).strip():
             output_dir = output_dir_cin
         if not output_dir or not str(output_dir).strip():
-            output_dir = "output"
+            output_dir = DEFAULT_CIN_OUTPUT_DIR
 
         output_cin_filename = (
-            gconfig.get_fixed("cin_output_filename") or "generated_from_keyword.cin"
+            gconfig.get_fixed("cin_output_filename") or DEFAULT_CIN_OUTPUT_FILENAME
         )
 
         if not input_excel_file:
