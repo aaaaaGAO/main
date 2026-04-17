@@ -36,7 +36,7 @@ from infra.filesystem import get_base_dir
 from web import create_app
 
 # 工具显示名（Web 右上角 + build_exe 打包时的 EXE 文件名，只改此处即可）
-TOOL_DISPLAY_NAME = "测试用例生成工具_2026.4.14"
+TOOL_DISPLAY_NAME = "测试用例生成工具_2026.4.17"
 
 # ---------------------------------------------------------------------------
 # 配置
@@ -156,14 +156,12 @@ def open_browser_after_delay(url: str) -> None:
 
 
 def start_app() -> None:
-    """启动 Web 服务：切换工作目录、启动心跳监控线程、探测可用端口、延迟打开浏览器并运行 Flask。
+    """启动 Web 服务：解析应用根目录、启动心跳监控线程、探测可用端口、延迟打开浏览器并运行 Flask。
     参数：无。
     返回：无返回值。依赖 get_app_path、find_available_port、make_app 及全局 app。
     """
-    try:
-        os.chdir(get_app_path())
-    except Exception as error:
-        print(f"切换工作目录失败: {error}")
+    app_base_dir = get_app_path()
+    print(f"应用根目录: {app_base_dir}")
 
     threading.Thread(target=auto_suicide_monitor, daemon=True).start()
     

@@ -11,8 +11,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Callable
 
-from openpyxl import load_workbook
 from infra.excel.header import normalize_cell_text
+from infra.excel.workbook import ExcelService
 
 
 @dataclass(slots=True)
@@ -50,26 +50,17 @@ def load_keyword_specs_from_excel(
         return specs
 
     try:
-        wb = load_workbook(excel_path, data_only=True)
+        wb = ExcelService.open_workbook(
+            excel_path,
+            data_only=True,
+            read_only=False,
+        )
     except FileNotFoundError:
         if warn:
             warn(f"未找到映射表: {excel_path}")
         return specs
     except Exception as error:
-        error_msg = str(error)
-        if (
-            "decompressing" in error_msg.lower()
-            or "incorrect header" in error_msg.lower()
-            or "badzipfile" in error_msg.lower()
-        ):
-            raise ValueError(
-                f"映射表 Excel 文件格式错误或文件已损坏: {excel_path}\n"
-                f"错误详情: {error_msg}\n"
-                "请检查文件是否是有效的 Excel 文件（.xlsx 格式）"
-            ) from error
-        raise ValueError(
-            f"无法读取映射表 Excel 文件: {excel_path}\n错误详情: {error_msg}"
-        ) from error
+        raise ValueError(str(error)) from error
 
     try:
         for sheet_name in sheet_names:
@@ -80,22 +71,25 @@ def load_keyword_specs_from_excel(
 
             ws = wb[sheet_name]
             header = next(ws.iter_rows(min_row=1, max_row=1, values_only=True), ())
-            header_norm = [normalize_cell_text(x).replace(" ", "").lower() for x in header]
+            header_norm = [
+                normalize_cell_text(header_cell).replace(" ", "").lower()
+                for header_cell in header
+            ]
 
             func_idx = None
             kw_idx = None
             capl_idx = None
             remark_idx = None
 
-            for i, cell_text in enumerate(header_norm):
+            for column_index, cell_text in enumerate(header_norm):
                 if func_idx is None and ("函数" in cell_text or cell_text == "func"):
-                    func_idx = i
+                    func_idx = column_index
                 if kw_idx is None and ("关键字" in cell_text or cell_text == "keyword"):
-                    kw_idx = i
+                    kw_idx = column_index
                 if capl_idx is None and ("capl函数" in cell_text or "capl" in cell_text):
-                    capl_idx = i
+                    capl_idx = column_index
                 if remark_idx is None and ("备注" in cell_text or cell_text == "remark"):
-                    remark_idx = i
+                    remark_idx = column_index
 
             if kw_idx is None:
                 kw_idx = 0 if len(header_norm) > 0 else None

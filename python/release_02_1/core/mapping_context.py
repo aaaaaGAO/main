@@ -7,16 +7,11 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Optional
+from typing import Any, Optional
 
 from core.translator.config_enum import load_config_enum_from_config
 from core.translator.io_mapping import load_io_mapping_from_config
 from services.config_constants import DEFAULT_DOMAIN_LR_REAR
-
-if TYPE_CHECKING:
-    from core.translator.config_enum import ConfigEnumContext
-    from core.translator.io_mapping import IOMappingContext
-
 
 @dataclass
 class MappingContext:

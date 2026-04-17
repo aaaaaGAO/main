@@ -17,7 +17,7 @@ import re
 from dataclasses import dataclass
 from typing import Dict, List, Optional
 
-from openpyxl import load_workbook
+from infra.excel.workbook import ExcelService
 
 from services.config_constants import (
     DEFAULT_DOMAIN_LR_REAR,
@@ -37,28 +37,28 @@ _EXPR_CHARS = set("><=()")
 _COLON_CHARS = (":", "\uFF1A")
 
 
-def find_colon(s: str, start: int) -> int:
-    """在 s[start:] 中查找第一个冒号（半角/全角）位置。参数: s — 字符串；start — 起始下标。返回: 索引，无则 -1。"""
-    candidates = [s.find(c, start) for c in _COLON_CHARS]
+def find_colon(text: str, start: int) -> int:
+    """在 text[start:] 中查找第一个冒号（半角/全角）位置。参数: text — 字符串；start — 起始下标。返回: 索引，无则 -1。"""
+    candidates = [text.find(separator_char, start) for separator_char in _COLON_CHARS]
     candidates = [p for p in candidates if p >= 0]
     return min(candidates) if candidates else -1
 
 
-def normalize_enum_name_key(s: str) -> str:
-    """Name/键规范化：去首尾空白、转小写。参数: s — 原始字符串。返回: str。"""
-    return str(s).strip().casefold()
+def normalize_enum_name_key(text: str) -> str:
+    """Name/键规范化：去首尾空白、转小写。参数: text — 原始字符串。返回: str。"""
+    return str(text).strip().casefold()
 
 
-def is_numeric_value(s: str) -> bool:
-    """判断是否为十进制数值。参数: s — 待判断字符串。返回: bool。"""
-    return bool(s is not None and _RE_NUMERIC.match(str(s)))
+def is_numeric_value(text: str) -> bool:
+    """判断是否为十进制数值。参数: text — 待判断字符串。返回: bool。"""
+    return bool(text is not None and _RE_NUMERIC.match(str(text)))
 
 
-def has_expression_chars(s: str) -> bool:
-    """判断是否含表达式符号 ><=()，此类值不翻译。参数: s — 待判断字符串。返回: bool。"""
-    if s is None:
+def has_expression_chars(text: str) -> bool:
+    """判断是否含表达式符号 ><=()，此类值不翻译。参数: text — 待判断字符串。返回: bool。"""
+    if text is None:
         return False
-    return any((ch in _EXPR_CHARS) for ch in str(s))
+    return any((ch in _EXPR_CHARS) for ch in str(text))
 
 
 def parse_values_cell(values_cell: str) -> Dict[str, str]:
@@ -75,17 +75,17 @@ def parse_values_cell(values_cell: str) -> Dict[str, str]:
         if not line:
             continue
 
-        i = 0
+        cursor_pos = 0
         n = len(line)
-        while i < n:
-            j = find_colon(line, i)
-            if j < 0:
+        while cursor_pos < n:
+            colon_index = find_colon(line, cursor_pos)
+            if colon_index < 0:
                 break
-            left = line[i:j].strip()
+            left = line[cursor_pos:colon_index].strip()
             if not left:
-                i = j + 1
+                cursor_pos = colon_index + 1
                 continue
-            right_start = j + 1
+            right_start = colon_index + 1
             while right_start < n and line[right_start].isspace():
                 right_start += 1
             start_right = right_start
@@ -95,12 +95,12 @@ def parse_values_cell(values_cell: str) -> Dict[str, str]:
                 next_pair_pos = start_right + next_pair_match.start()
             if next_pair_pos is None:
                 right = line[start_right:].strip()
-                i = n
+                cursor_pos = n
             else:
                 right = line[start_right:next_pair_pos].strip()
-                i = next_pair_pos
-                while i < n and line[i].isspace():
-                    i += 1
+                cursor_pos = next_pair_pos
+                while cursor_pos < n and line[cursor_pos].isspace():
+                    cursor_pos += 1
             if not right:
                 continue
             mapping[normalize_enum_name_key(right)] = left.strip()
@@ -161,31 +161,31 @@ class ConfigEnumContext:
                 out.append(values_map[k_all])
                 return out
 
-        i = 1
-        while i < len(args):
-            tok = str(args[i]).strip()
+        argument_index = 1
+        while argument_index < len(args):
+            tok = str(args[argument_index]).strip()
             if not tok:
-                i += 1
+                argument_index += 1
                 continue
 
             if is_numeric_value(tok):
                 out.append(tok)
-                i += 1
+                argument_index += 1
                 continue
 
-            if i + 1 < len(args):
-                tok2 = str(args[i + 1]).strip()
+            if argument_index + 1 < len(args):
+                tok2 = str(args[argument_index + 1]).strip()
                 two = f"{tok} {tok2}".strip()
                 two_key = normalize_enum_name_key(two)
                 if two_key in values_map:
                     out.append(values_map[two_key])
-                    i += 2
+                    argument_index += 2
                     continue
 
             one_key = normalize_enum_name_key(tok)
             if one_key in values_map:
                 out.append(values_map[one_key])
-                i += 1
+                argument_index += 1
                 continue
 
             raise ConfigEnumParseError(f"Values 未匹配: Name={raw_name}, Value={tok}")
@@ -193,7 +193,7 @@ class ConfigEnumContext:
         return out
 
 
-def _get_config_enum_inputs_text(config, domain: str) -> str:
+def get_config_enum_inputs_text(config, domain: str) -> str:
     """从配置中按域读取 CONFIG_ENUM 的 Inputs 文本。参数: config — 配置对象；domain — 域（如 LR_REAR，兼容全局 CONFIG_ENUM）。返回: Inputs 字符串。"""
     section_candidates = get_config_enum_section_candidates(domain)
     for section in section_candidates:
@@ -220,7 +220,7 @@ def load_config_enum_from_config(
     参数: config — 配置对象；base_dir — 工程根目录；config_path — 配置文件路径；domain — 域。
     返回: ConfigEnumContext 或 None（未配置 Inputs 时）。
     """
-    inputs_text = _get_config_enum_inputs_text(config, domain)
+    inputs_text = get_config_enum_inputs_text(config, domain)
     inputs = split_input_lines(inputs_text)
     if not inputs:
         return None
@@ -254,28 +254,27 @@ def load_config_enum_from_config(
         excel_path = excel_path_for_check.replace("\\", "/")
 
         try:
-            wb = load_workbook(excel_path, data_only=True, read_only=True)
-        except Exception as error:
-            error_msg = str(error)
-            if (
-                "decompressing" in error_msg.lower()
-                or "incorrect header" in error_msg.lower()
-                or "badzipfile" in error_msg.lower()
-            ):
-                raise ConfigEnumParseError(
-                    f"Configuration Excel 文件格式错误或文件已损坏: {excel_path}\n"
-                    f"错误详情: {error_msg}\n"
-                    f"请检查文件是否是有效的 Excel 文件（.xlsx 格式）"
-                )
-            raise ConfigEnumParseError(
-                f"无法读取 Configuration Excel 文件: {excel_path}\n错误详情: {error_msg}"
+            wb = ExcelService.open_workbook(
+                excel_path,
+                data_only=True,
+                read_only=True,
             )
+        except Exception as error:
+            raise ConfigEnumParseError(str(error))
 
         if not sheets_str or sheets_str.strip() == "*" or sheets_str.strip() == "":
             sheets = list(wb.sheetnames)
         else:
-            sheets = [s.strip() for s in sheets_str.split(",") if s.strip()]
-            sheets = [s for s in sheets if s in wb.sheetnames]
+            sheet_candidates = [
+                sheet_text.strip()
+                for sheet_text in sheets_str.split(",")
+                if sheet_text.strip()
+            ]
+            sheets = [
+                sheet_name
+                for sheet_name in sheet_candidates
+                if sheet_name in wb.sheetnames
+            ]
             if not sheets:
                 sheets = list(wb.sheetnames)
 
@@ -289,11 +288,11 @@ def load_config_enum_from_config(
 
             name_idx = None
             values_idx = None
-            for i, h in enumerate(headers):
-                if h == "Name":
-                    name_idx = i
-                if h == "Values":
-                    values_idx = i
+            for header_index, header_text in enumerate(headers):
+                if header_text == "Name":
+                    name_idx = header_index
+                if header_text == "Values":
+                    values_idx = header_index
             if name_idx is None or values_idx is None:
                 continue
 

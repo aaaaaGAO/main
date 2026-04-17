@@ -26,20 +26,18 @@ _RE_ILLEGAL = re.compile(r"[\s\u3000\uFF08\uFF09\u3010\u3011（）【】]+")
 _RE_HAS_CJK = re.compile(r"[\u4e00-\u9fff]")
 # CAPL 标识符仅允许：字母、数字、下划线、连字符（连字符在 renderer 中会再替换为下划线）
 _RE_CAPL_SAFE = re.compile(r"[^a-zA-Z0-9_\-]")
-
-
-def _chinese_to_pinyin(text: str) -> str:
+def chinese_to_pinyin(text: str) -> str:
     """将字符串中的中文转为拼音，非中文字符原样保留。参数: text — 原始字符串。返回: 转换后的字符串。"""
     if lazy_pinyin is None or Style is None:
         return text
 
     result: list[str] = []
-    for c in text:
-        if "\u4e00" <= c <= "\u9fff":
-            py = lazy_pinyin(c, style=Style.NORMAL)
-            result.append(py[0] if py else c)
+    for char in text:
+        if "\u4e00" <= char <= "\u9fff":
+            pinyin_items = lazy_pinyin(char, style=Style.NORMAL)
+            result.append(pinyin_items[0] if pinyin_items else char)
         else:
-            result.append(c)
+            result.append(char)
     return "".join(result)
 
 
@@ -63,7 +61,7 @@ def sanitize_case_id(raw: Any) -> Tuple[str, bool, str]:
 
     had_cjk = bool(_RE_HAS_CJK.search(cleaned))
     if had_cjk:
-        cleaned = _chinese_to_pinyin(cleaned)
+        cleaned = chinese_to_pinyin(cleaned)
         cleaned = cleaned.rstrip(_TRAILING_PUNCT).strip()
 
     # 仅保留 CAPL 合法字符（无空格、中文、逗号、括号等），供 testcase 名称等使用

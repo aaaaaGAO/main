@@ -5,14 +5,20 @@
 from __future__ import annotations
 
 import os
-import sys
-
-from openpyxl import load_workbook
 
 from core.generator_config import GeneratorConfig
-from services.config_constants import DEFAULT_DOMAIN_LR_REAR, SECTION_CENTRAL, SECTION_PATHS
+from infra.excel.workbook import ExcelService
+from services.config_constants import (
+    DEFAULT_DOMAIN_LR_REAR,
+    OPTION_CIN_INPUT_EXCEL_CANDIDATES,
+    OPTION_OUTPUT_DIR,
+    SECTION_CENTRAL,
+    SECTION_DTC,
+    SECTION_LR_REAR,
+    SECTION_PATHS,
+)
 from infra.filesystem.pathing import RuntimePathResolver
-from utils.path_utils import list_excel_files, resolve_target_subdir
+from utils.path_utils import list_excel_files, resolve_runtime_path, resolve_target_subdir
 
 
 class CANEntrypointSupport:
@@ -52,8 +58,7 @@ class CANEntrypointSupport:
         # 兼容旧流程：若未在配置中显式填写，则尝试从 uds.txt（或自定义 uds_output_filename）中读取。
         fixed = gconfig.fixed_config
         uds_filename = (fixed.get("uds_output_filename") or "uds.txt").strip() or "uds.txt"
-        root = output_dir if os.path.isabs(output_dir) else os.path.join(base_dir, output_dir)
-        root = os.path.abspath(root)
+        root = resolve_runtime_path(base_dir, output_dir)
         config_dir = (
             root if os.path.basename(root).lower() == "configuration" else os.path.join(root, "Configuration")
         )
@@ -72,27 +77,31 @@ class CANEntrypointSupport:
     def build_runtime_paths(gconfig: GeneratorConfig, domain: str = DEFAULT_DOMAIN_LR_REAR) -> dict:
         base_dir = gconfig.base_dir
 
-        if domain == SECTION_CENTRAL:
-            # CENTRAL 试点：定点读取，不做跨节兜底。
+        if domain in (SECTION_CENTRAL, SECTION_DTC):
+            # CENTRAL / DTC：定点读取本域 input_excel，不做跨节兜底。
             raw_path = gconfig.get_required_from_section(domain, "input_excel")
+        elif domain == SECTION_LR_REAR:
+            # LR_REAR：仅在本节内按显式键顺序解析，不读 [PATHS]。
+            raw_path = (
+                gconfig.get_from_section(domain, "input_excel", fallback="")
+                or gconfig.get_from_section(domain, "Input_Excel", fallback="")
+            ).strip()
+            if not raw_path:
+                raise ValueError(
+                    f"未配置输入路径：请在 [{SECTION_LR_REAR}] 配置 input_excel（或 Input_Excel）"
+                )
         else:
             raw_path = gconfig.get_first(
                 CANEntrypointSupport.build_domain_candidates(
                     domain,
                     "input_excel",
-                    "input_excel_dir",
-                    "Input_Excel_Dir",
                     "Input_Excel",
                 )
             )
         if not raw_path:
             raise ValueError(f"未配置输入路径：请配置 [{domain}] 的 input_excel。")
 
-        full_path = (
-            os.path.join(base_dir, raw_path)
-            if not os.path.isabs(raw_path)
-            else os.path.normpath(raw_path)
-        )
+        full_path = resolve_runtime_path(base_dir, raw_path)
         if os.path.isdir(full_path):
             excel_files = list_excel_files(full_path)
             if not excel_files:
@@ -111,14 +120,21 @@ class CANEntrypointSupport:
             )
         if mapping_excel_file.startswith("./"):
             mapping_excel_file = mapping_excel_file[2:]
-        mapping_excel_path = (
-            mapping_excel_file
-            if os.path.isabs(mapping_excel_file)
-            else os.path.join(base_dir, mapping_excel_file)
-        )
+        mapping_excel_path = resolve_runtime_path(base_dir, mapping_excel_file)
 
-        if domain == SECTION_CENTRAL:
+        if domain in (SECTION_CENTRAL, SECTION_DTC):
             output_dir = gconfig.get_required_from_section(domain, "output_dir")
+        elif domain == SECTION_LR_REAR:
+            output_dir = (
+                gconfig.get_from_section(domain, "Output_Dir_Can", fallback="")
+                or gconfig.get_from_section(domain, "output_dir_can", fallback="")
+                or gconfig.get_from_section(domain, "Output_Dir", fallback="")
+                or gconfig.get_from_section(domain, OPTION_OUTPUT_DIR, fallback="")
+            ).strip()
+            if not output_dir:
+                raise ValueError(
+                    f"未配置 CAN 输出路径：请在 [{SECTION_LR_REAR}] 配置 output_dir 或 Output_Dir_Can / output_dir_can"
+                )
         else:
             output_dir = gconfig.get_first(
                 CANEntrypointSupport.build_domain_candidates(
@@ -147,8 +163,7 @@ class CANEntrypointSupport:
         ]
 
         testmode_dir = resolve_target_subdir(base_dir, output_dir, "TESTmode")
-        testcases_dir = os.path.join(testmode_dir, "Testcases")
-        os.makedirs(testcases_dir, exist_ok=True)
+        testcases_dir = resolve_target_subdir(testmode_dir, ".", "Testcases")
         master_output_path = os.path.join(testmode_dir, output_filename)
 
         # 是否包含 .cin 由「是否选择了关键字集 Clib 配置表」决定，而非域类型
@@ -179,13 +194,16 @@ class CANEntrypointSupport:
         if not excel_path or not os.path.exists(excel_path):
             return names
         try:
-            wb = load_workbook(excel_path, data_only=True, read_only=False)
+            wb = ExcelService.open_workbook(excel_path, data_only=True, read_only=False)
         except Exception:
             return names
         try:
             ws = wb["Clib_Matrix"] if "Clib_Matrix" in wb.sheetnames else wb[wb.sheetnames[0]]
             header = next(ws.iter_rows(min_row=1, max_row=1, values_only=True), ())
-            header_norm = [("" if x is None else str(x).strip()).lower() for x in header]
+            header_norm = [
+                ("" if header_cell is None else str(header_cell).strip()).lower()
+                for header_cell in header
+            ]
             name_idx = None
             for header_index, header_text in enumerate(header_norm):
                 if header_text == "name" or "name" in header_text:
@@ -226,13 +244,19 @@ class CANEntrypointSupport:
         *,
         domain: str = DEFAULT_DOMAIN_LR_REAR,
     ) -> str:
-        cin_excel_path = gconfig.get_first(
-            CANEntrypointSupport.build_domain_candidates(
-                domain,
-                "cin_input_excel",
-                "Cin_Input_Excel",
+        if domain in (SECTION_CENTRAL, SECTION_DTC, SECTION_LR_REAR):
+            cin_excel_path = ""
+            for option_name in OPTION_CIN_INPUT_EXCEL_CANDIDATES:
+                cin_excel_path = gconfig.get(domain, option_name, fallback="").strip()
+                if cin_excel_path:
+                    break
+        else:
+            cin_excel_path = gconfig.get_first(
+                CANEntrypointSupport.build_domain_candidates(
+                    domain,
+                    *OPTION_CIN_INPUT_EXCEL_CANDIDATES,
+                )
             )
-        )
-        if cin_excel_path and not os.path.isabs(cin_excel_path):
-            cin_excel_path = os.path.abspath(os.path.join(base_dir, cin_excel_path))
+        if cin_excel_path:
+            cin_excel_path = resolve_runtime_path(base_dir, cin_excel_path)
         return cin_excel_path

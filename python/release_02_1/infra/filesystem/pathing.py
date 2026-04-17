@@ -87,7 +87,7 @@ class RuntimePathResolver:
         return resolve_main_config_path(base_dir, config_path=config_path)
 
 
-def _build_candidate_names(
+def build_candidate_names(
     preferred_name: str | None,
     default_names: tuple[str, ...],
 ) -> tuple[str, ...]:
@@ -98,7 +98,7 @@ def _build_candidate_names(
     return tuple(candidate_names)
 
 
-def _resolve_config_file_path(
+def resolve_config_file_path(
     base_dir: str,
     *,
     explicit_path: str | None,
@@ -109,7 +109,7 @@ def _resolve_config_file_path(
         return os.path.abspath(explicit_path)
 
     project_paths = ProjectPaths.from_base_dir(base_dir)
-    candidate_names = _build_candidate_names(preferred_name, default_names)
+    candidate_names = build_candidate_names(preferred_name, default_names)
     for candidate_name in candidate_names:
         candidate_path = os.path.join(project_paths.config_dir, candidate_name)
         if os.path.exists(candidate_path):
@@ -125,7 +125,7 @@ def resolve_main_config_path(
 ) -> str:
     """解析当前工程主配置路径：优先显式路径，其次 config/Configuration.ini。"""
     preferred_name = None if config_filename in (None, "Configuration.ini") else config_filename
-    return _resolve_config_file_path(
+    return resolve_config_file_path(
         base_dir,
         explicit_path=config_path,
         preferred_name=preferred_name,
@@ -141,7 +141,7 @@ def resolve_fixed_config_path(
 ) -> str:
     """解析当前工程固定配置路径：优先显式路径，其次 config/FixedConfig.ini。"""
     preferred_name = None if fixed_config_filename in (None, "FixedConfig.ini") else fixed_config_filename
-    return _resolve_config_file_path(
+    return resolve_config_file_path(
         base_dir,
         explicit_path=fixed_config_path,
         preferred_name=preferred_name,
@@ -216,6 +216,19 @@ def resolve_configured_path(base_dir: str, configured_path: str) -> str:
     if not os.path.isabs(normalized_path):
         normalized_path = os.path.join(base_dir, normalized_path)
     return os.path.normpath(os.path.abspath(normalized_path))
+
+
+def resolve_runtime_path(base_dir: str | None, raw_path: str) -> str:
+    """将运行期输入路径统一解析为绝对路径；支持显式 base_dir 或当前工作目录。"""
+    candidate = (raw_path or "").strip()
+    if not candidate:
+        return ""
+    candidate = candidate.replace("/", os.sep)
+    if os.path.isabs(candidate):
+        return os.path.normpath(os.path.abspath(candidate))
+    if base_dir:
+        return os.path.normpath(os.path.abspath(os.path.join(base_dir, candidate)))
+    return os.path.normpath(os.path.abspath(candidate))
 
 
 def resolve_named_subdir(

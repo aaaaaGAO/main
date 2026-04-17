@@ -568,6 +568,7 @@
         var payload = {
             c_out_root: outPath,
             c_uart: selection.c_uart || '',
+            c_srv: selection.c_srv || '',
             c_uart_comm: uartCommConfig,
             c_input: selection.c_input || '',
             c_input_type: selection.c_input_type || 'file',
@@ -625,6 +626,7 @@
             d_didconfig_excel: selection.d_didconfig_excel || '',
             d_didinfo_excel: selection.d_didinfo_excel || '',
             d_cin_excel: selection.d_cin_excel || '',
+            d_srv_excel: selection.d_srv_excel || '',
             d_out_root: outPath,
             d_is_dir: selection.d_input_type === 'folder',
             d_levels: global.getChecks('d_level_group'),

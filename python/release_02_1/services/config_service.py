@@ -18,7 +18,7 @@ import configparser
 import os
 import unicodedata
 from dataclasses import dataclass
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 from infra.config import read_fixed_config
 from infra.filesystem import (
@@ -28,6 +28,7 @@ from infra.filesystem import (
 )
 from services.config_manager import ConfigManager
 from services.config_constants import (
+    DEPRECATED_INPUT_EXCEL_DIR_OPTION_CANDIDATES,
     DEFAULT_DID_CONFIG_FILENAME,
     OPTION_CASE_LEVELS,
     OPTION_CASE_MODELS,
@@ -46,7 +47,23 @@ from services.config_constants import (
     SECTION_IOMAPPING,
     SECTION_LR_REAR,
     SECTION_PATHS,
+    STATE_KEY_LR_CAN_INPUT,
+    STATE_KEY_LR_CIN_EXCEL,
+    STATE_KEY_LR_DIDCONFIG_EXCEL,
+    STATE_KEY_LR_DIDINFO_EXCEL,
+    STATE_KEY_LR_IO_EXCEL,
+    STATE_KEY_LR_LEVELS,
+    STATE_KEY_LR_LOG_LEVEL,
+    STATE_KEY_LR_MODELS,
+    STATE_KEY_LR_OUT_ROOT,
+    STATE_KEY_LR_PLATFORMS,
+    STATE_KEY_LR_SELECTED_SHEETS,
+    STATE_KEY_LR_TARGET_VERSIONS,
     VALID_LOG_LEVELS,
+    cin_input_excel_value_from_ui_path,
+    input_excel_value_from_ui_path,
+    didinfo_inputs_value_from_ui_single_path,
+    io_inputs_value_from_ui_single_path,
 )
 
 
@@ -167,41 +184,45 @@ class ConfigService:
         """将 LR_REAR 页面请求体映射为 [LR_REAR] 节键值。"""
         lr_data: Dict[str, str] = {}
 
-        levels = payload.get("levels")
+        levels = payload.get(STATE_KEY_LR_LEVELS)
         if levels is not None:
             lr_data[OPTION_CASE_LEVELS] = levels if str(levels).strip() else "ALL"
 
-        platforms = payload.get("platforms")
+        platforms = payload.get(STATE_KEY_LR_PLATFORMS)
         if platforms is not None:
             lr_data[OPTION_CASE_PLATFORMS] = str(platforms).strip()
 
-        models = payload.get("models")
+        models = payload.get(STATE_KEY_LR_MODELS)
         if models is not None:
             lr_data[OPTION_CASE_MODELS] = str(models).strip()
 
-        out_root = payload.get("out_root")
+        out_root = payload.get(STATE_KEY_LR_OUT_ROOT)
         if out_root is not None:
             lr_data[OPTION_OUTPUT_DIR] = str(out_root).strip()
 
-        selected_sheets = payload.get("selected_sheets")
+        selected_sheets = payload.get(STATE_KEY_LR_SELECTED_SHEETS)
         if selected_sheets is not None:
             lr_data[OPTION_SELECTED_SHEETS] = str(selected_sheets).strip()
 
-        log_level = str(payload.get("log_level") or "").strip().lower()
+        log_level = str(payload.get(STATE_KEY_LR_LOG_LEVEL) or "").strip().lower()
         if log_level in VALID_LOG_LEVELS:
             lr_data[OPTION_LOG_LEVEL_MIN] = log_level
 
-        can_input = payload.get("can_input")
+        can_input = payload.get(STATE_KEY_LR_CAN_INPUT)
         if can_input is not None:
-            lr_data[OPTION_INPUT_EXCEL] = str(can_input).strip()
+            lr_data[OPTION_INPUT_EXCEL] = input_excel_value_from_ui_path(can_input)
 
-        didinfo_excel = payload.get("didinfo_excel")
-        if didinfo_excel is not None and str(didinfo_excel).strip():
-            lr_data[OPTION_DIDINFO_INPUTS] = f"{str(didinfo_excel).strip()} | *"
+        did_path = payload.get(STATE_KEY_LR_DIDINFO_EXCEL)
+        if did_path is not None:
+            did_val = didinfo_inputs_value_from_ui_single_path(did_path)
+            if did_val:
+                lr_data[OPTION_DIDINFO_INPUTS] = did_val
 
-        cin_excel = payload.get("cin_excel")
-        if cin_excel is not None and str(cin_excel).strip():
-            lr_data[OPTION_CIN_INPUT_EXCEL] = str(cin_excel).strip()
+        cin_raw = payload.get(STATE_KEY_LR_CIN_EXCEL)
+        if cin_raw is not None:
+            cin_val = cin_input_excel_value_from_ui_path(cin_raw)
+            if cin_val:
+                lr_data[OPTION_CIN_INPUT_EXCEL] = cin_val
 
         return lr_data
 
@@ -260,39 +281,57 @@ class ConfigService:
             cfg.add_section(SECTION_LR_REAR)
 
         # 筛选器：levels 空则 ALL；平台/车型/Target Version 选什么写什么，空表示全部生成
-        cfg.set(SECTION_LR_REAR, OPTION_CASE_LEVELS, self.normalize_level(preset_data.get("levels", "ALL")))
-        cfg.set(SECTION_LR_REAR, OPTION_CASE_PLATFORMS, (preset_data.get("platforms") or "").strip())
-        cfg.set(SECTION_LR_REAR, OPTION_CASE_MODELS, (preset_data.get("models") or "").strip())
-        cfg.set(SECTION_LR_REAR, OPTION_CASE_TARGET_VERSIONS, (preset_data.get("target_versions") or "").strip())
+        cfg.set(
+            SECTION_LR_REAR,
+            OPTION_CASE_LEVELS,
+            self.normalize_level(preset_data.get(STATE_KEY_LR_LEVELS, "ALL")),
+        )
+        cfg.set(
+            SECTION_LR_REAR,
+            OPTION_CASE_PLATFORMS,
+            (preset_data.get(STATE_KEY_LR_PLATFORMS) or "").strip(),
+        )
+        cfg.set(
+            SECTION_LR_REAR,
+            OPTION_CASE_MODELS,
+            (preset_data.get(STATE_KEY_LR_MODELS) or "").strip(),
+        )
+        cfg.set(
+            SECTION_LR_REAR,
+            OPTION_CASE_TARGET_VERSIONS,
+            (preset_data.get(STATE_KEY_LR_TARGET_VERSIONS) or "").strip(),
+        )
 
         # 输出目录：仅写 LR_REAR，自此不再把各页面业务配置回写到 PATHS
-        out_root = preset_data.get("out_root", "")
+        out_root = preset_data.get(STATE_KEY_LR_OUT_ROOT, "")
         if out_root:
             cfg.set(SECTION_LR_REAR, OPTION_OUTPUT_DIR, out_root)
 
         # CAN 输入路径：仅写 LR_REAR
-        can_input = preset_data.get("can_input")
+        can_input = preset_data.get(STATE_KEY_LR_CAN_INPUT)
         if can_input:
-            val = can_input
+            val = input_excel_value_from_ui_path(can_input)
             for sec in [SECTION_LR_REAR]:
                 if cfg.has_section(sec):
-                    cfg.remove_option(sec, "input_excel_dir")
-                    cfg.remove_option(sec, "Input_Excel_Dir")
+                    for option_name in DEPRECATED_INPUT_EXCEL_DIR_OPTION_CANDIDATES:
+                        cfg.remove_option(sec, option_name)
             if not cfg.has_section(SECTION_LR_REAR):
                 cfg.add_section(SECTION_LR_REAR)
             cfg.set(SECTION_LR_REAR, OPTION_INPUT_EXCEL, val)
 
         # IO_MAPPING
-        if preset_data.get("io_excel"):
+        io_val = io_inputs_value_from_ui_single_path(preset_data.get(STATE_KEY_LR_IO_EXCEL))
+        if io_val:
             if not cfg.has_section(SECTION_IOMAPPING):
                 cfg.add_section(SECTION_IOMAPPING)
-            cfg.set(SECTION_IOMAPPING, OPTION_INPUTS, f"{preset_data['io_excel']} | *")
+            cfg.set(SECTION_IOMAPPING, OPTION_INPUTS, io_val)
 
         # DID_CONFIG + CONFIG_ENUM
-        if preset_data.get("didconfig_excel"):
+        didconfig_path = str(preset_data.get(STATE_KEY_LR_DIDCONFIG_EXCEL, "") or "").strip()
+        if didconfig_path:
             if not cfg.has_section(SECTION_DID_CONFIG):
                 cfg.add_section(SECTION_DID_CONFIG)
-            cfg.set(SECTION_DID_CONFIG, OPTION_INPUT_EXCEL, preset_data["didconfig_excel"])
+            cfg.set(SECTION_DID_CONFIG, OPTION_INPUT_EXCEL, didconfig_path)
             if out_root:
                 cfg.set(SECTION_DID_CONFIG, OPTION_OUTPUT_DIR, out_root)
             if not cfg.has_option(SECTION_DID_CONFIG, OPTION_OUTPUT_FILENAME):
@@ -300,31 +339,35 @@ class ConfigService:
 
             if not cfg.has_section(SECTION_CONFIG_ENUM):
                 cfg.add_section(SECTION_CONFIG_ENUM)
-            cfg.set(SECTION_CONFIG_ENUM, OPTION_INPUTS, f"{preset_data['didconfig_excel']} | *")
+            cfg.set(
+                SECTION_CONFIG_ENUM,
+                OPTION_INPUTS,
+                didinfo_inputs_value_from_ui_single_path(didconfig_path),
+            )
 
         # ResetDid_Value 配置表（didinfo_inputs）
-        didinfo_excel = preset_data.get("didinfo_excel", "")
-        if didinfo_excel and didinfo_excel.strip():
+        did_val = didinfo_inputs_value_from_ui_single_path(preset_data.get(STATE_KEY_LR_DIDINFO_EXCEL, ""))
+        if did_val:
             if not cfg.has_section(SECTION_LR_REAR):
                 cfg.add_section(SECTION_LR_REAR)
-            cfg.set(SECTION_LR_REAR, OPTION_DIDINFO_INPUTS, f"{didinfo_excel} | *")
+            cfg.set(SECTION_LR_REAR, OPTION_DIDINFO_INPUTS, did_val)
 
         # Clib 配置表（cin_input_excel）
-        cin_excel = preset_data.get("cin_excel", "")
-        if cin_excel and cin_excel.strip():
+        cin_path = cin_input_excel_value_from_ui_path(preset_data.get(STATE_KEY_LR_CIN_EXCEL, ""))
+        if cin_path:
             if not cfg.has_section(SECTION_LR_REAR):
                 cfg.add_section(SECTION_LR_REAR)
-            cfg.set(SECTION_LR_REAR, OPTION_CIN_INPUT_EXCEL, cin_excel)
+            cfg.set(SECTION_LR_REAR, OPTION_CIN_INPUT_EXCEL, cin_path)
 
         # 勾选的 sheet 与日志生成选择
-        lr_sheets = self.normalize_selected_sheets_str(preset_data.get("selected_sheets") or "")
+        lr_sheets = self.normalize_selected_sheets_str(preset_data.get(STATE_KEY_LR_SELECTED_SHEETS) or "")
         if lr_sheets:
             cfg.set(SECTION_LR_REAR, OPTION_SELECTED_SHEETS, lr_sheets)
         elif cfg.has_option(SECTION_LR_REAR, OPTION_SELECTED_SHEETS):
             cfg.remove_option(SECTION_LR_REAR, OPTION_SELECTED_SHEETS)
 
         log_level = (
-            (preset_data.get("log_level") or preset_data.get("c_log_level") or preset_data.get("d_log_level") or "info")
+            (preset_data.get(STATE_KEY_LR_LOG_LEVEL) or preset_data.get("c_log_level") or preset_data.get("d_log_level") or "info")
             .strip()
             .lower()
         )

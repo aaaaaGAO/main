@@ -9,10 +9,12 @@ Excel 工作簿底层封装（openpyxl）
 
 from __future__ import annotations
 
+import io
 import os
 from typing import Any
 
 from openpyxl import load_workbook
+from infra.filesystem import resolve_runtime_path
 
 
 def merged_cell_value(ws: Any, row: int, col: int) -> Any:
@@ -21,21 +23,22 @@ def merged_cell_value(ws: Any, row: int, col: int) -> Any:
     返回：单元格值。
     """
     cell = ws.cell(row, col)
-    v = cell.value
-    if v is not None:
-        return v
+    cell_value = cell.value
+    if cell_value is not None:
+        return cell_value
     try:
         coord = cell.coordinate
-        for r in getattr(ws.merged_cells, "ranges", []):
-            if coord in r:
-                return ws.cell(r.min_row, r.min_col).value
+        for merged_range in getattr(ws.merged_cells, "ranges", []):
+            if coord in merged_range:
+                return ws.cell(merged_range.min_row, merged_range.min_col).value
     except Exception:
         pass
-    return v
+    return cell_value
 
 
 class ExcelService:
     """统一的 Excel 工作簿打开与行迭代（openpyxl 封装）。"""
+    _WORKBOOK_BINARY_CACHE: dict[tuple[str, float], bytes] = {}
 
     @staticmethod
     def open_workbook(
@@ -50,10 +53,7 @@ class ExcelService:
         参数：file_path — 文件路径；read_only — 只读模式；data_only — 只读公式结果；rich_text — 富文本；nfc — 是否 NFC 归一化。
         返回：openpyxl Workbook。异常：FileNotFoundError / ValueError / PermissionError。
         """
-        path = file_path.replace("/", os.sep)
-        if not os.path.isabs(path):
-            path = os.path.abspath(path)
-        path = os.path.normpath(path)
+        path = resolve_runtime_path(None, file_path)
 
         if not os.path.exists(path):
             raise FileNotFoundError(f"找不到 Excel 文件: {path}")
@@ -68,7 +68,17 @@ class ExcelService:
             kwargs["read_only"] = False
 
         try:
-            wb = load_workbook(path, **kwargs)
+            if read_only and not rich_text:
+                path_mtime = os.path.getmtime(path)
+                cache_key = (path, path_mtime)
+                data = ExcelService._WORKBOOK_BINARY_CACHE.get(cache_key)
+                if data is None:
+                    with open(path, "rb") as fp:
+                        data = fp.read()
+                    ExcelService._WORKBOOK_BINARY_CACHE = {cache_key: data}
+                wb = load_workbook(io.BytesIO(data), **kwargs)
+            else:
+                wb = load_workbook(path, **kwargs)
             try:
                 for _sn in wb.sheetnames:
                     try:
@@ -92,10 +102,10 @@ class ExcelService:
             ):
                 raise ValueError(
                     f"Excel 文件格式错误或文件已损坏: {path}\n"
-                    f"错误详情: {e}\n"
+                    f"错误详情: {error}\n"
                     f"请检查文件是否是有效的 Excel 文件（.xlsx 格式）"
                 )
-            raise ValueError(f"无法读取 Excel 文件: {path}\n错误详情: {e}")
+            raise ValueError(f"无法读取 Excel 文件: {path}\n错误详情: {error}")
 
     @staticmethod
     def iter_rows(
@@ -125,9 +135,15 @@ class ExcelService:
         """
         if not sheets_raw or sheets_raw.strip() in ("*", ""):
             return list(wb.sheetnames)
-        sheets = [s.strip() for s in sheets_raw.split(",") if s.strip()]
-        existing = [s for s in sheets if s in wb.sheetnames]
-        return existing if existing else list(wb.sheetnames)
+        sheet_candidates = [
+            sheet_text.strip()
+            for sheet_text in sheets_raw.split(",")
+            if sheet_text.strip()
+        ]
+        existing_sheets = [
+            sheet_name for sheet_name in sheet_candidates if sheet_name in wb.sheetnames
+        ]
+        return existing_sheets if existing_sheets else list(wb.sheetnames)
 
 
 __all__ = ["ExcelService", "merged_cell_value"]

@@ -48,5 +48,14 @@ def main(
     )
 
 
+def run_generation(
+    config_path: str | None = None,
+    base_dir: str | None = None,
+    domain: str = DEFAULT_DOMAIN_LR_REAR,
+) -> None:
+    """语义化入口别名：等价于 main。"""
+    main(config_path=config_path, base_dir=base_dir, domain=domain)
+
+
 if __name__ == "__main__":
     main()

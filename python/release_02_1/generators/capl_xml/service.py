@@ -11,7 +11,7 @@ import traceback
 from core.common.generation_summary import build_ungenerated_reason
 from services.config_constants import DEFAULT_DOMAIN_LR_REAR
 
-from . import runtime as _rt
+from . import runtime as xml_generator_runtime
 
 
 class XMLGeneratorService:
@@ -28,8 +28,8 @@ class XMLGeneratorService:
         base_dir: str | None = None,
         domain: str = DEFAULT_DOMAIN_LR_REAR,
     ):
-        resolved_base_dir = _rt.resolve_base_dir(base_dir)
-        runtime = _rt.load_runtime_config(config_path, resolved_base_dir, domain)
+        resolved_base_dir = xml_generator_runtime.resolve_base_dir(base_dir)
+        runtime = xml_generator_runtime.load_runtime_config(config_path, resolved_base_dir, domain)
         excel_path = runtime["excel_path"]
         output_xml_path = runtime["output_xml_path"]
         allowed_levels = runtime["allowed_levels"]
@@ -37,18 +37,20 @@ class XMLGeneratorService:
         allowed_models = runtime["allowed_models"]
         allowed_target_versions = runtime.get("allowed_target_versions")
         selected_filter = runtime["selected_filter"]
-        logger, old_stdout, old_stderr = _rt.init_runtime_logging(resolved_base_dir)
-        progress_level = _rt.get_progress_level()
+        logger, old_stdout, old_stderr = xml_generator_runtime.init_runtime_logging(resolved_base_dir)
+        progress_level = xml_generator_runtime.get_progress_level()
 
         try:
             try:
-                excel_files = _rt.find_excel_files(excel_path)
+                excel_files = xml_generator_runtime.find_excel_files(excel_path)
                 if not excel_files:
                     print(f"警告: 在路径 '{excel_path}' 中未找到任何 Excel 文件")
                     return
                 if selected_filter is not None:
                     excel_files = [
-                        f for f in excel_files if os.path.basename(f).lower() in selected_filter
+                        excel_file
+                        for excel_file in excel_files
+                        if os.path.basename(excel_file).lower() in selected_filter
                     ]
                     if not excel_files:
                         expected = ", ".join(sorted(selected_filter.keys()))
@@ -84,7 +86,7 @@ class XMLGeneratorService:
                     except Exception:
                         excel_label = os.path.basename(excel_file)
 
-                    sheet_testcases_dict, stats = _rt.parse_testcases_from_excel(
+                    sheet_testcases_dict, stats = xml_generator_runtime.parse_testcases_from_excel(
                         excel_file,
                         allowed_levels=allowed_levels,
                         allowed_platforms=allowed_platforms,
@@ -98,7 +100,7 @@ class XMLGeneratorService:
                     excel_stats_map[excel_file] = stats
 
                     if sheet_testcases_dict:
-                        sheet_groups = _rt.group_testcases_by_sheet_and_group(sheet_testcases_dict)
+                        sheet_groups = xml_generator_runtime.group_testcases_by_sheet_and_group(sheet_testcases_dict)
                         excel_files_dict[excel_file] = sheet_groups
                     else:
                         print(f"  警告: 文件 '{os.path.basename(excel_file)}' 中未找到任何测试用例")
@@ -117,7 +119,7 @@ class XMLGeneratorService:
 
             print("\n生成 XML 文件...")
             try:
-                xml_content = _rt.generate_xml_content(excel_files_dict)
+                xml_content = xml_generator_runtime.generate_xml_content(excel_files_dict)
                 xml_content = xml_content.replace("\r\n", "\n").replace("\n", "\r\n")
                 with open(output_xml_path, "w", encoding="utf-8") as output_file:
                     output_file.write(xml_content)
@@ -182,4 +184,4 @@ class XMLGeneratorService:
                 return
         finally:
             sys.stdout, sys.stderr = old_stdout, old_stderr
-            _rt.clear_run_logger()
+            xml_generator_runtime.clear_run_logger()

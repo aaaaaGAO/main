@@ -13,10 +13,9 @@ import os
 import re
 import sys
 
-from openpyxl import load_workbook
-
 from core.generator_logging import GeneratorLogger
 from infra.config import read_fixed_config
+from infra.excel.workbook import ExcelService
 from core.parse_table_loggers import get_uart_matrix_logger
 from services.config_constants import (
     OPTION_OUTPUT_DIR,
@@ -33,6 +32,7 @@ from utils.logger import TeeToLogger
 from infra.filesystem.pathing import (
     RuntimePathResolver,
     resolve_configured_path,
+    resolve_runtime_path,
     resolve_target_subdir,
 )
 
@@ -274,21 +274,15 @@ def read_uart_excel_data(excel_path: str, sheet_name: str = "IVIToMCU") -> list:
     从 UART 通信矩阵 Excel 指定 Sheet 读取消息与信号，按 Msg ID 聚合为消息列表。
     Sheet 不存在或缺少必填列时返回 []。
     """
-    global _parse_uart_logger
-    if not os.path.exists(excel_path):
-        raise FileNotFoundError(f"找不到 Excel 文件: {excel_path}")
+    resolved_excel_path = resolve_runtime_path(None, excel_path)
+    if not os.path.exists(resolved_excel_path):
+        raise FileNotFoundError(f"找不到 Excel 文件: {resolved_excel_path}")
 
-    try:
-        workbook = load_workbook(excel_path, data_only=True, read_only=True)
-    except Exception as error:
-        error_msg = str(error)
-        if "decompressing" in error_msg.lower() or "incorrect header" in error_msg.lower() or "badzipfile" in error_msg.lower():
-            raise ValueError(
-                f"UART Excel 文件格式错误或文件已损坏: {excel_path}\n"
-                f"错误详情: {error_msg}\n"
-                f"请检查文件是否是有效的 Excel 文件（.xlsx 格式）"
-            )
-        raise ValueError(f"无法读取 UART Excel 文件: {excel_path}\n错误详情: {error_msg}")
+    workbook = ExcelService.open_workbook(
+        resolved_excel_path,
+        data_only=True,
+        read_only=True,
+    )
 
     if sheet_name not in workbook.sheetnames:
         error_message = f"Sheet '{sheet_name}' 不存在，可用的 Sheet: {workbook.sheetnames}"
@@ -347,13 +341,13 @@ def read_uart_excel_data(excel_path: str, sheet_name: str = "IVIToMCU") -> list:
         if _parse_uart_logger:
             _parse_uart_logger.error(
                 "UART 通信矩阵表缺少必填列：excel=%s sheet=%s 缺少=%s",
-                os.path.basename(excel_path),
+                os.path.basename(resolved_excel_path),
                 sheet_name,
                 "、".join(display_names),
             )
         print(f"[错误] UART 表头解析失败 - {sheet_name}: 缺少必填列 {'、'.join(display_names)}，跳过该 sheet")
         print(f"  当前表头: {header}")
-        print(f"  必填列要求: Msg ID (Hex)、Message Name / 消息名称、DLC (Byte)、Signal Name / 信号名称、Array、Length (Bits)、Value Type")
+        print("  必填列要求: Msg ID (Hex)、Message Name / 消息名称、DLC (Byte)、Signal Name / 信号名称、Array、Length (Bits)、Value Type")
         try:
             workbook.close()
         except Exception:

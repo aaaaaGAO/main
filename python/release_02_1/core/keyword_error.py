@@ -17,9 +17,9 @@ class KeywordErrorDescriber:
 
     def __init__(self) -> None:
         """初始化描述器，内部维护 keyword_specs 的索引缓存。"""
-        self._index_cache: Dict[int, Dict[str, Dict[str, Any]]] = {}
+        self.index_cache: Dict[int, Dict[str, Dict[str, Any]]] = {}
 
-    def _build_index(self, keyword_specs: dict) -> Dict[str, Dict[str, Any]]:
+    def build_index(self, keyword_specs: dict) -> Dict[str, Dict[str, Any]]:
         """根据 keyword_specs 构建「函数名 -> 关键字 token 列表」索引。参数: keyword_specs — 关键字规格字典。返回: 索引字典。"""
         index_map: Dict[str, Dict[str, Any]] = {}
         for spec in keyword_specs.values():
@@ -35,12 +35,12 @@ class KeywordErrorDescriber:
                 func_record["has_func_only"] = True
         return index_map
 
-    def _get_index(self, keyword_specs: dict) -> Dict[str, Dict[str, Any]]:
+    def get_index(self, keyword_specs: dict) -> Dict[str, Dict[str, Any]]:
         """获取或构建 keyword_specs 的索引（带缓存）。参数: keyword_specs — 关键字规格字典。返回: 索引字典。"""
         cache_key = id(keyword_specs)
-        if cache_key not in self._index_cache:
-            self._index_cache[cache_key] = self._build_index(keyword_specs)
-        return self._index_cache[cache_key]
+        if cache_key not in self.index_cache:
+            self.index_cache[cache_key] = self.build_index(keyword_specs)
+        return self.index_cache[cache_key]
 
     def describe(self, original_line: str, keyword_specs: dict) -> str:
         """根据原始步骤行与关键字映射表返回错误描述。
@@ -56,7 +56,7 @@ class KeywordErrorDescriber:
 
         func = tokens[0]
         rest = tokens[1:]
-        index_map = self._get_index(keyword_specs)
+        index_map = self.get_index(keyword_specs)
         func_record = index_map.get(func.casefold())
         if func_record is None:
             return f"{func}关键字不存在"

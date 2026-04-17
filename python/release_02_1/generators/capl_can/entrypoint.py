@@ -26,7 +26,7 @@ from .runtime_io import (
 )
 
 
-def execute_workflow(config_path=None, base_dir=None, domain=DEFAULT_DOMAIN_LR_REAR):
+def run_generation_workflow(config_path=None, base_dir=None, domain=DEFAULT_DOMAIN_LR_REAR):
     """将 CAN 生成的各原子步骤串联为完整流水线并执行。
 
     功能：重置运行时状态 → 解析工程根目录 → 读配置 → 初始化日志并劫持 stdout/stderr
@@ -85,7 +85,16 @@ def main(config_path=None, base_dir=None, domain=DEFAULT_DOMAIN_LR_REAR):
 
     返回：无。
     """
-    execute_workflow(config_path=config_path, base_dir=base_dir, domain=domain)
+    run_generation_workflow(config_path=config_path, base_dir=base_dir, domain=domain)
+
+
+def run_generation(config_path=None, base_dir=None, domain=DEFAULT_DOMAIN_LR_REAR):
+    """语义化入口别名：等价于 main。"""
+    main(config_path=config_path, base_dir=base_dir, domain=domain)
+
+
+# 兼容旧调用名
+execute_workflow = run_generation_workflow
 
 
 def read_cases_from_excel_for_can(*args, **kwargs):

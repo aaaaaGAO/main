@@ -36,6 +36,7 @@ from infra.filesystem.pathing import (
     resolve_main_config_path,
     resolve_main_config_write_path,
     resolve_configured_path,
+    resolve_runtime_path,
     resolve_named_subdir,
     resolve_target_subdir,
 )
@@ -56,6 +57,7 @@ __all__ = [
     "resolve_fixed_config_write_path",
     "resolve_filter_options_path",
     "resolve_configured_path",
+    "resolve_runtime_path",
     "resolve_named_subdir",
     "resolve_target_subdir",
 ]

@@ -10,13 +10,11 @@ CIN 生成运行期 IO 与步骤解析。
 from __future__ import annotations
 
 import os
-import sys
 from typing import Any, Callable, Optional, Tuple
 
-from openpyxl import load_workbook
+from infra.excel.workbook import ExcelService
 
 from core.generator_logging import GeneratorLogger
-from core.mapping_context import MappingContext
 from services.config_constants import DEFAULT_DOMAIN_LR_REAR
 
 from .constants import CASEID_LOG_PATTERNS
@@ -38,6 +36,14 @@ except ImportError:  # pragma: no cover
     from utils.logger import ProgressFormatter, SubstringFilter  # type: ignore[no-redef]
 
 
+def ignore_warning_message(_message: str) -> None:
+    return None
+
+
+def create_progress_formatter(format_string: str) -> ProgressFormatter:
+    return ProgressFormatter(format_string)
+
+
 def load_keyword_specs(
     excel_path: str,
     sheet_names: list[str],
@@ -48,7 +54,7 @@ def load_keyword_specs(
     return load_keyword_specs_from_excel(
         excel_path,
         sheet_names,
-        warn=warn or (lambda msg: None),
+        warn=warn or ignore_warning_message,
     )
 
 
@@ -61,15 +67,9 @@ def read_clib_steps(excel_path: str, clib_sheet: Optional[str] = None) -> tuple[
         raise FileNotFoundError(f"找不到 Clib Excel 文件: {excel_path}")
 
     try:
-        wb = load_workbook(excel_path, data_only=True)
+        wb = ExcelService.open_workbook(excel_path, data_only=True, read_only=False)
     except Exception as error:
-        error_message = str(error).lower()
-        if "decompressing" in error_message or "incorrect header" in error_message or "badzipfile" in error_message:
-            raise ValueError(
-                f"Excel 文件格式错误或文件已损坏: {excel_path}\n错误详情: {e}\n"
-                "请检查文件是否是有效的 Excel 文件（.xlsx 格式）"
-            ) from e
-        raise ValueError(f"无法读取 Excel 文件: {excel_path}\n错误详情: {e}") from e
+        raise ValueError(str(error)) from error
 
     ws = wb.active
     if clib_sheet and str(clib_sheet).strip():
@@ -134,7 +134,7 @@ def apply_default_param_parsing(args: list[str]) -> list[str]:
 
 
 # 模块内保存上一次解析错误，供 render_step_lines 中 build_detail 使用
-_last_parse_error: dict = {"type": None, "reason": ""}
+last_parse_error_state: dict = {"type": None, "reason": ""}
 
 
 def parse_step_line_cin(
@@ -147,9 +147,8 @@ def parse_step_line_cin(
     name: Optional[str] = None,
 ) -> Optional[tuple[list[str], str]]:
     """CIN 模式下一行步骤解析，返回 (code_lines, original_line_full) 或 None。"""
-    global _last_parse_error
-    _last_parse_error["type"] = None
-    _last_parse_error["reason"] = ""
+    last_parse_error_state["type"] = None
+    last_parse_error_state["reason"] = ""
     original = line.strip()
     if not original or original.startswith("//"):
         return None
@@ -168,8 +167,8 @@ def parse_step_line_cin(
             return None
         return (result.code_lines, result.original_line_full)
     except IOMappingParseError as e:
-        _last_parse_error["type"] = "iomapping_conflict" if "CONFLICT" in str(e) else "iomapping"
-        _last_parse_error["reason"] = str(e)
+        last_parse_error_state["type"] = "iomapping_conflict" if "CONFLICT" in str(e) else "iomapping"
+        last_parse_error_state["reason"] = str(e)
         if logger:
             step_text = original.strip()
             reason = str(e)
@@ -179,8 +178,8 @@ def parse_step_line_cin(
             logger.error(f"错误模块【{err_mod}】 {name_part} 用例步骤：{step_text}  原因：{fail_text}")
         return None
     except ConfigEnumParseError as e:
-        _last_parse_error["type"] = "config_enum"
-        _last_parse_error["reason"] = str(e)
+        last_parse_error_state["type"] = "config_enum"
+        last_parse_error_state["reason"] = str(e)
         if logger:
             step_text = original.strip()
             reason = str(e)
@@ -190,8 +189,8 @@ def parse_step_line_cin(
             logger.error(f"错误模块【{err_mod}】 {name_part} 用例步骤：{step_text}  原因：{fail_text}")
         return None
     except (KeywordMatchError, StepSyntaxError) as e:
-        _last_parse_error["type"] = "keyword" if isinstance(e, KeywordMatchError) else "syntax"
-        _last_parse_error["reason"] = str(e)
+        last_parse_error_state["type"] = "keyword" if isinstance(e, KeywordMatchError) else "syntax"
+        last_parse_error_state["reason"] = str(e)
         if logger and isinstance(e, StepSyntaxError):
             fail_text = f"步骤语法错误: {e}"
             name_part = f"Clib_Name：{name}" if name else "Clib_Name：未知"
@@ -232,8 +231,8 @@ def render_step_lines(
     )
 
     if result is None:
-        err_type = _last_parse_error.get("type")
-        err_reason = _last_parse_error.get("reason", "")
+        err_type = last_parse_error_state.get("type")
+        err_reason = last_parse_error_state.get("reason", "")
         if err_type == "iomapping_conflict":
             return None
         error_detail = StepErrorDetailBuilder.build_detail(
@@ -300,15 +299,15 @@ def generate_content(
 
 # ==================== 运行时上下文与编排用 API（去脚本化） ====================
 
-_io_mapping_ctx: Any = None
-_config_enum_ctx: Any = None
+io_mapping_context: Any = None
+config_enum_context: Any = None
 
 
 def reset_runtime_state() -> None:
     """初始化/重置全局上下文状态，避免跨任务串状态。"""
-    global _io_mapping_ctx, _config_enum_ctx
-    _io_mapping_ctx = None
-    _config_enum_ctx = None
+    global io_mapping_context, config_enum_context
+    io_mapping_context = None
+    config_enum_context = None
 
 
 def setup_generator_logger(base_dir: str) -> GeneratorLogger:
@@ -317,7 +316,7 @@ def setup_generator_logger(base_dir: str) -> GeneratorLogger:
         base_dir,
         log_basename="generate_cin_from_excel.log",
         logger_name="generate_cin_from_excel",
-        formatter_factory=lambda s: ProgressFormatter(s),
+        formatter_factory=create_progress_formatter,
         file_filters=[SubstringFilter(CASEID_LOG_PATTERNS, include=False)],
     )
 
@@ -326,11 +325,11 @@ def load_mapping_context(
     cfg: Any, base_dir: str, config_path: str, domain: str = DEFAULT_DOMAIN_LR_REAR
 ) -> Tuple[Any, Any]:
     """步骤 ②：按 domain 加载 io_mapping 与 Configuration 枚举上下文；写入模块级供 legacy 使用。"""
-    global _io_mapping_ctx, _config_enum_ctx
-    _io_mapping_ctx, _config_enum_ctx = CINEntrypointSupport.load_mapping_context(
+    global io_mapping_context, config_enum_context
+    io_mapping_context, config_enum_context = CINEntrypointSupport.load_mapping_context(
         cfg, base_dir=base_dir, config_path=config_path, domain=domain
     )
-    return _io_mapping_ctx, _config_enum_ctx
+    return io_mapping_context, config_enum_context
 
 
 def legacy_read_clib_steps(excel_path: str, clib_sheet: Optional[str] = None) -> tuple:

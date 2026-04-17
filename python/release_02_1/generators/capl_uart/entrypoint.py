@@ -28,6 +28,11 @@ def main() -> None:
     UARTGeneratorService().run_legacy_pipeline()
 
 
+def run_generation() -> None:
+    """语义化入口别名：等价于 main。"""
+    main()
+
+
 if __name__ == "__main__":
     if sys.stdout is not None:
         try:

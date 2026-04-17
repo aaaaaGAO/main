@@ -1,0 +1,1404 @@
+/*@!Encoding: 936*/
+
+includes
+{
+}
+
+variables
+{
+}
+
+testcase SYS_LDCU_window_0001()
+{
+  TestDescription("初始化打开配置");
+  g_HIL_Clib_Swc_Clib_LocalON(); // 测试步骤 Step Clib LocalON//
+  g_HIL_Bus_Swc_Set("J_DI_FLDoorAjarSW_LS close"); // 测试步骤 Step Set J_DI_FLDoorAjarSW_LS close
+  g_HIL_Bus_Swc_Set("J_DI_RLDoorAjarSW_LS close"); // 测试步骤 Step Set J_DI_RLDoorAjarSW_LS close
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0//CLOSE
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_RRDoorAjarSt 0"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_RRDoorAjarSt 0//CLOSE
+  g_HIL_Bus_Swc_Set("I_CDCU_LDCU_BodyCtrl::I_CDCU_ComfortWndsCmd 0"); // 测试步骤 Step Set I_CDCU_LDCU_BodyCtrl::I_CDCU_ComfortWndsCmd 0//0x0:No_command
+  g_HIL_Bus_Swc_Set("C_SRS_SysSt::C_SRS_CrashOutputSt 0"); // 测试步骤 Step Set C_SRS_SysSt::C_SRS_CrashOutputSt 0//Inactive
+}
+
+testcase SYS_LDCU_window_0002()
+{
+  TestDescription("SOA激活/关闭车窗锁止功能");
+  g_HIL_Clib_Swc_Clib_LocalON(); // 测试步骤 Step Clib LocalON//
+  g_EM_SOAClient_Swc_SOA_FIND("0x0061 0x0002"); // 测试步骤 TC_CANTest SOA FIND 0x0061 0x0002
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("1"); // 测试步骤 TC_Sleep 1
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("WinLockCtrlReqRespStruct.WinLockCtrlReqNRC 0&RespCode 0"); // 预期结果 TC_CANTest SOA check WinLockCtrlReqRespStruct.WinLockCtrlReqNRC 0&RespCode 0
+  g_EM_SOAClient_Swc_SOA_REQ("0x0061 0x0005 WinLockCtrlReq:0x1&UserID:1"); // 测试步骤 TC_CANTest SOA REQ 0x0061 0x0005 WinLockCtrlReq:0x1&UserID:1//0x1:Lock
+  g_EM_SOAClient_Swc_SOA_CHECK("WinLockCtrlReqRespStruct.WinLockCtrlReqNRC 0&RespCode 0"); // 预期结果 TC_CANTest SOA check WinLockCtrlReqRespStruct.WinLockCtrlReqNRC 0&RespCode 0
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("FLWindowStStruct.WinLockworkSt 1"); // 预期结果 TC_CANTest SOA check FLWindowStStruct.WinLockworkSt 1//0x1:Active
+  g_EM_SOAClient_Swc_SOA_SUB("0x0061 0x0002"); // 测试步骤 TC_CANTest SOA SUB 0x0061 0x0002
+  g_EM_SOAClient_Swc_SOA_CHECK("FLWindowStStruct.WinLockworkSt 1"); // 预期结果 TC_CANTest SOA check FLWindowStStruct.WinLockworkSt 1//0x1:Active
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_WinLockworkSt 1"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_WinLockworkSt 1//Active
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("1"); // 测试步骤 TC_Sleep 1
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("WinLockCtrlReqRespStruct.WinLockCtrlReqNRC 0&RespCode 0"); // 预期结果 TC_CANTest SOA check WinLockCtrlReqRespStruct.WinLockCtrlReqNRC 0&RespCode 0
+  g_EM_SOAClient_Swc_SOA_REQ("0x0061 0x0005 WinLockCtrlReq:0x2&UserID:1"); // 测试步骤 TC_CANTest SOA REQ 0x0061 0x0005 WinLockCtrlReq:0x2&UserID:1//0x2:Unlock
+  g_EM_SOAClient_Swc_SOA_CHECK("WinLockCtrlReqRespStruct.WinLockCtrlReqNRC 0&RespCode 0"); // 预期结果 TC_CANTest SOA check WinLockCtrlReqRespStruct.WinLockCtrlReqNRC 0&RespCode 0
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("FLWindowStStruct.WinLockworkSt 0"); // 预期结果 TC_CANTest SOA check FLWindowStStruct.WinLockworkSt 0//0x0:Inactive
+  g_EM_SOAClient_Swc_SOA_SUB("0x0061 0x0002"); // 测试步骤 TC_CANTest SOA SUB 0x0061 0x0002
+  g_EM_SOAClient_Swc_SOA_CHECK("FLWindowStStruct.WinLockworkSt 0"); // 预期结果 TC_CANTest SOA check FLWindowStStruct.WinLockworkSt 0//0x0:Inactive
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_WinLockworkSt 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_WinLockworkSt 0//
+}
+
+testcase SYS_LDCU_window_0003()
+{
+  TestDescription("SOA激活/关闭车窗锁止功能");
+  g_HIL_Clib_Swc_Clib_OFF(); // 测试步骤 Step Clib OFF//
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_PowerMode 0"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_PowerMode 0//OFF
+  g_EM_SOAClient_Swc_SOA_FIND("0x0061 0x0002"); // 测试步骤 TC_CANTest SOA FIND 0x0061 0x0002
+  g_HIL_Gen_Swc_Wait("62 s"); // 测试步骤 Step Wait 62 s
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_WinLockworkSt 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_WinLockworkSt 0//
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("WinLockCtrlReqRespStruct.WinLockCtrlReqNRC 1&RespCode 0"); // 预期结果 TC_CANTest SOA check WinLockCtrlReqRespStruct.WinLockCtrlReqNRC 1&RespCode 0//0x1:PowerMode Not Fitted
+  g_EM_SOAClient_Swc_SOA_REQ("0x0061 0x0005 WinLockCtrlReq:0x1&UserID:1"); // 测试步骤 TC_CANTest SOA REQ 0x0061 0x0005 WinLockCtrlReq:0x1&UserID:1//0x1:Lock
+  g_EM_SOAClient_Swc_SOA_CHECK("WinLockCtrlReqRespStruct.WinLockCtrlReqNRC 1&RespCode 0"); // 预期结果 TC_CANTest SOA check WinLockCtrlReqRespStruct.WinLockCtrlReqNRC 1&RespCode 0//0x1:PowerMode Not Fitted
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("FLWindowStStruct.WinLockworkSt 0"); // 预期结果 TC_CANTest SOA check FLWindowStStruct.WinLockworkSt 0//0x0:Inactive
+  g_EM_SOAClient_Swc_SOA_SUB("0x0061 0x0002"); // 测试步骤 TC_CANTest SOA SUB 0x0061 0x0002
+  g_EM_SOAClient_Swc_SOA_CHECK("FLWindowStStruct.WinLockworkSt 0"); // 预期结果 TC_CANTest SOA check FLWindowStStruct.WinLockworkSt 0//0x0:Inactive
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_WinLockworkSt 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_WinLockworkSt 0//
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("1"); // 测试步骤 TC_Sleep 1
+  g_EM_SOAClient_Swc_SOA_REQ("0x0061 0x0005 WinLockCtrlReq:0x0&UserID:1"); // 测试步骤 TC_CANTest SOA REQ 0x0061 0x0005 WinLockCtrlReq:0x0&UserID:1//
+  g_EM_SOAClient_Swc_SOA_SUB("0x0061 0x0002"); // 测试步骤 TC_CANTest SOA SUB 0x0061 0x0002
+}
+
+testcase SYS_LDCU_window_0004()
+{
+  TestDescription("SOA关闭锁车自动升窗功能");
+  g_HIL_Clib_Swc_Clib_LocalON(); // 测试步骤 Step Clib LocalON//
+  g_EM_SOAClient_Swc_SOA_FIND("0x0061 0x0002"); // 测试步骤 TC_CANTest SOA FIND 0x0061 0x0002
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("1"); // 测试步骤 TC_Sleep 1
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("LockWinCfgRespStruct.LockWinCfgNRC 0&RespCode 0"); // 预期结果 TC_CANTest SOA check LockWinCfgRespStruct.LockWinCfgNRC 0&RespCode 0
+  g_EM_SOAClient_Swc_SOA_REQ("0x0061 0x0006 LockWinCfg:0x2&UserID:1"); // 测试步骤 TC_CANTest SOA REQ 0x0061 0x0006 LockWinCfg:0x2&UserID:1//0x2:active
+  g_EM_SOAClient_Swc_SOA_CHECK("LockWinCfgRespStruct.LockWinCfgNRC 0&RespCode 0"); // 预期结果 TC_CANTest SOA check LockWinCfgRespStruct.LockWinCfgNRC 0&RespCode 0
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("FLWindowStStruct.LockWinCfgFB 1"); // 预期结果 TC_CANTest SOA check FLWindowStStruct.LockWinCfgFB 1//0x1:Active
+  g_EM_SOAClient_Swc_SOA_SUB("0x0061 0x0002"); // 测试步骤 TC_CANTest SOA SUB 0x0061 0x0002
+  g_EM_SOAClient_Swc_SOA_CHECK("FLWindowStStruct.LockWinCfgFB 1"); // 预期结果 TC_CANTest SOA check FLWindowStStruct.LockWinCfgFB 1//0x1:Active
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_LockWinCfgFB 1"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_LockWinCfgFB 1//Active
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("1"); // 测试步骤 TC_Sleep 1
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("WinLockCtrlReqRespStruct.WinLockCtrlReqNRC 0&RespCode 0"); // 预期结果 TC_CANTest SOA check WinLockCtrlReqRespStruct.WinLockCtrlReqNRC 0&RespCode 0
+  g_EM_SOAClient_Swc_SOA_REQ("0x0061 0x0006 LockWinCfg:0x1&UserID:1"); // 测试步骤 TC_CANTest SOA REQ 0x0061 0x0006 LockWinCfg:0x1&UserID:1//0x1:not active
+  g_EM_SOAClient_Swc_SOA_CHECK("WinLockCtrlReqRespStruct.WinLockCtrlReqNRC 0&RespCode 0"); // 预期结果 TC_CANTest SOA check WinLockCtrlReqRespStruct.WinLockCtrlReqNRC 0&RespCode 0
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("FLWindowStStruct.LockWinCfgFB 0"); // 预期结果 TC_CANTest SOA check FLWindowStStruct.LockWinCfgFB 0//0x0:Inactive
+  g_EM_SOAClient_Swc_SOA_SUB("0x0061 0x0002"); // 测试步骤 TC_CANTest SOA SUB 0x0061 0x0002
+  g_EM_SOAClient_Swc_SOA_CHECK("FLWindowStStruct.LockWinCfgFB 0"); // 预期结果 TC_CANTest SOA check FLWindowStStruct.LockWinCfgFB 0//0x0:Inactive
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_LockWinCfgFB 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_LockWinCfgFB  0//
+}
+
+testcase SYS_LDCU_window_0005()
+{
+  TestDescription("SOA响应大屏控制主驾车窗运动到指定位置");
+  g_HIL_Clib_Swc_Clib_LocalON(); // 测试步骤 Step Clib LocalON//
+  g_EM_SOAClient_Swc_SOA_FIND("0x0061 0x0002"); // 测试步骤 TC_CANTest SOA FIND 0x0061 0x0002
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("1"); // 测试步骤 TC_Sleep 1
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("FLWinPosCmdRespStruct.FLWinPosCmdNRC 0&RespCode 0"); // 预期结果 TC_CANTest SOA check FLWinPosCmdRespStruct.FLWinPosCmdNRC 0&RespCode 0
+  g_EM_SOAClient_Swc_SOA_REQ("0x0061 0x0001 FLWinPos:0&UserID:1"); // 测试步骤 TC_CANTest SOA REQ 0x0061 0x0001 FLWinPos:0&UserID:1//手动输入0%
+  g_EM_SOAClient_Swc_SOA_CHECK("FLWinPosCmdRespStruct.FLWinPosCmdNRC 0&RespCode 0"); // 预期结果 TC_CANTest SOA check FLWinPosCmdRespStruct.FLWinPosCmdNRC 0&RespCode 0
+  g_EM_SOAClient_Swc_SOA_SUB("0x0061 0x0002"); // 测试步骤 TC_CANTest SOA SUB 0x0061 0x0002
+  g_HIL_Bus_Swc_Check("J_HBridge_FLCWindowCtr+ Up"); // 预期结果 Step Check J_HBridge_FLCWindowCtr+ Up
+  g_HIL_Bus_Swc_Check("J_HBridge_FLCWindowCtr- OFF"); // 预期结果 Step Check J_HBridge_FLCWindowCtr- OFF
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("1"); // 测试步骤 TC_Sleep 1
+  g_EM_SOAClient_Swc_SOA_REQ("0x0061 0x0001 FLWinPos:0&UserID:1"); // 测试步骤 TC_CANTest SOA REQ 0x0061 0x0001 FLWinPos:0&UserID:1//
+  g_EM_SOAClient_Swc_SOA_SUB("0x0061 0x0002"); // 测试步骤 TC_CANTest SOA SUB 0x0061 0x0002
+}
+
+testcase SYS_LDCU_window_0006()
+{
+  TestDescription("SOA响应大屏控制主驾车窗运动到指定位置");
+  g_HIL_Clib_Swc_Clib_LocalON(); // 测试步骤 Step Clib LocalON//
+  g_EM_SOAClient_Swc_SOA_FIND("0x0061 0x0002"); // 测试步骤 TC_CANTest SOA FIND 0x0061 0x0002
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("1"); // 测试步骤 TC_Sleep 1
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("FLWinPosCmdRespStruct.FLWinPosCmdNRC 0&RespCode 0"); // 预期结果 TC_CANTest SOA check FLWinPosCmdRespStruct.FLWinPosCmdNRC 0&RespCode 0
+  g_EM_SOAClient_Swc_SOA_REQ("0x0061 0x0001 FLWinPos:100&UserID:1"); // 测试步骤 TC_CANTest SOA REQ 0x0061 0x0001 FLWinPos:100&UserID:1//手动输入100
+  g_EM_SOAClient_Swc_SOA_CHECK("FLWinPosCmdRespStruct.FLWinPosCmdNRC 0&RespCode 0"); // 预期结果 TC_CANTest SOA check FLWinPosCmdRespStruct.FLWinPosCmdNRC 0&RespCode 0
+  g_EM_SOAClient_Swc_SOA_SUB("0x0061 0x0002"); // 测试步骤 TC_CANTest SOA SUB 0x0061 0x0002
+  g_HIL_Bus_Swc_Check("J_HBridge_FLCWindowCtr+ OFF"); // 预期结果 Step Check J_HBridge_FLCWindowCtr+ OFF
+  g_HIL_Bus_Swc_Check("J_HBridge_FLCWindowCtr- Down"); // 预期结果 Step Check J_HBridge_FLCWindowCtr- Down
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("1"); // 测试步骤 TC_Sleep 1
+  g_EM_SOAClient_Swc_SOA_REQ("0x0061 0x0001 FLWinPos:0&UserID:1"); // 测试步骤 TC_CANTest SOA REQ 0x0061 0x0001 FLWinPos:0&UserID:1//
+  g_EM_SOAClient_Swc_SOA_SUB("0x0061 0x0002"); // 测试步骤 TC_CANTest SOA SUB 0x0061 0x0002
+}
+
+testcase SYS_LDCU_window_0007()
+{
+  TestDescription("SOA_响应大屏控制左后车窗运动到指定位置");
+  g_HIL_Clib_Swc_Clib_LocalON(); // 测试步骤 Step Clib LocalON//
+  g_EM_SOAClient_Swc_SOA_FIND("0x0061 0x0002"); // 测试步骤 TC_CANTest SOA FIND 0x0061 0x0002
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("1"); // 测试步骤 TC_Sleep 1
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("RLWinPosCmdRespStruct.RLWinPosCmdNRC 0&RespCode 0"); // 预期结果 TC_CANTest SOA check RLWinPosCmdRespStruct.RLWinPosCmdNRC 0&RespCode 0
+  g_EM_SOAClient_Swc_SOA_REQ("0x0061 0x0002 RLWinPos:0&UserID:1"); // 测试步骤 TC_CANTest SOA REQ 0x0061 0x0002 RLWinPos:0&UserID:1//手动输入0%
+  g_EM_SOAClient_Swc_SOA_CHECK("RLWinPosCmdRespStruct.RLWinPosCmdNRC 0&RespCode 0"); // 预期结果 TC_CANTest SOA check RLWinPosCmdRespStruct.RLWinPosCmdNRC 0&RespCode 0
+  g_EM_SOAClient_Swc_SOA_SUB("0x0061 0x0002"); // 测试步骤 TC_CANTest SOA SUB 0x0061 0x0002
+  g_HIL_Bus_Swc_Check("J_Hbridge_RLWindowCtr+ Up"); // 预期结果 Step Check J_Hbridge_RLWindowCtr+ Up
+  g_HIL_Bus_Swc_Check("J_Hbridge_RLWindowCtr- OFF"); // 预期结果 Step Check J_Hbridge_RLWindowCtr- OFF
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("1"); // 测试步骤 TC_Sleep 1
+  g_EM_SOAClient_Swc_SOA_REQ("0x0061 0x0002 RLWinPos:0&UserID:1"); // 测试步骤 TC_CANTest SOA REQ 0x0061 0x0002 RLWinPos:0&UserID:1//
+  g_EM_SOAClient_Swc_SOA_SUB("0x0061 0x0002"); // 测试步骤 TC_CANTest SOA SUB 0x0061 0x0002
+}
+
+testcase SYS_LDCU_window_0008()
+{
+  TestDescription("SOA_响应大屏控制左后车窗运动到指定位置");
+  g_HIL_Clib_Swc_Clib_LocalON(); // 测试步骤 Step Clib LocalON//
+  g_EM_SOAClient_Swc_SOA_FIND("0x0061 0x0002"); // 测试步骤 TC_CANTest SOA FIND 0x0061 0x0002
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("1"); // 测试步骤 TC_Sleep 1
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("RLWinPosCmdRespStruct.RLWinPosCmdNRC 0&RespCode 0"); // 预期结果 TC_CANTest SOA check RLWinPosCmdRespStruct.RLWinPosCmdNRC 0&RespCode 0
+  g_EM_SOAClient_Swc_SOA_REQ("0x0061 0x0002 RLWinPos:100&UserID:1"); // 测试步骤 TC_CANTest SOA REQ 0x0061 0x0002 RLWinPos:100&UserID:1//手动输入100
+  g_EM_SOAClient_Swc_SOA_CHECK("RLWinPosCmdRespStruct.RLWinPosCmdNRC 0&RespCode 0"); // 预期结果 TC_CANTest SOA check RLWinPosCmdRespStruct.RLWinPosCmdNRC 0&RespCode 0
+  g_EM_SOAClient_Swc_SOA_SUB("0x0061 0x0002"); // 测试步骤 TC_CANTest SOA SUB 0x0061 0x0002
+  g_HIL_Bus_Swc_Check("J_Hbridge_RLWindowCtr+ OFF"); // 预期结果 Step Check J_Hbridge_RLWindowCtr+ OFF
+  g_HIL_Bus_Swc_Check("J_Hbridge_RLWindowCtr- Down"); // 预期结果 Step Check J_Hbridge_RLWindowCtr- Down
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("1"); // 测试步骤 TC_Sleep 1
+  g_EM_SOAClient_Swc_SOA_REQ("0x0061 0x0002 RLWinPos:0&UserID:1"); // 测试步骤 TC_CANTest SOA REQ 0x0061 0x0002 RLWinPos:0&UserID:1//
+  g_EM_SOAClient_Swc_SOA_SUB("0x0061 0x0002"); // 测试步骤 TC_CANTest SOA SUB 0x0061 0x0002
+}
+
+testcase SYS_LDCU_window_0046()
+{
+  TestDescription("主驾左前车窗双档开关NoInput LocalON");
+  g_HIL_Clib_Swc_Clib_LocalON(); // 测试步骤 Step Clib LocalON//
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_PowerMode 1"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_PowerMode 1//ON
+  g_HIL_Bus_Swc_Set("J_AI_DFLWindowCtrSw NoInput"); // 测试步骤 Step Set J_AI_DFLWindowCtrSw NoInput//0
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_DFLWinSwSt 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_DFLWinSwSt 0//No Input
+}
+
+testcase SYS_LDCU_window_0047()
+{
+  TestDescription("主驾左前车窗双档开关Manual Up LocalON");
+  g_HIL_Clib_Swc_Clib_LocalON(); // 测试步骤 Step Clib LocalON//
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_PowerMode 1"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_PowerMode 1//Local ON
+  g_HIL_Bus_Swc_Set("J_AI_DFLWindowCtrSw ManualUp"); // 测试步骤 Step Set J_AI_DFLWindowCtrSw ManualUp//1
+  g_HIL_Gen_Swc_Wait("601 ms"); // 测试步骤 Step Wait 601 ms//恢复初始状态
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_DFLWinSwSt 1"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_DFLWinSwSt 1//Manual Up
+  g_HIL_Bus_Swc_Set("J_AI_DFLWindowCtrSw NoInput"); // 测试步骤 Step Set J_AI_DFLWindowCtrSw NoInput
+}
+
+testcase SYS_LDCU_window_0048()
+{
+  TestDescription("主驾左前车窗双档开关AutoUp LocalON");
+  g_HIL_Clib_Swc_Clib_LocalON(); // 测试步骤 Step Clib LocalON//
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_PowerMode 1"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_PowerMode 1//ON
+  g_HIL_Bus_Swc_Set("J_AI_DFLWindowCtrSw AutoUp"); // 测试步骤 Step Set J_AI_DFLWindowCtrSw AutoUp//2
+  g_HIL_Gen_Swc_Wait("311 ms"); // 测试步骤 Step Wait 311 ms//恢复初始状态
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_DFLWinSwSt 2"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_DFLWinSwSt 2//AutoUp
+  g_HIL_Bus_Swc_Set("J_AI_DFLWindowCtrSw NoInput"); // 测试步骤 Step Set J_AI_DFLWindowCtrSw NoInput
+}
+
+testcase SYS_LDCU_window_0049()
+{
+  TestDescription("主驾左前车窗双档开关ManualDown LocalON");
+  g_HIL_Clib_Swc_Clib_LocalON(); // 测试步骤 Step Clib LocalON//
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_PowerMode 1"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_PowerMode 1//ON
+  g_HIL_Bus_Swc_Set("J_AI_DFLWindowCtrSw ManualDown"); // 测试步骤 Step Set J_AI_DFLWindowCtrSw ManualDown//3
+  g_HIL_Gen_Swc_Wait("601 ms"); // 测试步骤 Step Wait 601 ms//恢复初始状态
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_DFLWinSwSt 3"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_DFLWinSwSt 3//ManualDown
+  g_HIL_Bus_Swc_Set("J_AI_DFLWindowCtrSw NoInput"); // 测试步骤 Step Set J_AI_DFLWindowCtrSw NoInput
+}
+
+testcase SYS_LDCU_window_0050()
+{
+  TestDescription("主驾左前车窗双档开关AutoDown LocalON");
+  g_HIL_Clib_Swc_Clib_LocalON(); // 测试步骤 Step Clib LocalON//
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_PowerMode 1"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_PowerMode 1//ON
+  g_HIL_Bus_Swc_Set("J_AI_DFLWindowCtrSw AutoDown"); // 测试步骤 Step Set J_AI_DFLWindowCtrSw AutoDown//4
+  g_HIL_Gen_Swc_Wait("311 ms"); // 测试步骤 Step Wait 311 ms//恢复初始状态
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_DFLWinSwSt 4"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_DFLWinSwSt 4//AutoDown
+  g_HIL_Bus_Swc_Set("J_AI_DFLWindowCtrSw NoInput"); // 测试步骤 Step Set J_AI_DFLWindowCtrSw NoInput
+}
+
+testcase SYS_LDCU_window_0055()
+{
+  TestDescription("主驾右前车窗双档开关NoInput LocalON");
+  g_HIL_Clib_Swc_Clib_LocalON(); // 测试步骤 Step Clib LocalON//
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_PowerMode 1"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_PowerMode 1//ON
+  g_HIL_Bus_Swc_Set("J_AI_DFRWindowCtrSw NoInput"); // 测试步骤 Step Set J_AI_DFRWindowCtrSw NoInput//0
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_DFRWinSwSt 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_DFRWinSwSt 0//No Input
+}
+
+testcase SYS_LDCU_window_0056()
+{
+  TestDescription("主驾右前车窗双档开关Manual Up LocalON");
+  g_HIL_Clib_Swc_Clib_LocalON(); // 测试步骤 Step Clib LocalON//
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_PowerMode 1"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_PowerMode 1//Local ON
+  g_HIL_Bus_Swc_Set("J_AI_DFRWindowCtrSw ManualUp"); // 测试步骤 Step Set J_AI_DFRWindowCtrSw ManualUp//1
+  g_HIL_Gen_Swc_Wait("601 ms"); // 测试步骤 Step Wait 601 ms//恢复初始状态
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_DFRWinSwSt 1"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_DFRWinSwSt 1//Manual Up
+  g_HIL_Bus_Swc_Set("J_AI_DFRWindowCtrSw NoInput"); // 测试步骤 Step Set J_AI_DFRWindowCtrSw NoInput
+}
+
+testcase SYS_LDCU_window_0057()
+{
+  TestDescription("主驾右前车窗双档开关AutoUp LocalON");
+  g_HIL_Clib_Swc_Clib_LocalON(); // 测试步骤 Step Clib LocalON//
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_PowerMode 1"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_PowerMode 1//ON
+  g_HIL_Bus_Swc_Set("J_AI_DFRWindowCtrSw AutoUp"); // 测试步骤 Step Set J_AI_DFRWindowCtrSw AutoUp//2
+  g_HIL_Gen_Swc_Wait("311 ms"); // 测试步骤 Step Wait 311 ms//恢复初始状态
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_DFRWinSwSt 2"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_DFRWinSwSt 2//AutoUp
+  g_HIL_Bus_Swc_Set("J_AI_DFRWindowCtrSw NoInput"); // 测试步骤 Step Set J_AI_DFRWindowCtrSw NoInput
+}
+
+testcase SYS_LDCU_window_0058()
+{
+  TestDescription("主驾右前车窗双档开关ManualDown LocalON");
+  g_HIL_Clib_Swc_Clib_LocalON(); // 测试步骤 Step Clib LocalON//
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_PowerMode 1"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_PowerMode 1//ON
+  g_HIL_Bus_Swc_Set("J_AI_DFRWindowCtrSw ManualDown"); // 测试步骤 Step Set J_AI_DFRWindowCtrSw ManualDown//3
+  g_HIL_Gen_Swc_Wait("601 ms"); // 测试步骤 Step Wait 601 ms//恢复初始状态
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_DFRWinSwSt 3"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_DFRWinSwSt 3//ManualDown
+  g_HIL_Bus_Swc_Set("J_AI_DFRWindowCtrSw NoInput"); // 测试步骤 Step Set J_AI_DFRWindowCtrSw NoInput
+}
+
+testcase SYS_LDCU_window_0059()
+{
+  TestDescription("主驾右前车窗双档开关AutoDown LocalON");
+  g_HIL_Clib_Swc_Clib_LocalON(); // 测试步骤 Step Clib LocalON//
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_PowerMode 1"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_PowerMode 1//ON
+  g_HIL_Bus_Swc_Set("J_AI_DFRWindowCtrSw AutoDown"); // 测试步骤 Step Set J_AI_DFRWindowCtrSw AutoDown//4
+  g_HIL_Gen_Swc_Wait("311 ms"); // 测试步骤 Step Wait 311 ms//恢复初始状态
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_DFRWinSwSt 4"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_DFRWinSwSt 4//AutoDown
+  g_HIL_Bus_Swc_Set("J_AI_DFRWindowCtrSw NoInput"); // 测试步骤 Step Set J_AI_DFRWindowCtrSw NoInput
+}
+
+testcase SYS_LDCU_window_0060()
+{
+  TestDescription("主驾左后车窗双档开关NoInput LocalON");
+  g_HIL_Clib_Swc_Clib_LocalON(); // 测试步骤 Step Clib LocalON//
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_PowerMode 1"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_PowerMode 1//ON
+  g_HIL_Bus_Swc_Set("J_AI_DRLWindowCtrSw NoInput"); // 测试步骤 Step Set J_AI_DRLWindowCtrSw NoInput//0
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_DRLWinSwSt 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_DRLWinSwSt 0//No Input
+}
+
+testcase SYS_LDCU_window_0061()
+{
+  TestDescription("主驾左后车窗双档开关Manual Up LocalON");
+  g_HIL_Clib_Swc_Clib_LocalON(); // 测试步骤 Step Clib LocalON//
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_PowerMode 1"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_PowerMode 1//Local ON
+  g_HIL_Bus_Swc_Set("J_AI_DRLWindowCtrSw ManualUp"); // 测试步骤 Step Set J_AI_DRLWindowCtrSw ManualUp//1
+  g_HIL_Gen_Swc_Wait("601 ms"); // 测试步骤 Step Wait 601 ms//恢复初始状态
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_DRLWinSwSt 1"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_DRLWinSwSt 1//Manual Up
+  g_HIL_Bus_Swc_Set("J_AI_DRLWindowCtrSw NoInput"); // 测试步骤 Step Set J_AI_DRLWindowCtrSw NoInput
+}
+
+testcase SYS_LDCU_window_0062()
+{
+  TestDescription("主驾左后车窗双档开关AutoUp LocalON");
+  g_HIL_Clib_Swc_Clib_LocalON(); // 测试步骤 Step Clib LocalON//
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_PowerMode 1"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_PowerMode 1//ON
+  g_HIL_Bus_Swc_Set("J_AI_DRLWindowCtrSw AutoUp"); // 测试步骤 Step Set J_AI_DRLWindowCtrSw AutoUp//2
+  g_HIL_Gen_Swc_Wait("311 ms"); // 测试步骤 Step Wait 311 ms//恢复初始状态
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_DRLWinSwSt 2"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_DRLWinSwSt 2//AutoUp
+  g_HIL_Bus_Swc_Set("J_AI_DRLWindowCtrSw NoInput"); // 测试步骤 Step Set J_AI_DRLWindowCtrSw NoInput
+}
+
+testcase SYS_LDCU_window_0063()
+{
+  TestDescription("主驾左后车窗双档开关ManualDown LocalON");
+  g_HIL_Clib_Swc_Clib_LocalON(); // 测试步骤 Step Clib LocalON//
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_PowerMode 1"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_PowerMode 1//ON
+  g_HIL_Bus_Swc_Set("J_AI_DRLWindowCtrSw ManualDown"); // 测试步骤 Step Set J_AI_DRLWindowCtrSw ManualDown//3
+  g_HIL_Gen_Swc_Wait("601 ms"); // 测试步骤 Step Wait 601 ms//恢复初始状态
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_DRLWinSwSt 3"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_DRLWinSwSt 3//ManualDown
+  g_HIL_Bus_Swc_Set("J_AI_DRLWindowCtrSw NoInput"); // 测试步骤 Step Set J_AI_DRLWindowCtrSw NoInput
+}
+
+testcase SYS_LDCU_window_0064()
+{
+  TestDescription("主驾左后车窗双档开关AutoDown LocalON");
+  g_HIL_Clib_Swc_Clib_LocalON(); // 测试步骤 Step Clib LocalON//
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_PowerMode 1"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_PowerMode 1//ON
+  g_HIL_Bus_Swc_Set("J_AI_DRLWindowCtrSw AutoDown"); // 测试步骤 Step Set J_AI_DRLWindowCtrSw AutoDown//4
+  g_HIL_Gen_Swc_Wait("311 ms"); // 测试步骤 Step Wait 311 ms//恢复初始状态
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_DRLWinSwSt 4"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_DRLWinSwSt 4//AutoDown
+  g_HIL_Bus_Swc_Set("J_AI_DRLWindowCtrSw NoInput"); // 测试步骤 Step Set J_AI_DRLWindowCtrSw NoInput
+}
+
+testcase SYS_LDCU_window_0065()
+{
+  TestDescription("主驾右后车窗双档开关NoInput LocalON");
+  g_HIL_Clib_Swc_Clib_LocalON(); // 测试步骤 Step Clib LocalON//
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_PowerMode 1"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_PowerMode 1//ON
+  g_HIL_Bus_Swc_Set("J_AI_DRRWindowCtrSw NoInput"); // 测试步骤 Step Set J_AI_DRRWindowCtrSw NoInput//0
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_DRRWinSwSt 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_DRRWinSwSt 0//No Input
+}
+
+testcase SYS_LDCU_window_0066()
+{
+  TestDescription("主驾右后车窗双档开关Manual Up LocalON");
+  g_HIL_Clib_Swc_Clib_LocalON(); // 测试步骤 Step Clib LocalON//
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_PowerMode 1"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_PowerMode 1//Local ON
+  g_HIL_Bus_Swc_Set("J_AI_DRRWindowCtrSw ManualUp"); // 测试步骤 Step Set J_AI_DRRWindowCtrSw ManualUp//1
+  g_HIL_Gen_Swc_Wait("601 ms"); // 测试步骤 Step Wait 601 ms//恢复初始状态
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_DRRWinSwSt 1"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_DRRWinSwSt 1//Manual Up
+  g_HIL_Bus_Swc_Set("J_AI_DRRWindowCtrSw NoInput"); // 测试步骤 Step Set J_AI_DRRWindowCtrSw NoInput
+}
+
+testcase SYS_LDCU_window_0067()
+{
+  TestDescription("主驾右后车窗双档开关AutoUp LocalON");
+  g_HIL_Clib_Swc_Clib_LocalON(); // 测试步骤 Step Clib LocalON//
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_PowerMode 1"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_PowerMode 1//ON
+  g_HIL_Bus_Swc_Set("J_AI_DRRWindowCtrSw AutoUp"); // 测试步骤 Step Set J_AI_DRRWindowCtrSw AutoUp//2
+  g_HIL_Gen_Swc_Wait("311 ms"); // 测试步骤 Step Wait 311 ms//恢复初始状态
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_DRRWinSwSt 2"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_DRRWinSwSt 2//AutoUp
+  g_HIL_Bus_Swc_Set("J_AI_DRRWindowCtrSw NoInput"); // 测试步骤 Step Set J_AI_DRRWindowCtrSw NoInput
+}
+
+testcase SYS_LDCU_window_0068()
+{
+  TestDescription("主驾右后车窗双档开关ManualDown LocalON");
+  g_HIL_Clib_Swc_Clib_LocalON(); // 测试步骤 Step Clib LocalON//
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_PowerMode 1"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_PowerMode 1//ON
+  g_HIL_Bus_Swc_Set("J_AI_DRRWindowCtrSw ManualDown"); // 测试步骤 Step Set J_AI_DRRWindowCtrSw ManualDown//3
+  g_HIL_Gen_Swc_Wait("601 ms"); // 测试步骤 Step Wait 601 ms//恢复初始状态
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_DRRWinSwSt 3"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_DRRWinSwSt 3//ManualDown
+  g_HIL_Bus_Swc_Set("J_AI_DRRWindowCtrSw NoInput"); // 测试步骤 Step Set J_AI_DRRWindowCtrSw NoInput
+}
+
+testcase SYS_LDCU_window_0069()
+{
+  TestDescription("主驾右后车窗双档开关AutoDown LocalON");
+  g_HIL_Clib_Swc_Clib_LocalON(); // 测试步骤 Step Clib LocalON//
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_PowerMode 1"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_PowerMode 1//ON
+  g_HIL_Bus_Swc_Set("J_AI_DRRWindowCtrSw AutoDown"); // 测试步骤 Step Set J_AI_DRRWindowCtrSw AutoDown//4
+  g_HIL_Gen_Swc_Wait("311 ms"); // 测试步骤 Step Wait 311 ms//恢复初始状态
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_DRRWinSwSt 4"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_DRRWinSwSt 4//AutoDown
+  g_HIL_Bus_Swc_Set("J_AI_DRRWindowCtrSw NoInput"); // 测试步骤 Step Set J_AI_DRRWindowCtrSw NoInput
+}
+
+testcase SYS_LDCU_window_0070()
+{
+  TestDescription("左后车窗双档开关检测");
+  g_HIL_Clib_Swc_Clib_LocalON(); // 测试步骤 Step Clib LocalON//
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_PowerMode 1"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_PowerMode 1//ON
+  g_HIL_Bus_Swc_Set("J_AI_RLWindowCtrSw NoInput"); // 测试步骤 Step Set J_AI_RLWindowCtrSw NoInput//0
+  g_HIL_Gen_Swc_Wait("311 ms"); // 测试步骤 Step Wait 311 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_RLWinSwSt 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_RLWinSwSt 0//No Input
+}
+
+testcase SYS_LDCU_window_0071()
+{
+  TestDescription("左后车窗双档开关检测");
+  g_HIL_Clib_Swc_Clib_LocalON(); // 测试步骤 Step Clib LocalON//
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_PowerMode 1"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_PowerMode 1//ON
+  g_HIL_Bus_Swc_Set("J_AI_RLWindowCtrSw ManualUp"); // 测试步骤 Step Set J_AI_RLWindowCtrSw ManualUp//1
+  g_HIL_Gen_Swc_Wait("601 ms"); // 测试步骤 Step Wait 601 ms//恢复初始状态
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_RLWinSwSt 1"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_RLWinSwSt 1//Manual Up
+  g_HIL_Bus_Swc_Set("J_AI_RLWindowCtrSw NoInput"); // 测试步骤 Step Set J_AI_RLWindowCtrSw NoInput
+}
+
+testcase SYS_LDCU_window_0072()
+{
+  TestDescription("左后车窗双档开关检测");
+  g_HIL_Clib_Swc_Clib_LocalON(); // 测试步骤 Step Clib LocalON//
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_PowerMode 1"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_PowerMode 1//ON
+  g_HIL_Bus_Swc_Set("J_AI_RLWindowCtrSw AutoUp"); // 测试步骤 Step Set J_AI_RLWindowCtrSw AutoUp//2
+  g_HIL_Gen_Swc_Wait("311 ms"); // 测试步骤 Step Wait 311 ms//恢复初始状态
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_RLWinSwSt 2"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_RLWinSwSt 2//AutoUp
+  g_HIL_Bus_Swc_Set("J_AI_RLWindowCtrSw NoInput"); // 测试步骤 Step Set J_AI_RLWindowCtrSw NoInput
+}
+
+testcase SYS_LDCU_window_0073()
+{
+  TestDescription("左后车窗双档开关检测");
+  g_HIL_Clib_Swc_Clib_LocalON(); // 测试步骤 Step Clib LocalON//
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_PowerMode 1"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_PowerMode 1//ON
+  g_HIL_Bus_Swc_Set("J_AI_RLWindowCtrSw ManualDown"); // 测试步骤 Step Set J_AI_RLWindowCtrSw ManualDown//3
+  g_HIL_Gen_Swc_Wait("311 ms"); // 测试步骤 Step Wait 311 ms//恢复初始状态
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_RLWinSwSt 3"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_RLWinSwSt 3//ManualDown
+  g_HIL_Bus_Swc_Set("J_AI_RLWindowCtrSw NoInput"); // 测试步骤 Step Set J_AI_RLWindowCtrSw NoInput
+}
+
+testcase SYS_LDCU_window_0074()
+{
+  TestDescription("左后车窗双档开关检测");
+  g_HIL_Clib_Swc_Clib_LocalON(); // 测试步骤 Step Clib LocalON//
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_PowerMode 1"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_PowerMode 1//ON
+  g_HIL_Bus_Swc_Set("J_AI_RLWindowCtrSw AutoDown"); // 测试步骤 Step Set J_AI_RLWindowCtrSw AutoDown//4
+  g_HIL_Gen_Swc_Wait("311 ms"); // 测试步骤 Step Wait 311 ms//恢复初始状态
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_RLWinSwSt 4"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_RLWinSwSt 4//AutoDown
+  g_HIL_Bus_Swc_Set("J_AI_RLWindowCtrSw NoInput"); // 测试步骤 Step Set J_AI_RLWindowCtrSw NoInput
+}
+
+testcase SYS_LDCU_window_0075()
+{
+  TestDescription("左后车窗双档开关状态检测ManualUp LocalON->OFF 1min内");
+  g_HIL_Clib_Swc_Clib_LocalON(); // 测试步骤 Step Clib LocalON//
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_PowerMode 1"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_PowerMode 1//ON
+  g_HIL_Clib_Swc_Clib_OFF(); // 测试步骤 Step Clib OFF
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_PowerMode 0"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_PowerMode 0//OFF
+  g_HIL_Bus_Swc_Set("J_AI_RLWindowCtrSw ManualUp"); // 测试步骤 Step Set J_AI_RLWindowCtrSw ManualUp//1
+  g_HIL_Gen_Swc_Wait("601 ms"); // 测试步骤 Step Wait 601 ms//恢复初始状态
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_RLWinSwSt 1"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_RLWinSwSt 1//Manual Up
+  g_HIL_Bus_Swc_Set("J_AI_RLWindowCtrSw NoInput"); // 测试步骤 Step Set J_AI_RLWindowCtrSw NoInput
+}
+
+testcase SYS_LDCU_window_0076()
+{
+  TestDescription("左后车窗双档开关状态检测ManualDown LocalON->OFF 1min内");
+  g_HIL_Clib_Swc_Clib_LocalON(); // 测试步骤 Step Clib LocalON//
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_PowerMode 1"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_PowerMode 1//ON
+  g_HIL_Clib_Swc_Clib_OFF(); // 测试步骤 Step Clib OFF
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_PowerMode 0"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_PowerMode 0//OFF
+  g_HIL_Bus_Swc_Set("J_AI_RLWindowCtrSw ManualDown"); // 测试步骤 Step Set J_AI_RLWindowCtrSw ManualDown//3
+  g_HIL_Gen_Swc_Wait("601 ms"); // 测试步骤 Step Wait 601 ms//恢复初始状态
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_RLWinSwSt 3"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_RLWinSwSt 3//ManualDown
+  g_HIL_Bus_Swc_Set("J_AI_RLWindowCtrSw NoInput"); // 测试步骤 Step Set J_AI_RLWindowCtrSw NoInput
+}
+
+testcase SYS_LDCU_window_0077()
+{
+  TestDescription("左后车窗双档开关状态检测 AutoUp LocalON->OFF 1min内");
+  g_HIL_Clib_Swc_Clib_LocalON(); // 测试步骤 Step Clib LocalON//
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_PowerMode 1"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_PowerMode 1//ON
+  g_HIL_Clib_Swc_Clib_OFF(); // 测试步骤 Step Clib OFF
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_PowerMode 0"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_PowerMode 0//OFF
+  g_HIL_Bus_Swc_Set("J_AI_RLWindowCtrSw AutoUp"); // 测试步骤 Step Set J_AI_RLWindowCtrSw AutoUp//2
+  g_HIL_Gen_Swc_Wait("311 ms"); // 测试步骤 Step Wait 311 ms//恢复初始状态
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_RLWinSwSt 2"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_RLWinSwSt 2//AutoUp
+  g_HIL_Bus_Swc_Set("J_AI_RLWindowCtrSw NoInput"); // 测试步骤 Step Set J_AI_RLWindowCtrSw NoInput
+}
+
+testcase SYS_LDCU_window_0078()
+{
+  TestDescription("左后车窗双档开关状态检测 AutoDown LocalON->OFF 1min内");
+  g_HIL_Clib_Swc_Clib_LocalON(); // 测试步骤 Step Clib LocalON//
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_PowerMode 1"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_PowerMode 1//ON
+  g_HIL_Clib_Swc_Clib_OFF(); // 测试步骤 Step Clib OFF
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_PowerMode 0"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_PowerMode 0//OFF
+  g_HIL_Bus_Swc_Set("J_AI_RLWindowCtrSw AutoDown"); // 测试步骤 Step Set J_AI_RLWindowCtrSw AutoDown//4
+  g_HIL_Gen_Swc_Wait("601 ms"); // 测试步骤 Step Wait 601 ms//恢复初始状态
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_RLWinSwSt 4"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_RLWinSwSt 4//AutoDown
+  g_HIL_Bus_Swc_Set("J_AI_RLWindowCtrSw NoInput"); // 测试步骤 Step Set J_AI_RLWindowCtrSw NoInput
+  g_HIL_Gen_Swc_Wait("601 ms"); // 测试步骤 Step Wait 601 ms
+}
+
+testcase SYS_LDCU_window_0079()
+{
+  TestDescription("左后车窗双档开关状态检测ManualUp LocalON->OFF 大于1min");
+  g_HIL_Clib_Swc_Clib_LocalON(); // 测试步骤 Step Clib LocalON//
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_PowerMode 1"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_PowerMode 1//ON
+  g_HIL_Clib_Swc_Clib_OFF(); // 测试步骤 Step Clib OFF
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_PowerMode 0"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_PowerMode 0//OFF
+  g_HIL_Gen_Swc_Wait("62 s"); // 测试步骤 Step Wait 62 s
+  g_HIL_Bus_Swc_Set("J_AI_RLWindowCtrSw ManualUp"); // 测试步骤 Step Set J_AI_RLWindowCtrSw ManualUp//1
+  g_HIL_Gen_Swc_Wait("601 ms"); // 测试步骤 Step Wait 601 ms//恢复初始状态
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_RLWinSwSt 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_RLWinSwSt 0//No Input
+  g_HIL_Bus_Swc_Set("J_AI_RLWindowCtrSw NoInput"); // 测试步骤 Step Set J_AI_RLWindowCtrSw NoInput
+}
+
+testcase SYS_LDCU_window_0080()
+{
+  TestDescription("左后车窗双档开关状态检测ManualDown LocalON->OFF 大于1min");
+  g_HIL_Clib_Swc_Clib_LocalON(); // 测试步骤 Step Clib LocalON//
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_PowerMode 1"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_PowerMode 1//ON
+  g_HIL_Clib_Swc_Clib_OFF(); // 测试步骤 Step Clib OFF
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_PowerMode 0"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_PowerMode 0//OFF
+  g_HIL_Gen_Swc_Wait("62 s"); // 测试步骤 Step Wait 62 s
+  g_HIL_Bus_Swc_Set("J_AI_RLWindowCtrSw ManualDown"); // 测试步骤 Step Set J_AI_RLWindowCtrSw ManualDown//
+  g_HIL_Gen_Swc_Wait("601 ms"); // 测试步骤 Step Wait 601 ms//恢复初始状态
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_RLWinSwSt 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_RLWinSwSt 0//No Input
+  g_HIL_Bus_Swc_Set("J_AI_RLWindowCtrSw NoInput"); // 测试步骤 Step Set J_AI_RLWindowCtrSw NoInput
+}
+
+testcase SYS_LDCU_window_0081()
+{
+  TestDescription("左后车窗双档开关状态检测 AutoUp LocalON->OFF 大于1min");
+  g_HIL_Clib_Swc_Clib_LocalON(); // 测试步骤 Step Clib LocalON//
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_PowerMode 1"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_PowerMode 1//ON
+  g_HIL_Clib_Swc_Clib_OFF(); // 测试步骤 Step Clib OFF
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_PowerMode 0"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_PowerMode 0//OFF
+  g_HIL_Gen_Swc_Wait("62 s"); // 测试步骤 Step Wait 62 s
+  g_HIL_Bus_Swc_Set("J_AI_RLWindowCtrSw AutoUp"); // 测试步骤 Step Set J_AI_RLWindowCtrSw AutoUp//
+  g_HIL_Gen_Swc_Wait("311 ms"); // 测试步骤 Step Wait 311 ms//恢复初始状态
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_RLWinSwSt 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_RLWinSwSt 0//No Input
+  g_HIL_Bus_Swc_Set("J_AI_RLWindowCtrSw NoInput"); // 测试步骤 Step Set J_AI_RLWindowCtrSw NoInput
+}
+
+testcase SYS_LDCU_window_0082()
+{
+  TestDescription("左后车窗双档开关状态检测 AutoDown LocalON->OFF 大于1min");
+  g_HIL_Clib_Swc_Clib_LocalON(); // 测试步骤 Step Clib LocalON//
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_PowerMode 1"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_PowerMode 1//ON
+  g_HIL_Clib_Swc_Clib_OFF(); // 测试步骤 Step Clib OFF
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_PowerMode 0"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_PowerMode 0//OFF
+  g_HIL_Gen_Swc_Wait("62 s"); // 测试步骤 Step Wait 62 s
+  g_HIL_Bus_Swc_Set("J_AI_RLWindowCtrSw AutoDown"); // 测试步骤 Step Set J_AI_RLWindowCtrSw AutoDown//
+  g_HIL_Gen_Swc_Wait("311 ms"); // 测试步骤 Step Wait 311 ms//恢复初始状态
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_RLWinSwSt 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_RLWinSwSt 0//No Input
+  g_HIL_Bus_Swc_Set("J_AI_RLWindowCtrSw NoInput"); // 测试步骤 Step Set J_AI_RLWindowCtrSw NoInput
+}
+
+testcase SYS_LDCU_window_0084()
+{
+  TestDescription("主驾左前车窗双档开关控制手动上升-车窗锁制开关未激活&LocalON");
+  g_HIL_Clib_Swc_Clib_LocalON(); // 测试步骤 Step Clib LocalON//
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_PowerMode 1"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_PowerMode 1//ON
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Set("J_AI_DFLWindowCtrSw NoInput"); // 测试步骤 Step Set J_AI_DFLWindowCtrSw NoInput//No Input
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_WinLockworkSt 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_WinLockworkSt 0//inactive
+  g_HIL_Bus_Swc_Set("J_AI_DFLWindowCtrSw ManualUp"); // 测试步骤 Step Set J_AI_DFLWindowCtrSw ManualUp//
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms//
+  g_HIL_Bus_Swc_Check("J_HBridge_FLCWindowCtr+ Up"); // 预期结果 Step Check J_HBridge_FLCWindowCtr+ Up
+  g_HIL_Bus_Swc_Check("J_HBridge_FLCWindowCtr- Stop"); // 预期结果 Step Check J_HBridge_FLCWindowCtr- Stop
+  g_HIL_Bus_Swc_Check("I_LDCU_WinStFB1::I_LDCU_FLWinActionFB 1"); // 预期结果 Step Check I_LDCU_WinStFB1::I_LDCU_FLWinActionFB 1//0x1:Window_Closing
+  g_HIL_Bus_Swc_Set("J_AI_DFLWindowCtrSw NoInput"); // 测试步骤 Step Set J_AI_DFLWindowCtrSw NoInput//No Input
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_WinStFB2::I_LDCU_RLWinActionFB 0"); // 预期结果 Step Check I_LDCU_WinStFB2::I_LDCU_RLWinActionFB 0//0x0:Stopped,
+  g_HIL_Bus_Swc_Check("J_HBridge_FLCWindowCtr+ Stop"); // 预期结果 Step Check J_HBridge_FLCWindowCtr+ Stop
+  g_HIL_Bus_Swc_Check("J_HBridge_FLCWindowCtr- Stop"); // 预期结果 Step Check J_HBridge_FLCWindowCtr- Stop
+}
+
+testcase SYS_LDCU_window_0085()
+{
+  TestDescription("主驾左前车窗双档开关控制手动上升-车窗锁制开关未激活&LocalON");
+  g_HIL_Clib_Swc_Clib_LocalON(); // 测试步骤 Step Clib LocalON//
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_PowerMode 1"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_PowerMode 1//ON
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Clib_Swc_Clib_OFF(); // 测试步骤 Step Clib OFF//
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_WinLockworkSt 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_WinLockworkSt 0//inactive
+  g_HIL_Bus_Swc_Set("J_AI_DFLWindowCtrSw NoInput"); // 测试步骤 Step Set J_AI_DFLWindowCtrSw NoInput//No Input
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_PowerMode 0"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_PowerMode 0//OFF
+  g_HIL_Bus_Swc_Set("J_AI_DFLWindowCtrSw ManualUp"); // 测试步骤 Step Set J_AI_DFLWindowCtrSw ManualUp//
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Check("J_HBridge_FLCWindowCtr+ Up"); // 预期结果 Step Check J_HBridge_FLCWindowCtr+ Up
+  g_HIL_Bus_Swc_Check("J_HBridge_FLCWindowCtr- Stop"); // 预期结果 Step Check J_HBridge_FLCWindowCtr- Stop
+  g_HIL_Bus_Swc_Check("I_LDCU_WinStFB1::I_LDCU_FLWinActionFB 1"); // 预期结果 Step Check I_LDCU_WinStFB1::I_LDCU_FLWinActionFB 1//0x1:Window_Closing
+  g_HIL_Bus_Swc_Set("J_AI_DFLWindowCtrSw NoInput"); // 测试步骤 Step Set J_AI_DFLWindowCtrSw NoInput//No Input
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_WinStFB2::I_LDCU_RLWinActionFB 0"); // 预期结果 Step Check I_LDCU_WinStFB2::I_LDCU_RLWinActionFB 0//0x0:Stopped,
+  g_HIL_Bus_Swc_Check("J_HBridge_FLCWindowCtr+ Stop"); // 预期结果 Step Check J_HBridge_FLCWindowCtr+ Stop
+  g_HIL_Bus_Swc_Check("J_HBridge_FLCWindowCtr- Stop"); // 预期结果 Step Check J_HBridge_FLCWindowCtr- Stop
+}
+
+testcase SYS_LDCU_window_0086()
+{
+  TestDescription("主驾左前车窗双档开关控制自动上升-车窗锁制开关未激活&LocalON");
+  g_HIL_Clib_Swc_Clib_LocalON(); // 测试步骤 Step Clib LocalON//
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_PowerMode 1"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_PowerMode 1//ON
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Set("J_AI_DFLWindowCtrSw NoInput"); // 测试步骤 Step Set J_AI_DFLWindowCtrSw NoInput//No Input
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_WinLockworkSt 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_WinLockworkSt 0//inactive
+  g_HIL_Bus_Swc_Set("J_AI_DFLWindowCtrSw AutoUp"); // 测试步骤 Step Set J_AI_DFLWindowCtrSw AutoUp//
+  g_HIL_Gen_Swc_Wait("311 ms"); // 测试步骤 Step Wait 311 ms//
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_DFLWinSwSt 2"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_DFLWinSwSt 2//AutoUp
+  g_HIL_Bus_Swc_Check("J_HBridge_FLCWindowCtr+ Up"); // 预期结果 Step Check J_HBridge_FLCWindowCtr+ Up
+  g_HIL_Bus_Swc_Check("J_HBridge_FLCWindowCtr- Stop"); // 预期结果 Step Check J_HBridge_FLCWindowCtr- Stop
+  g_HIL_Bus_Swc_Check("I_LDCU_WinStFB1::I_LDCU_FLWinActionFB 1"); // 预期结果 Step Check I_LDCU_WinStFB1::I_LDCU_FLWinActionFB 1//0x1:Window_Closing
+  g_HIL_Bus_Swc_Set("J_AI_DFLWindowCtrSw NoInput"); // 测试步骤 Step Set J_AI_DFLWindowCtrSw NoInput//No Input
+  g_HIL_Gen_Swc_Wait("2500 ms"); // 测试步骤 Step Wait 2500 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_WinStFB2::I_LDCU_RLWinActionFB 0"); // 预期结果 Step Check I_LDCU_WinStFB2::I_LDCU_RLWinActionFB 0//0x0:Stopped
+  g_HIL_Bus_Swc_Check("J_HBridge_FLCWindowCtr+ OFF"); // 预期结果 Step Check J_HBridge_FLCWindowCtr+ OFF
+  g_HIL_Bus_Swc_Check("J_HBridge_FLCWindowCtr- OFF"); // 预期结果 Step Check J_HBridge_FLCWindowCtr- OFF
+}
+
+testcase SYS_LDCU_window_0087()
+{
+  TestDescription("主驾左前车窗双档开关控制自动上升-车窗锁制开关未激活&OFF 1分钟内且前门关闭");
+  g_HIL_Clib_Swc_Clib_LocalON(); // 测试步骤 Step Clib LocalON//
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_PowerMode 1"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_PowerMode 1//ON
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Clib_Swc_Clib_OFF(); // 测试步骤 Step Clib OFF//
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_WinLockworkSt 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_WinLockworkSt 0//inactive
+  g_HIL_Bus_Swc_Set("J_AI_DFLWindowCtrSw NoInput"); // 测试步骤 Step Set J_AI_DFLWindowCtrSw NoInput//No Input
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_PowerMode 0"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_PowerMode 0//OFF
+  g_HIL_Bus_Swc_Set("J_AI_DFLWindowCtrSw AutoUp"); // 测试步骤 Step Set J_AI_DFLWindowCtrSw AutoUp//
+  g_HIL_Gen_Swc_Wait("311 ms"); // 测试步骤 Step Wait 311 ms//
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_DFLWinSwSt 2"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_DFLWinSwSt 2//AutoUp
+  g_HIL_Bus_Swc_Check("J_HBridge_FLCWindowCtr+ Up"); // 预期结果 Step Check J_HBridge_FLCWindowCtr+ Up
+  g_HIL_Bus_Swc_Check("J_HBridge_FLCWindowCtr- Stop"); // 预期结果 Step Check J_HBridge_FLCWindowCtr- Stop
+  g_HIL_Bus_Swc_Set("J_AI_DFLWindowCtrSw NoInput"); // 测试步骤 Step Set J_AI_DFLWindowCtrSw NoInput//No Input
+  g_HIL_Gen_Swc_Wait("3000 ms"); // 测试步骤 Step Wait 3000 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_WinStFB2::I_LDCU_RLWinActionFB 0"); // 预期结果 Step Check I_LDCU_WinStFB2::I_LDCU_RLWinActionFB 0//0x0:Stopped,
+  g_HIL_Bus_Swc_Check("J_HBridge_FLCWindowCtr+ OFF"); // 预期结果 Step Check J_HBridge_FLCWindowCtr+ OFF
+  g_HIL_Bus_Swc_Check("J_HBridge_FLCWindowCtr- OFF"); // 预期结果 Step Check J_HBridge_FLCWindowCtr- OFF
+}
+
+testcase SYS_LDCU_window_0088()
+{
+  TestDescription("主驾左前车窗双档开关控制自动上升-车窗锁制开关未激活&OFF 1分钟内且前门关闭");
+  g_HIL_Clib_Swc_Clib_LocalON(); // 测试步骤 Step Clib LocalON//
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_PowerMode 1"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_PowerMode 1//ON
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Clib_Swc_Clib_OFF(); // 测试步骤 Step Clib OFF//
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_WinLockworkSt 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_WinLockworkSt 0//inactive
+  g_HIL_Bus_Swc_Set("J_AI_DFLWindowCtrSw NoInput"); // 测试步骤 Step Set J_AI_DFLWindowCtrSw NoInput//No Input
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_PowerMode 0"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_PowerMode 0//OFF
+  g_HIL_Bus_Swc_Set("J_AI_DFLWindowCtrSw AutoUp"); // 测试步骤 Step Set J_AI_DFLWindowCtrSw AutoUp//
+  g_HIL_Gen_Swc_Wait("311 ms"); // 测试步骤 Step Wait 311 ms//
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_DFLWinSwSt 2"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_DFLWinSwSt 2//AutoUp
+  g_HIL_Bus_Swc_Check("J_HBridge_FLCWindowCtr+ Up"); // 预期结果 Step Check J_HBridge_FLCWindowCtr+ Up
+  g_HIL_Bus_Swc_Check("J_HBridge_FLCWindowCtr- Stop"); // 预期结果 Step Check J_HBridge_FLCWindowCtr- Stop
+  g_HIL_Bus_Swc_Set("J_AI_DFLWindowCtrSw NoInput"); // 测试步骤 Step Set J_AI_DFLWindowCtrSw NoInput//No Input
+  g_HIL_Gen_Swc_Wait("3000 ms"); // 测试步骤 Step Wait 3000 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_WinStFB2::I_LDCU_RLWinActionFB 0"); // 预期结果 Step Check I_LDCU_WinStFB2::I_LDCU_RLWinActionFB 0//0x0:Stopped,
+  g_HIL_Bus_Swc_Check("J_HBridge_FLCWindowCtr+ OFF"); // 预期结果 Step Check J_HBridge_FLCWindowCtr+ OFF
+  g_HIL_Bus_Swc_Check("J_HBridge_FLCWindowCtr- OFF"); // 预期结果 Step Check J_HBridge_FLCWindowCtr- OFF
+}
+
+testcase SYS_LDCU_window_0089()
+{
+  TestDescription("主驾左前车窗双档开关控制手动下降-车窗锁止开关未激活四门关闭&LocalON");
+  g_HIL_Clib_Swc_Clib_LocalON(); // 测试步骤 Step Clib LocalON//
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_PowerMode 1"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_PowerMode 1//ON
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Set("J_AI_DFLWindowCtrSw NoInput"); // 测试步骤 Step Set J_AI_DFLWindowCtrSw NoInput//No Input
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_WinLockworkSt 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_WinLockworkSt 0//inActive
+  g_HIL_Bus_Swc_Set("J_AI_DFLWindowCtrSw ManualDown"); // 测试步骤 Step Set J_AI_DFLWindowCtrSw ManualDown//
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms//
+  g_HIL_Bus_Swc_Check("J_HBridge_FLCWindowCtr+ Stop"); // 预期结果 Step Check J_HBridge_FLCWindowCtr+ Stop
+  g_HIL_Bus_Swc_Check("J_HBridge_FLCWindowCtr- Down"); // 预期结果 Step Check J_HBridge_FLCWindowCtr- Down
+  g_HIL_Bus_Swc_Check("I_LDCU_WinStFB1::I_LDCU_FLWinActionFB 2"); // 预期结果 Step Check I_LDCU_WinStFB1::I_LDCU_FLWinActionFB 2//0x2:Window_Openning
+  g_HIL_Bus_Swc_Set("J_AI_DFLWindowCtrSw NoInput"); // 测试步骤 Step Set J_AI_DFLWindowCtrSw NoInput//No Input
+  g_HIL_Gen_Swc_Wait("300 ms"); // 测试步骤 Step Wait 300 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_WinStFB2::I_LDCU_RLWinActionFB 0"); // 预期结果 Step Check I_LDCU_WinStFB2::I_LDCU_RLWinActionFB 0//0x0:Stopped,
+  g_HIL_Bus_Swc_Check("J_HBridge_FLCWindowCtr+ OFF"); // 预期结果 Step Check J_HBridge_FLCWindowCtr+ OFF
+  g_HIL_Bus_Swc_Check("J_HBridge_FLCWindowCtr- OFF"); // 预期结果 Step Check J_HBridge_FLCWindowCtr- OFF
+}
+
+testcase SYS_LDCU_window_0090()
+{
+  TestDescription("主驾左前车窗双档开关控制自动上升-车窗锁制开关未激活&OFF 1分钟内且前门关闭");
+  g_HIL_Clib_Swc_Clib_LocalON(); // 测试步骤 Step Clib LocalON//
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_PowerMode 1"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_PowerMode 1//ON
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Clib_Swc_Clib_OFF(); // 测试步骤 Step Clib OFF//
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_WinLockworkSt 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_WinLockworkSt 0//inactive
+  g_HIL_Bus_Swc_Set("J_AI_DFLWindowCtrSw NoInput"); // 测试步骤 Step Set J_AI_DFLWindowCtrSw NoInput//No Input
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_PowerMode 0"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_PowerMode 0//OFF
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Set("J_AI_DFLWindowCtrSw ManualDown"); // 测试步骤 Step Set J_AI_DFLWindowCtrSw ManualDown//
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Check("J_HBridge_FLCWindowCtr+ Stop"); // 预期结果 Step Check J_HBridge_FLCWindowCtr+ Stop
+  g_HIL_Bus_Swc_Check("J_HBridge_FLCWindowCtr- Down"); // 预期结果 Step Check J_HBridge_FLCWindowCtr- Down
+  g_HIL_Bus_Swc_Check("I_LDCU_WinStFB1::I_LDCU_FLWinActionFB 2"); // 预期结果 Step Check I_LDCU_WinStFB1::I_LDCU_FLWinActionFB 2//0x2:Window_Openning
+  g_HIL_Bus_Swc_Set("J_AI_DFLWindowCtrSw NoInput"); // 测试步骤 Step Set J_AI_DFLWindowCtrSw NoInput//No Input
+  g_HIL_Gen_Swc_Wait("3001 ms"); // 测试步骤 Step Wait 3001 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_WinStFB2::I_LDCU_RLWinActionFB 0"); // 预期结果 Step Check I_LDCU_WinStFB2::I_LDCU_RLWinActionFB 0//0x0:Stopped,
+  g_HIL_Bus_Swc_Check("J_HBridge_FLCWindowCtr+ OFF"); // 预期结果 Step Check J_HBridge_FLCWindowCtr+ OFF
+  g_HIL_Bus_Swc_Check("J_HBridge_FLCWindowCtr- OFF"); // 预期结果 Step Check J_HBridge_FLCWindowCtr- OFF
+}
+
+testcase SYS_LDCU_window_0091()
+{
+  TestDescription("主驾左前车窗双档开关控制自动下降-车窗锁制开关未激活&OFF 1分钟内且前门关闭");
+  g_HIL_Clib_Swc_Clib_LocalON(); // 测试步骤 Step Clib LocalON//
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_PowerMode 1"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_PowerMode 1//ON
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Clib_Swc_Clib_OFF(); // 测试步骤 Step Clib OFF//
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_WinLockworkSt 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_WinLockworkSt 0//inactive
+  g_HIL_Bus_Swc_Set("J_AI_DFLWindowCtrSw NoInput"); // 测试步骤 Step Set J_AI_DFLWindowCtrSw NoInput//No Input
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_PowerMode 0"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_PowerMode 0//OFF
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Set("J_AI_DFLWindowCtrSw AutoDown"); // 测试步骤 Step Set J_AI_DFLWindowCtrSw AutoDown//
+  g_HIL_Gen_Swc_Wait("311 ms"); // 测试步骤 Step Wait 311 ms//
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_DFLWinSwSt 4"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_DFLWinSwSt 4//AutoDown
+  g_HIL_Bus_Swc_Check("J_HBridge_FLCWindowCtr+ Stop"); // 预期结果 Step Check J_HBridge_FLCWindowCtr+ Stop
+  g_HIL_Bus_Swc_Check("J_HBridge_FLCWindowCtr- Down"); // 预期结果 Step Check J_HBridge_FLCWindowCtr- Down
+  g_HIL_Bus_Swc_Check("I_LDCU_WinStFB1::I_LDCU_FLWinActionFB 2"); // 预期结果 Step Check I_LDCU_WinStFB1::I_LDCU_FLWinActionFB 2//0x2:Window_Openning
+  g_HIL_Bus_Swc_Set("J_AI_DFLWindowCtrSw NoInput"); // 测试步骤 Step Set J_AI_DFLWindowCtrSw NoInput//No Input
+  g_HIL_Gen_Swc_Wait("3000 ms"); // 测试步骤 Step Wait 3000 ms//
+  g_HIL_Bus_Swc_Check("J_HBridge_FLCWindowCtr+ OFF"); // 预期结果 Step Check J_HBridge_FLCWindowCtr+ OFF
+  g_HIL_Bus_Swc_Check("J_HBridge_FLCWindowCtr- OFF"); // 预期结果 Step Check J_HBridge_FLCWindowCtr- OFF
+}
+
+testcase SYS_LDCU_window_0092()
+{
+  TestDescription("主驾左前车窗双档开关控制自动下降-车窗锁制开关未激活&OFF 1分钟后电机不执行");
+  g_HIL_Clib_Swc_Clib_LocalON(); // 测试步骤 Step Clib LocalON//
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_PowerMode 1"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_PowerMode 1//ON
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_DriverDoorAjarSt 0"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_DriverDoorAjarSt 0//0x0=close
+  g_HIL_Clib_Swc_Clib_OFF(); // 测试步骤 Step Clib OFF//
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Gen_Swc_Wait("61 s"); // 测试步骤 Step Wait 61 s
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_WinLockworkSt 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_WinLockworkSt 0//inactive
+  g_HIL_Bus_Swc_Set("J_AI_DFLWindowCtrSw NoInput"); // 测试步骤 Step Set J_AI_DFLWindowCtrSw NoInput//No Input
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_PowerMode 0"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_PowerMode 0//OFF
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Set("J_AI_DFLWindowCtrSw AutoDown"); // 测试步骤 Step Set J_AI_DFLWindowCtrSw AutoDown//
+  g_HIL_Gen_Swc_Wait("311 ms"); // 测试步骤 Step Wait 311 ms
+  g_HIL_Bus_Swc_Check("J_HBridge_FLCWindowCtr+ OFF"); // 预期结果 Step Check J_HBridge_FLCWindowCtr+ OFF
+  g_HIL_Bus_Swc_Check("J_HBridge_FLCWindowCtr- OFF"); // 预期结果 Step Check J_HBridge_FLCWindowCtr- OFF
+  g_HIL_Bus_Swc_Check("I_LDCU_WinStFB2::I_LDCU_RLWinActionFB 0"); // 预期结果 Step Check I_LDCU_WinStFB2::I_LDCU_RLWinActionFB 0//0x0:Stopped,
+  g_HIL_Bus_Swc_Set("J_AI_DFLWindowCtrSw NoInput"); // 测试步骤 Step Set J_AI_DFLWindowCtrSw NoInput//No Input
+  g_HIL_Gen_Swc_Wait("300 ms"); // 测试步骤 Step Wait 300 ms
+}
+
+testcase SYS_LDCU_window_0093()
+{
+  TestDescription("主驾车窗响应大屏便捷性指令控制全开或全关");
+  g_HIL_Clib_Swc_Clib_LocalON(); // 测试步骤 Step Clib LocalON//
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_PowerMode 1"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_PowerMode 1//LocalON
+  g_HIL_Bus_Swc_Set("J_DI_FLDoorAjarSW_LS close"); // 测试步骤 Step Set J_DI_FLDoorAjarSW_LS close
+  g_HIL_Bus_Swc_Set("J_DI_RLDoorAjarSW_LS close"); // 测试步骤 Step Set J_DI_RLDoorAjarSW_LS close
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0//CLOSE
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_RRDoorAjarSt 0"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_RRDoorAjarSt 0//CLOSE
+  g_HIL_Bus_Swc_Set("I_CDCU_LDCU_BodyCtrl::I_CDCU_WinLockCtrlReq 0"); // 测试步骤 Step Set I_CDCU_LDCU_BodyCtrl::I_CDCU_WinLockCtrlReq 0//0x0=nocommand
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Set("I_CDCU_LDCU_BodyCtrl::I_CDCU_WinLockCtrlReq 2"); // 测试步骤 Step Set I_CDCU_LDCU_BodyCtrl::I_CDCU_WinLockCtrlReq 2//0x2=unlock
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_DriverDoorAjarSt 0"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_DriverDoorAjarSt 0//0x0=close
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_RLDoorAjarSt 0"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_RLDoorAjarSt 0//0x0=close
+  g_HIL_Bus_Swc_Set("I_CDCU_LDCU_BodyCtrl::I_CDCU_WinLockCtrlReq 0"); // 测试步骤 Step Set I_CDCU_LDCU_BodyCtrl::I_CDCU_WinLockCtrlReq 0//0x0=nocommand
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_WinLockworkSt 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_WinLockworkSt 0//inactive
+  g_HIL_Bus_Swc_Set("I_CDCU_LDCU_BodyCtrl::I_CDCU_ComfortWndsCmd 2"); // 测试步骤 Step Set I_CDCU_LDCU_BodyCtrl::I_CDCU_ComfortWndsCmd 2//0x2:Auto down
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Set("I_CDCU_LDCU_BodyCtrl::I_CDCU_ComfortWndsCmd 0"); // 测试步骤 Step Set I_CDCU_LDCU_BodyCtrl::I_CDCU_ComfortWndsCmd 0//0x0=nocommand
+  g_HIL_Gen_Swc_Wait("101 ms"); // 测试步骤 Step Wait 101 ms
+  g_HIL_Bus_Swc_Check("J_HBridge_FLCWindowCtr+ Stop"); // 预期结果 Step Check J_HBridge_FLCWindowCtr+ Stop
+  g_HIL_Bus_Swc_Check("J_HBridge_FLCWindowCtr- Down"); // 预期结果 Step Check J_HBridge_FLCWindowCtr- Down
+  g_HIL_Bus_Swc_Check("I_LDCU_WinStFB1::I_LDCU_FLWinActionFB 2"); // 预期结果 Step Check I_LDCU_WinStFB1::I_LDCU_FLWinActionFB 2//0x2:Window_Openning
+  g_HIL_Bus_Swc_Check("J_Hbridge_RLWindowCtr+ Stop"); // 预期结果 Step Check J_Hbridge_RLWindowCtr+ Stop
+  g_HIL_Bus_Swc_Check("J_Hbridge_RLWindowCtr- OFF"); // 预期结果 Step Check J_Hbridge_RLWindowCtr- OFF
+  g_HIL_Bus_Swc_Check("I_LDCU_WinStFB2::I_LDCU_RLWinActionFB 2"); // 预期结果 Step Check I_LDCU_WinStFB2::I_LDCU_RLWinActionFB 2//0x2:Window_Openning
+  g_HIL_Gen_Swc_Wait("3 s"); // 测试步骤 Step Wait 3 s
+  g_HIL_Bus_Swc_Check("I_LDCU_WinStFB1::I_LDCU_FLWinActionFB 0"); // 预期结果 Step Check I_LDCU_WinStFB1::I_LDCU_FLWinActionFB 0//0x0:Stopped,
+  g_HIL_Bus_Swc_Check("J_HBridge_FLCWindowCtr+ OFF"); // 预期结果 Step Check J_HBridge_FLCWindowCtr+ OFF
+  g_HIL_Bus_Swc_Check("J_HBridge_FLCWindowCtr- OFF"); // 预期结果 Step Check J_HBridge_FLCWindowCtr- OFF
+  g_HIL_Bus_Swc_Check("I_LDCU_WinStFB2::I_LDCU_RLWinActionFB 0"); // 预期结果 Step Check I_LDCU_WinStFB2::I_LDCU_RLWinActionFB 0//0x0:Stopped,
+  g_HIL_Bus_Swc_Check("J_Hbridge_RLWindowCtr+ OFF"); // 预期结果 Step Check J_Hbridge_RLWindowCtr+ OFF
+  g_HIL_Bus_Swc_Check("J_Hbridge_RLWindowCtr- OFF"); // 预期结果 Step Check J_Hbridge_RLWindowCtr- OFF
+}
+
+testcase SYS_LDCU_window_0094()
+{
+  TestDescription("主驾车窗响应大屏便捷性指令控制全开或全关");
+  g_HIL_Clib_Swc_Clib_LocalON(); // 测试步骤 Step Clib LocalON//
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_PowerMode 1"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_PowerMode 1//LocalON
+  g_HIL_Bus_Swc_Set("J_DI_FLDoorAjarSW_LS close"); // 测试步骤 Step Set J_DI_FLDoorAjarSW_LS close
+  g_HIL_Bus_Swc_Set("J_DI_RLDoorAjarSW_LS close"); // 测试步骤 Step Set J_DI_RLDoorAjarSW_LS close
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0//CLOSE
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_RRDoorAjarSt 0"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_RRDoorAjarSt 0//CLOSE
+  g_HIL_Bus_Swc_Set("I_CDCU_LDCU_BodyCtrl::I_CDCU_WinLockCtrlReq 0"); // 测试步骤 Step Set I_CDCU_LDCU_BodyCtrl::I_CDCU_WinLockCtrlReq 0//0x0=nocommand
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Set("I_CDCU_LDCU_BodyCtrl::I_CDCU_WinLockCtrlReq 2"); // 测试步骤 Step Set I_CDCU_LDCU_BodyCtrl::I_CDCU_WinLockCtrlReq 2//0x2=unlock
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_DriverDoorAjarSt 0"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_DriverDoorAjarSt 0//0x0=close
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_RLDoorAjarSt 0"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_RLDoorAjarSt 0//0x0=close
+  g_HIL_Bus_Swc_Set("I_CDCU_LDCU_BodyCtrl::I_CDCU_WinLockCtrlReq 0"); // 测试步骤 Step Set I_CDCU_LDCU_BodyCtrl::I_CDCU_WinLockCtrlReq 0//0x0=nocommand
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Set("I_CDCU_LDCU_BodyCtrl::I_CDCU_ComfortWndsCmd 1"); // 测试步骤 Step Set I_CDCU_LDCU_BodyCtrl::I_CDCU_ComfortWndsCmd 1//0x1:Auto up
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_WinLockworkSt 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_WinLockworkSt 0//inactive
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Set("I_CDCU_LDCU_BodyCtrl::I_CDCU_ComfortWndsCmd 0"); // 测试步骤 Step Set I_CDCU_LDCU_BodyCtrl::I_CDCU_ComfortWndsCmd 0//0x0=nocommand
+  g_HIL_Gen_Swc_Wait("51 ms"); // 测试步骤 Step Wait 51 ms
+  g_HIL_Bus_Swc_Check("J_Hbridge_RLWindowCtr+ Up"); // 预期结果 Step Check J_Hbridge_RLWindowCtr+ Up
+  g_HIL_Bus_Swc_Check("J_Hbridge_RLWindowCtr- Stop"); // 预期结果 Step Check J_Hbridge_RLWindowCtr- Stop
+  g_HIL_Bus_Swc_Check("I_LDCU_WinStFB2::I_LDCU_RLWinActionFB 1"); // 预期结果 Step Check I_LDCU_WinStFB2::I_LDCU_RLWinActionFB 1//0x1:Window Closing,
+  g_HIL_Bus_Swc_Check("J_HBridge_FLCWindowCtr+ Stop"); // 预期结果 Step Check J_HBridge_FLCWindowCtr+ Stop
+  g_HIL_Bus_Swc_Check("J_HBridge_FLCWindowCtr- OFF"); // 预期结果 Step Check J_HBridge_FLCWindowCtr- OFF
+  g_HIL_Bus_Swc_Check("I_LDCU_WinStFB1::I_LDCU_FLWinActionFB 1"); // 预期结果 Step Check I_LDCU_WinStFB1::I_LDCU_FLWinActionFB 1//0x1:Window_Closing
+  g_HIL_Gen_Swc_Wait("3 s"); // 测试步骤 Step Wait 3 s
+  g_HIL_Bus_Swc_Check("I_LDCU_WinStFB1::I_LDCU_FLWinActionFB 0"); // 预期结果 Step Check I_LDCU_WinStFB1::I_LDCU_FLWinActionFB 0//0x0:Stopped,
+  g_HIL_Bus_Swc_Check("J_HBridge_FLCWindowCtr+ OFF"); // 预期结果 Step Check J_HBridge_FLCWindowCtr+ OFF
+  g_HIL_Bus_Swc_Check("J_HBridge_FLCWindowCtr- OFF"); // 预期结果 Step Check J_HBridge_FLCWindowCtr- OFF
+  g_HIL_Bus_Swc_Check("I_LDCU_WinStFB2::I_LDCU_RLWinActionFB 0"); // 预期结果 Step Check I_LDCU_WinStFB2::I_LDCU_RLWinActionFB 0//0x0:Stopped,
+  g_HIL_Bus_Swc_Check("J_Hbridge_RLWindowCtr+ OFF"); // 预期结果 Step Check J_Hbridge_RLWindowCtr+ OFF
+  g_HIL_Bus_Swc_Check("J_Hbridge_RLWindowCtr- OFF"); // 预期结果 Step Check J_Hbridge_RLWindowCtr- OFF
+}
+
+testcase SYS_LDCU_window_0095()
+{
+  TestDescription("主驾车窗响应远程便捷性指令控制全开或全关");
+  g_HIL_Clib_Swc_Clib_LocalON(); // 测试步骤 Step Clib LocalON//
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_PowerMode 1"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_PowerMode 1//LocalON
+  g_HIL_Bus_Swc_Set("J_DI_FLDoorAjarSW_LS close"); // 测试步骤 Step Set J_DI_FLDoorAjarSW_LS close
+  g_HIL_Bus_Swc_Set("J_DI_RLDoorAjarSW_LS close"); // 测试步骤 Step Set J_DI_RLDoorAjarSW_LS close
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0//CLOSE
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_RRDoorAjarSt 0"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_RRDoorAjarSt 0//CLOSE
+  g_HIL_Bus_Swc_Set("I_CDCU_LDCU_BodyCtrl::I_CDCU_WinLockCtrlReq 0"); // 测试步骤 Step Set I_CDCU_LDCU_BodyCtrl::I_CDCU_WinLockCtrlReq 0//0x0=nocommand
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Set("I_CDCU_LDCU_BodyCtrl::I_CDCU_WinLockCtrlReq 2"); // 测试步骤 Step Set I_CDCU_LDCU_BodyCtrl::I_CDCU_WinLockCtrlReq 2//0x2=unlock
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_DriverDoorAjarSt 0"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_DriverDoorAjarSt 0//0x0=close
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_RLDoorAjarSt 0"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_RLDoorAjarSt 0//0x0=close
+  g_HIL_Bus_Swc_Set("I_CDCU_LDCU_BodyCtrl::I_CDCU_WinLockCtrlReq 0"); // 测试步骤 Step Set I_CDCU_LDCU_BodyCtrl::I_CDCU_WinLockCtrlReq 0//0x0=nocommand
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Set("I_TBOX_WinRemoteCtrl::I_TBOX_AllWinUp 1"); // 测试步骤 Step Set I_TBOX_WinRemoteCtrl::I_TBOX_AllWinUp 1//0x1:Auto up
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_WinLockworkSt 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_WinLockworkSt 0//inactive
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Set("I_TBOX_WinRemoteCtrl::I_TBOX_AllWinUp 0"); // 测试步骤 Step Set I_TBOX_WinRemoteCtrl::I_TBOX_AllWinUp 0//0x0=nocommand
+  g_HIL_Gen_Swc_Wait("601 ms"); // 测试步骤 Step Wait 601 ms
+  g_HIL_Bus_Swc_Check("J_Hbridge_RLWindowCtr+ Up"); // 预期结果 Step Check J_Hbridge_RLWindowCtr+ Up
+  g_HIL_Bus_Swc_Check("J_Hbridge_RLWindowCtr- OFF"); // 预期结果 Step Check J_Hbridge_RLWindowCtr- OFF
+  g_HIL_Bus_Swc_Check("J_HBridge_FLCWindowCtr+ Stop"); // 预期结果 Step Check J_HBridge_FLCWindowCtr+ Stop
+  g_HIL_Bus_Swc_Check("J_HBridge_FLCWindowCtr- Stop"); // 预期结果 Step Check J_HBridge_FLCWindowCtr- Stop
+  g_HIL_Gen_Swc_Wait("3 s"); // 测试步骤 Step Wait 3 s
+  g_HIL_Bus_Swc_Check("I_LDCU_WinStFB1::I_LDCU_FLWinActionFB 0"); // 预期结果 Step Check I_LDCU_WinStFB1::I_LDCU_FLWinActionFB 0//0x0:Stopped,
+  g_HIL_Bus_Swc_Check("J_HBridge_FLCWindowCtr+ OFF"); // 预期结果 Step Check J_HBridge_FLCWindowCtr+ OFF
+  g_HIL_Bus_Swc_Check("J_HBridge_FLCWindowCtr- OFF"); // 预期结果 Step Check J_HBridge_FLCWindowCtr- OFF
+  g_HIL_Bus_Swc_Check("I_LDCU_WinStFB2::I_LDCU_RLWinActionFB 0"); // 预期结果 Step Check I_LDCU_WinStFB2::I_LDCU_RLWinActionFB 0//0x0:Stopped,
+  g_HIL_Bus_Swc_Check("J_Hbridge_RLWindowCtr+ OFF"); // 预期结果 Step Check J_Hbridge_RLWindowCtr+ OFF
+  g_HIL_Bus_Swc_Check("J_Hbridge_RLWindowCtr- OFF"); // 预期结果 Step Check J_Hbridge_RLWindowCtr- OFF
+}
+
+testcase SYS_LDCU_window_0097()
+{
+  TestDescription("主驾车窗响应远程便捷性指令控制全开或全关");
+  g_HIL_Clib_Swc_Clib_LocalON(); // 测试步骤 Step Clib LocalON//
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_PowerMode 1"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_PowerMode 1//LocalON
+  g_HIL_Bus_Swc_Set("J_DI_FLDoorAjarSW_LS close"); // 测试步骤 Step Set J_DI_FLDoorAjarSW_LS close
+  g_HIL_Bus_Swc_Set("J_DI_RLDoorAjarSW_LS close"); // 测试步骤 Step Set J_DI_RLDoorAjarSW_LS close
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0//CLOSE
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_RRDoorAjarSt 0"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_RRDoorAjarSt 0//CLOSE
+  g_HIL_Bus_Swc_Set("I_CDCU_LDCU_BodyCtrl::I_CDCU_WinLockCtrlReq 0"); // 测试步骤 Step Set I_CDCU_LDCU_BodyCtrl::I_CDCU_WinLockCtrlReq 0//0x0=nocommand
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Set("I_CDCU_LDCU_BodyCtrl::I_CDCU_WinLockCtrlReq 2"); // 测试步骤 Step Set I_CDCU_LDCU_BodyCtrl::I_CDCU_WinLockCtrlReq 2//0x2=unlock
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_DriverDoorAjarSt 0"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_DriverDoorAjarSt 0//0x0=close
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_RLDoorAjarSt 0"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_RLDoorAjarSt 0//0x0=close
+  g_HIL_Bus_Swc_Set("I_CDCU_LDCU_BodyCtrl::I_CDCU_WinLockCtrlReq 0"); // 测试步骤 Step Set I_CDCU_LDCU_BodyCtrl::I_CDCU_WinLockCtrlReq 0//0x0=nocommand
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_WinLockworkSt 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_WinLockworkSt 0//inactive
+  g_HIL_Bus_Swc_Set("I_TBOX_WinRemoteCtrl::I_TBOX_AllWinUp 2"); // 测试步骤 Step Set I_TBOX_WinRemoteCtrl::I_TBOX_AllWinUp 2//0x2:Auto down
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Set("I_TBOX_WinRemoteCtrl::I_TBOX_AllWinUp 0"); // 测试步骤 Step Set I_TBOX_WinRemoteCtrl::I_TBOX_AllWinUp 0//0x0=nocommand
+  g_HIL_Gen_Swc_Wait("50 ms"); // 测试步骤 Step Wait 50 ms
+  g_HIL_Bus_Swc_Check("J_HBridge_FLCWindowCtr+ Stop"); // 预期结果 Step Check J_HBridge_FLCWindowCtr+ Stop
+  g_HIL_Bus_Swc_Check("J_HBridge_FLCWindowCtr- Down"); // 预期结果 Step Check J_HBridge_FLCWindowCtr- Down
+  g_HIL_Bus_Swc_Check("I_LDCU_WinStFB1::I_LDCU_FLWinActionFB 2"); // 预期结果 Step Check I_LDCU_WinStFB1::I_LDCU_FLWinActionFB 2//0x2:Window_Openning
+  g_HIL_Bus_Swc_Check("J_Hbridge_RLWindowCtr+ Stop"); // 预期结果 Step Check J_Hbridge_RLWindowCtr+ Stop
+  g_HIL_Bus_Swc_Check("J_Hbridge_RLWindowCtr- OFF"); // 预期结果 Step Check J_Hbridge_RLWindowCtr- OFF
+  g_HIL_Bus_Swc_Check("I_LDCU_WinStFB2::I_LDCU_RLWinActionFB 2"); // 预期结果 Step Check I_LDCU_WinStFB2::I_LDCU_RLWinActionFB 2//0x2:Window_Openning
+  g_HIL_Gen_Swc_Wait("3 s"); // 测试步骤 Step Wait 3 s
+  g_HIL_Bus_Swc_Check("I_LDCU_WinStFB1::I_LDCU_FLWinActionFB 0"); // 预期结果 Step Check I_LDCU_WinStFB1::I_LDCU_FLWinActionFB 0//0x0:Stopped,
+  g_HIL_Bus_Swc_Check("J_HBridge_FLCWindowCtr+ OFF"); // 预期结果 Step Check J_HBridge_FLCWindowCtr+ OFF
+  g_HIL_Bus_Swc_Check("J_HBridge_FLCWindowCtr- OFF"); // 预期结果 Step Check J_HBridge_FLCWindowCtr- OFF
+  g_HIL_Bus_Swc_Check("I_LDCU_WinStFB2::I_LDCU_RLWinActionFB 0"); // 预期结果 Step Check I_LDCU_WinStFB2::I_LDCU_RLWinActionFB 0//0x0:Stopped,
+  g_HIL_Bus_Swc_Check("J_Hbridge_RLWindowCtr+ OFF"); // 预期结果 Step Check J_Hbridge_RLWindowCtr+ OFF
+  g_HIL_Bus_Swc_Check("J_Hbridge_RLWindowCtr- OFF"); // 预期结果 Step Check J_Hbridge_RLWindowCtr- OFF
+}
+
+testcase SYS_LDCU_window_0110()
+{
+  TestDescription("车辆热失控控制车窗全开");
+  g_HIL_Clib_Swc_Clib_LocalON(); // 测试步骤 Step Clib LocalON//
+  g_HIL_XCP_Swc_Set_XCP("CalVal_FIN_ThermorunawayFlag 0"); // 测试步骤 Step Set_XCP CalVal_FIN_ThermorunawayFlag 0
+  g_HIL_Bus_Swc_Set("J_DI_FLDoorAjarSW_LS close"); // 测试步骤 Step Set J_DI_FLDoorAjarSW_LS close
+  g_HIL_Bus_Swc_Set("J_DI_RLDoorAjarSW_LS close"); // 测试步骤 Step Set J_DI_RLDoorAjarSW_LS close
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0//CLOSE
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_RRDoorAjarSt 0"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_RRDoorAjarSt 0//CLOSE
+  g_HIL_Bus_Swc_Set("I_CDCU_LDCU_BodyCtrl::I_CDCU_WinLockCtrlReq 0"); // 测试步骤 Step Set I_CDCU_LDCU_BodyCtrl::I_CDCU_WinLockCtrlReq 0//0x0=nocommand
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_DriverDoorAjarSt 0"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_DriverDoorAjarSt 0//0x0=close
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_RLDoorAjarSt 0"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_RLDoorAjarSt 0//0x0=close
+  g_HIL_Bus_Swc_Set("I_CDCU_LDCU_BodyCtrl::I_CDCU_WinLockCtrlReq 2"); // 测试步骤 Step Set I_CDCU_LDCU_BodyCtrl::I_CDCU_WinLockCtrlReq 2//0x2=unlock
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_WinLockworkSt 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_WinLockworkSt 0//inactive
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Set("I_CDCU_LDCU_BodyCtrl::I_CDCU_WinLockCtrlReq 0"); // 测试步骤 Step Set I_CDCU_LDCU_BodyCtrl::I_CDCU_WinLockCtrlReq 0//0x0=nocommand
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_XCP_Swc_Set_XCP("CalEn_FIN_ThermorunawayFlag 1"); // 测试步骤 Step Set_XCP CalEn_FIN_ThermorunawayFlag 1
+  g_HIL_Gen_Swc_Wait("501 ms"); // 测试步骤 Step Wait 501 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_SysStDisp1::I_LDCU_ThermorunawaySt 0"); // 预期结果 Step Check I_LDCU_SysStDisp1::I_LDCU_ThermorunawaySt 0
+  g_HIL_XCP_Swc_Set_XCP("CalVal_FIN_ThermorunawayFlag 1"); // 测试步骤 Step Set_XCP CalVal_FIN_ThermorunawayFlag 1
+  g_HIL_Bus_Swc_Check("J_Hbridge_RLWindowCtr+ Stop"); // 预期结果 Step Check J_Hbridge_RLWindowCtr+ Stop
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Check("J_Hbridge_RLWindowCtr- Down"); // 预期结果 Step Check J_Hbridge_RLWindowCtr- Down
+  g_HIL_Bus_Swc_Check("I_LDCU_WinStFB2::I_LDCU_RLWinActionFB 2"); // 预期结果 Step Check I_LDCU_WinStFB2::I_LDCU_RLWinActionFB 2//0x2:Window_Openning
+  g_HIL_Bus_Swc_Check("J_HBridge_FLCWindowCtr+ Stop"); // 预期结果 Step Check J_HBridge_FLCWindowCtr+ Stop
+  g_HIL_Bus_Swc_Check("J_HBridge_FLCWindowCtr- Down"); // 预期结果 Step Check J_HBridge_FLCWindowCtr- Down
+  g_HIL_Bus_Swc_Check("I_LDCU_WinStFB1::I_LDCU_FLWinActionFB 2"); // 预期结果 Step Check I_LDCU_WinStFB1::I_LDCU_FLWinActionFB 2//0x2:Window_Openning
+}
+
+testcase SYS_LDCU_window_0111()
+{
+  TestDescription("车辆热失控控制车窗全开");
+  g_HIL_Gen_Swc_Wait("35 s"); // 测试步骤 Step Wait 35 s//
+  g_HIL_XCP_Swc_Set_XCP("CalEn_FIN_ThermorunawayFlag 0"); // 测试步骤 Step Set_XCP CalEn_FIN_ThermorunawayFlag 0
+  g_HIL_Gen_Swc_Wait("501 ms"); // 测试步骤 Step Wait 501 ms
+  g_HIL_XCP_Swc_Set_XCP("CalVal_FIN_ThermorunawayFlag 0"); // 测试步骤 Step Set_XCP CalVal_FIN_ThermorunawayFlag 0
+  g_HIL_Gen_Swc_Wait("501 ms"); // 测试步骤 Step Wait 501 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_WinStFB2::I_LDCU_RLWinActionFB 0"); // 预期结果 Step Check I_LDCU_WinStFB2::I_LDCU_RLWinActionFB 0//0x0:Stopped,
+  g_HIL_Bus_Swc_Check("I_LDCU_WinStFB2::I_LDCU_RLWinActionFB 0"); // 预期结果 Step Check I_LDCU_WinStFB2::I_LDCU_RLWinActionFB 0//0x0:Stopped,
+  g_HIL_Bus_Swc_Check("J_HBridge_FLCWindowCtr+ OFF"); // 预期结果 Step Check J_HBridge_FLCWindowCtr+ OFF
+  g_HIL_Bus_Swc_Check("J_HBridge_FLCWindowCtr- OFF"); // 预期结果 Step Check J_HBridge_FLCWindowCtr- OFF
+  g_HIL_Bus_Swc_Check("J_Hbridge_RLWindowCtr+ OFF"); // 预期结果 Step Check J_Hbridge_RLWindowCtr+ OFF
+  g_HIL_Bus_Swc_Check("J_Hbridge_RLWindowCtr- OFF"); // 预期结果 Step Check J_Hbridge_RLWindowCtr- OFF
+}
+
+testcase SYS_LDCU_window_0114()
+{
+  TestDescription("左后车窗响应大屏便捷性指令控制全开或全关");
+  g_HIL_Clib_Swc_Clib_LocalON(); // 测试步骤 Step Clib LocalON//
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_PowerMode 1"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_PowerMode 1//LocalON
+  g_HIL_Bus_Swc_Set("J_DI_FLDoorAjarSW_LS close"); // 测试步骤 Step Set J_DI_FLDoorAjarSW_LS close
+  g_HIL_Bus_Swc_Set("J_DI_RLDoorAjarSW_LS close"); // 测试步骤 Step Set J_DI_RLDoorAjarSW_LS close
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0//CLOSE
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_RRDoorAjarSt 0"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_RRDoorAjarSt 0//CLOSE
+  g_HIL_Bus_Swc_Set("I_CDCU_LDCU_BodyCtrl::I_CDCU_WinLockCtrlReq 0"); // 测试步骤 Step Set I_CDCU_LDCU_BodyCtrl::I_CDCU_WinLockCtrlReq 0//0x0=nocommand
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Set("I_CDCU_LDCU_BodyCtrl::I_CDCU_WinLockCtrlReq 2"); // 测试步骤 Step Set I_CDCU_LDCU_BodyCtrl::I_CDCU_WinLockCtrlReq 2//0x2=unlock
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_DriverDoorAjarSt 0"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_DriverDoorAjarSt 0//0x0=close
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_RLDoorAjarSt 0"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_RLDoorAjarSt 0//0x0=close
+  g_HIL_Bus_Swc_Set("I_CDCU_LDCU_BodyCtrl::I_CDCU_WinLockCtrlReq 0"); // 测试步骤 Step Set I_CDCU_LDCU_BodyCtrl::I_CDCU_WinLockCtrlReq 0//0x0=nocommand
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_WinLockworkSt 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_WinLockworkSt 0//inactive
+  g_HIL_Bus_Swc_Set("I_CDCU_LDCU_BodyCtrl::I_CDCU_ComfortWndsCmd 2"); // 测试步骤 Step Set I_CDCU_LDCU_BodyCtrl::I_CDCU_ComfortWndsCmd 2//0x2:Auto down
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Set("I_CDCU_LDCU_BodyCtrl::I_CDCU_ComfortWndsCmd 0"); // 测试步骤 Step Set I_CDCU_LDCU_BodyCtrl::I_CDCU_ComfortWndsCmd 0//0x0=nocommand
+  g_HIL_Gen_Swc_Wait("50 ms"); // 测试步骤 Step Wait 50 ms
+  g_HIL_Bus_Swc_Check("J_HBridge_FLCWindowCtr+ Stop"); // 预期结果 Step Check J_HBridge_FLCWindowCtr+ Stop
+  g_HIL_Bus_Swc_Check("J_HBridge_FLCWindowCtr- Down"); // 预期结果 Step Check J_HBridge_FLCWindowCtr- Down
+  g_HIL_Bus_Swc_Check("I_LDCU_WinStFB1::I_LDCU_FLWinActionFB 2"); // 预期结果 Step Check I_LDCU_WinStFB1::I_LDCU_FLWinActionFB 2//0x2:Window_Openning
+  g_HIL_Bus_Swc_Check("J_Hbridge_RLWindowCtr+ Stop"); // 预期结果 Step Check J_Hbridge_RLWindowCtr+ Stop
+  g_HIL_Bus_Swc_Check("J_Hbridge_RLWindowCtr- OFF"); // 预期结果 Step Check J_Hbridge_RLWindowCtr- OFF
+  g_HIL_Bus_Swc_Check("I_LDCU_WinStFB2::I_LDCU_RLWinActionFB 2"); // 预期结果 Step Check I_LDCU_WinStFB2::I_LDCU_RLWinActionFB 2//0x2:Window_Openning
+  g_HIL_Gen_Swc_Wait("3 s"); // 测试步骤 Step Wait 3 s
+  g_HIL_Bus_Swc_Check("I_LDCU_WinStFB1::I_LDCU_FLWinActionFB 0"); // 预期结果 Step Check I_LDCU_WinStFB1::I_LDCU_FLWinActionFB 0//0x0:Stopped,
+  g_HIL_Bus_Swc_Check("J_HBridge_FLCWindowCtr+ OFF"); // 预期结果 Step Check J_HBridge_FLCWindowCtr+ OFF
+  g_HIL_Bus_Swc_Check("J_HBridge_FLCWindowCtr- OFF"); // 预期结果 Step Check J_HBridge_FLCWindowCtr- OFF
+  g_HIL_Bus_Swc_Check("I_LDCU_WinStFB2::I_LDCU_RLWinActionFB 0"); // 预期结果 Step Check I_LDCU_WinStFB2::I_LDCU_RLWinActionFB 0//0x0:Stopped,
+  g_HIL_Bus_Swc_Check("J_Hbridge_RLWindowCtr+ OFF"); // 预期结果 Step Check J_Hbridge_RLWindowCtr+ OFF
+  g_HIL_Bus_Swc_Check("J_Hbridge_RLWindowCtr- OFF"); // 预期结果 Step Check J_Hbridge_RLWindowCtr- OFF
+}
+
+testcase SYS_LDCU_window_0115()
+{
+  TestDescription("左后车窗响应大屏便捷性指令控制全开或全关");
+  g_HIL_Clib_Swc_Clib_LocalON(); // 测试步骤 Step Clib LocalON//
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_PowerMode 1"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_PowerMode 1//LocalON
+  g_HIL_Bus_Swc_Set("J_DI_FLDoorAjarSW_LS close"); // 测试步骤 Step Set J_DI_FLDoorAjarSW_LS close
+  g_HIL_Bus_Swc_Set("J_DI_RLDoorAjarSW_LS close"); // 测试步骤 Step Set J_DI_RLDoorAjarSW_LS close
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0//CLOSE
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_RRDoorAjarSt 0"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_RRDoorAjarSt 0//CLOSE
+  g_HIL_Bus_Swc_Set("I_CDCU_LDCU_BodyCtrl::I_CDCU_WinLockCtrlReq 0"); // 测试步骤 Step Set I_CDCU_LDCU_BodyCtrl::I_CDCU_WinLockCtrlReq 0//0x0=nocommand
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Set("I_CDCU_LDCU_BodyCtrl::I_CDCU_WinLockCtrlReq 2"); // 测试步骤 Step Set I_CDCU_LDCU_BodyCtrl::I_CDCU_WinLockCtrlReq 2//0x2=unlock
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_DriverDoorAjarSt 0"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_DriverDoorAjarSt 0//0x0=close
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_RLDoorAjarSt 0"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_RLDoorAjarSt 0//0x0=close
+  g_HIL_Bus_Swc_Set("I_CDCU_LDCU_BodyCtrl::I_CDCU_WinLockCtrlReq 0"); // 测试步骤 Step Set I_CDCU_LDCU_BodyCtrl::I_CDCU_WinLockCtrlReq 0//0x0=nocommand
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Set("I_CDCU_LDCU_BodyCtrl::I_CDCU_ComfortWndsCmd 1"); // 测试步骤 Step Set I_CDCU_LDCU_BodyCtrl::I_CDCU_ComfortWndsCmd 1//0x1:Auto up
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_WinLockworkSt 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_WinLockworkSt 0//inactive
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Set("I_CDCU_LDCU_BodyCtrl::I_CDCU_ComfortWndsCmd 0"); // 测试步骤 Step Set I_CDCU_LDCU_BodyCtrl::I_CDCU_ComfortWndsCmd 0//0x0=nocommand
+  g_HIL_Gen_Swc_Wait("40 ms"); // 测试步骤 Step Wait 40 ms
+  g_HIL_Bus_Swc_Check("J_Hbridge_RLWindowCtr+ Up"); // 预期结果 Step Check J_Hbridge_RLWindowCtr+ Up
+  g_HIL_Bus_Swc_Check("J_Hbridge_RLWindowCtr- Stop"); // 预期结果 Step Check J_Hbridge_RLWindowCtr- Stop
+  g_HIL_Bus_Swc_Check("I_LDCU_WinStFB2::I_LDCU_RLWinActionFB 1"); // 预期结果 Step Check I_LDCU_WinStFB2::I_LDCU_RLWinActionFB 1//0x1:Window Closing,
+  g_HIL_Bus_Swc_Check("J_HBridge_FLCWindowCtr+ Stop"); // 预期结果 Step Check J_HBridge_FLCWindowCtr+ Stop
+  g_HIL_Bus_Swc_Check("J_HBridge_FLCWindowCtr- OFF"); // 预期结果 Step Check J_HBridge_FLCWindowCtr- OFF
+  g_HIL_Bus_Swc_Check("I_LDCU_WinStFB1::I_LDCU_FLWinActionFB 1"); // 预期结果 Step Check I_LDCU_WinStFB1::I_LDCU_FLWinActionFB 1//0x1:Window_Closing
+  g_HIL_Gen_Swc_Wait("3 s"); // 测试步骤 Step Wait 3 s
+  g_HIL_Bus_Swc_Check("I_LDCU_WinStFB1::I_LDCU_FLWinActionFB 0"); // 预期结果 Step Check I_LDCU_WinStFB1::I_LDCU_FLWinActionFB 0//0x0:Stopped,
+  g_HIL_Bus_Swc_Check("J_HBridge_FLCWindowCtr+ OFF"); // 预期结果 Step Check J_HBridge_FLCWindowCtr+ OFF
+  g_HIL_Bus_Swc_Check("J_HBridge_FLCWindowCtr- OFF"); // 预期结果 Step Check J_HBridge_FLCWindowCtr- OFF
+  g_HIL_Bus_Swc_Check("I_LDCU_WinStFB2::I_LDCU_RLWinActionFB 0"); // 预期结果 Step Check I_LDCU_WinStFB2::I_LDCU_RLWinActionFB 0//0x0:Stopped,
+  g_HIL_Bus_Swc_Check("J_Hbridge_RLWindowCtr+ OFF"); // 预期结果 Step Check J_Hbridge_RLWindowCtr+ OFF
+  g_HIL_Bus_Swc_Check("J_Hbridge_RLWindowCtr- OFF"); // 预期结果 Step Check J_Hbridge_RLWindowCtr- OFF
+}
+
+testcase SYS_LDCU_window_0156()
+{
+  TestDescription("主驾车窗电机低电压故障");
+  g_HIL_Clib_Swc_Clib_LocalON(); // 测试步骤 Step Clib LocalON//
+  g_HIL_Bus_Swc_Set("J_BAT_VOLT_SV 8"); // 测试步骤 Step Set J_BAT_VOLT_SV 8
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Set("J_AI_DFLWindowCtrSw NoInput"); // 测试步骤 Step Set J_AI_DFLWindowCtrSw NoInput//No Input
+  g_HIL_Bus_Swc_Set("J_AI_DRLWindowCtrSw NoInput"); // 测试步骤 Step Set J_AI_DRLWindowCtrSw NoInput//主驾左后车窗开关
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Set("J_AI_DFLWindowCtrSw ManualDown"); // 测试步骤 Step Set J_AI_DFLWindowCtrSw ManualDown//
+  g_HIL_Gen_Swc_Wait("601 ms"); // 测试步骤 Step Wait 601 ms
+  g_HIL_Gen_Swc_Wait("601 ms"); // 测试步骤 Step Wait 601 ms
+  g_HIL_Bus_Swc_Check("J_HBridge_FLCWindowCtr+ OFF"); // 预期结果 Step Check J_HBridge_FLCWindowCtr+ OFF
+  g_HIL_Bus_Swc_Check("J_HBridge_FLCWindowCtr- OFF"); // 预期结果 Step Check J_HBridge_FLCWindowCtr- OFF
+  g_HIL_Bus_Swc_Set("J_AI_DFLWindowCtrSw NoInput"); // 测试步骤 Step Set J_AI_DFLWindowCtrSw NoInput//No Input
+  g_HIL_Gen_Swc_Wait("300 ms"); // 测试步骤 Step Wait 300 ms
+  g_HIL_Bus_Swc_Set("J_BAT_VOLT_SV 13.5"); // 测试步骤 Step Set J_BAT_VOLT_SV 13.5
+  g_HIL_Clib_Swc_Clib_LocalON(); // 测试步骤 Step Clib LocalON//
+  g_HIL_Bus_Swc_Set("J_AI_DFLWindowCtrSw NoInput"); // 测试步骤 Step Set J_AI_DFLWindowCtrSw NoInput//No Input
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Set("J_AI_DFLWindowCtrSw ManualDown"); // 测试步骤 Step Set J_AI_DFLWindowCtrSw ManualDown//
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Check("J_HBridge_FLCWindowCtr+ Stop"); // 预期结果 Step Check J_HBridge_FLCWindowCtr+ Stop
+  g_HIL_Bus_Swc_Check("J_HBridge_FLCWindowCtr- Down"); // 预期结果 Step Check J_HBridge_FLCWindowCtr- Down
+  g_HIL_Bus_Swc_Check("I_LDCU_WinStFB1::I_LDCU_FLWinActionFB 2"); // 预期结果 Step Check I_LDCU_WinStFB1::I_LDCU_FLWinActionFB 2//0x2:Window_Openning
+  g_HIL_Gen_Swc_Wait("300 ms"); // 测试步骤 Step Wait 300 ms
+}
+
+testcase SYS_LDCU_window_0157()
+{
+  TestDescription("主驾车窗电机高电压故障");
+  g_HIL_Clib_Swc_Clib_LocalON(); // 测试步骤 Step Clib LocalON//
+  g_HIL_Bus_Swc_Set("J_BAT_VOLT_SV 17"); // 测试步骤 Step Set J_BAT_VOLT_SV 17
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Set("J_AI_DFLWindowCtrSw NoInput"); // 测试步骤 Step Set J_AI_DFLWindowCtrSw NoInput//No Input
+  g_HIL_Bus_Swc_Set("J_AI_DRLWindowCtrSw NoInput"); // 测试步骤 Step Set J_AI_DRLWindowCtrSw NoInput//主驾左后车窗开关
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Set("J_AI_DFLWindowCtrSw ManualUp"); // 测试步骤 Step Set J_AI_DFLWindowCtrSw ManualUp//
+  g_HIL_Gen_Swc_Wait("601 ms"); // 测试步骤 Step Wait 601 ms
+  g_HIL_Gen_Swc_Wait("601 ms"); // 测试步骤 Step Wait 601 ms
+  g_HIL_Bus_Swc_Check("J_HBridge_FLCWindowCtr+ OFF"); // 预期结果 Step Check J_HBridge_FLCWindowCtr+ OFF
+  g_HIL_Bus_Swc_Check("J_HBridge_FLCWindowCtr- OFF"); // 预期结果 Step Check J_HBridge_FLCWindowCtr- OFF
+  g_HIL_Bus_Swc_Set("J_AI_DFLWindowCtrSw NoInput"); // 测试步骤 Step Set J_AI_DFLWindowCtrSw NoInput//No Input
+  g_HIL_Gen_Swc_Wait("300 ms"); // 测试步骤 Step Wait 300 ms
+  g_HIL_Bus_Swc_Set("J_BAT_VOLT_SV 13.5"); // 测试步骤 Step Set J_BAT_VOLT_SV 13.5
+  g_HIL_Clib_Swc_Clib_LocalON(); // 测试步骤 Step Clib LocalON//
+  g_HIL_Bus_Swc_Set("J_AI_DFLWindowCtrSw NoInput"); // 测试步骤 Step Set J_AI_DFLWindowCtrSw NoInput//No Input
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Set("J_AI_DFLWindowCtrSw ManualUp"); // 测试步骤 Step Set J_AI_DFLWindowCtrSw ManualUp//
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Check("J_HBridge_FLCWindowCtr+ Up"); // 预期结果 Step Check J_HBridge_FLCWindowCtr+ Up
+  g_HIL_Bus_Swc_Check("J_HBridge_FLCWindowCtr- Stop"); // 预期结果 Step Check J_HBridge_FLCWindowCtr- Stop
+  g_HIL_Bus_Swc_Check("I_LDCU_WinStFB1::I_LDCU_FLWinActionFB 1"); // 预期结果 Step Check I_LDCU_WinStFB1::I_LDCU_FLWinActionFB 1//0x1:Window_Closing
+  g_HIL_Bus_Swc_Set("J_AI_DFLWindowCtrSw NoInput"); // 测试步骤 Step Set J_AI_DFLWindowCtrSw NoInput//No Input
+  g_HIL_Gen_Swc_Wait("300 ms"); // 测试步骤 Step Wait 300 ms
+}
+
+testcase SYS_LDCU_window_0161()
+{
+  TestDescription("左后车窗电机低电压故障");
+  g_HIL_Clib_Swc_Clib_LocalON(); // 测试步骤 Step Clib LocalON//
+  g_HIL_Bus_Swc_Set("J_BAT_VOLT_SV 8"); // 测试步骤 Step Set J_BAT_VOLT_SV 8
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Set("J_AI_DFLWindowCtrSw NoInput"); // 测试步骤 Step Set J_AI_DFLWindowCtrSw NoInput//No Input
+  g_HIL_Bus_Swc_Set("J_AI_DRLWindowCtrSw NoInput"); // 测试步骤 Step Set J_AI_DRLWindowCtrSw NoInput//主驾左后车窗开关
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Set("J_AI_DRLWindowCtrSw ManualDown"); // 测试步骤 Step Set J_AI_DRLWindowCtrSw ManualDown//
+  g_HIL_Gen_Swc_Wait("601 ms"); // 测试步骤 Step Wait 601 ms
+  g_HIL_Gen_Swc_Wait("601 ms"); // 测试步骤 Step Wait 601 ms
+  g_HIL_Bus_Swc_Check("J_Hbridge_RLWindowCtr+ OFF"); // 预期结果 Step Check J_Hbridge_RLWindowCtr+ OFF
+  g_HIL_Bus_Swc_Check("J_Hbridge_RLWindowCtr- OFF"); // 预期结果 Step Check J_Hbridge_RLWindowCtr- OFF
+  g_HIL_Bus_Swc_Check("I_LDCU_WinStFB2::I_LDCU_RLWinActionFB 0"); // 预期结果 Step Check I_LDCU_WinStFB2::I_LDCU_RLWinActionFB 0//
+  g_HIL_Bus_Swc_Set("J_AI_DFLWindowCtrSw NoInput"); // 测试步骤 Step Set J_AI_DFLWindowCtrSw NoInput//No Input
+  g_HIL_Gen_Swc_Wait("300 ms"); // 测试步骤 Step Wait 300 ms
+  g_HIL_Bus_Swc_Set("J_BAT_VOLT_SV 13.5"); // 测试步骤 Step Set J_BAT_VOLT_SV 13.5
+  g_HIL_Clib_Swc_Clib_LocalON(); // 测试步骤 Step Clib LocalON//
+  g_HIL_Bus_Swc_Set("J_AI_DFLWindowCtrSw NoInput"); // 测试步骤 Step Set J_AI_DFLWindowCtrSw NoInput//No Input
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Set("J_AI_DRLWindowCtrSw ManualDown"); // 测试步骤 Step Set J_AI_DRLWindowCtrSw ManualDown//
+  g_HIL_Gen_Swc_Wait("601 ms"); // 测试步骤 Step Wait 601 ms
+  g_HIL_Bus_Swc_Check("J_Hbridge_RLWindowCtr+ OFF"); // 预期结果 Step Check J_Hbridge_RLWindowCtr+ OFF
+  g_HIL_Bus_Swc_Check("J_Hbridge_RLWindowCtr- OFF"); // 预期结果 Step Check J_Hbridge_RLWindowCtr- OFF
+  g_HIL_Gen_Swc_Wait("300 ms"); // 测试步骤 Step Wait 300 ms
+}
+
+testcase SYS_LDCU_window_0162()
+{
+  TestDescription("左后车窗电机高电压故障");
+  g_HIL_Clib_Swc_Clib_LocalON(); // 测试步骤 Step Clib LocalON//
+  g_HIL_Bus_Swc_Set("J_BAT_VOLT_SV 17"); // 测试步骤 Step Set J_BAT_VOLT_SV 17
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Set("J_AI_DFLWindowCtrSw NoInput"); // 测试步骤 Step Set J_AI_DFLWindowCtrSw NoInput//No Input
+  g_HIL_Bus_Swc_Set("J_AI_DRLWindowCtrSw NoInput"); // 测试步骤 Step Set J_AI_DRLWindowCtrSw NoInput//主驾左后车窗开关
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Set("J_AI_DRLWindowCtrSw ManualUp"); // 测试步骤 Step Set J_AI_DRLWindowCtrSw ManualUp//
+  g_HIL_Gen_Swc_Wait("601 ms"); // 测试步骤 Step Wait 601 ms
+  g_HIL_Gen_Swc_Wait("601 ms"); // 测试步骤 Step Wait 601 ms
+  g_HIL_Bus_Swc_Check("J_Hbridge_RLWindowCtr+ OFF"); // 预期结果 Step Check J_Hbridge_RLWindowCtr+ OFF
+  g_HIL_Bus_Swc_Check("J_Hbridge_RLWindowCtr- OFF"); // 预期结果 Step Check J_Hbridge_RLWindowCtr- OFF
+  g_HIL_Bus_Swc_Check("I_LDCU_WinStFB2::I_LDCU_RLWinActionFB 0"); // 预期结果 Step Check I_LDCU_WinStFB2::I_LDCU_RLWinActionFB 0//
+  g_HIL_Bus_Swc_Set("J_AI_DFLWindowCtrSw NoInput"); // 测试步骤 Step Set J_AI_DFLWindowCtrSw NoInput//No Input
+  g_HIL_Gen_Swc_Wait("300 ms"); // 测试步骤 Step Wait 300 ms
+  g_HIL_Bus_Swc_Set("J_BAT_VOLT_SV 13.5"); // 测试步骤 Step Set J_BAT_VOLT_SV 13.5
+  g_HIL_Clib_Swc_Clib_LocalON(); // 测试步骤 Step Clib LocalON//
+  g_HIL_Bus_Swc_Set("J_AI_DFLWindowCtrSw NoInput"); // 测试步骤 Step Set J_AI_DFLWindowCtrSw NoInput//No Input
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Set("J_AI_DRLWindowCtrSw ManualUp"); // 测试步骤 Step Set J_AI_DRLWindowCtrSw ManualUp//
+  g_HIL_Gen_Swc_Wait("601 ms"); // 测试步骤 Step Wait 601 ms
+  g_HIL_Bus_Swc_Check("J_Hbridge_RLWindowCtr+ OFF"); // 预期结果 Step Check J_Hbridge_RLWindowCtr+ OFF
+  g_HIL_Bus_Swc_Check("J_Hbridge_RLWindowCtr- OFF"); // 预期结果 Step Check J_Hbridge_RLWindowCtr- OFF
+  g_HIL_Bus_Swc_Set("J_AI_DFLWindowCtrSw NoInput"); // 测试步骤 Step Set J_AI_DFLWindowCtrSw NoInput//No Input
+  g_HIL_Gen_Swc_Wait("300 ms"); // 测试步骤 Step Wait 300 ms
+}
+
+testcase SYS_LDCU_window_0164()
+{
+  TestDescription("前置条件|童锁开关关闭");
+  g_HIL_Clib_Swc_Clib_LocalON(); // 测试步骤 Step Clib LocalON//
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Set("I_CDCU_LDCU_BodyCtrl::I_CDCU_LChildLockSw 2"); // 测试步骤 Step Set I_CDCU_LDCU_BodyCtrl::I_CDCU_LChildLockSw 2//unlock
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_LChildLockLogicSt 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_LChildLockLogicSt 0//unlock
+}
+
+testcase SYS_LDCU_window_0165()
+{
+  TestDescription("左后车窗双档开关手动下降-车窗锁止开关未激活四门关闭&LocalON");
+  g_HIL_Clib_Swc_Clib_LocalON(); // 测试步骤 Step Clib LocalON//
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_PowerMode 1"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_PowerMode 1//Local ON
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Set("J_AI_RLWindowCtrSw NoInput"); // 测试步骤 Step Set J_AI_RLWindowCtrSw NoInput//左后车窗开关
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Set("J_AI_RLWindowCtrSw ManualDown"); // 测试步骤 Step Set J_AI_RLWindowCtrSw ManualDown//左后车窗开关
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_RLWinSwSt 3"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_RLWinSwSt 3//ManualDown
+  g_HIL_Bus_Swc_Check("J_Hbridge_RLWindowCtr+ Stop"); // 预期结果 Step Check J_Hbridge_RLWindowCtr+ Stop
+  g_HIL_Bus_Swc_Check("J_Hbridge_RLWindowCtr- Down"); // 预期结果 Step Check J_Hbridge_RLWindowCtr- Down
+  g_HIL_Bus_Swc_Set("J_AI_RLWindowCtrSw NoInput"); // 测试步骤 Step Set J_AI_RLWindowCtrSw NoInput//左后车窗开关
+  g_HIL_Gen_Swc_Wait("3000 ms"); // 测试步骤 Step Wait 3000 ms
+  g_HIL_Bus_Swc_Check("J_Hbridge_RLWindowCtr+ OFF"); // 预期结果 Step Check J_Hbridge_RLWindowCtr+ OFF
+  g_HIL_Bus_Swc_Check("J_Hbridge_RLWindowCtr+ OFF"); // 预期结果 Step Check J_Hbridge_RLWindowCtr+ OFF
+}
+
+testcase SYS_LDCU_window_0166()
+{
+  TestDescription("左后车窗双档开关手动下降-车窗锁制开关未激活&OFF 1分钟内且前门关闭");
+  g_HIL_Clib_Swc_Clib_LocalON(); // 测试步骤 Step Clib LocalON//
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_PowerMode 1"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_PowerMode 1//Local ON
+  g_HIL_Clib_Swc_Clib_OFF(); // 测试步骤 Step Clib OFF//
+  g_HIL_Bus_Swc_Set("J_AI_RLWindowCtrSw NoInput"); // 测试步骤 Step Set J_AI_RLWindowCtrSw NoInput//左后车窗开关
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Set("J_AI_RLWindowCtrSw ManualDown"); // 测试步骤 Step Set J_AI_RLWindowCtrSw ManualDown//左后车窗开关
+  g_HIL_Gen_Swc_Wait("601 ms"); // 测试步骤 Step Wait 601 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_RLWinSwSt 3"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_RLWinSwSt 3//ManualDown
+  g_HIL_Bus_Swc_Check("J_Hbridge_RLWindowCtr+ Stop"); // 预期结果 Step Check J_Hbridge_RLWindowCtr+ Stop
+  g_HIL_Bus_Swc_Check("J_Hbridge_RLWindowCtr- Down"); // 预期结果 Step Check J_Hbridge_RLWindowCtr- Down
+  g_HIL_Bus_Swc_Set("J_AI_RLWindowCtrSw NoInput"); // 测试步骤 Step Set J_AI_RLWindowCtrSw NoInput//左后车窗开关
+  g_HIL_Gen_Swc_Wait("300 ms"); // 测试步骤 Step Wait 300 ms
+  g_HIL_Bus_Swc_Check("J_Hbridge_RLWindowCtr+ Stop"); // 预期结果 Step Check J_Hbridge_RLWindowCtr+ Stop
+  g_HIL_Bus_Swc_Check("J_Hbridge_RLWindowCtr- Stop"); // 预期结果 Step Check J_Hbridge_RLWindowCtr- Stop
+}
+
+testcase SYS_LDCU_window_0167()
+{
+  TestDescription("左后车窗双档开关手动上升-车窗锁制开关未激活&LocalON");
+  g_HIL_Clib_Swc_Clib_LocalON(); // 测试步骤 Step Clib LocalON//
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_PowerMode 1"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_PowerMode 1//Local ON
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Set("J_AI_RLWindowCtrSw NoInput"); // 测试步骤 Step Set J_AI_RLWindowCtrSw NoInput//主驾左后车窗开关
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Set("J_AI_RLWindowCtrSw ManualUp"); // 测试步骤 Step Set J_AI_RLWindowCtrSw ManualUp//主驾左后车窗开关
+  g_HIL_Gen_Swc_Wait("201 ms"); // 测试步骤 Step Wait 201 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_RLWinSwSt 1"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_RLWinSwSt 1//Manual Up
+  g_HIL_Bus_Swc_Check("J_Hbridge_RLWindowCtr+ Up"); // 预期结果 Step Check J_Hbridge_RLWindowCtr+ Up
+  g_HIL_Bus_Swc_Check("J_Hbridge_RLWindowCtr- Stop"); // 预期结果 Step Check J_Hbridge_RLWindowCtr- Stop
+  g_HIL_Bus_Swc_Set("J_AI_RLWindowCtrSw NoInput"); // 测试步骤 Step Set J_AI_RLWindowCtrSw NoInput//主驾左后车窗开关
+  g_HIL_Gen_Swc_Wait("300 ms"); // 测试步骤 Step Wait 300 ms
+  g_HIL_Bus_Swc_Check("J_Hbridge_RLWindowCtr+ Stop"); // 预期结果 Step Check J_Hbridge_RLWindowCtr+ Stop
+  g_HIL_Bus_Swc_Check("J_Hbridge_RLWindowCtr- Stop"); // 预期结果 Step Check J_Hbridge_RLWindowCtr- Stop
+}
+
+testcase SYS_LDCU_window_0168()
+{
+  TestDescription("左后车窗双档开关手动上升-车窗锁制开关未激活&OFF 1分钟内且前门关闭");
+  g_HIL_Clib_Swc_Clib_LocalON(); // 测试步骤 Step Clib LocalON//
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_PowerMode 1"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_PowerMode 1//Local ON
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Clib_Swc_Clib_OFF(); // 测试步骤 Step Clib OFF//
+  g_HIL_Bus_Swc_Set("J_AI_RLWindowCtrSw NoInput"); // 测试步骤 Step Set J_AI_RLWindowCtrSw NoInput//主驾左后车窗开关
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_PowerMode 0"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_PowerMode 0//OFF
+  g_HIL_Bus_Swc_Set("J_AI_RLWindowCtrSw ManualUp"); // 测试步骤 Step Set J_AI_RLWindowCtrSw ManualUp//主驾左后车窗开关
+  g_HIL_Gen_Swc_Wait("201 ms"); // 测试步骤 Step Wait 201 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_RLWinSwSt 1"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_RLWinSwSt 1//Manual Up
+  g_HIL_Bus_Swc_Check("J_Hbridge_RLWindowCtr+ Up"); // 预期结果 Step Check J_Hbridge_RLWindowCtr+ Up
+  g_HIL_Bus_Swc_Check("J_Hbridge_RLWindowCtr- Stop"); // 预期结果 Step Check J_Hbridge_RLWindowCtr- Stop
+  g_HIL_Bus_Swc_Set("J_AI_RLWindowCtrSw NoInput"); // 测试步骤 Step Set J_AI_RLWindowCtrSw NoInput//主驾左后车窗开关
+  g_HIL_Gen_Swc_Wait("3000 ms"); // 测试步骤 Step Wait 3000 ms
+  g_HIL_Bus_Swc_Check("J_Hbridge_RLWindowCtr+ OFF"); // 预期结果 Step Check J_Hbridge_RLWindowCtr+ OFF
+  g_HIL_Bus_Swc_Check("J_Hbridge_RLWindowCtr- OFF"); // 预期结果 Step Check J_Hbridge_RLWindowCtr- OFF
+}
+
+testcase SYS_LDCU_window_0169()
+{
+  TestDescription("左后车窗双档开关自动下降-车窗锁止开关未激活四门关闭&LocalON");
+  g_HIL_Clib_Swc_Clib_LocalON(); // 测试步骤 Step Clib LocalON//
+  g_HIL_Bus_Swc_Set("J_AI_RLWindowCtrSw NoInput"); // 测试步骤 Step Set J_AI_RLWindowCtrSw NoInput//左后车窗开关
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_PowerMode 1"); // 预期结果 Step Check I_LDCU_BodySysSt1::I_LDCU_PowerMode 1//LocalON
+  g_HIL_Bus_Swc_Set("J_AI_RLWindowCtrSw AutoDown"); // 测试步骤 Step Set J_AI_RLWindowCtrSw AutoDown//左后车窗开关
+  g_HIL_Gen_Swc_Wait("300 ms"); // 测试步骤 Step Wait 300 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_RLWinSwSt 4"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_RLWinSwSt 4//AutoDown
+  g_HIL_Bus_Swc_Check("J_Hbridge_RLWindowCtr+ Stop"); // 预期结果 Step Check J_Hbridge_RLWindowCtr+ Stop
+  g_HIL_Bus_Swc_Check("J_Hbridge_RLWindowCtr- Down"); // 预期结果 Step Check J_Hbridge_RLWindowCtr- Down
+  g_HIL_Bus_Swc_Set("J_AI_RLWindowCtrSw NoInput"); // 测试步骤 Step Set J_AI_RLWindowCtrSw NoInput//左后车窗开关
+  g_HIL_Gen_Swc_Wait("1 s"); // 测试步骤 Step Wait 1 s
+  g_HIL_Bus_Swc_Check("J_Hbridge_RLWindowCtr+ 1"); // 预期结果 Step Check J_Hbridge_RLWindowCtr+ 1
+  g_HIL_Bus_Swc_Check("J_Hbridge_RLWindowCtr- 1"); // 预期结果 Step Check J_Hbridge_RLWindowCtr- 1
+}
+
+testcase SYS_LDCU_window_0170()
+{
+  TestDescription("左后车窗双档开关自动下降-车窗锁制开关未激活&OFF 1分钟内且前门关闭");
+  g_HIL_Clib_Swc_Clib_LocalON(); // 测试步骤 Step Clib LocalON//
+  g_HIL_Clib_Swc_Clib_OFF(); // 测试步骤 Step Clib OFF
+  g_HIL_Bus_Swc_Set("J_AI_RLWindowCtrSw NoInput"); // 测试步骤 Step Set J_AI_RLWindowCtrSw NoInput//左后车窗开关
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Set("J_AI_RLWindowCtrSw AutoDown"); // 测试步骤 Step Set J_AI_RLWindowCtrSw AutoDown//左后车窗开关
+  g_HIL_Gen_Swc_Wait("300 ms"); // 测试步骤 Step Wait 300 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_RLWinSwSt 4"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_RLWinSwSt 4//AutoDown
+  g_HIL_Bus_Swc_Check("J_Hbridge_RLWindowCtr+ Stop"); // 预期结果 Step Check J_Hbridge_RLWindowCtr+ Stop
+  g_HIL_Bus_Swc_Check("J_Hbridge_RLWindowCtr- Down"); // 预期结果 Step Check J_Hbridge_RLWindowCtr- Down
+  g_HIL_Bus_Swc_Set("J_AI_RLWindowCtrSw NoInput"); // 测试步骤 Step Set J_AI_RLWindowCtrSw NoInput//左后车窗开关
+  g_HIL_Gen_Swc_Wait("1 s"); // 测试步骤 Step Wait 1 s
+}
+
+testcase SYS_LDCU_window_0171()
+{
+  TestDescription("左后车窗双档开关自动上升-车窗锁制开关未激活&LocalON");
+  g_HIL_Clib_Swc_Clib_LocalON(); // 测试步骤 Step Clib LocalON//
+  g_HIL_Bus_Swc_Set("J_AI_RLWindowCtrSw NoInput"); // 测试步骤 Step Set J_AI_RLWindowCtrSw NoInput//左后车窗开关
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Set("J_AI_RLWindowCtrSw AutoUp"); // 测试步骤 Step Set J_AI_RLWindowCtrSw AutoUp//左后车窗开关
+  g_HIL_Gen_Swc_Wait("100 ms"); // 测试步骤 Step Wait 100 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_RLWinSwSt 2"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_RLWinSwSt 2//auto Up
+  g_HIL_Bus_Swc_Check("J_Hbridge_RLWindowCtr+ Up"); // 预期结果 Step Check J_Hbridge_RLWindowCtr+ Up
+  g_HIL_Bus_Swc_Check("J_Hbridge_RLWindowCtr- Stop"); // 预期结果 Step Check J_Hbridge_RLWindowCtr- Stop
+  g_HIL_Bus_Swc_Set("J_AI_RLWindowCtrSw NoInput"); // 测试步骤 Step Set J_AI_RLWindowCtrSw NoInput//左后车窗开关
+  g_HIL_Gen_Swc_Wait("3 s"); // 测试步骤 Step Wait 3 s
+  g_HIL_Bus_Swc_Check("J_Hbridge_RLWindowCtr+ 1"); // 预期结果 Step Check J_Hbridge_RLWindowCtr+ 1
+  g_HIL_Bus_Swc_Check("J_Hbridge_RLWindowCtr- 1"); // 预期结果 Step Check J_Hbridge_RLWindowCtr- 1
+}
+
+testcase SYS_LDCU_window_0172()
+{
+  TestDescription("左后车窗双档开关自动上升-车窗锁制开关未激活&OFF 1分钟内且前门关闭");
+  g_HIL_Clib_Swc_Clib_LocalON(); // 测试步骤 Step Clib LocalON//
+  g_HIL_Clib_Swc_Clib_OFF(); // 测试步骤 Step Clib OFF
+  g_HIL_Bus_Swc_Set("J_AI_RLWindowCtrSw NoInput"); // 测试步骤 Step Set J_AI_RLWindowCtrSw NoInput//左后车窗开关
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Set("J_AI_RLWindowCtrSw AutoUp"); // 测试步骤 Step Set J_AI_RLWindowCtrSw AutoUp//左后车窗开关
+  g_HIL_Gen_Swc_Wait("311 ms"); // 测试步骤 Step Wait 311 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_RLWinSwSt 2"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_RLWinSwSt 2//
+  g_HIL_Bus_Swc_Check("J_Hbridge_RLWindowCtr+ Up"); // 预期结果 Step Check J_Hbridge_RLWindowCtr+ Up
+  g_HIL_Bus_Swc_Check("J_Hbridge_RLWindowCtr- Stop"); // 预期结果 Step Check J_Hbridge_RLWindowCtr- Stop
+  g_HIL_Bus_Swc_Set("J_AI_RLWindowCtrSw NoInput"); // 测试步骤 Step Set J_AI_RLWindowCtrSw NoInput//左后车窗开关
+  g_HIL_Gen_Swc_Wait("300 ms"); // 测试步骤 Step Wait 300 ms
+  g_HIL_Bus_Swc_Check("J_Hbridge_RLWindowCtr+ Stop"); // 预期结果 Step Check J_Hbridge_RLWindowCtr+ Stop
+  g_HIL_Bus_Swc_Check("J_Hbridge_RLWindowCtr- Stop"); // 预期结果 Step Check J_Hbridge_RLWindowCtr- Stop
+}
+
+testcase SYS_LDCU_window_0173()
+{
+  TestDescription("激活车窗锁止功能");
+  g_HIL_Clib_Swc_Clib_OFF(); // 测试步骤 Step Clib OFF
+  g_HIL_Bus_Swc_Set("J_AI_CentralOpencloseLockSw 0"); // 测试步骤 Step Set J_AI_CentralOpencloseLockSw 0
+  g_HIL_Gen_Swc_Wait("300 ms"); // 测试步骤 Step Wait 300 ms
+  g_HIL_Bus_Swc_Set("J_AI_CentralOpencloseLockSw 1"); // 测试步骤 Step Set J_AI_CentralOpencloseLockSw 1
+  g_HIL_Gen_Swc_Wait("300 ms"); // 测试步骤 Step Wait 300 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_WinLockworkSt 1"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_WinLockworkSt 1//Active
+  g_HIL_Bus_Swc_Set("I_CDCU_LDCU_BodyCtrl::I_CDCU_ComfortWndsCmd 1"); // 测试步骤 Step Set I_CDCU_LDCU_BodyCtrl::I_CDCU_ComfortWndsCmd 1//0x1:Auto up
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Check("J_Hbridge_RLWindowCtr+ Stop"); // 预期结果 Step Check J_Hbridge_RLWindowCtr+ Stop
+  g_HIL_Bus_Swc_Check("J_Hbridge_RLWindowCtr- Stop"); // 预期结果 Step Check J_Hbridge_RLWindowCtr- Stop
+  g_HIL_Bus_Swc_Set("I_CDCU_LDCU_BodyCtrl::I_CDCU_ComfortWndsCmd 0"); // 测试步骤 Step Set I_CDCU_LDCU_BodyCtrl::I_CDCU_ComfortWndsCmd 0//nocommand
+  g_HIL_Clib_Swc_Clib_LocalON(); // 测试步骤 Step Clib LocalON//
+}
+
+testcase SYS_LDCU_window_0174()
+{
+  TestDescription("关闭车窗锁止功能");
+  g_HIL_Clib_Swc_Clib_OFF(); // 测试步骤 Step Clib OFF
+  g_HIL_Bus_Swc_Set("J_AI_CentralOpencloseLockSw 1"); // 测试步骤 Step Set J_AI_CentralOpencloseLockSw 1
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Set("J_AI_CentralOpencloseLockSw 0"); // 测试步骤 Step Set J_AI_CentralOpencloseLockSw 0
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_WinLockworkSt 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_WinLockworkSt 0//not active
+  g_HIL_Bus_Swc_Set("I_CDCU_LDCU_BodyCtrl::I_CDCU_ComfortWndsCmd 1"); // 测试步骤 Step Set I_CDCU_LDCU_BodyCtrl::I_CDCU_ComfortWndsCmd 1//0x1:Auto up
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Check("J_Hbridge_RLWindowCtr+ UP"); // 预期结果 Step Check J_Hbridge_RLWindowCtr+ UP
+  g_HIL_Bus_Swc_Check("J_Hbridge_RLWindowCtr- Stop"); // 预期结果 Step Check J_Hbridge_RLWindowCtr- Stop
+  g_HIL_Bus_Swc_Set("I_CDCU_LDCU_BodyCtrl::I_CDCU_ComfortWndsCmd 0"); // 测试步骤 Step Set I_CDCU_LDCU_BodyCtrl::I_CDCU_ComfortWndsCmd 0//nocommand
+  g_HIL_Clib_Swc_Clib_LocalON(); // 测试步骤 Step Clib LocalON//
+}
+
+testcase SYS_LDCU_window_0175()
+{
+  TestDescription("开启车窗锁止指示灯");
+  g_HIL_Clib_Swc_Clib_OFF(); // 测试步骤 Step Clib OFF
+  g_HIL_Bus_Swc_Set("J_AI_CentralOpencloseLockSw 0"); // 测试步骤 Step Set J_AI_CentralOpencloseLockSw 0
+  g_HIL_Gen_Swc_Wait("300 ms"); // 测试步骤 Step Wait 300 ms
+  g_HIL_Bus_Swc_Set("J_AI_CentralOpencloseLockSw 1"); // 测试步骤 Step Set J_AI_CentralOpencloseLockSw 1
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_WinLockworkSt 1"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_WinLockworkSt 1//Active
+  g_HIL_Bus_Swc_Check("J_DO_HS_WinLockLight 1"); // 预期结果 Step Check J_DO_HS_WinLockLight 1
+}
+
+testcase SYS_LDCU_window_0176()
+{
+  TestDescription("关闭车窗锁止指示灯");
+  g_HIL_Clib_Swc_Clib_OFF(); // 测试步骤 Step Clib OFF
+  g_HIL_Bus_Swc_Set("J_AI_CentralOpencloseLockSw 1"); // 测试步骤 Step Set J_AI_CentralOpencloseLockSw 1
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Set("J_AI_CentralOpencloseLockSw 0"); // 测试步骤 Step Set J_AI_CentralOpencloseLockSw 0
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_WinLockworkSt 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_WinLockworkSt 0//not active
+  g_HIL_Bus_Swc_Check("J_DO_HS_WinLockLight 0"); // 预期结果 Step Check J_DO_HS_WinLockLight 0
+}
+
+testcase SYS_LDCU_window_0177()
+{
+  TestDescription("儿童锁打开左后车窗不能控制--本地开关");
+  g_HIL_Clib_Swc_Clib_LocalON(); // 测试步骤 Step Clib LocalON//
+  g_HIL_Bus_Swc_Set("J_DI_FLDoorAjarSW_LS close"); // 测试步骤 Step Set J_DI_FLDoorAjarSW_LS close
+  g_HIL_Bus_Swc_Set("J_DI_RLDoorAjarSW_LS close"); // 测试步骤 Step Set J_DI_RLDoorAjarSW_LS close
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0//CLOSE
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_RRDoorAjarSt 0"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_RRDoorAjarSt 0//CLOSE
+  g_HIL_Bus_Swc_Set("I_CDCU_LDCU_BodyCtrl::I_CDCU_ComfortWndsCmd 0"); // 测试步骤 Step Set I_CDCU_LDCU_BodyCtrl::I_CDCU_ComfortWndsCmd 0//0x0:No_command
+  g_HIL_Bus_Swc_Set("C_SRS_SysSt::C_SRS_CrashOutputSt 0"); // 测试步骤 Step Set C_SRS_SysSt::C_SRS_CrashOutputSt 0//Inactive
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Set("J_AI_RLWindowCtrSw NoInput"); // 测试步骤 Step Set J_AI_RLWindowCtrSw NoInput//左后车窗开关
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Set("J_AI_RLWindowCtrSw AutoUp"); // 测试步骤 Step Set J_AI_RLWindowCtrSw AutoUp//2
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_RLWinSwSt 2"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_RLWinSwSt 2//auto Up
+  g_HIL_Bus_Swc_Check("J_Hbridge_RLWindowCtr+ Up"); // 预期结果 Step Check J_Hbridge_RLWindowCtr+ Up
+  g_HIL_Bus_Swc_Check("J_Hbridge_RLWindowCtr- Stop"); // 预期结果 Step Check J_Hbridge_RLWindowCtr- Stop
+  g_HIL_Gen_Swc_Wait("3 s"); // 测试步骤 Step Wait 3 s
+  g_HIL_Bus_Swc_Set("I_CDCU_LDCU_BodyCtrl::I_CDCU_LChildLockSw 0"); // 测试步骤 Step Set I_CDCU_LDCU_BodyCtrl::I_CDCU_LChildLockSw 0//nocommand
+  g_HIL_Gen_Swc_Wait("1 s"); // 测试步骤 Step Wait 1 s
+  g_HIL_Bus_Swc_Set("I_CDCU_LDCU_BodyCtrl::I_CDCU_LChildLockSw 1"); // 测试步骤 Step Set I_CDCU_LDCU_BodyCtrl::I_CDCU_LChildLockSw 1//lock
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Set("J_AI_RLWindowCtrSw NoInput"); // 测试步骤 Step Set J_AI_RLWindowCtrSw NoInput//左后车窗开关
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Set("J_AI_RLWindowCtrSw AutoUp"); // 测试步骤 Step Set J_AI_RLWindowCtrSw AutoUp//2
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_RLWinSwSt 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_RLWinSwSt 0
+  g_HIL_Bus_Swc_Check("J_Hbridge_RLWindowCtr+ OFF"); // 预期结果 Step Check J_Hbridge_RLWindowCtr+ OFF
+  g_HIL_Bus_Swc_Check("J_Hbridge_RLWindowCtr- OFF"); // 预期结果 Step Check J_Hbridge_RLWindowCtr- OFF
+  g_HIL_Bus_Swc_Set("I_CDCU_LDCU_BodyCtrl::I_CDCU_LChildLockSw 2"); // 测试步骤 Step Set I_CDCU_LDCU_BodyCtrl::I_CDCU_LChildLockSw 2//unlock
+}
+
+testcase SYS_LDCU_window_0178()
+{
+  TestDescription("儿童锁打开左后车窗不能控制--大屏");
+  g_HIL_Clib_Swc_Clib_LocalON(); // 测试步骤 Step Clib LocalON//
+  g_HIL_Bus_Swc_Set("J_DI_FLDoorAjarSW_LS close"); // 测试步骤 Step Set J_DI_FLDoorAjarSW_LS close
+  g_HIL_Bus_Swc_Set("J_DI_RLDoorAjarSW_LS close"); // 测试步骤 Step Set J_DI_RLDoorAjarSW_LS close
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0//CLOSE
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_RRDoorAjarSt 0"); // 测试步骤 Step Set I_RDCU_BodySysSt1::I_RDCU_RRDoorAjarSt 0//CLOSE
+  g_HIL_Bus_Swc_Set("I_CDCU_LDCU_BodyCtrl::I_CDCU_ComfortWndsCmd 0"); // 测试步骤 Step Set I_CDCU_LDCU_BodyCtrl::I_CDCU_ComfortWndsCmd 0//0x0:No_command
+  g_HIL_Bus_Swc_Set("C_SRS_SysSt::C_SRS_CrashOutputSt 0"); // 测试步骤 Step Set C_SRS_SysSt::C_SRS_CrashOutputSt 0//Inactive
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Set("J_AI_RLWindowCtrSw NoInput"); // 测试步骤 Step Set J_AI_RLWindowCtrSw NoInput//左后车窗开关
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Set("J_AI_RLWindowCtrSw ManualUp"); // 测试步骤 Step Set J_AI_RLWindowCtrSw ManualUp//左后车窗开关
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_RLWinSwSt 1"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_RLWinSwSt 1//Manual Up
+  g_HIL_Bus_Swc_Check("J_Hbridge_RLWindowCtr+ Up"); // 预期结果 Step Check J_Hbridge_RLWindowCtr+ Up
+  g_HIL_Bus_Swc_Check("J_Hbridge_RLWindowCtr- Stop"); // 预期结果 Step Check J_Hbridge_RLWindowCtr- Stop
+  g_HIL_Gen_Swc_Wait("3 s"); // 测试步骤 Step Wait 3 s
+  g_HIL_Bus_Swc_Set("I_CDCU_LDCU_BodyCtrl::I_CDCU_LChildLockSw 0"); // 测试步骤 Step Set I_CDCU_LDCU_BodyCtrl::I_CDCU_LChildLockSw 0//nocommand
+  g_HIL_Gen_Swc_Wait("1 s"); // 测试步骤 Step Wait 1 s
+  g_HIL_Bus_Swc_Set("I_CDCU_LDCU_BodyCtrl::I_CDCU_LChildLockSw 1"); // 测试步骤 Step Set I_CDCU_LDCU_BodyCtrl::I_CDCU_LChildLockSw 1//lock
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Set("I_CDCU_LDCU_BodyCtrl::I_CDCU_ComfortWndsCmd 1"); // 测试步骤 Step Set I_CDCU_LDCU_BodyCtrl::I_CDCU_ComfortWndsCmd 1//0x1:Auto_up
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Check("J_Hbridge_RLWindowCtr+ OFF"); // 预期结果 Step Check J_Hbridge_RLWindowCtr+ OFF
+  g_HIL_Bus_Swc_Check("J_Hbridge_RLWindowCtr- OFF"); // 预期结果 Step Check J_Hbridge_RLWindowCtr- OFF
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_RLWinSwSt 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_RLWinSwSt 0
+  g_HIL_Gen_Swc_Wait("1 s"); // 测试步骤 Step Wait 1 s//
+  g_HIL_Bus_Swc_Set("I_CDCU_LDCU_BodyCtrl::I_CDCU_ComfortWndsCmd 0"); // 测试步骤 Step Set I_CDCU_LDCU_BodyCtrl::I_CDCU_ComfortWndsCmd 0//0x0:No_command
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Set("I_CDCU_LDCU_BodyCtrl::I_CDCU_LChildLockSw 2"); // 测试步骤 Step Set I_CDCU_LDCU_BodyCtrl::I_CDCU_LChildLockSw 2//unlock
+}

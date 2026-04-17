@@ -13,15 +13,10 @@ import os
 from typing import Dict, List
 
 from infra.filesystem.pathing import resolve_filter_options_path
+from services.config_constants import FILTER_OPTIONS_UI_KEYS
 
 FILTER_OPTIONS_SECTION = "FILTER_OPTIONS"
-_FILTER_OPTION_KEYS = (
-    ("levels", "levels"),
-    ("platforms", "platforms"),
-    ("models", "models"),
-    ("target_versions", "target_versions"),
-    ("uds_ecu_qualifier", "uds_ecu_qualifier"),
-)
+_FILTER_OPTION_KEYS = FILTER_OPTIONS_UI_KEYS
 
 
 class FilterService:
@@ -44,13 +39,7 @@ class FilterService:
         参数：base_dir — 工程根目录。
         返回：{"levels", "platforms", "models", "target_versions", "uds_ecu_qualifier"}；文件不存在时返回空列表。
         """
-        filters: Dict[str, List[str]] = {
-            "levels": [],
-            "platforms": [],
-            "models": [],
-            "target_versions": [],
-            "uds_ecu_qualifier": [],
-        }
+        filters: Dict[str, List[str]] = {dict_key: [] for dict_key, _ in _FILTER_OPTION_KEYS}
         filter_options_path = resolve_filter_options_path(base_dir)
 
         if not os.path.exists(filter_options_path):

@@ -30,7 +30,7 @@ except ImportError:
     PROGRESS_LEVEL = 15
 
 
-def execute_workflow(domain: str = DEFAULT_DOMAIN_LR_REAR):
+def run_generation_workflow(domain: str = DEFAULT_DOMAIN_LR_REAR):
     """将 CIN 生成的各原子步骤串联为完整流水线并执行。
 
     功能：重置状态 → 解析 base_dir → 初始化日志并劫持 stdout/stderr
@@ -52,7 +52,7 @@ def execute_workflow(domain: str = DEFAULT_DOMAIN_LR_REAR):
 
     try:
         print(">>> 开始执行 CIN 生成任务...", flush=True)
-        runtime = CINEntrypointSupport.load_runtime_config(base_dir)
+        runtime = CINEntrypointSupport.load_runtime_config(base_dir, domain=domain)
         sheet_title = CINEntrypointSupport.detect_sheet_title(
             runtime["input_excel_path"], runtime["input_sheet"]
         )
@@ -82,12 +82,21 @@ def execute_workflow(domain: str = DEFAULT_DOMAIN_LR_REAR):
 def main(domain: str = DEFAULT_DOMAIN_LR_REAR):
     """CIN 生成主入口，供 TaskService 与命令行调用。
 
-    功能：执行 execute_workflow，完成从配置读取到 .cin 写出的整条流水线。
+    功能：执行 run_generation_workflow，完成从配置读取到 .cin 写出的整条流水线。
 
     形参：domain — 业务域（LR_REAR / CENTRAL / DTC），默认 LR_REAR。
     返回：无。
     """
-    execute_workflow(domain=domain)
+    run_generation_workflow(domain=domain)
+
+
+def run_generation(domain: str = DEFAULT_DOMAIN_LR_REAR):
+    """语义化入口别名：等价于 main。"""
+    main(domain=domain)
+
+
+# 兼容旧调用名
+execute_workflow = run_generation_workflow
 
 
 def read_clib_steps_from_excel_for_cin(excel_path, clib_sheet=None):

@@ -12,8 +12,6 @@ import glob
 import logging
 from typing import Any, Optional
 
-from openpyxl import load_workbook
-
 from core.common.sanitizer import sanitize_case_id
 from core.case_filter import CaseFilter
 from core.excel_header import (
@@ -21,6 +19,7 @@ from core.excel_header import (
     find_col_index_by_name_in_values,
     find_testcase_header_row,
 )
+from infra.excel.workbook import ExcelService
 
 # 拼音支持（用于 XML testcase name 转拼音）
 try:
@@ -57,7 +56,9 @@ def find_excel_files(input_path: str) -> list[str]:
             excel_files.extend(glob.glob(pattern, recursive=True))
     else:
         raise FileNotFoundError(f"路径不存在: {input_path}")
-    excel_files = [f for f in excel_files if not os.path.basename(f).startswith('~$')]
+    excel_files = [
+        excel_file for excel_file in excel_files if not os.path.basename(excel_file).startswith('~$')
+    ]
     excel_files = sorted(list(set(excel_files)))
     return excel_files
 
@@ -85,11 +86,13 @@ def dump_sheet_head_preview(ws: Any, *, max_rows: int = 10, max_cols: int = 20) 
             ws.iter_rows(min_row=1, max_row=max_rows, max_col=max_cols, values_only=True), start=1
         ):
             vals = []
-            for v in (row_vals[:max_cols] if row_vals else []):
-                if v is None:
+            for cell_value in (row_vals[:max_cols] if row_vals else []):
+                if cell_value is None:
                     vals.append("")
                 else:
-                    cell_text = str(v).replace("\r\n", "\\n").replace("\n", "\\n").replace("\r", "\\n").strip()
+                    cell_text = (
+                        str(cell_value).replace("\r\n", "\\n").replace("\n", "\\n").replace("\r", "\\n").strip()
+                    )
                     vals.append(cell_text)
             lines.append(f"    row{row_idx}: {vals}")
     except Exception as error:
@@ -120,7 +123,7 @@ def to_pinyin_if_needed(
             if logger:
                 logger.warning("发现中文但未安装 pypinyin，无法转拼音：%r", text_value)
         return text_value
-    out = "".join(lazy_pinyin(text_value, errors=lambda x: list(x)))
+    out = "".join(lazy_pinyin(text_value, errors=lambda non_chinese: list(non_chinese)))
     out = re.sub(r"\s+", "_", out).strip()
     return out
 
@@ -190,12 +193,10 @@ def parse_testcases_from_sheet(
     )
     # Target Version 缺列时不在此打 warning，仅 CAN 解析路径打一次，避免 CAN+XML 重复
 
-    # 必填列仅用例ID、功能模块；等级/平台/车型/用例类型为可选，缺则默认通过并打 warning
+    # 必填列仅用例ID；功能模块改为可选（XML 分组不再依赖功能模块）
     missing_cols = []
     if case_id_col_idx is None:
         missing_cols.append("用例ID")
-    if group_col_idx is None:
-        missing_cols.append("功能模块")
     if missing_cols:
         sheet_label = f"{excel_short}/{display_name}" if excel_short else display_name
         err_msg = (
@@ -243,7 +244,11 @@ def parse_testcases_from_sheet(
 
         total_cases_count += 1
 
-        group_cell_val = row_vals[group_col_idx] if len(row_vals) > group_col_idx else None
+        group_cell_val = (
+            row_vals[group_col_idx]
+            if group_col_idx is not None and len(row_vals) > group_col_idx
+            else None
+        )
         group_name_for_log = str(group_cell_val).strip() if group_cell_val is not None else ""
 
         # 可选列：缺列时默认通过（ALL / 自动）
@@ -376,7 +381,11 @@ def parse_testcases_from_excel(
     except Exception:
         pass
     try:
-        wb = load_workbook(excel_path, data_only=True, read_only=False, keep_links=False)
+        wb = ExcelService.open_workbook(
+            excel_path,
+            data_only=True,
+            read_only=False,
+        )
     except Exception as error:
         error_msg = str(error)
         if 'decompressing' in error_msg.lower() or 'incorrect header' in error_msg.lower() or 'badzipfile' in error_msg.lower():
@@ -388,8 +397,8 @@ def parse_testcases_from_excel(
                 "2. 文件是否已损坏\n"
                 "3. 文件是否被其他程序占用\n"
                 "4. 尝试用 Excel 打开文件并重新保存"
-            ) from e
-        raise ValueError(f"无法读取 Excel 文件: {excel_path}\n错误详情: {error_msg}") from e
+            ) from error
+        raise ValueError(f"无法读取 Excel 文件: {excel_path}\n错误详情: {error_msg}") from error
 
     for _sn in wb.sheetnames:
         try:
@@ -405,14 +414,20 @@ def parse_testcases_from_excel(
     except Exception:
         pass
     if allowed_sheet_names is not None and len(allowed_sheet_names) > 0:
-        sheet_names = [s for s in sheet_names if s in allowed_sheet_names]
+        sheet_names = [
+            sheet_name for sheet_name in sheet_names if sheet_name in allowed_sheet_names
+        ]
     if selected_filter is not None:
         excel_name_lower = os.path.basename(excel_path).lower()
         if excel_name_lower not in selected_filter:
             sheet_names = []
         else:
             allowed_set = selected_filter[excel_name_lower]
-            sheet_names = [s for s in sheet_names if str(s).strip().lower() in allowed_set]
+            sheet_names = [
+                sheet_name
+                for sheet_name in sheet_names
+                if str(sheet_name).strip().lower() in allowed_set
+            ]
 
     sheet_testcases_dict = {}
     if excel_label is None:
@@ -466,11 +481,13 @@ def parse_testcases_from_excel(
 
         if not found_group_col:
             header_preview = []
-            for v in (header_vals[:25] if header_vals else []):
-                if v is None:
+            for header_cell in (header_vals[:25] if header_vals else []):
+                if header_cell is None:
                     header_preview.append("")
                 else:
-                    cell_text = str(v).replace("\r\n", "\\n").replace("\n", "\\n").replace("\r", "\\n").strip()
+                    cell_text = (
+                        str(header_cell).replace("\r\n", "\\n").replace("\n", "\\n").replace("\r", "\\n").strip()
+                    )
                     header_preview.append(cell_text)
             case_id_idx = find_col_index_by_name_in_values(header_vals, ["用例ID", "用例id", "用例编号"])
             group_idx = find_col_index_by_name_in_values(header_vals, ["功能模块", "模块", "模块名称"])
@@ -519,18 +536,15 @@ def group_testcases_by_sheet_and_group(
     sheet_testcases_dict: dict[str, list],
 ) -> dict[str, dict[str, list]]:
     """
-    先按工作表分组，再按“功能/模块名”分组，供 generate_xml_content 生成三层 testgroup。
-    返回 { 工作表名: { 功能模块名: [用例列表] } }。
+    先按工作表分组，每个工作表只保留一个 testgroup（不再按功能模块拆分）。
+    返回 { 工作表名: { 分组名: [用例列表] } }。
     """
     result = {}
     for sheet_name, testcases in sheet_testcases_dict.items():
-        groups = {}
-        # 保持“按原始行顺序输出”：同名功能模块不再聚合，逐条生成独立 testgroup。
-        for idx, tc in enumerate(testcases):
-            group_name = tc["group"]
-            group_key = f"{group_name}{_GROUP_KEY_SEP}{idx}"
-            groups[group_key] = [tc]
-        result[sheet_name] = groups
+        sheet_group_name = str(sheet_name).strip() if sheet_name is not None else ""
+        if not sheet_group_name:
+            sheet_group_name = " "
+        result[sheet_name] = {sheet_group_name: list(testcases)}
     return result
 
 
@@ -540,8 +554,8 @@ def generate_xml_content(
     logger: Optional[logging.Logger] = None,
 ) -> str:
     """
-    生成 XML 内容（三层 testgroup：Excel 文件 → Sheet → 功能模块，底层为 capltestcase；name 含中文时转拼音）。
-    excel_files_dict: { Excel 文件路径: { 工作表名: { 功能模块名: [用例 dict 列表] } } }。
+    生成 XML 内容（两层 testgroup：Excel 文件 → Sheet，sheet 下直接挂 capltestcase；name 含中文时转拼音）。
+    excel_files_dict: { Excel 文件路径: { 工作表名: { 分组名: [用例 dict 列表] } } }。
     返回完整 XML 字符串（UTF-8，testmodule 根节点）。
     """
     lines = []
@@ -556,9 +570,6 @@ def generate_xml_content(
             excel_title = " "
         lines.append(f'\t<testgroup title="{escape_xml(excel_title)}">')
 
-        inner_group_idx = 0
-        total_inner_groups_in_excel = sum(len(groups) for groups in sheet_groups_dict.values())
-
         sheet_items = list(sheet_groups_dict.items())
         for sheet_idx, (sheet_name, group_dict) in enumerate(sheet_items, start=1):
             sheet_title = " " if not sheet_name or not sheet_name.strip() else sheet_name
@@ -566,17 +577,11 @@ def generate_xml_content(
 
             group_items = list(group_dict.items())
             for group_key, testcases in group_items:
-                inner_group_idx += 1
-                group_name = group_key.split(_GROUP_KEY_SEP, 1)[0]
-                if not group_name or not group_name.strip():
-                    group_name = " "
-                lines.append(f'\t\t\t<testgroup ident="{inner_group_idx}.0" title="{escape_xml(group_name)}">')
                 for tc in testcases:
                     tc_name = tc["name"] if tc.get("name") and tc["name"].strip() else " "
                     tc_name_pinyin = to_pinyin_if_needed(tc_name, logger=logger)
-                    lines.append(f'\t\t\t\t<capltestcase name="{escape_xml(tc_name_pinyin)}">\t')
-                    lines.append('\t\t\t\t</capltestcase>\t')
-                lines.append('\t\t\t</testgroup>')
+                    lines.append(f'\t\t\t<capltestcase name="{escape_xml(tc_name_pinyin)}">\t')
+                    lines.append('\t\t\t</capltestcase>\t')
             lines.append('\t\t</testgroup>')
         lines.append('\t</testgroup>')
     lines.append('</testmodule>')

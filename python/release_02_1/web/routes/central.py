@@ -13,7 +13,7 @@
 
 from __future__ import annotations
 
-from flask import Blueprint, current_app, jsonify, request
+from flask import Blueprint, request
 
 from services.task_orchestrator import TaskOrchestrator
 from .route_helpers import get_base_dir, jsonify_orchestrator_result
@@ -31,16 +31,24 @@ def current_base_dir() -> str:
 
 @central_bp.route("/generate", methods=["POST"])
 def generate_central():
-    """中央域生成入口：通过 TaskOrchestrator.run_central_bundle 执行 CAN + XML 生成。
-    请求体（JSON，可选）：base_dir — 工程根目录；run_can / run_xml — 是否执行对应生成，默认 True。
+    """中央域生成入口：通过 TaskOrchestrator.run_central_bundle 执行 UART(可选) → CAN → XML。
+    请求体（JSON，可选）：base_dir — 工程根目录；run_can / run_xml / run_uart — 是否执行对应步骤，默认 True；
+    validate_before_run — 是否先做运行前校验，默认 True。
     返回：200 时 {"success": True, "message": ...}；500 时 {"success": False, "message", "detail"}。
     """
     payload = request.get_json(silent=True) or {}
     base_dir = payload.get("base_dir") or current_base_dir()
     run_can = payload.get("run_can", True)
     run_xml = payload.get("run_xml", True)
+    run_uart = payload.get("run_uart", True)
+    validate_before_run = payload.get("validate_before_run", True)
 
     orch = TaskOrchestrator.from_base_dir(base_dir)
-    result = orch.run_central_bundle(run_can=run_can, run_xml=run_xml)
+    result = orch.run_central_bundle(
+        run_can=run_can,
+        run_xml=run_xml,
+        run_uart=run_uart,
+        validate_before_run=validate_before_run,
+    )
     return jsonify_orchestrator_result(result, success_separator=" / ", failure_message=None, failure_separator=" / ")
 

@@ -17,7 +17,7 @@ from datetime import datetime
 from functools import partial
 from typing import Any, Callable, Optional, Tuple
 
-from core.common.generation_summary import build_ungenerated_reason as _build_common_ungenerated_reason
+from core.common.generation_summary import build_ungenerated_reason as common_build_ungenerated_reason
 from core.error_module import ErrorModuleResolver
 from core.generator_config import GeneratorConfig
 from core.generator_logging import GeneratorLogger
@@ -42,11 +42,11 @@ def write_can_text(path: str, content: str) -> None:
     text = content.replace("\r\n", "\n").replace("\n", "\r\n")
     os.makedirs(os.path.dirname(path), exist_ok=True)
     try:
-        with open(path, "wb") as f:
-            f.write(text.encode("gb18030", errors="replace"))
+        with open(path, "wb") as binary_file:
+            binary_file.write(text.encode("gb18030", errors="replace"))
     except Exception:
-        with open(path, "wb") as f:
-            f.write(text.encode("cp936", errors="replace"))
+        with open(path, "wb") as binary_file:
+            binary_file.write(text.encode("cp936", errors="replace"))
 
 
 def contains_chinese(text: str) -> bool:
@@ -60,7 +60,7 @@ def to_pinyin_if_needed(text: str) -> str:
     if not _HAS_PYPINYIN or lazy_pinyin is None:
         return text_value
     try:
-        return "".join(lazy_pinyin(text_value, errors=lambda x: list(x)))
+        return "".join(lazy_pinyin(text_value, errors=lambda non_chinese: list(non_chinese)))
     except Exception:
         return text_value
 
@@ -75,7 +75,7 @@ def sanitize_filename_part(text: str) -> str:
 
 def build_ungenerated_reason(stats: dict) -> str:
     """根据统计构建「未生成 .can」的原因说明。"""
-    return _build_common_ungenerated_reason(stats, generated_label=".can")
+    return common_build_ungenerated_reason(stats, generated_label=".can")
 
 
 def load_keyword_specs(excel_path: str, sheet_names: list[str]) -> dict:
@@ -85,9 +85,7 @@ def load_keyword_specs(excel_path: str, sheet_names: list[str]) -> dict:
         sheet_names,
         warn=lambda msg: None,
     )
-
-
-def _validate_clib_name(clib_names_set: set[str], clib_name: str) -> bool:
+def validate_clib_name(clib_names_set: set[str], clib_name: str) -> bool:
     return bool(clib_name) and clib_name.strip().lower() in clib_names_set
 
 
@@ -95,10 +93,8 @@ def create_clib_validator(clib_names_set: Optional[set[str]]) -> Optional[Callab
     """根据 Clib 名称集合生成校验函数；集合为空则返回 None。"""
     if not clib_names_set:
         return None
-    return partial(_validate_clib_name, clib_names_set)
-
-
-def _sheet_log_ts() -> str:
+    return partial(validate_clib_name, clib_names_set)
+def sheet_log_ts() -> str:
     now = datetime.now()
     return now.strftime("%Y-%m-%d %H:%M:%S") + f",{now.microsecond // 1000:03d}"
 
@@ -124,22 +120,22 @@ def write_sheet_can_log(
                 all_lines = src.readlines()
             end_marker = f"生成文件: {can_filename}"
             end_idx = -1
-            for i in range(len(all_lines) - 1, -1, -1):
-                if end_marker in all_lines[i]:
-                    end_idx = i
+            for reverse_line_index in range(len(all_lines) - 1, -1, -1):
+                if end_marker in all_lines[reverse_line_index]:
+                    end_idx = reverse_line_index
                     break
             if end_idx != -1:
                 start_idx = -1
                 sheet_marker = f"处理Sheet={sheet_name}"
-                for j in range(end_idx, -1, -1):
-                    if sheet_marker in all_lines[j]:
-                        start_idx = j
+                for scan_line_index in range(end_idx, -1, -1):
+                    if sheet_marker in all_lines[scan_line_index]:
+                        start_idx = scan_line_index
                         break
                 if start_idx == -1:
                     start_marker = f"处理Excel={excel_name}"
-                    for j in range(end_idx, -1, -1):
-                        if start_marker in all_lines[j]:
-                            start_idx = j
+                    for scan_line_index in range(end_idx, -1, -1):
+                        if start_marker in all_lines[scan_line_index]:
+                            start_idx = scan_line_index
                             break
                 if start_idx != -1:
                     raw_lines = [ln.rstrip("\r\n") for ln in all_lines[start_idx : end_idx + 1]]
@@ -149,7 +145,7 @@ def write_sheet_can_log(
             pass
 
     if not lines:
-        ts = _sheet_log_ts()
+        ts = sheet_log_ts()
         lines.append(f"{ts}  处理Excel={excel_name}")
         fallback_errors: list[tuple[int, str]] = []
         for case in cases:
@@ -158,17 +154,17 @@ def write_sheet_can_log(
                 row = err.excel_row if err.excel_row is not None else getattr(case, "excel_row", 0)
                 line = f"{ts} ERROR 错误模块【{err_mod}】 用例ID={case.case_id} 行号：{err.excel_row}  用例步骤：{err.raw_step}  原因：{err.message}"
                 fallback_errors.append((row, line))
-        fallback_errors.sort(key=lambda x: x[0])
-        for _row, line in fallback_errors:
-            lines.append(line)
-        ts_end = _sheet_log_ts()
+        fallback_errors.sort(key=lambda row_line_pair: row_line_pair[0])
+        for _error_row, log_line in fallback_errors:
+            lines.append(log_line)
+        ts_end = sheet_log_ts()
         lines.append(f"{ts_end}  生成文件: {can_filename} (用例数={len(cases)})")
 
     os.makedirs(os.path.dirname(log_path), exist_ok=True)
-    with open(log_path, "w", encoding="utf-8") as f:
-        f.write("\n".join(lines))
+    with open(log_path, "w", encoding="utf-8") as log_file:
+        log_file.write("\n".join(lines))
         if lines:
-            f.write("\n")
+            log_file.write("\n")
 
 
 # ==================== 运行时上下文（通过 set/get 注入，避免散落模块级变量） ====================

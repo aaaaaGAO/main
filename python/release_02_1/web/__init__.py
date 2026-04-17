@@ -27,9 +27,7 @@ from .routes.common import common_bp
 from .routes.lr_rear import lr_rear_bp
 from .routes.central import central_bp
 from .routes.dtc import dtc_bp
-
-
-def _project_root() -> str:
+def project_root() -> str:
     """获取项目根目录（主配置、固定配置、filter_options.ini 所在目录），统一使用 infra.filesystem.pathing.get_project_root。
     参数：无。
     返回：根目录绝对路径。
@@ -43,7 +41,7 @@ def create_app() -> Flask:
     返回：配置好的 Flask 应用。蓝图前缀：/api、/api/lr、/api/central、/api/dtc。
     """
     app = Flask(__name__)
-    app.config["BASE_DIR"] = _project_root()
+    app.config["BASE_DIR"] = project_root()
 
     # 注册路由蓝图
     app.register_blueprint(common_bp, url_prefix="/api")

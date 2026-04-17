@@ -17,7 +17,8 @@ import traceback
 import xml.etree.ElementTree as ET
 from typing import Any, Dict, List, Literal, Optional
 
-from openpyxl import load_workbook
+from infra.excel.workbook import ExcelService
+from infra.filesystem import resolve_runtime_path
 
 try:
     import tkinter as tk
@@ -181,7 +182,7 @@ class GuiService:
         if os.path.basename(file_path).startswith("~$"):
             return {"type": "excel", "sheets": []}
         try:
-            wb = load_workbook(file_path, read_only=True)
+            wb = ExcelService.open_workbook(file_path, read_only=True, data_only=True)
             sheets = list(wb.sheetnames)
             wb.close()
             return {"type": "excel", "sheets": sheets}
@@ -195,8 +196,8 @@ class GuiService:
         返回：{"type": "can", "testcases": [...]} 或 {"type": "can", "error": str}。
         """
         try:
-            with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
-                content = f.read()
+            with open(file_path, "r", encoding="utf-8", errors="ignore") as can_source_file:
+                content = can_source_file.read()
             pattern = re.compile(r"testcase\s+(\w+)\s*\(", re.IGNORECASE)
             names = pattern.findall(content)
             return {"type": "can", "testcases": list(dict.fromkeys(names))}
@@ -242,34 +243,39 @@ class GuiService:
         return {"type": "unknown", "error": "不支持的文件格式，仅支持 Excel(.xlsx/.xlsm)、CAN(.can)、XML(.xml)"}
 
     @classmethod
-    def parse_file_structure(cls, path: str) -> Dict[str, Any]:
+    def parse_file_structure(cls, path: str, base_dir: str | None = None) -> Dict[str, Any]:
         """解析文件或文件夹下的 Excel/CAN/XML 结构（sheet、testcase、testgroup 等）。
         参数：path — 文件或文件夹路径；文件夹时遍历其下 Excel/CAN/XML。
+             base_dir — 项目根目录；当 path 为相对路径时用于拼接解析。
         返回：{"success": True, "data": [...]} 或 {"success": False, "message": str}。
         """
         if not path or not path.strip():
             return {"success": False, "message": "未提供路径"}
-        path = path.strip()
-        if not os.path.exists(path):
-            return {"success": False, "message": f"路径不存在: {path}"}
+        raw_path = path.strip()
+        resolved_path = resolve_runtime_path(base_dir, raw_path)
+        if not os.path.exists(resolved_path):
+            return {
+                "success": False,
+                "message": f"路径不存在: {raw_path}（解析后: {resolved_path}）",
+            }
 
         results: List[Dict[str, Any]] = []
         try:
-            if os.path.isfile(path):
-                item = cls.parse_file_structure_single(path)
-                item["filename"] = os.path.basename(path)
+            if os.path.isfile(resolved_path):
+                item = cls.parse_file_structure_single(resolved_path)
+                item["filename"] = os.path.basename(resolved_path)
                 results.append(item)
             else:
-                for root_dir, _, files in os.walk(path):
-                    for f in files:
-                        if f.startswith("~$"):
+                for root_dir, _, files in os.walk(resolved_path):
+                    for filename in files:
+                        if filename.startswith("~$"):
                             continue
-                        fp = os.path.join(root_dir, f)
-                        fl = f.lower()
-                        if fl.endswith((".xlsx", ".xlsm", ".can", ".xml")):
-                            item = cls.parse_file_structure_single(fp)
-                            item["filename"] = f
-                            item["relpath"] = os.path.relpath(fp, path)
+                        file_path = os.path.join(root_dir, filename)
+                        file_name_lower = filename.lower()
+                        if file_name_lower.endswith((".xlsx", ".xlsm", ".can", ".xml")):
+                            item = cls.parse_file_structure_single(file_path)
+                            item["filename"] = filename
+                            item["relpath"] = os.path.relpath(file_path, resolved_path)
                             results.append(item)
             return {"success": True, "data": results}
         except Exception as error:

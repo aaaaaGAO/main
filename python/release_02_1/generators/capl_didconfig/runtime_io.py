@@ -10,12 +10,11 @@ DIDConfig 运行期 IO 与编排用 API（去脚本化）。
 from __future__ import annotations
 
 import os
-import sys
-from typing import Any, Optional
+from typing import Optional
 
 from core.generator_config import GeneratorConfig
 from core.generator_logging import GeneratorLogger, LogSpecConfig
-from core.run_context import tee_stdout_stderr, restore_stdout_stderr
+from core.run_context import tee_stdout_stderr
 
 from utils.logger import PROGRESS_LEVEL, ExcludeSubstringsFilter
 

@@ -16,6 +16,32 @@ from services.config_constants import (
     DTC_STATE_KEYS,
     LR_EMPTY_STATE_OPTION_MAP,
     LR_STATE_KEYS,
+    STATE_KEY_DTC_CIN_EXCEL,
+    STATE_KEY_DTC_CAN_INPUT,
+    STATE_KEY_DTC_DIDCONFIG_EXCEL,
+    STATE_KEY_DTC_DIDINFO_EXCEL,
+    STATE_KEY_DTC_IO_EXCEL,
+    STATE_KEY_DTC_SRV_EXCEL,
+    STATE_KEY_DTC_LEVELS,
+    STATE_KEY_DTC_LOG_LEVEL,
+    STATE_KEY_DTC_MODELS,
+    STATE_KEY_DTC_OUT_ROOT,
+    STATE_KEY_DTC_PLATFORMS,
+    STATE_KEY_DTC_SELECTED_SHEETS,
+    STATE_KEY_DTC_TARGET_VERSIONS,
+    STATE_KEY_LR_CAN_INPUT,
+    STATE_KEY_LR_CIN_EXCEL,
+    STATE_KEY_LR_DIDCONFIG_EXCEL,
+    STATE_KEY_LR_DIDINFO_EXCEL,
+    STATE_KEY_LR_IO_EXCEL,
+    STATE_KEY_LR_SRV_EXCEL,
+    STATE_KEY_LR_LEVELS,
+    STATE_KEY_LR_LOG_LEVEL,
+    STATE_KEY_LR_MODELS,
+    STATE_KEY_LR_OUT_ROOT,
+    STATE_KEY_LR_PLATFORMS,
+    STATE_KEY_LR_SELECTED_SHEETS,
+    STATE_KEY_LR_TARGET_VERSIONS,
     OPTION_C_IG,
     OPTION_C_PW,
     OPTION_C_PWR,
@@ -43,6 +69,10 @@ from services.config_constants import (
     SECTION_LR_REAR,
     UART_COMM_CFG_KEYS,
     UART_COMM_KEY_MAP,
+    cin_input_excel_value_from_ui_path,
+    input_excel_value_from_ui_path,
+    didinfo_inputs_value_from_ui_single_path,
+    io_inputs_value_from_ui_single_path,
 )
 from services.config_manager import ConfigManager
 from services.config_service import ConfigPaths, ConfigService
@@ -93,18 +123,19 @@ class StateConfigService:
     @classmethod
     def build_lr_preset_from_state(cls, state: Dict[str, Any]) -> Dict[str, Any]:
         return {
-            "can_input": cls.state_value_to_text(state.get("can_input")),
-            "out_root": cls.state_value_to_text(state.get("out_root")),
-            "levels": cls.state_value_to_text(state.get("levels")) or "ALL",
-            "platforms": cls.state_value_to_text(state.get("platforms")),
-            "models": cls.state_value_to_text(state.get("models")),
-            "target_versions": cls.state_value_to_text(state.get("target_versions")),
-            "selected_sheets": cls.state_value_to_text(state.get("selected_sheets")),
-            "log_level": cls.state_value_to_text(state.get("log_level")) or "info",
-            "didinfo_excel": cls.state_value_to_text(state.get("didinfo_excel")),
-            "cin_excel": cls.state_value_to_text(state.get("cin_excel")),
-            "io_excel": cls.state_value_to_text(state.get("io_excel")),
-            "didconfig_excel": cls.state_value_to_text(state.get("didconfig_excel")),
+            STATE_KEY_LR_CAN_INPUT: cls.state_value_to_text(state.get(STATE_KEY_LR_CAN_INPUT)),
+            STATE_KEY_LR_OUT_ROOT: cls.state_value_to_text(state.get(STATE_KEY_LR_OUT_ROOT)),
+            STATE_KEY_LR_LEVELS: cls.state_value_to_text(state.get(STATE_KEY_LR_LEVELS)) or "ALL",
+            STATE_KEY_LR_PLATFORMS: cls.state_value_to_text(state.get(STATE_KEY_LR_PLATFORMS)),
+            STATE_KEY_LR_MODELS: cls.state_value_to_text(state.get(STATE_KEY_LR_MODELS)),
+            STATE_KEY_LR_TARGET_VERSIONS: cls.state_value_to_text(state.get(STATE_KEY_LR_TARGET_VERSIONS)),
+            STATE_KEY_LR_SELECTED_SHEETS: cls.state_value_to_text(state.get(STATE_KEY_LR_SELECTED_SHEETS)),
+            STATE_KEY_LR_LOG_LEVEL: cls.state_value_to_text(state.get(STATE_KEY_LR_LOG_LEVEL)) or "info",
+            STATE_KEY_LR_DIDINFO_EXCEL: cls.state_value_to_text(state.get(STATE_KEY_LR_DIDINFO_EXCEL)),
+            STATE_KEY_LR_CIN_EXCEL: cls.state_value_to_text(state.get(STATE_KEY_LR_CIN_EXCEL)),
+            STATE_KEY_LR_SRV_EXCEL: cls.state_value_to_text(state.get(STATE_KEY_LR_SRV_EXCEL)),
+            STATE_KEY_LR_IO_EXCEL: cls.state_value_to_text(state.get(STATE_KEY_LR_IO_EXCEL)),
+            STATE_KEY_LR_DIDCONFIG_EXCEL: cls.state_value_to_text(state.get(STATE_KEY_LR_DIDCONFIG_EXCEL)),
         }
 
     @staticmethod
@@ -235,6 +266,145 @@ class StateConfigService:
         except Exception:
             pass
 
+    @classmethod
+    def remove_mapped_options_on_empty_state(
+        cls,
+        cfg: configparser.ConfigParser,
+        state: Dict[str, Any],
+        empty_option_map: dict[str, list[tuple[str, str]]],
+    ) -> None:
+        for state_key, targets in empty_option_map.items():
+            if state.get(state_key) != "":
+                continue
+            for section_name, option_name in targets:
+                cls.remove_option_if_present(cfg, section_name, option_name)
+
+    @classmethod
+    def sync_uart_comm_options(
+        cls,
+        cfg: configparser.ConfigParser,
+        uart_comm: Optional[Dict[str, Any]],
+    ) -> None:
+        has_uart_in_cfg = cfg.has_section(SECTION_CENTRAL) and any(
+            cfg.has_option(SECTION_CENTRAL, key) for key in UART_COMM_CFG_KEYS
+        )
+        port_set = bool((uart_comm.get("port") or "").strip()) if uart_comm else False
+        if not (has_uart_in_cfg or port_set):
+            return
+
+        if uart_comm and port_set:
+            for source_key, cfg_key in UART_COMM_KEY_MAP.items():
+                if source_key in uart_comm:
+                    cfg.set(SECTION_CENTRAL, cfg_key, str(uart_comm.get(source_key) or "").strip())
+            return
+
+        for cfg_key in UART_COMM_CFG_KEYS:
+            cls.remove_option_if_present(cfg, SECTION_CENTRAL, cfg_key)
+
+    @classmethod
+    def sync_ignition_cycle_options(
+        cls,
+        cfg: configparser.ConfigParser,
+        state: Dict[str, Any],
+    ) -> None:
+        has_wait_time = state.get("c_ign_waitTime") is not None
+        has_current = state.get("c_ign_current") is not None
+        if not (has_wait_time or has_current):
+            return
+
+        ign_waittime = str(state.get("c_ign_waitTime") or "").strip()
+        ign_current = str(state.get("c_ign_current") or "").strip()
+        has_any_value = bool(ign_waittime or ign_current)
+
+        if has_any_value and not cfg.has_section(SECTION_IGNITION_CYCLE):
+            cfg.add_section(SECTION_IGNITION_CYCLE)
+
+        if has_wait_time:
+            cls.set_text_option(
+                cfg,
+                SECTION_CENTRAL,
+                OPTION_IGN_WAITTIME,
+                ign_waittime,
+                remove_on_empty=True,
+            )
+            cls.set_text_option(
+                cfg,
+                SECTION_IGNITION_CYCLE,
+                OPTION_IGNITION_CYCLE_WAIT_TIME,
+                ign_waittime,
+                remove_on_empty=True,
+            )
+
+        if has_current:
+            cls.set_text_option(
+                cfg,
+                SECTION_CENTRAL,
+                OPTION_IGN_CURRENT,
+                ign_current,
+                remove_on_empty=True,
+            )
+            cls.set_text_option(
+                cfg,
+                SECTION_IGNITION_CYCLE,
+                OPTION_IGNITION_CYCLE_CURRENT,
+                ign_current,
+                remove_on_empty=True,
+            )
+
+    @classmethod
+    def sync_dtc_domain_inputs(
+        cls,
+        cfg: configparser.ConfigParser,
+        state: Dict[str, Any],
+    ) -> None:
+        dtc_didinfo_excel = state.get(STATE_KEY_DTC_DIDINFO_EXCEL)
+        cls.set_text_option(
+            cfg,
+            SECTION_DTC,
+            OPTION_DIDINFO_INPUTS,
+            didinfo_inputs_value_from_ui_single_path(dtc_didinfo_excel) if dtc_didinfo_excel else "",
+            remove_on_empty=True,
+        )
+
+        dtc_cin_excel = state.get(STATE_KEY_DTC_CIN_EXCEL)
+        cls.set_text_option(
+            cfg,
+            SECTION_DTC,
+            OPTION_CIN_INPUT_EXCEL,
+            cin_input_excel_value_from_ui_path(dtc_cin_excel) if dtc_cin_excel else "",
+            remove_on_empty=True,
+        )
+
+        if STATE_KEY_DTC_IO_EXCEL in state or "d_io_selected_sheets" in state:
+            if not cfg.has_section(SECTION_DTC_IOMAPPING):
+                cfg.add_section(SECTION_DTC_IOMAPPING)
+            io_excel_path = input_excel_value_from_ui_path(state.get(STATE_KEY_DTC_IO_EXCEL))
+            io_selected_sheets = str(state.get("d_io_selected_sheets") or "").strip()
+            io_inputs_value = (
+                f"{io_excel_path} | {io_selected_sheets if io_selected_sheets else '*'}"
+                if io_excel_path
+                else ""
+            )
+            cls.set_text_option(
+                cfg,
+                SECTION_DTC_IOMAPPING,
+                OPTION_INPUTS,
+                io_inputs_value,
+                remove_on_empty=True,
+            )
+
+        if STATE_KEY_DTC_DIDCONFIG_EXCEL in state:
+            if not cfg.has_section(SECTION_DTC_CONFIG_ENUM):
+                cfg.add_section(SECTION_DTC_CONFIG_ENUM)
+            dtc_didconfig_excel = state.get(STATE_KEY_DTC_DIDCONFIG_EXCEL)
+            cls.set_text_option(
+                cfg,
+                SECTION_DTC_CONFIG_ENUM,
+                OPTION_INPUTS,
+                io_inputs_value_from_ui_single_path(dtc_didconfig_excel) if dtc_didconfig_excel else "",
+                remove_on_empty=True,
+            )
+
     def apply_state_to_config(
         self,
         state: Dict[str, Any],
@@ -250,11 +420,14 @@ class StateConfigService:
                     cfg.add_section(SECTION_LR_REAR)
                 cfg.set(SECTION_LR_REAR, OPTION_UDS_ECU_QUALIFIER, str(state["uds_ecu_qualifier"]).strip())
             if cfg.has_section(SECTION_LR_REAR):
-                for state_key, targets in LR_EMPTY_STATE_OPTION_MAP.items():
-                    if state.get(state_key) == "":
-                        for section_name, option_name in targets:
-                            if cfg.has_section(section_name) and cfg.has_option(section_name, option_name):
-                                cfg.remove_option(section_name, option_name)
+                self.set_text_option(
+                    cfg,
+                    SECTION_LR_REAR,
+                    "srv_excel",
+                    state.get(STATE_KEY_LR_SRV_EXCEL),
+                    remove_on_empty=True,
+                )
+                self.remove_mapped_options_on_empty_state(cfg, state, LR_EMPTY_STATE_OPTION_MAP)
 
         if any(key in state for key in CENTRAL_STATE_KEYS):
             self.apply_standard_domain_state(
@@ -276,45 +449,17 @@ class StateConfigService:
                 state.get("c_uart"),
                 remove_on_empty=True,
             )
-            has_uart_in_cfg = cfg.has_section(SECTION_CENTRAL) and any(
-                cfg.has_option(SECTION_CENTRAL, key) for key in UART_COMM_CFG_KEYS
+            self.set_text_option(
+                cfg,
+                SECTION_CENTRAL,
+                "srv_excel",
+                state.get("c_srv"),
+                remove_on_empty=True,
             )
             uart_comm_raw = state.get("c_uart_comm")
             uart_comm = uart_comm_raw if isinstance(uart_comm_raw, dict) else None
-            port_set = bool((uart_comm.get("port") or "").strip()) if uart_comm else False
-            if has_uart_in_cfg or port_set:
-                if uart_comm and port_set:
-                    for src_key, cfg_key in UART_COMM_KEY_MAP.items():
-                        if src_key in uart_comm:
-                            cfg.set(SECTION_CENTRAL, cfg_key, str(uart_comm.get(src_key) or "").strip())
-                elif has_uart_in_cfg:
-                    for cfg_key in UART_COMM_CFG_KEYS:
-                        if cfg.has_option(SECTION_CENTRAL, cfg_key):
-                            cfg.remove_option(SECTION_CENTRAL, cfg_key)
-
-            ign_waittime = str(state.get("c_ign_waitTime") or "").strip()
-            ign_current = str(state.get("c_ign_current") or "").strip()
-            if state.get("c_ign_waitTime") is not None or state.get("c_ign_current") is not None:
-                if ign_waittime or ign_current:
-                    if not cfg.has_section(SECTION_IGNITION_CYCLE):
-                        cfg.add_section(SECTION_IGNITION_CYCLE)
-                    if state.get("c_ign_waitTime") is not None:
-                        cfg.set(SECTION_CENTRAL, OPTION_IGN_WAITTIME, ign_waittime)
-                        cfg.set(SECTION_IGNITION_CYCLE, OPTION_IGNITION_CYCLE_WAIT_TIME, ign_waittime)
-                    if state.get("c_ign_current") is not None:
-                        cfg.set(SECTION_CENTRAL, OPTION_IGN_CURRENT, ign_current)
-                        cfg.set(SECTION_IGNITION_CYCLE, OPTION_IGNITION_CYCLE_CURRENT, ign_current)
-                else:
-                    if cfg.has_section(SECTION_CENTRAL):
-                        if cfg.has_option(SECTION_CENTRAL, OPTION_IGN_WAITTIME):
-                            cfg.remove_option(SECTION_CENTRAL, OPTION_IGN_WAITTIME)
-                        if cfg.has_option(SECTION_CENTRAL, OPTION_IGN_CURRENT):
-                            cfg.remove_option(SECTION_CENTRAL, OPTION_IGN_CURRENT)
-                    if cfg.has_section(SECTION_IGNITION_CYCLE):
-                        if cfg.has_option(SECTION_IGNITION_CYCLE, OPTION_IGNITION_CYCLE_WAIT_TIME):
-                            cfg.remove_option(SECTION_IGNITION_CYCLE, OPTION_IGNITION_CYCLE_WAIT_TIME)
-                        if cfg.has_option(SECTION_IGNITION_CYCLE, OPTION_IGNITION_CYCLE_CURRENT):
-                            cfg.remove_option(SECTION_IGNITION_CYCLE, OPTION_IGNITION_CYCLE_CURRENT)
+            self.sync_uart_comm_options(cfg, uart_comm)
+            self.sync_ignition_cycle_options(cfg, state)
 
             if state.get("c_login_username") is not None:
                 cfg.set(SECTION_CENTRAL, OPTION_LOGIN_USERNAME, str(state.get("c_login_username") or "").strip())
@@ -355,46 +500,21 @@ class StateConfigService:
                 cfg,
                 state,
                 section=SECTION_DTC,
-                input_key="d_input",
-                out_root_key="d_out_root",
-                selected_sheets_key="d_selected_sheets",
-                log_level_key="d_log_level",
+                input_key=STATE_KEY_DTC_CAN_INPUT,
+                out_root_key=STATE_KEY_DTC_OUT_ROOT,
+                selected_sheets_key=STATE_KEY_DTC_SELECTED_SHEETS,
+                log_level_key=STATE_KEY_DTC_LOG_LEVEL,
                 uds_key="d_uds_ecu_qualifier",
                 filter_key_map=DTC_FILTER_KEY_MAP,
             )
-            if state.get("d_didinfo_excel"):
-                cfg.set(SECTION_DTC, OPTION_DIDINFO_INPUTS, f"{str(state['d_didinfo_excel']).strip()} | *")
-            elif state.get("d_didinfo_excel") == "":
-                if cfg.has_option(SECTION_DTC, OPTION_DIDINFO_INPUTS):
-                    cfg.remove_option(SECTION_DTC, OPTION_DIDINFO_INPUTS)
-
-            if state.get("d_cin_excel"):
-                cfg.set(SECTION_DTC, OPTION_CIN_INPUT_EXCEL, str(state["d_cin_excel"]).strip())
-            elif state.get("d_cin_excel") == "":
-                if cfg.has_option(SECTION_DTC, OPTION_CIN_INPUT_EXCEL):
-                    cfg.remove_option(SECTION_DTC, OPTION_CIN_INPUT_EXCEL)
-
-            if "d_io_excel" in state or "d_io_selected_sheets" in state:
-                if not cfg.has_section(SECTION_DTC_IOMAPPING):
-                    cfg.add_section(SECTION_DTC_IOMAPPING)
-                io_excel_path = str(state.get("d_io_excel") or "").strip()
-                io_selected_sheets = str(state.get("d_io_selected_sheets") or "").strip()
-                if io_excel_path:
-                    cfg.set(SECTION_DTC_IOMAPPING, OPTION_INPUTS, f"{io_excel_path} | {io_selected_sheets if io_selected_sheets else '*'}")
-                else:
-                    if cfg.has_option(SECTION_DTC_IOMAPPING, OPTION_INPUTS):
-                        cfg.remove_option(SECTION_DTC_IOMAPPING, OPTION_INPUTS)
-
-            if state.get("d_didconfig_excel"):
-                if not cfg.has_section(SECTION_DTC_CONFIG_ENUM):
-                    cfg.add_section(SECTION_DTC_CONFIG_ENUM)
-                cfg.set(SECTION_DTC_CONFIG_ENUM, OPTION_INPUTS, f"{str(state['d_didconfig_excel']).strip()} | *")
-            elif state.get("d_didconfig_excel") == "":
-                if cfg.has_section(SECTION_DTC_CONFIG_ENUM) and cfg.has_option(
-                    SECTION_DTC_CONFIG_ENUM,
-                    OPTION_INPUTS,
-                ):
-                    cfg.remove_option(SECTION_DTC_CONFIG_ENUM, OPTION_INPUTS)
+            self.sync_dtc_domain_inputs(cfg, state)
+            self.set_text_option(
+                cfg,
+                SECTION_DTC,
+                "srv_excel",
+                state.get(STATE_KEY_DTC_SRV_EXCEL),
+                remove_on_empty=True,
+            )
 
     def persist_state_config(
         self,
@@ -433,18 +553,44 @@ class StateConfigService:
 
     @staticmethod
     def get_lr_generation_flags(state: Dict[str, Any]) -> dict[str, bool]:
+        has_didconfig = bool((state.get(STATE_KEY_LR_DIDCONFIG_EXCEL) or "").strip())
+        has_didinfo = bool((state.get(STATE_KEY_LR_DIDINFO_EXCEL) or "").strip())
         return {
             "run_can": True,
             "run_xml": True,
-            "run_did": True,
-            "run_cin": bool(state.get("cin_excel")),
-            "run_uart": bool(state.get("c_uart")),
+            "run_did": has_didconfig or has_didinfo,
+            "run_cin": bool(state.get(STATE_KEY_LR_CIN_EXCEL)),
+            "run_soa": bool((state.get(STATE_KEY_LR_SRV_EXCEL) or "").strip()),
         }
 
     @staticmethod
     def get_dtc_generation_flags(state: Dict[str, Any]) -> dict[str, bool]:
+        has_didconfig = bool((state.get(STATE_KEY_DTC_DIDCONFIG_EXCEL) or "").strip())
+        has_didinfo = bool((state.get(STATE_KEY_DTC_DIDINFO_EXCEL) or "").strip())
         return {
             "run_can": True,
             "run_xml": True,
-            "run_cin": bool(state.get("d_cin_excel")),
+            "run_did": has_didconfig or has_didinfo,
+            "run_cin": bool(state.get(STATE_KEY_DTC_CIN_EXCEL)),
+            "run_soa": bool((state.get(STATE_KEY_DTC_SRV_EXCEL) or "").strip()),
+        }
+
+    @staticmethod
+    def get_central_generation_flags(state: Dict[str, Any]) -> dict[str, bool]:
+        """与 `collectCurrentState()` 对齐：中央域一键生成时是否跑 UART 步。
+
+        前端字段：`c_uart`（UART 矩阵 Excel 路径）、`c_uart_comm.port`（串口已选则视为需要写/用通信配置）。
+        二者皆空时不调用编排器的 UART 步（与「未配置则不生成」一致）；CAN/XML 仍默认执行。
+        """
+        c_uart = (state.get("c_uart") or "").strip()
+        c_srv = (state.get("c_srv") or "").strip()
+        uart_comm_raw = state.get("c_uart_comm")
+        uart_comm = uart_comm_raw if isinstance(uart_comm_raw, dict) else None
+        port_set = bool((uart_comm.get("port") or "").strip()) if uart_comm else False
+        run_uart = bool(c_uart) or port_set
+        return {
+            "run_can": True,
+            "run_xml": True,
+            "run_uart": run_uart,
+            "run_soa": bool(c_srv),
         }

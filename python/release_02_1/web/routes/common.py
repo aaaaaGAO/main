@@ -13,17 +13,18 @@
 
 from __future__ import annotations
 
+import logging
 import os
 import subprocess
 import time
 from typing import Any, Dict
 
 try:
-    from serial.tools import list_ports as _serial_list_ports  # type: ignore
+    from serial.tools import list_ports as serial_list_ports  # type: ignore
 except ImportError:  # pragma: no cover - pyserial optional
-    _serial_list_ports = None
+    serial_list_ports = None
 
-from flask import Blueprint, current_app, jsonify, request
+from flask import Blueprint, jsonify, request
 
 from services.config_manager import ConfigManager
 from services.config_constants import (
@@ -39,6 +40,7 @@ from services.task_orchestrator import TaskOrchestrator
 from .route_helpers import get_base_dir
 
 common_bp = Blueprint("common", __name__)
+logger = logging.getLogger(__name__)
 
 
 def current_base_dir() -> str:
@@ -108,7 +110,7 @@ def parse_file_structure():
     try:
         payload = request.get_json(silent=True) or {}
         path = (payload.get("path") or "").strip()
-        result = GuiService.parse_file_structure(path)
+        result = GuiService.parse_file_structure(path, base_dir=current_base_dir())
         return jsonify(result)
     except Exception as error:
         return jsonify({"success": False, "message": str(error)})
@@ -142,9 +144,9 @@ def get_serial_ports():
     """返回可用串口列表，供中央域串口/电源/继电器配置弹窗使用。参数：无。返回：JSON { success, ports }。"""
     ports = []
     try:
-        if _serial_list_ports is None:
+        if serial_list_ports is None:
             raise ImportError("pyserial not available")
-        for port in _serial_list_ports.comports():
+        for port in serial_list_ports.comports():
             ports.append(
                 {
                     "port": getattr(port, "device", "") or "",
@@ -194,18 +196,35 @@ def auto_save_config():
 
 @common_bp.route("/generate", methods=["POST"])
 def generate():
-    """左右后域一键生成（CAN/XML/CIN/DID/UART 等），请求体含 state 时先写入配置再执行。参数：data — 请求体中可选前端 state。返回：JSON { success, message } 或 500 { success: false, message, detail }。"""
+    """左右后域一键生成（DIDConfig/DIDInfo/CIN/CAN/XML），不含 UART。
+    请求体含 state 时先写入配置再执行。"""
     try:
+        started = time.perf_counter()
         base = current_base_dir()
         state_config_service = StateConfigService.from_base_dir(base)
         payload = request.get_json(silent=True) or {}
         state = payload.get("data", payload)
+        logger.info(
+            "[route.generate] event=start domain=%s validate_before_run=%s payload_keys=%s",
+            SECTION_LR_REAR,
+            payload.get("validate_before_run", True),
+            sorted(list(payload.keys())),
+        )
         config = state_config_service.prepare_generation_config(
             state=state,
             uds_domain=SECTION_LR_REAR,
         )
         orch = TaskOrchestrator.from_base_dir(base)
-        result = orch.run_lr_bundle(**state_config_service.get_lr_generation_flags(state))
+        lr_flags = state_config_service.get_lr_generation_flags(state)
+        lr_flags["validate_before_run"] = payload.get("validate_before_run", True)
+        logger.info("[route.generate] event=flags domain=%s flags=%s", SECTION_LR_REAR, lr_flags)
+        result = orch.run_lr_bundle(**lr_flags)
+        logger.info(
+            "[route.generate] event=done domain=%s success=%s elapsed_ms=%.1f",
+            SECTION_LR_REAR,
+            result.success,
+            (time.perf_counter() - started) * 1000.0,
+        )
         return jsonify_generation_result(
             orch,
             result,
@@ -216,24 +235,43 @@ def generate():
             failure_message="生成过程中出错",
         )
     except Exception as error:
+        logger.exception("[route.generate] event=error domain=%s", SECTION_LR_REAR)
         return jsonify({"success": False, "message": str(error)}), 500
 
 
 @common_bp.route("/generate_central", methods=["POST"])
 def generate_central():
-    """中央域一键生成（CAN/XML/UART），请求体含 state 时先写入配置再执行且 skip_lr_rear。参数：data — 请求体中可选前端 state。返回：JSON { success, message } 或 500。"""
+    """中央域一键生成（CAN/XML，UART 仅当 state 中已配置矩阵或串口时执行），请求体含 state 时先写入配置再执行且 skip_lr_rear。
+    参数：data — 请求体中可选前端 state（`c_uart` / `c_uart_comm`）；validate_before_run — 可选，默认 True。
+    返回：JSON { success, message } 或 500。"""
     try:
+        started = time.perf_counter()
         base = current_base_dir()
         state_config_service = StateConfigService.from_base_dir(base)
         payload = request.get_json(silent=True) or {}
         state = payload.get("data", payload)
+        logger.info(
+            "[route.generate_central] event=start domain=%s validate_before_run=%s payload_keys=%s",
+            SECTION_CENTRAL,
+            payload.get("validate_before_run", True),
+            sorted(list(payload.keys())),
+        )
         config = state_config_service.prepare_generation_config(
             state=state,
             uds_domain=SECTION_CENTRAL,
             skip_lr_rear=True,
         )
         orch = TaskOrchestrator.from_base_dir(base)
-        result = orch.run_central_bundle(run_can=True, run_xml=True, run_uart=True)
+        central_flags = state_config_service.get_central_generation_flags(state)
+        central_flags["validate_before_run"] = payload.get("validate_before_run", True)
+        logger.info("[route.generate_central] event=flags domain=%s flags=%s", SECTION_CENTRAL, central_flags)
+        result = orch.run_central_bundle(**central_flags)
+        logger.info(
+            "[route.generate_central] event=done domain=%s success=%s elapsed_ms=%.1f",
+            SECTION_CENTRAL,
+            result.success,
+            (time.perf_counter() - started) * 1000.0,
+        )
         return jsonify_generation_result(
             orch,
             result,
@@ -244,24 +282,43 @@ def generate_central():
             failure_separator=" / ",
         )
     except Exception as error:
+        logger.exception("[route.generate_central] event=error domain=%s", SECTION_CENTRAL)
         return jsonify({"success": False, "message": str(error)}), 500
 
 
 @common_bp.route("/generate_dtc", methods=["POST"])
 def generate_dtc():
-    """DTC 域一键生成（CAN/XML），请求体含 state 时先写入配置再执行且 skip_lr_rear。参数：data — 请求体中可选前端 state。返回：JSON { success, message } 或 500。"""
+    """DTC 域一键生成（CAN/XML），请求体含 state 时先写入配置再执行且 skip_lr_rear。
+    参数：data — 请求体中可选前端 state；validate_before_run — 可选，默认 True；
+    返回：JSON { success, message } 或 500。"""
     try:
+        started = time.perf_counter()
         base = current_base_dir()
         state_config_service = StateConfigService.from_base_dir(base)
         payload = request.get_json(silent=True) or {}
         state = payload.get("data", payload)
+        logger.info(
+            "[route.generate_dtc] event=start domain=%s validate_before_run=%s payload_keys=%s",
+            SECTION_DTC,
+            payload.get("validate_before_run", True),
+            sorted(list(payload.keys())),
+        )
         config = state_config_service.prepare_generation_config(
             state=state,
             uds_domain=SECTION_DTC,
             skip_lr_rear=True,
         )
         orch = TaskOrchestrator.from_base_dir(base)
-        result = orch.run_dtc_bundle(**state_config_service.get_dtc_generation_flags(state))
+        dtc_flags = state_config_service.get_dtc_generation_flags(state)
+        dtc_flags["validate_before_run"] = payload.get("validate_before_run", True)
+        logger.info("[route.generate_dtc] event=flags domain=%s flags=%s", SECTION_DTC, dtc_flags)
+        result = orch.run_dtc_bundle(**dtc_flags)
+        logger.info(
+            "[route.generate_dtc] event=done domain=%s success=%s elapsed_ms=%.1f",
+            SECTION_DTC,
+            result.success,
+            (time.perf_counter() - started) * 1000.0,
+        )
         return jsonify_generation_result(
             orch,
             result,
@@ -272,6 +329,7 @@ def generate_dtc():
             failure_message="生成过程中出错",
         )
     except Exception as error:
+        logger.exception("[route.generate_dtc] event=error domain=%s", SECTION_DTC)
         return jsonify({"success": False, "message": str(error)}), 500
 
 

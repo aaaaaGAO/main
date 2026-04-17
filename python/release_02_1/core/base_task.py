@@ -20,7 +20,6 @@ from __future__ import annotations
 import logging
 import os
 import sys
-import traceback
 from abc import ABC, abstractmethod
 from typing import Any, Optional
 
@@ -59,8 +58,8 @@ class BaseGeneratorTask(ABC):
         self.config = None
         self.fixed_config: dict[str, str] = {}
         self.logger: Optional[logging.Logger] = None
-        self._old_stdout = None
-        self._old_stderr = None
+        self.previous_stdout = None
+        self.previous_stderr = None
 
     # ------------------------------------------------------------------
     # 子类必须实现的抽象接口
@@ -125,9 +124,9 @@ class BaseGeneratorTask(ABC):
 
     def run(self) -> None:
         """标准执行流程（模板方法）：加载配置、初始化日志、重定向输出、提取数据、转换、写入、清理并恢复输出。参数：无。返回：无返回值。"""
-        self._load_config()
+        self.initialize_configuration()
         self.logger = self.setup_logging()
-        self._redirect_stdout()
+        self.redirect_stdout_streams()
 
         try:
             print(f"{'=' * 60}")
@@ -149,24 +148,24 @@ class BaseGeneratorTask(ABC):
             raise
         finally:
             self.cleanup()
-            self._restore_stdout()
+            self.restore_stdout_streams()
 
     # ------------------------------------------------------------------
     # 内部辅助方法
     # ------------------------------------------------------------------
 
-    def _load_config(self) -> None:
+    def initialize_configuration(self) -> None:
         """加载主配置文件和固定配置文件到 self.config / self.fixed_config。参数：无。返回：无返回值。"""
         if self.config_path and os.path.exists(self.config_path):
             self.config = read_config_if_exists(self.config_path)
         self.fixed_config = read_fixed_config(self.base_dir)
 
-    def _redirect_stdout(self) -> None:
+    def redirect_stdout_streams(self) -> None:
         """将 stdout/stderr 重定向到 TeeToLogger，同时保留原始输出。参数：无。返回：无返回值。"""
         if self.logger is None:
             return
-        self._old_stdout = sys.stdout
-        self._old_stderr = sys.stderr
+        self.previous_stdout = sys.stdout
+        self.previous_stderr = sys.stderr
         if sys.__stdout__ is not None and sys.__stderr__ is not None:
             sys.stdout = TeeToLogger(
                 self.logger,
@@ -185,14 +184,14 @@ class BaseGeneratorTask(ABC):
                 warning_prefixes=self.tee_warning_prefixes,
             )
 
-    def _restore_stdout(self) -> None:
+    def restore_stdout_streams(self) -> None:
         """恢复 stdout/stderr 到重定向前的原始状态。参数：无。返回：无返回值。"""
-        if self._old_stdout is not None:
-            sys.stdout = self._old_stdout
-        if self._old_stderr is not None:
-            sys.stderr = self._old_stderr
-        self._old_stdout = None
-        self._old_stderr = None
+        if self.previous_stdout is not None:
+            sys.stdout = self.previous_stdout
+        if self.previous_stderr is not None:
+            sys.stderr = self.previous_stderr
+        self.previous_stdout = None
+        self.previous_stderr = None
 
     def get_config_value(self, section: str, key: str, fallback: str = "") -> str:
         """获取配置值：优先从固定配置文件读取，其次从主配置文件读取。参数：section — 节名；key — 配置项键名；fallback — 未找到时的默认值。返回：对应的配置值字符串。"""

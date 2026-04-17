@@ -29,11 +29,15 @@ from infra.filesystem import (
 )
 from services.derived_config_files_service import DerivedConfigFilesService
 from services.config_constants import (
+    CENTRAL_SAVE_NORMALIZE_OPTION_NAMES,
     DEFAULT_UDS_FILENAME,
     CENTRAL_MANAGED_KEYS,
     CENTRAL_UART_UI_KEY_MAP,
     CONFIG_KEY_SECTIONS,
+    DTC_SAVE_NORMALIZE_OPTION_NAMES,
     FILTER_OPTION_KEYS,
+    FORMATTED_SAVE_SECTIONS_TO_ENSURE,
+    LR_REAR_SAVE_NORMALIZE_OPTION_NAMES,
     OPTION_CASE_LEVELS,
     OPTION_CIN_INPUT_EXCEL,
     OPTION_DIDINFO_INPUTS,
@@ -43,6 +47,7 @@ from services.config_constants import (
     OPTION_OUTPUT_DIR,
     OPTION_SELECTED_SHEETS,
     OPTION_UDS_ECU_QUALIFIER,
+    PATHS_MERGED_PRESERVE_OPTION_NAMES,
     SECTION_CENTRAL,
     SECTION_CONFIG_ENUM,
     SECTION_DID_CONFIG,
@@ -54,6 +59,20 @@ from services.config_constants import (
     SECTION_LR_REAR,
     SECTION_PATHS,
     UDS_DOMAIN_SECTIONS,
+    UI_FIELD_CAN_INPUT,
+    UI_FIELD_CIN_EXCEL,
+    UI_FIELD_IO_EXCEL,
+    UI_FIELD_DIDINFO_EXCEL,
+    STATE_KEY_DTC_IO_EXCEL,
+    STATE_KEY_LR_DIDCONFIG_EXCEL,
+    STATE_KEY_DTC_DIDCONFIG_EXCEL,
+    UI_FIELD_LEVELS,
+    UI_FIELD_LOG_LEVEL,
+    UI_FIELD_MODELS,
+    UI_FIELD_OUT_ROOT,
+    UI_FIELD_PLATFORMS,
+    UI_FIELD_SELECTED_SHEETS,
+    UI_FIELD_TARGET_VERSIONS,
     VALID_LOG_LEVELS,
 )
 
@@ -171,7 +190,7 @@ class ConfigManager:
         manager.save_formatted()
     """
 
-    _lock = threading.RLock()
+    write_lock = threading.RLock()
 
     def __init__(self, base_dir: str, config_path: Optional[str] = None) -> None:
         """初始化配置管理器，绑定主配置所在目录与配置文件路径。
@@ -182,11 +201,11 @@ class ConfigManager:
         self.base_dir = os.path.abspath(base_dir)
         self.paths = ProjectPaths.from_base_dir(self.base_dir)
         if config_path is None:
-            self._main_config_read_path = resolve_main_config_path(self.base_dir)
+            self.main_config_read_path = resolve_main_config_path(self.base_dir)
             self.config_path = resolve_main_config_write_path(self.base_dir)
         else:
             explicit = os.path.abspath(config_path)
-            self._main_config_read_path = explicit
+            self.main_config_read_path = explicit
             self.config_path = explicit
         self.derived_config_files_service = DerivedConfigFilesService(self.base_dir)
 
@@ -219,21 +238,16 @@ class ConfigManager:
         无返回值。
         """
         fixed_config_path = resolve_fixed_config_write_path(self.base_dir)
-        lines = [
-            "# ============================================================\n",
-            "# 固定配置（映射表和输出文件名）\n",
-            "# ============================================================\n",
-            "[PATHS]\n",
-            "\n",
-        ]
+        fixed_config_parser = configparser.ConfigParser()
+        fixed_config_parser.optionxform = str
+        fixed_config_parser[SECTION_PATHS] = {}
         mapping_keys = [
             "unified_mapping_excel", "mapping_sheets", "cin_mapping_sheet",
             "mapping_excel", "cin_mapping_excel",
         ]
         for option_name in mapping_keys:
             if fixed_config.get(option_name):
-                lines.append(f"{option_name} = {fixed_config[option_name]}\n")
-        lines.append("\n")
+                fixed_config_parser.set(SECTION_PATHS, option_name, str(fixed_config[option_name]))
         output_keys = [
             "output_filename", "cin_output_filename", "xml_output_filename",
             "didinfo_output_filename", "didconfig_output_filename",
@@ -241,11 +255,9 @@ class ConfigManager:
         ]
         for option_name in output_keys:
             if fixed_config.get(option_name):
-                lines.append(f"{option_name} = {fixed_config[option_name]}\n")
-        while lines and not lines[-1].strip():
-            lines.pop()
+                fixed_config_parser.set(SECTION_PATHS, option_name, str(fixed_config[option_name]))
         with open(fixed_config_path, "w", encoding="utf-8") as fixed_config_file:
-            fixed_config_file.writelines(lines)
+            fixed_config_parser.write(fixed_config_file)
 
     def write_uds_files(
         self, config: configparser.ConfigParser, only_domains: Optional[List[str]] = None
@@ -389,10 +401,10 @@ class ConfigManager:
         self.derived_config_files_service.write_central_config_files(config)
 
     def init_fixed_config_from_main_config(self) -> None:
-        if os.path.exists(self.get_fixed_config_path()) or not os.path.exists(self._main_config_read_path):
+        if os.path.exists(self.get_fixed_config_path()) or not os.path.exists(self.main_config_read_path):
             return
         try:
-            main_config = read_config_if_exists(self._main_config_read_path)
+            main_config = read_config_if_exists(self.main_config_read_path)
             fixed_config_values = {}
             if main_config.has_section(SECTION_PATHS):
                 keys = [
@@ -413,12 +425,12 @@ class ConfigManager:
 
     def reload_config_internal(self) -> configparser.ConfigParser:
         """读入配置并做去重后写回，再解析返回 ConfigParser。"""
-        with self._lock:
-            cleaned = clean_duplicate_sections(self._main_config_read_path)
+        with self.write_lock:
+            cleaned = clean_duplicate_sections(self.main_config_read_path)
             if cleaned:
-                with open(self._main_config_read_path, "w", encoding="utf-8") as config_file:
+                with open(self.main_config_read_path, "w", encoding="utf-8") as config_file:
                     config_file.writelines(cleaned)
-            return read_config_if_exists(self._main_config_read_path)
+            return read_config_if_exists(self.main_config_read_path)
 
     def reload(self) -> configparser.ConfigParser:
         """公开的配置重载入口，供跨模块调用。"""
@@ -444,13 +456,13 @@ class ConfigManager:
         include_uds: bool = True,
     ) -> None:
         out[cls.ui_state_key(prefix, "input")] = section_data.get(OPTION_INPUT_EXCEL, "")
-        out[cls.ui_state_key(prefix, "out_root")] = section_data.get(OPTION_OUTPUT_DIR, "")
-        out[cls.ui_state_key(prefix, "levels")] = section_data.get(OPTION_CASE_LEVELS, "ALL")
-        out[cls.ui_state_key(prefix, "platforms")] = section_data.get("case_platforms", "")
-        out[cls.ui_state_key(prefix, "models")] = section_data.get("case_models", "")
-        out[cls.ui_state_key(prefix, "target_versions")] = section_data.get("case_target_versions", "")
-        out[cls.ui_state_key(prefix, "selected_sheets")] = section_data.get(OPTION_SELECTED_SHEETS, "")
-        out[cls.ui_state_key(prefix, "log_level")] = section_data.get(OPTION_LOG_LEVEL_MIN, "info")
+        out[cls.ui_state_key(prefix, UI_FIELD_OUT_ROOT)] = section_data.get(OPTION_OUTPUT_DIR, "")
+        out[cls.ui_state_key(prefix, UI_FIELD_LEVELS)] = section_data.get(OPTION_CASE_LEVELS, "ALL")
+        out[cls.ui_state_key(prefix, UI_FIELD_PLATFORMS)] = section_data.get("case_platforms", "")
+        out[cls.ui_state_key(prefix, UI_FIELD_MODELS)] = section_data.get("case_models", "")
+        out[cls.ui_state_key(prefix, UI_FIELD_TARGET_VERSIONS)] = section_data.get("case_target_versions", "")
+        out[cls.ui_state_key(prefix, UI_FIELD_SELECTED_SHEETS)] = section_data.get(OPTION_SELECTED_SHEETS, "")
+        out[cls.ui_state_key(prefix, UI_FIELD_LOG_LEVEL)] = section_data.get(OPTION_LOG_LEVEL_MIN, "info")
         if include_uds:
             out[cls.ui_state_key(prefix, "uds_ecu_qualifier")] = section_data.get(
                 OPTION_UDS_ECU_QUALIFIER,
@@ -458,79 +470,9 @@ class ConfigManager:
             )
         if include_didinfo:
             didinfo_raw = section_data.get(OPTION_DIDINFO_INPUTS, "")
-            out[cls.ui_state_key(prefix, "didinfo_excel")] = didinfo_raw.split(" | ")[0] if didinfo_raw else ""
+            out[cls.ui_state_key(prefix, UI_FIELD_DIDINFO_EXCEL)] = didinfo_raw.split(" | ")[0] if didinfo_raw else ""
         if include_cin:
-            out[cls.ui_state_key(prefix, "cin_excel")] = section_data.get(OPTION_CIN_INPUT_EXCEL, "")
-
-    @staticmethod
-    def append_option_line(
-        lines: List[str],
-        config: configparser.ConfigParser,
-        section: str,
-        option: str,
-        *,
-        fallback: str = "",
-    ) -> bool:
-        if not config.has_option(section, option):
-            return False
-        lines.append(f"{option} = {config.get(section, option, fallback=fallback) or ''}\n")
-        return True
-
-    @classmethod
-    def append_options_if_present(
-        cls,
-        lines: List[str],
-        config: configparser.ConfigParser,
-        section: str,
-        options: List[str],
-    ) -> bool:
-        appended_any_option = False
-        for option_name in options:
-            appended_any_option = (
-                cls.append_option_line(lines, config, section, option_name)
-                or appended_any_option
-            )
-        return appended_any_option
-
-    @classmethod
-    def append_filter_options(
-        cls,
-        lines: List[str],
-        config: configparser.ConfigParser,
-        section: str,
-    ) -> bool:
-        return cls.append_options_if_present(lines, config, section, list(FILTER_OPTION_KEYS))
-
-    @staticmethod
-    def append_valid_log_level(
-        lines: List[str],
-        config: configparser.ConfigParser,
-        section: str,
-    ) -> bool:
-        if not config.has_option(section, OPTION_LOG_LEVEL_MIN):
-            return False
-        normalized_log_level = (
-            config.get(section, OPTION_LOG_LEVEL_MIN, fallback="info").strip().lower()
-        )
-        if normalized_log_level not in VALID_LOG_LEVELS:
-            return False
-        lines.append(f"{OPTION_LOG_LEVEL_MIN} = {normalized_log_level}\n")
-        return True
-
-    @staticmethod
-    def append_nonempty_option(
-        lines: List[str],
-        config: configparser.ConfigParser,
-        section: str,
-        option: str,
-    ) -> bool:
-        if not config.has_option(section, option):
-            return False
-        option_value = config.get(section, option, fallback="").strip()
-        if not option_value:
-            return False
-        lines.append(f"{option} = {option_value}\n")
-        return True
+            out[cls.ui_state_key(prefix, UI_FIELD_CIN_EXCEL)] = section_data.get(OPTION_CIN_INPUT_EXCEL, "")
 
     def load_ui_data(self) -> Dict[str, Any]:
         """加载主配置并平铺为前端 collectCurrentState 所需字段格式。
@@ -550,16 +492,17 @@ class ConfigManager:
                 include_didinfo=True,
                 include_cin=True,
             )
-            out["can_input"] = out.pop("input")
+            out[UI_FIELD_CAN_INPUT] = out.pop("input")
+            out["srv_excel"] = lr_section.get("srv_excel", "")
 
         # 2. IOMAPPING / DID_CONFIG
         if config.has_section(SECTION_IOMAPPING):
             io_mapping_inputs = config.get(SECTION_IOMAPPING, OPTION_INPUTS, fallback="")
-            out["io_excel"] = (
+            out[UI_FIELD_IO_EXCEL] = (
                 io_mapping_inputs.split(" | ")[0] if io_mapping_inputs else ""
             )
         if config.has_section(SECTION_DID_CONFIG):
-            out["didconfig_excel"] = config.get(SECTION_DID_CONFIG, OPTION_INPUT_EXCEL, fallback="")
+            out[STATE_KEY_LR_DIDCONFIG_EXCEL] = config.get(SECTION_DID_CONFIG, OPTION_INPUT_EXCEL, fallback="")
 
         # 3. CENTRAL -> c_* 字段
         if config.has_section(SECTION_CENTRAL):
@@ -580,6 +523,7 @@ class ConfigManager:
                 out["c_ign_waitTime"] = ign_waittime
                 out["c_ign_current"] = ign_current
             out["c_uart"] = central_section.get("uart_excel", "")
+            out["c_srv"] = central_section.get("srv_excel", "")
             uart_comm = {}
             for cfg_key, ui_key in CENTRAL_UART_UI_KEY_MAP.items():
                 config_value = central_section.get(cfg_key, "")
@@ -602,24 +546,25 @@ class ConfigManager:
                 include_didinfo=True,
                 include_cin=True,
             )
+            out["d_srv_excel"] = dtc_section.get("srv_excel", "")
         if config.has_section(SECTION_DTC_IOMAPPING):
             dtc_io_mapping_inputs = (
                 config.get(SECTION_DTC_IOMAPPING, OPTION_INPUTS, fallback="") or ""
             ).strip()
             if dtc_io_mapping_inputs and "|" in dtc_io_mapping_inputs:
                 path_part, sheets_part = dtc_io_mapping_inputs.split("|", 1)
-                out["d_io_excel"] = path_part.strip()
+                out[STATE_KEY_DTC_IO_EXCEL] = path_part.strip()
                 sheets_str = (sheets_part or "").strip()
                 # 若为 * 或空串，表示全选，前端用空串表示“全选/不做过滤”
                 out["d_io_selected_sheets"] = "" if sheets_str in ("", "*") else sheets_str
             else:
-                out["d_io_excel"] = dtc_io_mapping_inputs
+                out[STATE_KEY_DTC_IO_EXCEL] = dtc_io_mapping_inputs
                 out["d_io_selected_sheets"] = ""
         if config.has_section(SECTION_DTC_CONFIG_ENUM):
             did_config_inputs = config.get(
                 SECTION_DTC_CONFIG_ENUM, OPTION_INPUTS, fallback=""
             )
-            out["d_didconfig_excel"] = (
+            out[STATE_KEY_DTC_DIDCONFIG_EXCEL] = (
                 did_config_inputs.split(" | ")[0] if did_config_inputs else ""
             )
 
@@ -632,7 +577,7 @@ class ConfigManager:
             data: 键值对字典，键为选项名、值为字符串（None 会转为空串）。
         无返回值。
         """
-        with self._lock:
+        with self.write_lock:
             config = self.reload_config_internal()
             if not config.has_section(domain):
                 config.add_section(domain)
@@ -642,7 +587,7 @@ class ConfigManager:
 
     def save_formatted(self) -> None:
         """重新加载配置、移除无效项、按固定格式写回。"""
-        with self._lock:
+        with self.write_lock:
             config = self.reload_config_internal()
             remove_invalid_config_options(config)
             self.init_fixed_config_from_main_config()
@@ -715,7 +660,7 @@ class ConfigManager:
             data: 节名为键、值为「选项名->值」字典，如 {"LR_REAR": {"input_excel": "..."}, ...}。
         无返回值。
         """
-        with self._lock:
+        with self.write_lock:
             config = self.reload_config_internal()
 
             # 本次前端实际提交更新的节名列表，用于后续精确控制 UDS/中央域附属文件的生成范围
@@ -750,7 +695,7 @@ class ConfigManager:
         无返回值。
         """
         output_config_path = target_path or self.config_path
-        with self._lock:
+        with self.write_lock:
             config = self.reload_config_internal()
             remove_invalid_config_options(config)
             self.save_formatted_config(config, config_path=output_config_path)
@@ -774,14 +719,7 @@ class ConfigManager:
             try:
                 backup_config = read_config_if_exists(output_config_path)
                 if backup_config.has_section(SECTION_PATHS):
-                    fixed_keys = [
-                        "unified_mapping_excel", "mapping_sheets", "cin_mapping_sheet",
-                        "output_filename", "cin_output_filename", "xml_output_filename",
-                        "didinfo_output_filename", "didconfig_output_filename",
-                        "uart_output_filename", "uds_output_filename", "didinfo_variants",
-                        "mapping_excel", "cin_mapping_excel",
-                    ]
-                    for option_name in fixed_keys:
+                    for option_name in PATHS_MERGED_PRESERVE_OPTION_NAMES:
                         if backup_config.has_option(SECTION_PATHS, option_name):
                             fixed_config_backup[option_name] = backup_config.get(
                                 SECTION_PATHS, option_name
@@ -791,40 +729,11 @@ class ConfigManager:
             except Exception as error:
                 print(f"从主配置读取固定配置时出错: {error}")
 
-        fixed_path_option_names = [
-            "unified_mapping_excel", "mapping_sheets", "cin_mapping_sheet",
-            "output_filename", "cin_output_filename", "xml_output_filename",
-            "didinfo_output_filename", "didconfig_output_filename",
-            "uart_output_filename", "uds_output_filename", "didinfo_variants",
-        ]
-        dynamic_path_option_names = ["mapping_excel", "cin_mapping_excel"]
-        section_names_to_ensure = [
-            SECTION_LR_REAR,
-            SECTION_IOMAPPING,
-            SECTION_DID_CONFIG,
-            SECTION_CONFIG_ENUM,
-            SECTION_CENTRAL,
-            SECTION_IGNITION_CYCLE,
-            SECTION_DTC,
-            SECTION_DTC_IOMAPPING,
-            SECTION_DTC_CONFIG_ENUM,
-        ]
-        for section_name in section_names_to_ensure:
+        for section_name in FORMATTED_SAVE_SECTIONS_TO_ENSURE:
             if not config.has_section(section_name):
                 config.add_section(section_name)
 
-        lr_fixed_keys = [
-            "input_excel",
-            "input_excel_dir",
-            OPTION_OUTPUT_DIR,
-            *list(FILTER_OPTION_KEYS),
-            OPTION_SELECTED_SHEETS,
-            OPTION_LOG_LEVEL_MIN,
-            OPTION_DIDINFO_INPUTS,
-            OPTION_CIN_INPUT_EXCEL,
-            OPTION_UDS_ECU_QUALIFIER,
-        ]
-        for option_name in lr_fixed_keys:
+        for option_name in LR_REAR_SAVE_NORMALIZE_OPTION_NAMES:
             value = self.get_config_value_with_fallback(
                 config,
                 SECTION_LR_REAR,
@@ -861,35 +770,7 @@ class ConfigManager:
                         config.get(SECTION_CONFIG_ENUM, option_name, fallback="") or "",
                     )
 
-        central_fixed_keys = [
-            "input_excel",
-            "input_excel_dir",
-            "uart_excel",
-            "srv_excel",
-            "pwr_excel",
-            "rly_excel",
-            OPTION_SELECTED_SHEETS,
-            "uart_comm_port",
-            "uart_comm_baudrate",
-            "uart_comm_dataBits",
-            "uart_comm_stopBits",
-            "uart_comm_kHANDSHAKE_DISABLED",
-            "uart_comm_parity",
-            "uart_comm_frameTypeIs8676",
-            "ign_waittime",
-            "ign_current",
-            "c_pwr",
-            "c_rly",
-            "c_ig",
-            "c_pw",
-            OPTION_OUTPUT_DIR,
-            *list(FILTER_OPTION_KEYS),
-            OPTION_LOG_LEVEL_MIN,
-            OPTION_UDS_ECU_QUALIFIER,
-            "login_username",
-            "login_password",
-        ]
-        for option_name in central_fixed_keys:
+        for option_name in CENTRAL_SAVE_NORMALIZE_OPTION_NAMES:
             value = self.get_config_value_with_fallback(
                 config,
                 SECTION_CENTRAL,
@@ -929,18 +810,7 @@ class ConfigManager:
         config.set(SECTION_IGNITION_CYCLE, "waitTime", ignition_wait_time)
         config.set(SECTION_IGNITION_CYCLE, "current", ignition_current)
 
-        dtc_fixed_keys = [
-            "input_excel",
-            "input_excel_dir",
-            OPTION_SELECTED_SHEETS,
-            OPTION_OUTPUT_DIR,
-            *list(FILTER_OPTION_KEYS),
-            OPTION_LOG_LEVEL_MIN,
-            OPTION_DIDINFO_INPUTS,
-            OPTION_CIN_INPUT_EXCEL,
-            OPTION_UDS_ECU_QUALIFIER,
-        ]
-        for option_name in dtc_fixed_keys:
+        for option_name in DTC_SAVE_NORMALIZE_OPTION_NAMES:
             value = self.get_config_value_with_fallback(
                 config,
                 SECTION_DTC,
@@ -975,8 +845,7 @@ class ConfigManager:
 
         if fixed_config_backup:
             current_fixed = {}
-            fixed_option_names = fixed_path_option_names + dynamic_path_option_names
-            for option_name in fixed_option_names:
+            for option_name in PATHS_MERGED_PRESERVE_OPTION_NAMES:
                 if option_name in fixed_config_backup:
                     current_fixed[option_name] = fixed_config_backup[option_name]
             if current_fixed:

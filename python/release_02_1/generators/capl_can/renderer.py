@@ -18,17 +18,17 @@ def split_capl_comment_parts(line: str) -> tuple[str, str]:
     return code, comment
 
 
-def _is_test_step_line(line: str) -> bool:
+def is_test_step_line(line: str) -> bool:
     _, comment = split_capl_comment_parts(line)
     return "测试步骤" in comment or "\u6d4b\u8bd5\u6b65\u9aa4" in comment
 
 
-def _is_expect_line(line: str) -> bool:
+def is_expect_line(line: str) -> bool:
     _, comment = split_capl_comment_parts(line)
     return "预期结果" in comment or "\u9884\u671f\u7ed3\u679c" in comment
 
 
-def _is_soa_expect_check_line(line: str) -> bool:
+def is_soa_expect_check_line(line: str) -> bool:
     """判断是否为 SOA CHECK / CHECKREQ 的预期结果行（排除已带 _Prepare）。"""
     if "_Prepare" in line or "_PREPARE" in line:
         return False
@@ -39,7 +39,7 @@ def _is_soa_expect_check_line(line: str) -> bool:
     return "SOA_CHECK(" in code_upper or "CHECKREQ(" in code_upper
 
 
-def _is_soa_expect_check_only_line(line: str) -> bool:
+def is_soa_expect_check_only_line(line: str) -> bool:
     """仅匹配 SOA_CHECK（不包含 CHECKREQ）的预期结果行。"""
     if "_Prepare" in line or "_PREPARE" in line:
         return False
@@ -50,14 +50,14 @@ def _is_soa_expect_check_only_line(line: str) -> bool:
     return "SOA_CHECK(" in code_upper and "CHECKREQ(" not in code_upper
 
 
-def _has_traceback_token(line: str) -> bool:
+def has_traceback_token(line: str) -> bool:
     """是否包含 traceback（不区分大小写，允许 traceback7 这类写法）。"""
     code_part, comment_part = split_capl_comment_parts(line)
     text = f"{code_part} {comment_part}"
     return bool(re.search(r"\btraceback\d*\b", text, re.IGNORECASE))
 
 
-def _is_wait_or_sleep_test_step(line: str) -> bool:
+def is_wait_or_sleep_test_step(line: str) -> bool:
     """仅看注释里的测试步骤语义，不看生成后的 CAPL 函数名。"""
     _, comment = split_capl_comment_parts(line)
     if not comment.strip():
@@ -71,16 +71,16 @@ def _is_wait_or_sleep_test_step(line: str) -> bool:
     )
 
 
-def _is_soa_req_test_step(line: str) -> bool:
+def is_soa_req_test_step(line: str) -> bool:
     """是否为 SOA REQ 测试步骤行（仅看代码部分）。"""
-    if not _is_test_step_line(line):
+    if not is_test_step_line(line):
         return False
     code_part, _ = split_capl_comment_parts(line)
     code_upper = code_part.upper()
     return "SOA_REQ(" in code_upper or "SOA REQ" in code_upper
 
 
-def _add_prepare_suffix_to_line(line: str) -> str:
+def add_prepare_suffix_to_line(line: str) -> str:
     """生成带 _Prepare 后缀的副本。"""
     parts = line.split("//", 1)
     code_part = parts[0]
@@ -101,13 +101,20 @@ def _add_prepare_suffix_to_line(line: str) -> str:
 class CANFileRenderer:
     """负责把 `CANTestCase` 集合渲染成 `.can` 文本。"""
 
-    def __init__(self, include_files: Sequence[str] | None = None) -> None:
+    def __init__(
+        self,
+        include_files: Sequence[str] | None = None,
+        *,
+        central_sheet_soa_wrapper_enabled: bool = False,
+    ) -> None:
         self.include_files = list(include_files or [])
+        self.central_sheet_soa_wrapper_enabled = central_sheet_soa_wrapper_enabled
 
     def render_single_file(self, case: CANTestCase) -> str:
         return self.render_sheet_file([case])
 
     def render_sheet_file(self, cases: Iterable[CANTestCase]) -> str:
+        case_list = list(cases or [])
         lines: list[str] = [
             "/*@!Encoding: 936*/",
             "",
@@ -120,8 +127,18 @@ class CANFileRenderer:
             "}",
             "",
         ]
-        for case in cases:
-            lines.extend(self._render_testcase(case))
+        for idx, case in enumerate(case_list):
+            lines.extend(
+                self.render_testcase(
+                    case,
+                    inject_connect=(
+                        self.central_sheet_soa_wrapper_enabled and idx == 0
+                    ),
+                    inject_close=(
+                        self.central_sheet_soa_wrapper_enabled and idx == len(case_list) - 1
+                    ),
+                )
+            )
             lines.append("")
         return "\r\n".join(lines).rstrip() + "\r\n"
 
@@ -139,7 +156,13 @@ class CANFileRenderer:
         lines.extend(["}", "", "variables", "{", "}", ""])
         return "\r\n".join(lines).rstrip() + "\r\n"
 
-    def _render_testcase(self, case: CANTestCase) -> list[str]:
+    def render_testcase(
+        self,
+        case: CANTestCase,
+        *,
+        inject_connect: bool = False,
+        inject_close: bool = False,
+    ) -> list[str]:
         # CAPL 标识符不能含连字符，需替换为下划线
         case_name = (case.case_id or "unnamed_case").replace("-", "_")
 
@@ -151,26 +174,30 @@ class CANFileRenderer:
             # 将 \r\n / \n / \r 等换行统一替换为空格
             name_str = re.sub(r"[\r\n]+", " ", name_str)
             # 转义：只对单独出现的 \ 转义为 \\，已有的 \\ 原样保留不变成 \\\\
-            safe_name = self._escape_capl_string(name_str)
+            safe_name = self.escape_capl_string(name_str)
             lines.append(f'  TestDescription("{safe_name}");')
+        if inject_connect:
+            lines.append("  g_EM_SOAGen_Swc_SOA_CONNECT();")
         if case.case_id_had_issues:
-            warning = self._build_caseid_warning(case)
-            safe_warning = self._escape_capl_string(str(warning))
+            warning = self.build_caseid_warning(case)
+            safe_warning = self.escape_capl_string(str(warning))
             lines.append(f'  teststep("warning","{safe_warning}");')
 
         # 在渲染前，对步骤应用 SOA REQ / CHECK / CHECKREQ 成对前移与 _Prepare 规则（仅针对 CAN 步骤）
         steps = list(case.steps or [])
         if steps:
-            steps = self._apply_soa_prepare_reorder(steps)
+            steps = self.apply_soa_prepare_reorder(steps)
             lines.extend(step.rstrip() for step in steps)
         else:
             lines.append('  teststep("info","No translated steps");')
 
+        if inject_close:
+            lines.append("  g_EM_SOAGen_Swc_SOA_CLOSE();")
         lines.append("}")
         return lines
 
     @staticmethod
-    def _apply_soa_prepare_reorder(lines: list[str]) -> list[str]:
+    def apply_soa_prepare_reorder(lines: list[str]) -> list[str]:
         """
         按“节点”重排 SOA CHECK / CHECKREQ：
 
@@ -194,52 +221,64 @@ class CANFileRenderer:
         # 先记录所有 Prepare 的来源顺序与目标位置，最后统一按来源顺序落位
         scheduled_prepares: list[tuple[int, int, str, str]] = []
 
-        i = 0
-        while i < n:
-            if not _is_test_step_line(lines[i]):
-                i += 1
+        node_scan_index = 0
+        while node_scan_index < n:
+            if not is_test_step_line(lines[node_scan_index]):
+                node_scan_index += 1
                 continue
 
-            node_start = i
-            j = i + 1
-            # 节点范围：[node_start, j) —— 直到下一个测试步骤或结尾
-            while j < n and not _is_test_step_line(lines[j]):
-                j += 1
+            node_start = node_scan_index
+            node_end_index = node_scan_index + 1
+            # 节点范围：[node_start, node_end_index) —— 直到下一个测试步骤或结尾
+            while node_end_index < n and not is_test_step_line(lines[node_end_index]):
+                node_end_index += 1
 
             # 在该节点范围内查找 SOA CHECK / CHECKREQ 预期结果行
-            node_is_wait_or_sleep = _is_wait_or_sleep_test_step(lines[node_start])
-            for k in range(node_start, j):
-                if _is_expect_line(lines[k]) and _is_soa_expect_check_line(lines[k]):
-                    prepare_line = _add_prepare_suffix_to_line(lines[k])
+            node_is_wait_or_sleep = is_wait_or_sleep_test_step(lines[node_start])
+            for line_index in range(node_start, node_end_index):
+                if (
+                    is_expect_line(lines[line_index])
+                    and is_soa_expect_check_line(lines[line_index])
+                ):
+                    prepare_line = add_prepare_suffix_to_line(lines[line_index])
                     # 新增规则：
                     # SOA_CHECK（不含 CHECKREQ）且该行出现 traceback* 时，
                     # 优先前插到最近的前置 SOA REQ 测试步骤前；
                     # 若前面没有 SOA REQ，则前插到最近的前置 wait/sleep 测试步骤前。
-                    if _is_soa_expect_check_only_line(lines[k]) and _has_traceback_token(lines[k]):
+                    if (
+                        is_soa_expect_check_only_line(lines[line_index])
+                        and has_traceback_token(lines[line_index])
+                    ):
                         nearest_soa_req_idx = None
-                        for p in range(k - 1, -1, -1):
-                            if _is_soa_req_test_step(lines[p]):
+                        for p in range(line_index - 1, -1, -1):
+                            if is_soa_req_test_step(lines[p]):
                                 nearest_soa_req_idx = p
                                 break
 
                         if nearest_soa_req_idx is not None:
-                            scheduled_prepares.append((k, nearest_soa_req_idx, "before", prepare_line))
+                            scheduled_prepares.append(
+                                (line_index, nearest_soa_req_idx, "before", prepare_line)
+                            )
                             continue
 
                         nearest_wait_idx = None
-                        for p in range(k - 1, -1, -1):
-                            if _is_test_step_line(lines[p]) and _is_wait_or_sleep_test_step(lines[p]):
+                        for p in range(line_index - 1, -1, -1):
+                            if is_test_step_line(lines[p]) and is_wait_or_sleep_test_step(lines[p]):
                                 nearest_wait_idx = p
                                 break
 
                         if nearest_wait_idx is not None:
-                            scheduled_prepares.append((k, nearest_wait_idx, "before", prepare_line))
+                            scheduled_prepares.append(
+                                (line_index, nearest_wait_idx, "before", prepare_line)
+                            )
                             continue
 
                     default_placement = "after" if node_is_wait_or_sleep else "before"
-                    scheduled_prepares.append((k, node_start, default_placement, prepare_line))
+                    scheduled_prepares.append(
+                        (line_index, node_start, default_placement, prepare_line)
+                    )
 
-            i = j
+            node_scan_index = node_end_index
 
         # 按预期结果在原文中的出现顺序写入，避免 traceback 分支抢到最前
         scheduled_prepares.sort(key=lambda item: item[0])
@@ -261,15 +300,15 @@ class CANFileRenderer:
         return final_output
 
     @staticmethod
-    def _escape_capl_string(s: str) -> str:
+    def escape_capl_string(input_text: str) -> str:
         """转义 CAPL 字符串：只对单独出现的 \\ 转义为 \\\\，已有的 \\\\ 原样保留不变成 \\\\\\\\；双引号转义为 \\\"。"""
         # 仅当反斜杠后没有紧跟另一个反斜杠时才替换为双反斜杠（单独 \ -> \\，\\ 保持为 \\）
-        s = re.sub(r"\\(?!\\)", r"\\\\", s)
-        s = s.replace('"', '\\"')
-        return s
+        escaped_text = re.sub(r"\\(?!\\)", r"\\\\", input_text)
+        escaped_text = escaped_text.replace('"', '\\"')
+        return escaped_text
 
     @staticmethod
-    def _build_caseid_warning(case: CANTestCase) -> str:
+    def build_caseid_warning(case: CANTestCase) -> str:
         """生成 warning 文案，避免嵌套双引号导致 CAPL 字符串解析错误。"""
         if case.case_id_issue_type == "duplicate" and case.duplicate_original_id:
             return f"原始用例id为{case.duplicate_original_id}"

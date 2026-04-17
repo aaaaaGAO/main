@@ -22,10 +22,10 @@ def split_input_lines(text: str) -> List[Tuple[str, str]]:
         if not line or line.startswith("#") or line.startswith(";"):
             continue
         if "|" in line:
-            p, s = [x.strip() for x in line.split("|", 1)]
+            path_part, sheets_part = [segment.strip() for segment in line.split("|", 1)]
         else:
-            p, s = line.strip(), ""
-        if p:
-            out.append((p, s))
+            path_part, sheets_part = line.strip(), ""
+        if path_part:
+            out.append((path_part, sheets_part))
     return out
 

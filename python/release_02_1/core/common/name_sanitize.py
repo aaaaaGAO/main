@@ -15,7 +15,7 @@ def sanitize_clib_name(name: str) -> str:
     """删除 Clib 名称中所有 '+' 和 '-'，用于 CAPL 导出/调用函数名拼接。
     参数: name — 原始 Clib 名称。返回: 清洗后的字符串。
     """
-    s = str(name).strip()
+    cleaned = str(name).strip()
     # 只按需求删除 +/-
-    s = s.replace("+", "").replace("-", "")
-    return s
+    cleaned = cleaned.replace("+", "").replace("-", "")
+    return cleaned

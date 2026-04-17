@@ -19,15 +19,28 @@ from core.case_filter import CaseFilter
 from core.parse_table_loggers import get_testcases_parse_logger
 from core.generator_config import GeneratorConfig
 from core.generator_logging import GeneratorLogger
-from core.run_context import clear_run_logger as _clear_run_logger_impl
-from services.config_constants import DEFAULT_DOMAIN_LR_REAR, SECTION_CENTRAL, SECTION_FILTER, SECTION_LR_REAR, SECTION_PATHS
+from core.run_context import clear_run_logger as clear_run_logger_impl
+from services.config_constants import (
+    DEFAULT_DOMAIN_LR_REAR,
+    OPTION_INPUT_EXCEL,
+    OPTION_OUTPUT_DIR,
+    SECTION_CENTRAL,
+    SECTION_DTC,
+    SECTION_FILTER,
+    SECTION_LR_REAR,
+    SECTION_PATHS,
+)
 from utils.logger import PROGRESS_LEVEL
 from utils.sheet_filter import parse_selected_sheets
 
-from infra.filesystem.pathing import RuntimePathResolver, resolve_target_subdir
+from infra.filesystem.pathing import (
+    RuntimePathResolver,
+    resolve_runtime_path,
+    resolve_target_subdir,
+)
 from services.filter_service import parse_shaixuan_config
 
-from . import runtime_io as _io
+from . import runtime_io
 
 # 模块级 logger 引用，供 clear_run_logger 与 parse/generate 传参使用
 _logger: Optional[logging.Logger] = None
@@ -81,11 +94,11 @@ class _TeeToLogger:
         self.logger = logger
         self.level = level
         self.original = original
-        self._buf = ""
-        self._in_progress = False
+        self.buffer_text = ""
+        self.is_logging_in_progress = False
 
     def write(self, s: str) -> int:
-        if self._in_progress:
+        if self.is_logging_in_progress:
             try:
                 if self.original:
                     self.original.write(s)
@@ -97,9 +110,9 @@ class _TeeToLogger:
                 self.original.write(s)
         except Exception:
             pass
-        self._buf += s
-        while "\n" in self._buf:
-            line, self._buf = self._buf.split("\n", 1)
+        self.buffer_text += s
+        while "\n" in self.buffer_text:
+            line, self.buffer_text = self.buffer_text.split("\n", 1)
             msg = line.rstrip("\r")
             if not msg:
                 continue
@@ -118,13 +131,13 @@ class _TeeToLogger:
             if "[cin]" in msg or ".cin 文件已生成" in msg:
                 continue
             try:
-                self._in_progress = True
+                self.is_logging_in_progress = True
                 if msg.startswith("[warn]") or msg.startswith("[dup]") or msg.startswith("[error]"):
                     self.logger.warning(msg)
                 else:
                     self.logger.log(self.level, msg)
             finally:
-                self._in_progress = False
+                self.is_logging_in_progress = False
         return len(s)
 
     def flush(self) -> None:
@@ -133,6 +146,23 @@ class _TeeToLogger:
                 self.original.flush()
         except Exception:
             pass
+
+
+def create_blank_line_friendly_formatter(format_string: str) -> logging.Formatter:
+    return _BlankLineFriendlyFormatter(format_string)
+
+
+def stream_has_isatty(stream_obj: Any) -> bool:
+    return bool(hasattr(stream_obj, "isatty"))
+
+
+def stream_supports_tty(stream_obj: Any) -> bool:
+    if not stream_obj or not stream_has_isatty(stream_obj):
+        return False
+    try:
+        return bool(stream_obj.isatty())
+    except Exception:
+        return False
 
 
 def build_xml_domain_candidates(domain: str, *options: str) -> list[tuple[str, str]]:
@@ -168,8 +198,32 @@ def load_runtime_config(
     config = gconfig.raw_config
 
     if domain == SECTION_CENTRAL:
-        # CENTRAL 试点：定点读取，不做跨节/跨别名兜底。
-        case_excel_file = gconfig.get_required_from_section(domain, "xml_input_excel")
+        # CENTRAL：优先 xml_input_excel；未配置时回退 input_excel（对应界面“测试用例/测试文件夹导入”）。
+        case_excel_file = (
+            gconfig.get_from_section(domain, "xml_input_excel", fallback="")
+            or gconfig.get_from_section(domain, "Xml_Input_Excel", fallback="")
+            or gconfig.get_from_section(domain, OPTION_INPUT_EXCEL, fallback="")
+            or gconfig.get_from_section(domain, "Input_Excel", fallback="")
+        ).strip()
+        if not case_excel_file:
+            raise ValueError(
+                "未在 [CENTRAL] 配置 XML 输入路径：请配置 xml_input_excel，或使用 input_excel 作为回退。"
+            )
+    elif domain == SECTION_DTC:
+        # DTC：与 RunValidator / 前端持久化一致，主用例表键名为 input_excel（与 CAN 同源）。
+        case_excel_file = gconfig.get_required_from_section(domain, OPTION_INPUT_EXCEL)
+    elif domain == SECTION_LR_REAR:
+        # LR_REAR：仅 [LR_REAR] 内多键名并列，不读 [FILTER]/[PATHS]。
+        case_excel_file = (
+            gconfig.get_from_section(domain, "xml_input_excel", fallback="")
+            or gconfig.get_from_section(domain, "Xml_Input_Excel", fallback="")
+            or gconfig.get_from_section(domain, OPTION_INPUT_EXCEL, fallback="")
+            or gconfig.get_from_section(domain, "Input_Excel", fallback="")
+        ).strip()
+        if not case_excel_file:
+            raise ValueError(
+                "未在 [LR_REAR] 配置 XML 输入路径：请配置 xml_input_excel 或 input_excel。"
+            )
     else:
         case_excel_file = gconfig.get_first(
             build_xml_domain_candidates(
@@ -178,8 +232,6 @@ def load_runtime_config(
                 "Xml_Input_Excel",
                 "input_excel",
                 "Input_Excel",
-                "input_excel_dir",
-                "Input_Excel_Dir",
             )
         )
     if not case_excel_file:
@@ -190,8 +242,19 @@ def load_runtime_config(
         )
 
     output_xml_file = gconfig.get_fixed("xml_output_filename") or "Generated_Testcase.xml"
-    if domain == SECTION_CENTRAL:
+    if domain in (SECTION_CENTRAL, SECTION_DTC):
         output_dir = gconfig.get_required_from_section(domain, "output_dir")
+    elif domain == SECTION_LR_REAR:
+        output_dir = (
+            gconfig.get_from_section(domain, "Output_Dir_Xml", fallback="")
+            or gconfig.get_from_section(domain, "output_dir_xml", fallback="")
+            or gconfig.get_from_section(domain, "Output_Dir", fallback="")
+            or gconfig.get_from_section(domain, OPTION_OUTPUT_DIR, fallback="")
+        ).strip()
+        if not output_dir:
+            raise ValueError(
+                "未在 [LR_REAR] 配置 XML 输出目录：请配置 output_dir 或 Output_Dir_Xml / output_dir_xml。"
+            )
     else:
         output_dir = gconfig.get_first(
             build_xml_domain_candidates(
@@ -215,8 +278,11 @@ def load_runtime_config(
     if config.has_section(domain) or (
         domain == DEFAULT_DOMAIN_LR_REAR and (config.has_section(SECTION_FILTER) or config.has_section(SECTION_LR_REAR))
     ):
-        if domain == SECTION_CENTRAL:
-            case_levels_value = gconfig.get_from_section(domain, "case_levels", fallback="")
+        if domain in (SECTION_CENTRAL, SECTION_DTC, SECTION_LR_REAR):
+            case_levels_value = (
+                gconfig.get_from_section(domain, "case_levels", fallback="")
+                or gconfig.get_from_section(domain, "Case_Levels", fallback="")
+            )
         else:
             case_levels_value = gconfig.get_first(build_xml_domain_candidates(domain, "Case_Levels", "case_levels"))
         allowed_levels = CaseFilter.parse_levels(case_levels_value)
@@ -225,8 +291,11 @@ def load_runtime_config(
         else:
             print(f"[xml] 等级过滤: 不过滤（ALL 或未配置，原始值={case_levels_value!r}）")
 
-        if domain == SECTION_CENTRAL:
-            case_platforms_value = gconfig.get_from_section(domain, "case_platforms", fallback="")
+        if domain in (SECTION_CENTRAL, SECTION_DTC, SECTION_LR_REAR):
+            case_platforms_value = (
+                gconfig.get_from_section(domain, "case_platforms", fallback="")
+                or gconfig.get_from_section(domain, "Case_Platforms", fallback="")
+            )
         else:
             case_platforms_value = gconfig.get_first(
                 build_xml_domain_candidates(domain, "Case_Platforms", "case_platforms")
@@ -237,8 +306,11 @@ def load_runtime_config(
         else:
             print(f"[xml] 平台过滤: 不过滤（ALL 或未配置，原始值={case_platforms_value!r}）")
 
-        if domain == SECTION_CENTRAL:
-            case_models_value = gconfig.get_from_section(domain, "case_models", fallback="")
+        if domain in (SECTION_CENTRAL, SECTION_DTC, SECTION_LR_REAR):
+            case_models_value = (
+                gconfig.get_from_section(domain, "case_models", fallback="")
+                or gconfig.get_from_section(domain, "Case_Models", fallback="")
+            )
         else:
             case_models_value = gconfig.get_first(build_xml_domain_candidates(domain, "Case_Models", "case_models"))
         allowed_models = CaseFilter.parse_platforms_or_models(case_models_value)
@@ -247,8 +319,12 @@ def load_runtime_config(
         else:
             print(f"[xml] 车型过滤: 不过滤（未配置，原始值={case_models_value!r}）")
 
-        if domain == SECTION_CENTRAL:
-            case_target_versions_value = gconfig.get_from_section(domain, "case_target_versions", fallback="") or ""
+        if domain in (SECTION_CENTRAL, SECTION_DTC, SECTION_LR_REAR):
+            case_target_versions_value = (
+                gconfig.get_from_section(domain, "case_target_versions", fallback="")
+                or gconfig.get_from_section(domain, "Case_Target_Versions", fallback="")
+                or ""
+            )
         else:
             case_target_versions_value = (
                 gconfig.get_first(build_xml_domain_candidates(domain, "Case_Target_Versions", "case_target_versions")) or ""
@@ -269,16 +345,13 @@ def load_runtime_config(
         print("[xml] 等级过滤: 未找到当前域 / [FILTER] / [LR_REAR] 配置，不过滤")
         allowed_target_versions = None
 
-    if domain == SECTION_CENTRAL:
+    if domain in (SECTION_CENTRAL, SECTION_DTC, SECTION_LR_REAR):
         selected_sheets_str = gconfig.get_from_section(domain, "selected_sheets", fallback="")
     else:
         selected_sheets_str = gconfig.get_first(build_xml_domain_candidates(domain, "selected_sheets"), fallback="")
     selected_filter = parse_selected_sheets(selected_sheets_str)
 
-    if not os.path.isabs(case_excel_file):
-        excel_path = os.path.join(base_dir, case_excel_file)
-    else:
-        excel_path = case_excel_file
+    excel_path = resolve_runtime_path(base_dir, case_excel_file)
     output_dir = resolve_target_subdir(base_dir, output_dir, "TESTmode")
     output_xml_path = os.path.join(output_dir, output_xml_file)
 
@@ -303,7 +376,7 @@ def init_runtime_logging(base_dir: str) -> tuple:
         base_dir,
         log_basename="generate_xml_from_can.log",
         logger_name="generate_xml_from_can",
-        formatter_factory=lambda s: _BlankLineFriendlyFormatter(s),
+        formatter_factory=create_blank_line_friendly_formatter,
         console=False,
     )
     logger = _LOG_MANAGER.setup()
@@ -329,11 +402,11 @@ def init_runtime_logging(base_dir: str) -> tuple:
 
 def get_quiet_skip() -> bool:
     """无 TTY 时不逐行打印 [跳过]，只打汇总。"""
-    return not (sys.stdout and getattr(sys.stdout, "isatty", lambda: False)())
+    return not stream_supports_tty(sys.stdout)
 
 
 def find_excel_files(input_path: str) -> list[str]:
-    return _io.find_excel_files(input_path)
+    return runtime_io.find_excel_files(input_path)
 
 
 def parse_testcases_from_excel(
@@ -348,7 +421,7 @@ def parse_testcases_from_excel(
     allowed_sheet_names=None,
     selected_filter=None,
 ) -> tuple:
-    return _io.parse_testcases_from_excel(
+    return runtime_io.parse_testcases_from_excel(
         excel_path,
         allowed_levels=allowed_levels,
         allowed_platforms=allowed_platforms,
@@ -365,16 +438,16 @@ def parse_testcases_from_excel(
 
 
 def group_testcases_by_sheet_and_group(sheet_testcases_dict: dict) -> dict:
-    return _io.group_testcases_by_sheet_and_group(sheet_testcases_dict)
+    return runtime_io.group_testcases_by_sheet_and_group(sheet_testcases_dict)
 
 
 def generate_xml_content(excel_files_dict: dict) -> str:
-    return _io.generate_xml_content(excel_files_dict, logger=_logger)
+    return runtime_io.generate_xml_content(excel_files_dict, logger=_logger)
 
 
 def clear_run_logger() -> None:
     global _logger
-    _clear_run_logger_impl(_logger)
+    clear_run_logger_impl(_logger)
     _logger = None
 
 

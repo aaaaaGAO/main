@@ -31,6 +31,10 @@ from core.run_context import clear_run_logger
 LogSpec = Tuple[str, str]  # (subdir, basename)
 
 
+def create_progress_formatter(format_string: str) -> logging.Formatter:
+    return ProgressFormatter(format_string)
+
+
 @dataclass(slots=True)
 class LogSpecConfig:
     """单个日志文件的配置。"""
@@ -90,45 +94,45 @@ class GeneratorLogger:
           console — 是否添加 StreamHandler。
         """
         self.base_dir = os.path.abspath(base_dir)
-        self._log_basename = log_basename
-        self._log_subdir = log_subdir
-        self._logger_name = logger_name
-        self._log_specs = log_specs or ([(log_subdir, log_basename)] if log_basename else [])
-        self._formatter_factory = formatter_factory or (lambda s: ProgressFormatter(s))
-        self._file_filters = list(file_filters) if file_filters else []
-        self._console = console
-        self._logger: Optional[logging.Logger] = None
-        self._run_dirs = None
-        self._primary_log_path: Optional[str] = None
+        self.log_basename = log_basename
+        self.log_subdir = log_subdir
+        self.logger_name_value = logger_name
+        self.log_specs = log_specs or ([(log_subdir, log_basename)] if log_basename else [])
+        self.formatter_factory = formatter_factory or create_progress_formatter
+        self.file_filters = list(file_filters) if file_filters else []
+        self.console_enabled = console
+        self.logger_instance: Optional[logging.Logger] = None
+        self.run_dirs_value = None
+        self.primary_log_path_value: Optional[str] = None
 
     def setup(self) -> logging.Logger:
         """创建/返回 logger，添加 RotatingFileHandler（主+进度）及可选控制台。"""
-        if self._logger is not None and self._logger.handlers:
-            return self._logger
+        if self.logger_instance is not None and self.logger_instance.handlers:
+            return self.logger_instance
 
         user_level = get_log_level_from_config(self.base_dir, section=None)
-        self._run_dirs = ensure_run_log_dirs(self.base_dir)
-        formatter = self._formatter_factory("%(asctime)s %(levelname)s %(message)s")
+        self.run_dirs_value = ensure_run_log_dirs(self.base_dir)
+        formatter = self.formatter_factory("%(asctime)s %(levelname)s %(message)s")
 
-        logger_name = self._logger_name
-        if logger_name is None and self._log_specs:
-            logger_name = (self._log_specs[0][1] or "").replace(".log", "").strip() or "generator"
-        self._logger = logging.getLogger(logger_name or "generator")
-        self._logger.setLevel(logging.DEBUG)
-        self._logger.propagate = False
+        logger_name = self.logger_name_value
+        if logger_name is None and self.log_specs:
+            logger_name = (self.log_specs[0][1] or "").replace(".log", "").strip() or "generator"
+        self.logger_instance = logging.getLogger(logger_name or "generator")
+        self.logger_instance.setLevel(logging.DEBUG)
+        self.logger_instance.propagate = False
 
         subdir_to_path = {
-            "gen": self._run_dirs.gen_dir,
-            "parse": self._run_dirs.parse_dir,
+            "gen": self.run_dirs_value.gen_dir,
+            "parse": self.run_dirs_value.parse_dir,
         }
-        for spec_index, raw_spec in enumerate(self._log_specs):
+        for spec_index, raw_spec in enumerate(self.log_specs):
             spec = self.normalize_log_spec(raw_spec)
             subdir, basename = spec.subdir, spec.basename
-            log_dir = subdir_to_path.get(subdir, self._run_dirs.gen_dir)
+            log_dir = subdir_to_path.get(subdir, self.run_dirs_value.gen_dir)
             os.makedirs(log_dir, exist_ok=True)
             log_path = os.path.join(log_dir, basename)
             if spec_index == 0:
-                self._primary_log_path = log_path
+                self.primary_log_path_value = log_path
 
             file_handler = logging.handlers.RotatingFileHandler(
                 log_path,
@@ -137,13 +141,13 @@ class GeneratorLogger:
                 encoding="utf-8",
             )
             file_handler.addFilter(ExcludeProgressFilter())
-            for file_filter in self._file_filters:
+            for file_filter in self.file_filters:
                 file_handler.addFilter(file_filter)
             for file_filter in spec.file_filters:
                 file_handler.addFilter(file_filter)
             file_handler.setLevel(user_level)
             file_handler.setFormatter(formatter)
-            self._logger.addHandler(file_handler)
+            self.logger_instance.addHandler(file_handler)
 
             progress_handler = logging.handlers.RotatingFileHandler(
                 log_path,
@@ -156,16 +160,16 @@ class GeneratorLogger:
                 progress_handler.addFilter(progress_filter)
             progress_handler.setLevel(PROGRESS_LEVEL)
             progress_handler.setFormatter(formatter)
-            self._logger.addHandler(progress_handler)
+            self.logger_instance.addHandler(progress_handler)
 
-        if self._console:
+        if self.console_enabled:
             console_handler = logging.StreamHandler()
             console_handler.addFilter(ExcludeProgressFilter())
             console_handler.setLevel(logging.INFO)
             console_handler.setFormatter(formatter)
-            self._logger.addHandler(console_handler)
+            self.logger_instance.addHandler(console_handler)
 
-        return self._logger
+        return self.logger_instance
 
     @staticmethod
     def normalize_log_spec(spec: LogSpec | LogSpecConfig) -> LogSpecConfig:
@@ -178,19 +182,19 @@ class GeneratorLogger:
     @property
     def logger(self) -> Optional[logging.Logger]:
         """setup() 后返回的 logger。"""
-        return self._logger
+        return self.logger_instance
 
     @property
     def primary_log_path(self) -> Optional[str]:
         """setup() 后第一个日志文件的完整路径（供 CAN 等脚本写 per-sheet 小日志时复用）。"""
-        return self._primary_log_path
+        return self.primary_log_path_value
 
     @property
     def run_dirs(self):
         """setup() 后本次运行的日志目录（RunLogDirs）。"""
-        return self._run_dirs
+        return self.run_dirs_value
 
     def clear(self) -> None:
         """关闭并清空 logger 的 handlers，便于下次运行重新 setup 并写入新目录。"""
-        clear_run_logger(self._logger)
-        self._logger = None
+        clear_run_logger(self.logger_instance)
+        self.logger_instance = None

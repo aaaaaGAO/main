@@ -73,22 +73,22 @@ class SubstringFilter(logging.Filter):
 class ExcludeSubstringsFilter(logging.Filter):
     """排除包含指定子串的日志行（同时过滤重复的时间戳解析行）。"""
 
-    _RE_TS_PARSE = re.compile(
+    TIMESTAMP_PARSE_PATTERN = re.compile(
         r"^\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2},\d{3}\s+解析 Excel 文件:"
     )
 
     def __init__(self, *substrings: str):
         super().__init__()
-        self.substrings = tuple(s for s in substrings if s)
+        self.substrings = tuple(substring for substring in substrings if substring)
 
     def filter(self, record: logging.LogRecord) -> bool:
         try:
             msg = record.getMessage()
         except Exception:
             msg = str(record.msg)
-        if any(s in msg for s in self.substrings):
+        if any(substring in msg for substring in self.substrings):
             return False
-        if self._RE_TS_PARSE.match(msg):
+        if self.TIMESTAMP_PARSE_PATTERN.match(msg):
             return False
         return True
 
@@ -117,11 +117,11 @@ class ProgressFormatter(logging.Formatter):
 
 # ── TeeToLogger ─────────────────────────────────────────────
 
-_RE_FORMATTED_LOG = re.compile(
+FORMATTED_LOG_PATTERN = re.compile(
     r"^\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2},\d{3}\s+"
     r"(DEBUG|INFO|WARNING|ERROR|CRITICAL)"
 )
-_RE_TS_PARSE_EXCEL = re.compile(
+TIMESTAMP_PARSE_EXCEL_PATTERN = re.compile(
     r"^\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2},\d{3}\s+解析 Excel 文件:"
 )
 
@@ -157,19 +157,19 @@ class TeeToLogger:
         self.logger = logger
         self.level = level
         self.original = original
-        self._buf = ""
-        self._started = start_trigger is None
-        self._start_trigger = start_trigger
-        self._error_prefixes = tuple(error_prefixes)
-        self._warning_prefixes = tuple(warning_prefixes)
-        self._skip_prefixes = tuple(skip_prefixes)
-        self._msg_cleaner = msg_cleaner
-        self._use_reentry_guard = use_reentry_guard
-        self._strip_whitespace = strip_whitespace
-        self._in_progress = False
+        self.buffer_text = ""
+        self.has_started_logging = start_trigger is None
+        self.start_trigger_text = start_trigger
+        self.error_prefixes = tuple(error_prefixes)
+        self.warning_prefixes = tuple(warning_prefixes)
+        self.skip_prefixes = tuple(skip_prefixes)
+        self.message_cleaner = msg_cleaner
+        self.use_reentry_guard = use_reentry_guard
+        self.strip_whitespace = strip_whitespace
+        self.is_logging_in_progress = False
 
     def write(self, s: str) -> int:
-        if self._use_reentry_guard and self._in_progress:
+        if self.use_reentry_guard and self.is_logging_in_progress:
             try:
                 if self.original:
                     self.original.write(s)
@@ -183,19 +183,19 @@ class TeeToLogger:
         except Exception:
             pass
 
-        self._buf += s
-        while "\n" in self._buf:
-            line, self._buf = self._buf.split("\n", 1)
-            if self._strip_whitespace:
+        self.buffer_text += s
+        while "\n" in self.buffer_text:
+            line, self.buffer_text = self.buffer_text.split("\n", 1)
+            if self.strip_whitespace:
                 msg = line.strip()
             else:
                 msg = line.rstrip("\r")
             if not msg:
                 continue
 
-            if self._start_trigger and not self._started:
-                if self._start_trigger in msg:
-                    self._started = True
+            if self.start_trigger_text and not self.has_started_logging:
+                if self.start_trigger_text in msg:
+                    self.has_started_logging = True
                 else:
                     continue
 
@@ -206,31 +206,31 @@ class TeeToLogger:
             if re.match(r"^\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2},\d{3}\s+", msg):
                 continue
 
-            if _RE_FORMATTED_LOG.match(msg):
+            if FORMATTED_LOG_PATTERN.match(msg):
                 continue
-            if _RE_TS_PARSE_EXCEL.match(msg):
-                continue
-
-            if any(msg.startswith(p) for p in self._skip_prefixes):
+            if TIMESTAMP_PARSE_EXCEL_PATTERN.match(msg):
                 continue
 
-            clean_msg = self._msg_cleaner(msg) if self._msg_cleaner else msg
+            if any(msg.startswith(prefix) for prefix in self.skip_prefixes):
+                continue
+
+            clean_msg = self.message_cleaner(msg) if self.message_cleaner else msg
             if not clean_msg:
                 continue
 
             try:
-                if self._use_reentry_guard:
-                    self._in_progress = True
+                if self.use_reentry_guard:
+                    self.is_logging_in_progress = True
 
-                if any(msg.startswith(p) for p in self._error_prefixes):
+                if any(msg.startswith(prefix) for prefix in self.error_prefixes):
                     self.logger.error(clean_msg)
-                elif any(msg.startswith(p) for p in self._warning_prefixes):
+                elif any(msg.startswith(prefix) for prefix in self.warning_prefixes):
                     self.logger.warning(clean_msg)
                 else:
                     self.logger.log(self.level, clean_msg)
             finally:
-                if self._use_reentry_guard:
-                    self._in_progress = False
+                if self.use_reentry_guard:
+                    self.is_logging_in_progress = False
 
         return len(s)
 

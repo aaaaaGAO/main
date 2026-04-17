@@ -314,9 +314,9 @@ def parse_step_line(
             raise StepSyntaxError(f"AutoIncreaseInVal 参数不足: {original_line_full}")
 
         try:
-            start_v = float(tokens[val_idx])
-            end_v = float(tokens[val_idx + 1])
-            step_v = float(tokens[val_idx + 2])
+            start_value = float(tokens[val_idx])
+            end_value = float(tokens[val_idx + 1])
+            step_value = float(tokens[val_idx + 2])
         except ValueError:
             raise StepSyntaxError(
                 f"AutoIncreaseInVal 数值参数错误: {tokens[val_idx:val_idx+3]!r}"
@@ -326,7 +326,7 @@ def parse_step_line(
         if not inner_cmd_tokens:
             raise StepSyntaxError(f"AutoIncreaseInVal 缺少内部命令: {original_line_full}")
 
-        generated_values = iter_inclusive_values(start_v, end_v, step_v)
+        generated_values = iter_inclusive_values(start_value, end_value, step_value)
         out_lines: List[str] = []
         for generated_value in generated_values:
             value_text = format_numeric_value(generated_value)
@@ -467,8 +467,8 @@ def parse_step_line(
     potential_func = match_tokens[0]
 
     matched = False
-    for i in range(len(match_tokens), 0, -1):
-        potential_keyword_parts = match_tokens[1:i]
+    for token_end_index in range(len(match_tokens), 0, -1):
+        potential_keyword_parts = match_tokens[1:token_end_index]
         if potential_keyword_parts:
             potential_keyword = " ".join(potential_keyword_parts)
             full_key = f"{potential_func}::{potential_keyword}".lower()
@@ -476,17 +476,17 @@ def parse_step_line(
             full_key = potential_func.lower()
         if full_key in keyword_specs:
             spec = keyword_specs[full_key]
-            args_start_idx = i
+            args_start_idx = token_end_index
             matched = True
             break
 
     if not matched:
-        for i in range(1, min(5, len(match_tokens) + 1)):
-            potential_keyword = " ".join(match_tokens[:i])
+        for token_end_index in range(1, min(5, len(match_tokens) + 1)):
+            potential_keyword = " ".join(match_tokens[:token_end_index])
             keyword_key = f"::{potential_keyword}".lower()
             if keyword_key in keyword_specs:
                 spec = keyword_specs[keyword_key]
-                args_start_idx = i
+                args_start_idx = token_end_index
                 matched = True
                 break
 
@@ -498,8 +498,8 @@ def parse_step_line(
             new_args_start_idx = 0
             new_matched = False
 
-            for i in range(len(new_match_tokens), 0, -1):
-                potential_keyword_parts = new_match_tokens[1:i]
+            for token_end_index in range(len(new_match_tokens), 0, -1):
+                potential_keyword_parts = new_match_tokens[1:token_end_index]
                 if potential_keyword_parts:
                     potential_keyword = " ".join(potential_keyword_parts)
                     full_key = f"{new_potential_func}::{potential_keyword}".lower()
@@ -507,17 +507,17 @@ def parse_step_line(
                     full_key = new_potential_func.lower()
                 if full_key in keyword_specs:
                     new_spec = keyword_specs[full_key]
-                    new_args_start_idx = i
+                    new_args_start_idx = token_end_index
                     new_matched = True
                     break
 
             if not new_matched:
-                for i in range(1, min(5, len(new_match_tokens) + 1)):
-                    potential_keyword = " ".join(new_match_tokens[:i])
+                for token_end_index in range(1, min(5, len(new_match_tokens) + 1)):
+                    potential_keyword = " ".join(new_match_tokens[:token_end_index])
                     keyword_key_fallback = f"::{potential_keyword}".lower()
                     if keyword_key_fallback in keyword_specs:
                         new_spec = keyword_specs[keyword_key_fallback]
-                        new_args_start_idx = i
+                        new_args_start_idx = token_end_index
                         new_matched = True
                         break
 

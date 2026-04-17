@@ -14,7 +14,7 @@ LR_REAR 业务路由（蓝图）
 
 from __future__ import annotations
 
-from flask import Blueprint, current_app, jsonify, request
+from flask import Blueprint, jsonify, request
 
 from services.config_service import ConfigService
 from services.task_orchestrator import TaskOrchestrator

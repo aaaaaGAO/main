@@ -52,7 +52,9 @@ class ColumnMapper:
     def scan(self, header_row: Iterable[object]) -> bool:
         """扫描一行表头，填充 mapping。参数: header_row — 表头行单元格迭代器。返回: 是否所有 required 列均匹配。"""
         self.mapping.clear()
-        normalized = [self.normalize_header(x) for x in header_row]
+        normalized = [
+            self.normalize_header(header_cell_value) for header_cell_value in header_row
+        ]
         for field, alias_group in self.aliases.items():
             for alias in alias_group:
                 target = self.normalize_header(alias)
@@ -103,11 +105,11 @@ def find_header_row_and_col_indices(
         alias_sets[key] = set(normalize_header_cell(a) for a in aliases if a)
         display_names[key] = aliases[0] if aliases else key
 
-    for r in range(1, min(ws.max_row, max_scan_rows) + 1):
+    for row_index in range(1, min(ws.max_row, max_scan_rows) + 1):
         found: Dict[str, int] = {}
-        for c in range(1, ws.max_column + 1):
+        for column_index in range(1, ws.max_column + 1):
             try:
-                cell_val = ws.cell(row=r, column=c).value
+                cell_val = ws.cell(row=row_index, column=column_index).value
             except Exception:
                 continue
             key_norm = normalize_header_cell(cell_val)
@@ -115,11 +117,11 @@ def find_header_row_and_col_indices(
                 continue
             for logical_key, norm_set in alias_sets.items():
                 if logical_key not in found and key_norm in norm_set:
-                    found[logical_key] = c
+                    found[logical_key] = column_index
                     break
         if set(found.keys()) >= set(required):
-            return r, found, []
-    return -1, {}, [display_names[k] for k in required]
+            return row_index, found, []
+    return -1, {}, [display_names[required_key] for required_key in required]
 
 
 class TestCaseHeaderResolver:

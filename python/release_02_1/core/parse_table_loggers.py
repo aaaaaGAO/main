@@ -87,7 +87,10 @@ def get_caseid_clean_dup_logger(base_dir: str) -> logging.Logger:
     """
     logger = get_parse_file_logger(base_dir, filename="caseid_clean_dup.log", logger_name="parse.caseid_clean_dup")
     # 为 caseid 专用 logger 添加同进程去重
-    for h in logger.handlers:
-        if not any(isinstance(f, DedupOnceFilter) for f in getattr(h, "filters", [])):
-            h.addFilter(DedupOnceFilter())
+    for handler in logger.handlers:
+        if not any(
+            isinstance(existing_filter, DedupOnceFilter)
+            for existing_filter in getattr(handler, "filters", [])
+        ):
+            handler.addFilter(DedupOnceFilter())
     return logger

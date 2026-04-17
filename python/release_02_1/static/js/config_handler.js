@@ -86,6 +86,7 @@
             didconfig_excel: selection.didconfig_excel || '',
             didinfo_excel: selection.didinfo_excel || '',
             cin_excel: selection.cin_excel || '',
+            srv_excel: selection.srv_excel || '',
             out_root: document.getElementById('out_root') ? document.getElementById('out_root').value || '' : '',
             levels: getChecks('level_group'),
             platforms: getChecks('platform_group'),
@@ -123,6 +124,7 @@
             d_didconfig_excel: selection.d_didconfig_excel || '',
             d_didinfo_excel: selection.d_didinfo_excel || '',
             d_cin_excel: selection.d_cin_excel || '',
+            d_srv_excel: selection.d_srv_excel || '',
             d_out_root: document.getElementById('d_out_root') ? document.getElementById('d_out_root').value || '' : '',
             d_levels: getChecks('d_level_group'),
             d_platforms: getChecks('d_platform_group'),
@@ -302,6 +304,7 @@
             setPath('didconfig_excel', cfg.didconfig_excel, 'didconfig_disp');
             setPath('didinfo_excel', cfg.didinfo_excel, 'didinfo_disp');
             setPath('cin_excel', cfg.cin_excel, 'cin_disp');
+            setPath('srv_excel', cfg.srv_excel, 'srv_disp');
             restoreChecks('level_group', cfg.levels);
             restoreChecks('platform_group', cfg.platforms);
             restoreChecks('model_group', cfg.models);
@@ -408,6 +411,7 @@
             setPath('d_didconfig_excel', cfg.d_didconfig_excel, 'd_didconfig_disp');
             setPath('d_didinfo_excel', cfg.d_didinfo_excel, 'd_didinfo_disp');
             setPath('d_cin_excel', cfg.d_cin_excel, 'd_cin_disp');
+            setPath('d_srv_excel', cfg.d_srv_excel, 'd_srv_disp');
             restoreChecks('d_level_group', cfg.d_levels);
             restoreChecks('d_platform_group', cfg.d_platforms);
             restoreChecks('d_model_group', cfg.d_models);
@@ -453,6 +457,10 @@
         if (data.cin_excel) {
             selection.cin_excel = data.cin_excel;
             updateDisplay('cin_disp', data.cin_excel);
+        }
+        if (data.srv_excel) {
+            selection.srv_excel = data.srv_excel;
+            updateDisplay('srv_disp', data.srv_excel);
         }
         if (data.out_root) {
             var outRootEl = document.getElementById('out_root');
@@ -600,6 +608,11 @@
         if (dCin) {
             selection.d_cin_excel = dCin;
             updateDisplay('d_cin_disp', dCin);
+        }
+        var dSrv = data.d_srv_excel || data.srv_excel;
+        if (dSrv) {
+            selection.d_srv_excel = dSrv;
+            updateDisplay('d_srv_disp', dSrv);
         }
         restoreChecks('d_level_group', data.d_levels || data.levels);
         restoreChecks('d_platform_group', data.d_platforms || data.platforms);

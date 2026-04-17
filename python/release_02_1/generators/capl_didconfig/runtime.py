@@ -6,13 +6,16 @@ DIDConfig 运行期委托：从 runtime_io 与公共模块取实现，供 DIDCon
 
 from __future__ import annotations
 
-from core.excel_header import find_header_row_and_col_indices
-from utils.excel_io import merged_cell_value, norm_str
-from infra.filesystem import resolve_target_subdir
+from . import runtime_io as didconfig_runtime_io
 
-from .runtime_io import (
-    get_progress_level,
-    init_logging,
-    load_runtime,
-    resolve_base_dir,
-)
+resolve_base_dir = didconfig_runtime_io.resolve_base_dir
+load_runtime = didconfig_runtime_io.load_runtime
+init_logging = didconfig_runtime_io.init_logging
+get_progress_level = didconfig_runtime_io.get_progress_level
+
+__all__ = [
+    "resolve_base_dir",
+    "load_runtime",
+    "init_logging",
+    "get_progress_level",
+]

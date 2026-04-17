@@ -20,11 +20,11 @@ IO Mapping 解析与替换（供 CAN/CIN 生成器复用）
 代码阅读顺序（本文件已按此顺序组织，从上往下读即可）：
   - ① 常量与异常：PROGRESS_LEVEL、正则/集合常量、IOMappingParseError。
   - ② 读配置相关：get_base_dir、get_log_level_from_config、split_input_lines（来自 utils）。
-  - ③ 日志相关：_IOProgressFormatter、_setup_logging、_log。
-  - ④ 表头与列定位：_norm_header、_find_header_row_and_indices。
+  - ③ 日志相关：IOProgressFormatter、setup_logging、emit_log_message。
+  - ④ 表头与列定位：normalize_header_text、find_header_row_and_indices。
   - ⑤ 字符串/枚举工具：find_colon、is_numeric_value、normalize_name_key、normalize_enum_key、has_expression_chars。
   - ⑥ Values 解析：parse_values_cell。
-  - ⑦ 上下文类：IOMappingContext（_maybe_invert_ls_enum、_is_j_di_ls、_process_inverted_token、transform_args）。
+  - ⑦ 上下文类：IOMappingContext（maybe_invert_ls_enum、is_j_di_ls、process_inverted_token、transform_args）。
   - ⑧ 主加载入口：load_io_mapping_from_config。
 
 配置建议（主配置文件 `Configuration.ini`）：
@@ -45,7 +45,7 @@ import unicodedata
 from dataclasses import dataclass
 from typing import Dict, List, Optional
 
-from openpyxl import load_workbook
+from infra.excel.workbook import ExcelService
 
 from core.caseid_log_dedup import DedupOnceFilter
 from core.log_run_context import ensure_run_log_dirs
@@ -56,9 +56,9 @@ from services.config_constants import (
 )
 from utils.excel_io import split_input_lines
 from utils.logger import (
-    ExcludeProgressFilter as _ExcludeProgressFilter_Shared,
-    PROGRESS_LEVEL as _PROGRESS_LEVEL_SHARED,
-    ProgressOnlyFilter as _ProgressOnlyFilter_Shared,
+    ExcludeProgressFilter as LoggerExcludeProgressFilter,
+    PROGRESS_LEVEL as LoggerProgressLevel,
+    ProgressOnlyFilter as LoggerProgressOnlyFilter,
     get_log_level_from_config,
 )
 from infra.filesystem import get_base_dir
@@ -66,10 +66,10 @@ from infra.filesystem import get_base_dir
 # ==================== ① 常量与异常 ====================
 
 # 正常进度日志等级：不受 log_level_min 限制，始终写入（日志已启用、处理 Excel/sheet 等）
-PROGRESS_LEVEL = _PROGRESS_LEVEL_SHARED
+PROGRESS_LEVEL = LoggerProgressLevel
 
-_ProgressOnlyFilter = _ProgressOnlyFilter_Shared
-_ExcludeProgressFilter = _ExcludeProgressFilter_Shared
+_ProgressOnlyFilter = LoggerProgressOnlyFilter
+_ExcludeProgressFilter = LoggerExcludeProgressFilter
 
 # 十进制数值、十六进制(0x/0X)、表达式符号、Values 冒号
 _RE_NUMERIC = re.compile(r"^\s*[-+]?\d+(?:\.\d+)?\s*$")
@@ -78,8 +78,8 @@ _EXPR_CHARS = set("><=()")
 _COLON_CHARS = (":", "\uFF1A")  # 半角 : 、全角 ：
 
 # J_DI*LS 多值枚举告警去重（同一 Name 只打一次）
-_LS_INVERT_WARNED: set[str] = set()
-_LOGGER: Optional[logging.Logger] = None
+LS_INVERT_WARNED_NAMES: set[str] = set()
+ACTIVE_LOGGER: Optional[logging.Logger] = None
 
 
 class IOMappingParseError(Exception):
@@ -96,26 +96,30 @@ class IOMappingParseError(Exception):
 # ==================== ③ 日志相关 ====================
 
 
-class _IOProgressFormatter(logging.Formatter):
+class IOProgressFormatter(logging.Formatter):
     """进度类消息只输出时间+消息，不显示等级名。"""
 
     def format(self, record: logging.LogRecord) -> str:
         if record.levelno == PROGRESS_LEVEL:
             old_name = record.levelname
             record.levelname = " "
-            s = super().format(record)
+            formatted_text = super().format(record)
             record.levelname = old_name
-            return s.replace("  ", " ", 1) if "  " in s else s
+            return (
+                formatted_text.replace("  ", " ", 1)
+                if "  " in formatted_text
+                else formatted_text
+            )
         return super().format(record)
 
 
-def _setup_logging(base_dir: Optional[str], section: Optional[str] = None) -> logging.Logger:
+def setup_logging(base_dir: Optional[str], section: Optional[str] = None) -> logging.Logger:
     """
     初始化 IO_Mapping.log（写入 <base_dir>/log/，按大小轮转）。
     形参：base_dir - 传入工程根目录或 None（None 时用 get_base_dir()）；section - 从 Configuration 的哪一节读 log_level_min（如 LR_REAR/DTC），None 时用 get_run_domain()。
     返回：logging.Logger。支持 log_level_min；进度类消息始终写入。
     """
-    global _LOGGER
+    global ACTIVE_LOGGER
     base_dir = base_dir or get_base_dir()
     user_level = get_log_level_from_config(base_dir, section=section)
 
@@ -124,38 +128,41 @@ def _setup_logging(base_dir: Optional[str], section: Optional[str] = None) -> lo
     os.makedirs(log_dir, exist_ok=True)
     log_path = os.path.join(log_dir, "IO_Mapping.log")
 
-    if _LOGGER is not None:
+    if ACTIVE_LOGGER is not None:
         desired = os.path.abspath(log_path)
         has_correct = any(
             isinstance(h, logging.FileHandler)
             and os.path.abspath(getattr(h, "baseFilename", "")) == desired
-            for h in _LOGGER.handlers
+            for h in ACTIVE_LOGGER.handlers
         )
         if has_correct:
             # 复用已有 logger 时仍按当前配置刷新日志级别（界面修改 error 后再次运行可生效）
             user_level_new = get_log_level_from_config(base_dir, section=section)
-            for h in _LOGGER.handlers:
+            for h in ACTIVE_LOGGER.handlers:
                 if (
                     isinstance(h, logging.FileHandler)
                     and os.path.abspath(getattr(h, "baseFilename", "")) == desired
-                    and any(isinstance(f, _ExcludeProgressFilter) for f in (h.filters if hasattr(h, "filters") else []))
+                    and any(
+                        isinstance(filter_item, _ExcludeProgressFilter)
+                        for filter_item in (h.filters if hasattr(h, "filters") else [])
+                    )
                 ):
                     h.setLevel(user_level_new)
                     break
-            return _LOGGER
-        for h in _LOGGER.handlers[:]:
+            return ACTIVE_LOGGER
+        for h in ACTIVE_LOGGER.handlers[:]:
             try:
                 h.close()
             except Exception:
                 pass
-            _LOGGER.removeHandler(h)
+            ACTIVE_LOGGER.removeHandler(h)
 
     logger = logging.getLogger("io_mapping")
     logger.setLevel(logging.DEBUG)
     logger.propagate = False
 
     if not logger.handlers:
-        fmt = _IOProgressFormatter("%(asctime)s %(levelname)s %(message)s")
+        fmt = IOProgressFormatter("%(asctime)s %(levelname)s %(message)s")
         dedup_filter = DedupOnceFilter()
         fh = logging.handlers.RotatingFileHandler(
             log_path,
@@ -185,19 +192,19 @@ def _setup_logging(base_dir: Optional[str], section: Optional[str] = None) -> lo
         ch.addFilter(dedup_filter)
         logger.addHandler(ch)
 
-    _LOGGER = logger
-    _LOGGER.log(PROGRESS_LEVEL, "[io_mapping] 日志已启用：%s", log_path)
+    ACTIVE_LOGGER = logger
+    ACTIVE_LOGGER.log(PROGRESS_LEVEL, "[io_mapping] 日志已启用：%s", log_path)
     return logger
 
 
-def _log(level: int, msg: str) -> None:
+def emit_log_message(level: int, msg: str) -> None:
     """
     写日志或 fallback 到 print。
     形参：level - 传入 logging 等级（如 logging.ERROR）；msg - 传入日志消息字符串。
     返回：无。
     """
-    if _LOGGER is not None:
-        _LOGGER.log(level, msg)
+    if ACTIVE_LOGGER is not None:
+        ACTIVE_LOGGER.log(level, msg)
     else:
         print(msg)
 
@@ -205,21 +212,21 @@ def _log(level: int, msg: str) -> None:
 # ==================== ④ 表头与列定位 ====================
 
 
-def _norm_header(v) -> str:
+def normalize_header_text(header_value) -> str:
     """
     表头规范化：去首尾空白、移除空格、转小写，用于匹配 Name/Path/Values。
     形参：v - 传入表头单元格原始值（可为 None）。
     返回：str。空表头为 ""。
     """
-    if v is None:
+    if header_value is None:
         return ""
-    return str(v).strip().replace(" ", "").casefold()
+    return str(header_value).strip().replace(" ", "").casefold()
 
 
-def _find_header_row_and_indices(ws, *, max_scan_rows: int = 30) -> tuple[int, dict[str, int], list[str]]:
+def find_header_row_and_indices(worksheet, *, max_scan_rows: int = 30) -> tuple[int, dict[str, int], list[str]]:
     """
     在工作表前若干行中定位同时包含 Name/Path/Values 的表头行。
-    形参：ws - 传入 openpyxl 的 Worksheet 对象；max_scan_rows - 传入最大扫描行数，默认 30。
+    形参：worksheet - 传入 openpyxl 的 Worksheet 对象；max_scan_rows - 传入最大扫描行数，默认 30。
     返回：(header_row, col_map, missing)。
       - header_row: 表头行号（1-based），找不到为 -1。
       - col_map: {"name": idx, "path": idx, "values": idx}，idx 为 0-based 列索引。
@@ -227,19 +234,28 @@ def _find_header_row_and_indices(ws, *, max_scan_rows: int = 30) -> tuple[int, d
     """
     required = {"name": "Name", "path": "Path", "values": "Values"}
     seen_headers: set[str] = set()
-    max_r = min(getattr(ws, "max_row", 0) or 0, max_scan_rows) or max_scan_rows
-    for r, row in enumerate(ws.iter_rows(min_row=1, max_row=max_r, values_only=True), start=1):
-        found: dict[str, int] = {}
-        for c0, cell_v in enumerate(row):
-            key = _norm_header(cell_v)
-            if not key or key not in required:
+    max_scan_row_index = (
+        min(getattr(worksheet, "max_row", 0) or 0, max_scan_rows) or max_scan_rows
+    )
+    for row_index, row_values in enumerate(
+        worksheet.iter_rows(min_row=1, max_row=max_scan_row_index, values_only=True),
+        start=1,
+    ):
+        found_columns: dict[str, int] = {}
+        for column_index, cell_value in enumerate(row_values):
+            normalized_key = normalize_header_text(cell_value)
+            if not normalized_key or normalized_key not in required:
                 continue
-            seen_headers.add(key)
-            if key not in found:
-                found[key] = c0
-        if all(k in found for k in required.keys()):
-            return r, {"name": found["name"], "path": found["path"], "values": found["values"]}, []
-    missing = [required[k] for k in required.keys() if k not in seen_headers]
+            seen_headers.add(normalized_key)
+            if normalized_key not in found_columns:
+                found_columns[normalized_key] = column_index
+        if all(required_key in found_columns for required_key in required.keys()):
+            return row_index, {
+                "name": found_columns["name"],
+                "path": found_columns["path"],
+                "values": found_columns["values"],
+            }, []
+    missing = [required[required_key] for required_key in required.keys() if required_key not in seen_headers]
     return -1, {}, missing
 
 
@@ -257,50 +273,50 @@ def find_colon(text_line: str, start: int) -> int:
     return min(candidates) if candidates else -1
 
 
-def is_numeric_value(s: str) -> bool:
+def is_numeric_value(value_text: str) -> bool:
     """
     判断字符串是否为数值（十进制或十六进制如 0x1）。
     形参：s - 传入待判断字符串（可为 None）。
     返回：bool。
     """
-    if s is None:
+    if value_text is None:
         return False
-    s_str = str(s).strip()
-    return bool(_RE_NUMERIC.match(s_str) or _RE_HEX.match(s_str))
+    normalized_text = str(value_text).strip()
+    return bool(_RE_NUMERIC.match(normalized_text) or _RE_HEX.match(normalized_text))
 
 
-def normalize_name_key(s: str) -> str:
+def normalize_name_key(name_text: str) -> str:
     """
     Name/Path 等键的规范化：去首尾空白、转小写，用于字典查找。
     形参：s - 传入原始键字符串。
     返回：str。
     """
-    return str(s).strip().casefold()
+    return str(name_text).strip().casefold()
 
 
-def normalize_enum_key(s: str) -> str:
+def normalize_enum_key(enum_text: str) -> str:
     """
     Values/枚举专用 key 规范化：去首尾空白、折叠内部空白、移除不可见字符、转小写。
     形参：s - 传入枚举显示值（如 "AUTO DOWN"）。
     返回：str。用于避免复制粘贴导致的匹配失败。
     """
-    if s is None:
+    if enum_text is None:
         return ""
-    normalized = str(s).strip()
+    normalized = str(enum_text).strip()
     normalized = "".join(ch for ch in normalized if unicodedata.category(ch) != "Cf")
     normalized = re.sub(r"\s+", " ", normalized)
     return normalized.casefold()
 
 
-def has_expression_chars(s: str) -> bool:
+def has_expression_chars(value_text: str) -> bool:
     """
     判断是否包含表达式符号 ><=()，此类字符串不做枚举翻译、直接透传。
     形参：s - 传入待判断字符串（可为 None）。
     返回：bool。
     """
-    if s is None:
+    if value_text is None:
         return False
-    return any((ch in _EXPR_CHARS) for ch in str(s))
+    return any((ch in _EXPR_CHARS) for ch in str(value_text))
 
 
 # ==================== ⑥ Values 解析 ====================
@@ -325,28 +341,32 @@ def parse_values_cell(values_cell: str) -> Dict[str, str]:
         if not line:
             continue
 
-        num_pat = re.compile(r"[-+]?\d+(?:\.\d+)?\s*[:\uFF1A]")
-        ms = list(num_pat.finditer(line))
-        if ms:
-            for idx, m in enumerate(ms):
-                colon_pos = m.end() - 1
-                if idx == 0:
+        numeric_pair_pattern = re.compile(r"[-+]?\d+(?:\.\d+)?\s*[:\uFF1A]")
+        numeric_pair_matches = list(numeric_pair_pattern.finditer(line))
+        if numeric_pair_matches:
+            for match_index, numeric_pair_match in enumerate(numeric_pair_matches):
+                colon_pos = numeric_pair_match.end() - 1
+                if match_index == 0:
                     pair_start = 0
                 else:
-                    pos = m.start() - 1
-                    while pos >= 0 and not line[pos].isalpha():
-                        pos -= 1
-                    if pos < 0:
+                    probe_index = numeric_pair_match.start() - 1
+                    while probe_index >= 0 and not line[probe_index].isalpha():
+                        probe_index -= 1
+                    if probe_index < 0:
                         pair_start = 0
                     else:
-                        pos += 1
-                        while pos < len(line) and line[pos].isspace():
-                            pos += 1
-                        pair_start = pos
+                        probe_index += 1
+                        while probe_index < len(line) and line[probe_index].isspace():
+                            probe_index += 1
+                        pair_start = probe_index
                 left = line[pair_start:colon_pos].strip()
-                start = m.end()
-                end = ms[idx + 1].start() if idx + 1 < len(ms) else len(line)
-                right = line[start:end].strip()
+                value_start = numeric_pair_match.end()
+                value_end = (
+                    numeric_pair_matches[match_index + 1].start()
+                    if match_index + 1 < len(numeric_pair_matches)
+                    else len(line)
+                )
+                right = line[value_start:value_end].strip()
                 if not left or not right:
                     continue
                 mapping[normalize_enum_key(right)] = left
@@ -396,7 +416,7 @@ class IOMappingContext:
     name_to_values: Dict[str, Dict[str, str]]
 
     @staticmethod
-    def _maybe_invert_ls_enum(name: str, value_token: str, values_map: Dict[str, str]) -> str:
+    def maybe_invert_ls_enum(name: str, value_token: str, values_map: Dict[str, str]) -> str:
         """
         J_DI*LS 二值枚举取反：若 Name 为 J_DI*LS 且 Values 仅 2 个枚举，则返回「另一个」枚举 key。
         形参：name - 传入当前 Name（如 J_DI_RDoorInnerSw_LS）；value_token - 传入用户写的枚举值；values_map - 传入该 Name 的 Values 映射（norm_enum_key -> 翻译后）。
@@ -414,11 +434,11 @@ class IOMappingContext:
         current_key = normalize_enum_key(token_text)
         if len(keys) != 2:
             if len(keys) > 2 and current_key in values_map:
-                if upper_name not in _LS_INVERT_WARNED:
-                    _LS_INVERT_WARNED.add(upper_name)
+                if upper_name not in LS_INVERT_WARNED_NAMES:
+                    LS_INVERT_WARNED_NAMES.add(upper_name)
                     enum_preview = ", ".join(sorted(keys)[:20])
                     more = "" if len(keys) <= 20 else f" ...(+{len(keys)-20})"
-                    _log(
+                    emit_log_message(
                         logging.ERROR,
                         "[io_mapping][ERROR] J_DI*LS 枚举反转仅支持 2 值，但该 Name 的 Values 有 "
                         f"{len(keys)} 值：name={name!r} enums=[{enum_preview}{more}] 当前输入={value_token!r}（本次将不反转）",
@@ -429,7 +449,7 @@ class IOMappingContext:
         return keys[0] if keys[1] == current_key else keys[1]
 
     @staticmethod
-    def _is_j_di_ls(name: str) -> bool:
+    def is_j_di_ls(name: str) -> bool:
         """
         判断 Name 是否以 J_DI 开头且以 LS 结尾。
         形参：name - 传入 Name 字符串。
@@ -440,14 +460,14 @@ class IOMappingContext:
         upper_name = str(name).strip().upper()
         return upper_name.startswith("J_DI") and upper_name.endswith("LS")
 
-    def _process_inverted_token(
+    def process_inverted_token(
         self,
         raw_name: str,
         value_token: str,
         values_map: Dict[str, str],
     ) -> str:
         """
-        统一处理 J_DI*LS 的取反：数字 0/1 互换；枚举经 _maybe_invert_ls_enum 后按 values_map 翻译；表达式透传。
+        统一处理 J_DI*LS 的取反：数字 0/1 互换；枚举经 maybe_invert_ls_enum 后按 values_map 翻译；表达式透传。
         形参：raw_name - 传入原始 Name；value_token - 传入当前 token；values_map - 传入该 Name 的 Values 映射。
         返回：str。翻译后或取反后的值。失败抛 IOMappingParseError。
         """
@@ -470,7 +490,7 @@ class IOMappingContext:
             return token
         if not values_map:
             raise IOMappingParseError(f"Values 为空，无法翻译: {token}")
-        phrase2 = self._maybe_invert_ls_enum(raw_name, token, values_map)
+        phrase2 = self.maybe_invert_ls_enum(raw_name, token, values_map)
         enum_key = normalize_enum_key(phrase2)
         if enum_key in values_map:
             return values_map[enum_key]
@@ -497,23 +517,27 @@ class IOMappingContext:
         if not path:
             raise IOMappingParseError(f"Path 为空: {raw_name}")
         values_map = self.name_to_values.get(name_key, {})
-        out: List[str] = [path]
+        transformed_args: List[str] = [path]
         if len(args) == 1:
-            return out
-        rest_tokens: List[str] = [str(raw).strip() for raw in args[1:] if str(raw).strip()]
+            return transformed_args
+        rest_tokens: List[str] = [
+            str(raw_token).strip()
+            for raw_token in args[1:]
+            if str(raw_token).strip()
+        ]
         if not rest_tokens:
-            return out
+            return transformed_args
         if not values_map:
-            first = rest_tokens[0]
-            if is_numeric_value(first) or has_expression_chars(first):
-                out.extend(rest_tokens)
-                return out
+            first_token = rest_tokens[0]
+            if is_numeric_value(first_token) or has_expression_chars(first_token):
+                transformed_args.extend(rest_tokens)
+                return transformed_args
             raise IOMappingParseError(f"Values 为空: Name={raw_name}, Value={' '.join(rest_tokens)}")
 
-        if self._is_j_di_ls(raw_name):
+        if self.is_j_di_ls(raw_name):
             rest_str = " ".join(rest_tokens).strip()
             if not rest_str:
-                return out
+                return transformed_args
             group_strs = re.split(r"[;；]", rest_str)
             new_groups: List[str] = []
             for group_text in group_strs:
@@ -522,71 +546,71 @@ class IOMappingContext:
                     continue
                 seg_tokens = group_text.split()
                 if len(seg_tokens) == 1:
-                    new_groups.append(self._process_inverted_token(raw_name, seg_tokens[0], values_map))
+                    new_groups.append(self.process_inverted_token(raw_name, seg_tokens[0], values_map))
                 else:
-                    inverted_value = self._process_inverted_token(raw_name, seg_tokens[1], values_map)
+                    inverted_value = self.process_inverted_token(raw_name, seg_tokens[1], values_map)
                     new_groups.append(" ".join([seg_tokens[0], inverted_value] + seg_tokens[2:]))
             new_rest_str = ";".join(new_groups)
-            out.extend([tok for tok in new_rest_str.split() if tok])
-            return out
+            transformed_args.extend([token for token in new_rest_str.split() if token])
+            return transformed_args
 
-        first = rest_tokens[0]
-        if has_expression_chars(first):
-            out.extend(rest_tokens)
-            return out
-        if is_numeric_value(first):
-            if self._is_j_di_ls(raw_name):
+        first_token = rest_tokens[0]
+        if has_expression_chars(first_token):
+            transformed_args.extend(rest_tokens)
+            return transformed_args
+        if is_numeric_value(first_token):
+            if self.is_j_di_ls(raw_name):
                 try:
                     num_val = (
-                        int(str(first).strip(), 16)
-                        if _RE_HEX.match(str(first).strip())
-                        else int(float(first))
+                        int(str(first_token).strip(), 16)
+                        if _RE_HEX.match(str(first_token).strip())
+                        else int(float(first_token))
                     )
                     if num_val == 0:
-                        out.append("1")
-                        out.extend(rest_tokens[1:])
-                        return out
+                        transformed_args.append("1")
+                        transformed_args.extend(rest_tokens[1:])
+                        return transformed_args
                     if num_val == 1:
-                        out.append("0")
-                        out.extend(rest_tokens[1:])
-                        return out
+                        transformed_args.append("0")
+                        transformed_args.extend(rest_tokens[1:])
+                        return transformed_args
                     raise IOMappingParseError(
                         f"J_DI*LS 名称 {raw_name!r} 的值必须是 0、1 或 Values 中的枚举值，但收到数字 {num_val!r}。"
                     )
                 except (ValueError, OverflowError):
                     pass
-            out.extend(rest_tokens)
-            return out
+            transformed_args.extend(rest_tokens)
+            return transformed_args
 
-        max_n = 0
-        for token in rest_tokens:
-            if not token:
+        max_phrase_token_count = 0
+        for candidate_token in rest_tokens:
+            if not candidate_token:
                 continue
-            if is_numeric_value(token) or has_expression_chars(token):
+            if is_numeric_value(candidate_token) or has_expression_chars(candidate_token):
                 break
-            max_n += 1
-        if max_n <= 0:
-            out.extend(rest_tokens)
-            return out
+            max_phrase_token_count += 1
+        if max_phrase_token_count <= 0:
+            transformed_args.extend(rest_tokens)
+            return transformed_args
         matched = False
-        for token_count in range(max_n, 0, -1):
+        for token_count in range(max_phrase_token_count, 0, -1):
             phrase = " ".join(rest_tokens[:token_count]).strip()
             if not phrase:
                 continue
-            phrase2 = self._maybe_invert_ls_enum(raw_name, phrase, values_map)
+            phrase2 = self.maybe_invert_ls_enum(raw_name, phrase, values_map)
             enum_key = normalize_enum_key(phrase2)
             if enum_key in values_map:
-                out.append(values_map[enum_key])
-                out.extend(rest_tokens[token_count:])
+                transformed_args.append(values_map[enum_key])
+                transformed_args.extend(rest_tokens[token_count:])
                 matched = True
                 break
         if not matched:
-            if self._is_j_di_ls(raw_name):
+            if self.is_j_di_ls(raw_name):
                 raise IOMappingParseError(
-                    f"J_DI*LS 名称 {raw_name!r} 的值必须是 0、1 或 Values 中的枚举值，但收到 {first!r}。有效枚举: {list(values_map.keys())}"
+                    f"J_DI*LS 名称 {raw_name!r} 的值必须是 0、1 或 Values 中的枚举值，但收到 {first_token!r}。有效枚举: {list(values_map.keys())}"
                 )
-            raise IOMappingParseError(f"Values 未匹配: {first}")
-        return out
+            raise IOMappingParseError(f"Values 未匹配: {first_token}")
+        return transformed_args
 
 
 # ==================== ⑧ 主加载入口 ====================
@@ -639,7 +663,7 @@ def load_io_mapping_from_config(
             logger_base = config_dir
     else:
         logger_base = None
-    logger = _setup_logging(logger_base, section=domain)
+    logger = setup_logging(logger_base, section=domain)
     config_dir = (
         os.path.dirname(os.path.abspath(config_path))
         if config_path
@@ -677,12 +701,16 @@ def load_io_mapping_from_config(
 
         excel_path_to_open = excel_path_for_check
         try:
-            with open(excel_path_to_open, "rb") as f:
-                if f.read(4) != b"PK\x03\x04":
+            with open(excel_path_to_open, "rb") as excel_binary_file:
+                if excel_binary_file.read(4) != b"PK\x03\x04":
                     raise IOMappingParseError(
                         f"文件不是有效的 Excel（缺少 ZIP 文件头）: {excel_path_to_open}"
                     )
-            wb = load_workbook(excel_path_to_open, data_only=True, read_only=False)
+            workbook = ExcelService.open_workbook(
+                excel_path_to_open,
+                data_only=True,
+                read_only=False,
+            )
         except FileNotFoundError:
             raise IOMappingParseError(f"找不到文件: {excel_path_to_open}")
         except PermissionError:
@@ -693,27 +721,38 @@ def load_io_mapping_from_config(
                 "decompressing" in error_message
                 or "incorrect header" in error_message
                 or "badzipfile" in error_message
-                or "not a zip file" in err
+                or "not a zip file" in error_message
             ):
                 raise IOMappingParseError(
-                    f"IO Mapping Excel 格式错误或已损坏: {excel_path_to_open}\n{e}"
+                    "IO Mapping Excel 格式错误或文件已损坏。\n"
+                    f"文件: {excel_path_to_open}\n"
+                    "说明: .xlsx 本质是压缩包结构，出现该错误通常表示文件后缀与真实格式不一致，或文件内容已损坏。\n"
+                    "建议: 请用 Excel 打开后另存为新的 .xlsx，再重新导入。"
                 )
-            raise IOMappingParseError(f"无法读取 IO Mapping Excel: {excel_path_to_open}\n{e}")
+            raise IOMappingParseError(
+                "无法读取 IO Mapping Excel。\n"
+                f"文件: {excel_path_to_open}\n"
+                f"原因: {error}"
+            )
 
         sheet_names = (
-            [s for s in wb.sheetnames]
+            [sheet_name for sheet_name in workbook.sheetnames]
             if (sheets_raw.strip() == "*" or not sheets_raw.strip())
-            else [s.strip() for s in sheets_raw.split(",") if s.strip()]
+            else [
+                sheet_name_text.strip()
+                for sheet_name_text in sheets_raw.split(",")
+                if sheet_name_text.strip()
+            ]
         )
         for sheet_name in sheet_names:
-            if sheet_name not in wb.sheetnames:
+            if sheet_name not in workbook.sheetnames:
                 raise FileNotFoundError(
                     f"IO_mapping sheet 不存在: {excel_path_to_open} | {sheet_name}"
                 )
-            ws = wb[sheet_name]
+            worksheet = workbook[sheet_name]
             excel_name_for_log = os.path.basename(excel_path_to_open)
-            header_row, col_map, missing = _find_header_row_and_indices(
-                ws, max_scan_rows=30
+            header_row, col_map, missing = find_header_row_and_indices(
+                worksheet, max_scan_rows=30
             )
             if header_row < 0 or missing:
                 logger.error(
@@ -729,95 +768,118 @@ def load_io_mapping_from_config(
                 excel_name_for_log,
                 sheet_name,
             )
-            idx_name, idx_path, idx_values = (
+            name_column_index, path_column_index, values_column_index = (
                 col_map["name"],
                 col_map["path"],
                 col_map["values"],
             )
             local_name_to_path: Dict[str, str] = {}
             local_name_to_values: Dict[str, Dict[str, str]] = {}
-            multi_path_warn: Dict[str, dict] = {}
-            for excel_row, row in enumerate(
-                ws.iter_rows(min_row=header_row + 1, values_only=True),
+            multi_path_warnings: Dict[str, dict] = {}
+            for excel_row, row_values in enumerate(
+                worksheet.iter_rows(min_row=header_row + 1, values_only=True),
                 start=header_row + 1,
             ):
-                name = row[idx_name] if idx_name < len(row) else None
-                path = row[idx_path] if idx_path < len(row) else None
-                values_cell = row[idx_values] if idx_values < len(row) else None
-                name_s = str(name).strip() if name is not None else ""
-                path_s = str(path).strip() if path is not None else ""
-                values_s = str(values_cell).strip() if values_cell is not None else ""
-                if not name_s and not path_s and not values_s:
+                name_cell_value = (
+                    row_values[name_column_index]
+                    if name_column_index < len(row_values)
+                    else None
+                )
+                path_cell_value = (
+                    row_values[path_column_index]
+                    if path_column_index < len(row_values)
+                    else None
+                )
+                values_cell_value = (
+                    row_values[values_column_index]
+                    if values_column_index < len(row_values)
+                    else None
+                )
+                name_text = str(name_cell_value).strip() if name_cell_value is not None else ""
+                path_text = str(path_cell_value).strip() if path_cell_value is not None else ""
+                values_text = (
+                    str(values_cell_value).strip()
+                    if values_cell_value is not None
+                    else ""
+                )
+                if not name_text and not path_text and not values_text:
                     continue
-                if not name_s:
+                if not name_text:
                     continue
-                k = normalize_name_key(name_s)
-                src = f"{os.path.basename(excel_path)}/{sheet_name}"
-                if path_s:
-                    if k in local_name_to_path and local_name_to_path[k] != path_s:
-                        rec = multi_path_warn.get(k)
-                        if rec is None:
-                            rec = {
-                                "name": name_s,
-                                "path_first": local_name_to_path.get(k, ""),
+                name_key = normalize_name_key(name_text)
+                source_label = f"{os.path.basename(excel_path)}/{sheet_name}"
+                if path_text:
+                    if name_key in local_name_to_path and local_name_to_path[name_key] != path_text:
+                        path_warn_record = multi_path_warnings.get(name_key)
+                        if path_warn_record is None:
+                            path_warn_record = {
+                                "name": name_text,
+                                "path_first": local_name_to_path.get(name_key, ""),
                                 "ignored_paths": set(),
                                 "rows": [],
-                                "src": src,
+                                "src": source_label,
                             }
-                            multi_path_warn[k] = rec
-                        rec["ignored_paths"].add(path_s)
-                        rec["rows"].append(excel_row)
+                            multi_path_warnings[name_key] = path_warn_record
+                        path_warn_record["ignored_paths"].add(path_text)
+                        path_warn_record["rows"].append(excel_row)
                     else:
-                        local_name_to_path[k] = path_s
-                        if k not in name_to_path:
-                            name_to_path[k] = path_s
-                if values_s:
-                    vm = parse_values_cell(values_s)
-                    if vm:
-                        cur_local = local_name_to_values.get(k)
-                        if cur_local is None:
-                            cur_local = {}
-                            local_name_to_values[k] = cur_local
-                        conflict_k = None
-                        for enum_key, enum_val in vm.items():
-                            if enum_key in cur_local and cur_local[enum_key] != enum_val:
-                                conflict_k = (enum_key, cur_local[enum_key], enum_val)
+                        local_name_to_path[name_key] = path_text
+                        if name_key not in name_to_path:
+                            name_to_path[name_key] = path_text
+                if values_text:
+                    values_mapping = parse_values_cell(values_text)
+                    if values_mapping:
+                        current_local_values = local_name_to_values.get(name_key)
+                        if current_local_values is None:
+                            current_local_values = {}
+                            local_name_to_values[name_key] = current_local_values
+                        enum_conflict_info = None
+                        for enum_key, enum_value in values_mapping.items():
+                            if (
+                                enum_key in current_local_values
+                                and current_local_values[enum_key] != enum_value
+                            ):
+                                enum_conflict_info = (
+                                    enum_key,
+                                    current_local_values[enum_key],
+                                    enum_value,
+                                )
                                 break
-                        if conflict_k is not None:
-                            ek, v_old, v_new = conflict_k
+                        if enum_conflict_info is not None:
+                            enum_key_conflict, first_enum_value, ignored_enum_value = enum_conflict_info
                             logger.warning(
                                 "[io_mapping] Name 同表 Values 冲突，保留首次：来源=%s 行=%s name=%r enum=%r val_first=%r val_ignored=%r",
-                                src,
+                                source_label,
                                 excel_row,
-                                name_s,
-                                ek,
-                                v_old,
-                                v_new,
+                                name_text,
+                                enum_key_conflict,
+                                first_enum_value,
+                                ignored_enum_value,
                             )
                         else:
-                            for enum_key, enum_val in vm.items():
-                                if enum_key not in cur_local:
-                                    cur_local[enum_key] = enum_val
-                            cur_global = name_to_values.get(k)
-                            if cur_global is None:
-                                name_to_values[k] = dict(vm)
+                            for enum_key, enum_value in values_mapping.items():
+                                if enum_key not in current_local_values:
+                                    current_local_values[enum_key] = enum_value
+                            current_global_values = name_to_values.get(name_key)
+                            if current_global_values is None:
+                                name_to_values[name_key] = dict(values_mapping)
                             else:
-                                for enum_key, enum_val in vm.items():
-                                    if enum_key not in cur_global:
-                                        cur_global[enum_key] = enum_val
-            for _, rec in multi_path_warn.items():
-                ignored_paths = sorted(rec["ignored_paths"])
-                rows = sorted(set(rec["rows"]))
-                rows_s = ",".join(str(x) for x in rows[:100]) + (
+                                for enum_key, enum_value in values_mapping.items():
+                                    if enum_key not in current_global_values:
+                                        current_global_values[enum_key] = enum_value
+            for path_warn_record in multi_path_warnings.values():
+                ignored_paths = sorted(path_warn_record["ignored_paths"])
+                rows = sorted(set(path_warn_record["rows"]))
+                rows_preview = ",".join(str(row_index) for row_index in rows[:100]) + (
                     "" if len(rows) <= 100 else f"...(+{len(rows)-100})"
                 )
                 logger.warning(
                     "[io_mapping] Name 同表多 Path，保留首次：来源=%s name=%r path_first=%r path_ignored=%s 行=%s",
-                    rec.get("src", ""),
-                    rec.get("name", ""),
-                    rec.get("path_first", ""),
+                    path_warn_record.get("src", ""),
+                    path_warn_record.get("name", ""),
+                    path_warn_record.get("path_first", ""),
                     ignored_paths,
-                    rows_s,
+                    rows_preview,
                 )
 
     return IOMappingContext(name_to_path=name_to_path, name_to_values=name_to_values)

@@ -1,0 +1,711 @@
+/*@!Encoding: 936*/
+
+includes
+{
+}
+
+variables
+{
+}
+
+testcase SYS_LDCU_CameraHeated_001()
+{
+  TestDescription("摄像头加热\\ 开启&关闭\\ OFF时关闭\\");
+  g_HIL_Bus_Swc_Set("VTS::VT2004_1::RelaySwapBusBar1A 0"); // 测试步骤 Step Set VTS::VT2004_1::RelaySwapBusBar1A  0//蓄电池电压=13.5V
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Set("I_XPU_BodyCtrl::I_XPU_LDCU_HeatReq 0"); // 测试步骤 Step Set I_XPU_BodyCtrl::I_XPU_LDCU_HeatReq 0//0x0:no Command
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Set("I_XPU_BodyCtrl::I_XPU_LDCU_HeatReq 1"); // 测试步骤 Step Set I_XPU_BodyCtrl::I_XPU_LDCU_HeatReq 1//0x1:Requestheating
+  g_HIL_Sysvar_Swc_KeepShToGNDWithTime("J_HBridge_FLHandleCtr+ 100 MS 200"); // 预期结果 KeepShToGNDWithTime J_HBridge_FLHandleCtr+ 100 MS 200
+  g_HIL_Bus_Swc_Check("J_AI_FRWindowCtrSw_DTC_TOPOW Inactive"); // 测试步骤 Step Check J_AI_FRWindowCtrSw_DTC_TOPOW Inactive //inactive 输出低
+  g_HIL_Bus_Swc_Check("J_DO_HS_CameraHeated Active"); // 预期结果 Step Check J_DO_HS_CameraHeated Active //active,J2-25,高有效
+  g_HIL_Bus_Swc_Check("J_AI_FRWindowCtrSw_DTC_TOGND 100 s"); // 测试步骤 Step  Check J_AI_FRWindowCtrSw_DTC_TOGND 100 s
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_XPU_HeatFeedBack 1"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_XPU_HeatFeedBack 1//0x1:Heating
+  g_HIL_Bus_Swc_Check("J_AI_FRWindowCtrSw_DTC_TOGND Inactive"); // 测试步骤 Step Check J_AI_FRWindowCtrSw_DTC_TOGND Inactive //inactive 输出低
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Check("J_DO_HS_CameraHeated Inactive"); // 预期结果 Step Check J_DO_HS_CameraHeated Inactive //inactive 输出低
+  g_HIL_Sysvar_Swc_KeepOpenWithTime("J_AI_FRWindowCtrSw_DTC_TOPOW 100 200 ms"); // 测试步骤 KeepOpenWithTime J_AI_FRWindowCtrSw_DTC_TOPOW 100 200 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_XPU_HeatFeedBack 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_XPU_HeatFeedBack 0//0x0:no Heating
+  g_HIL_Bus_Swc_Set("I_XPU_BodyCtrl::I_XPU_LDCU_HeatReq 0"); // 测试步骤 Step Set I_XPU_BodyCtrl::I_XPU_LDCU_HeatReq 0//0x0:no Command
+  g_HIL_Sysvar_Swc_KeepShToPOWWithTime("ABC 100 MS 200"); // 预期结果 KeepShToPOWWithTime  ABC 100 MS 200
+  g_HIL_Clib_Swc_Clib_BrkLocalON(); // 测试步骤 Step Clib BrkLocalON
+  g_HIL_Sysvar_Swc_KeepOverCurWithTime("J_AI_WinLockOrChildlockSw 100 MS 200"); // 预期结果 Step KeepOverCurWithTime   J_AI_WinLockOrChildlockSw 100 MS 200
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Check("J_DO_HS_CameraHeated Inactive"); // 预期结果 Step Check J_DO_HS_CameraHeated Inactive //inactive
+  g_HIL_Sysvar_Swc_KeepOpenWithTime("roofmoduleConfig 123"); // 测试步骤 KeepOpenWithTime roofmoduleConfig 123
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_XPU_HeatFeedBack 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_XPU_HeatFeedBack 0//0x0:no Heating
+}
+
+testcase SYS_LDCU_CameraHeated_002()
+{
+  TestDescription("摄像头加热/ 开启&关闭\\\ XPU Stop heating请求关闭\\");
+  g_HIL_Bus_Swc_Set("J_BAT_VOLT_SV 13.5"); // 测试步骤 Step Set J_BAT_VOLT_SV 13.5//蓄电池电压=13.5V
+  g_HIL_Bus_Swc_Set("I_XPU_BodyCtrl::I_XPU_LDCU_HeatReq 0"); // 测试步骤 Step Set I_XPU_BodyCtrl::I_XPU_LDCU_HeatReq 0//0x0:no Command
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Set("I_XPU_BodyCtrl::I_XPU_LDCU_HeatReq 1"); // 测试步骤 Step Set I_XPU_BodyCtrl::I_XPU_LDCU_HeatReq 1//0x1:Requestheating
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Check("J_DO_HS_CameraHeated Active"); // 预期结果 Step Check J_DO_HS_CameraHeated Active //active J2-25输出高
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_XPU_HeatFeedBack 1"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_XPU_HeatFeedBack 1//0x1:Heating;
+  g_HIL_Bus_Swc_Set("I_XPU_BodyCtrl::I_XPU_LDCU_HeatReq 2"); // 测试步骤 Step Set I_XPU_BodyCtrl::I_XPU_LDCU_HeatReq 2//0x2:Stop heating
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Check("J_DO_HS_CameraHeated Inactive"); // 预期结果 Step Check J_DO_HS_CameraHeated Inactive //inactive
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_XPU_HeatFeedBack 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_XPU_HeatFeedBack 0//0x0:no Heating
+  g_HIL_Bus_Swc_Set("I_XPU_BodyCtrl::I_XPU_LDCU_HeatReq 0"); // 测试步骤 Step Set I_XPU_BodyCtrl::I_XPU_LDCU_HeatReq 0//0x0:no Command
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+}
+
+testcase SYS_LDCU_CameraHeated_003()
+{
+  TestDescription("摄像头加热\\开启&关闭\\丢失通信关闭");
+  g_HIL_Bus_Swc_Set("J_BAT_VOLT_SV 13.5"); // 测试步骤 Step Set J_BAT_VOLT_SV 13.5//蓄电池电压=13.5V
+  g_HIL_Bus_Swc_Set("I_XPU_BodyCtrl::I_XPU_LDCU_HeatReq 0"); // 测试步骤 Step Set I_XPU_BodyCtrl::I_XPU_LDCU_HeatReq 0//0x0:no Command
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Set("I_XPU_BodyCtrl::I_XPU_LDCU_HeatReq 1"); // 测试步骤 Step Set I_XPU_BodyCtrl::I_XPU_LDCU_HeatReq 1//0x1:Requestheating
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Check("J_DO_HS_CameraHeated Active"); // 预期结果 Step Check J_DO_HS_CameraHeated Active //active
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_XPU_HeatFeedBack 1"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_XPU_HeatFeedBack 1//0x1:Heating;
+  g_HIL_Bus_Swc_Disable_ID("I_XPU_BodyCtrl"); // 测试步骤 Step Disable_ID I_XPU_BodyCtrl//通信丢失
+  g_HIL_Gen_Swc_Wait("5 s"); // 测试步骤 Step Wait 5 s
+  g_HIL_Bus_Swc_Check("J_DO_HS_CameraHeated Inactive"); // 预期结果 Step Check J_DO_HS_CameraHeated Inactive //inactive
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_XPU_HeatFeedBack 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_XPU_HeatFeedBack 0//0x0:no Heating
+  g_HIL_Bus_Swc_Enable_ID("I_XPU_BodyCtrl"); // 测试步骤 Step Enable_ID I_XPU_BodyCtrl//通信恢复
+  g_HIL_Gen_Swc_Wait("501 ms"); // 测试步骤 Step Wait 501 ms
+  g_HIL_Bus_Swc_Set("I_XPU_BodyCtrl::I_XPU_LDCU_HeatReq 0"); // 测试步骤 Step Set I_XPU_BodyCtrl::I_XPU_LDCU_HeatReq 0//0x0:no Command
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+}
+
+testcase SYS_LDCU_RearMirrorHeat_001()
+{
+  TestDescription("后挡风玻璃加热 开启&关闭");
+  // Step Set_CF05 DefrostCfg enable//byte 1 // 测试步骤Set_CF05关键字不存在
+  teststep("step","Step Set_CF05 DefrostCfg enable//byte 1");
+  teststepfail("fail","Set_CF05关键字不存在");
+  g_HIL_Bus_Swc_Set("J_BAT_VOLT_SV 13.5"); // 测试步骤 Step Set J_BAT_VOLT_SV 13.5//蓄电池电压=13.5V
+  g_EM_SOAClient_Swc_SOA_SubPeriod("RearMirrorHeatSt 1"); // 测试步骤 TC_CANTest SOA SubPeriod RearMirrorHeatSt 1
+  g_EM_SOAClient_Swc_SOA_SubPeriod("RearMirrorHeatService_ErrGrp 1"); // 测试步骤 TC_CANTest SOA SubPeriod RearMirrorHeatService_ErrGrp 1
+  g_EM_SOAClient_Swc_SOA_REQ("RearMirrorHeatCmdStruct.RearMirrorHeat:1&userid:1&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ RearMirrorHeatCmdStruct.RearMirrorHeat:1&userid:1&ServiceExecuteFeedbackFlag:2//0x1:Open
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0"); // 预期结果 TC_CANTest SOA check RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0//
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("RearMirrorHeatService_ErrStruct.OpeNRC 0"); // 预期结果 TC_CANTest SOA check RearMirrorHeatService_ErrStruct.OpeNRC 0
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("RearMirrorHeatStStruct.RearMirrorHeatOutputSt 1"); // 预期结果 TC_CANTest SOA check RearMirrorHeatStStruct.RearMirrorHeatOutputSt 1//Active
+  g_EM_SOAClient_Swc_SOA_CHECK("RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0"); // 预期结果 TC_CANTest SOA check RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0//
+  g_EM_SOAClient_Swc_SOA_CHECK("RearMirrorHeatService_ErrStruct.OpeNRC 0"); // 预期结果 TC_CANTest SOA check RearMirrorHeatService_ErrStruct.OpeNRC 0
+  g_EM_SOAClient_Swc_SOA_CHECK("RearMirrorHeatStStruct.RearMirrorHeatOutputSt 1"); // 预期结果 TC_CANTest SOA check RearMirrorHeatStStruct.RearMirrorHeatOutputSt 1//Active
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_RearMirrorHeatOutputSt 1"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_RearMirrorHeatOutputSt 1//Active
+  g_HIL_Bus_Swc_Check("J_DO_LS_DeforstrRly Active"); // 预期结果 Step Check J_DO_LS_DeforstrRly Active//输出加热驱动，IO=J1-15,低有效
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_RearMirrorHeatOutputSt 1"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_RearMirrorHeatOutputSt 1//后除霜输出状态active
+  g_EM_SOAClient_Swc_SOA_REQ("RearMirrorHeatCmdStruct.RearMirrorHeat:2&userid:1&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ RearMirrorHeatCmdStruct.RearMirrorHeat:2&userid:1&ServiceExecuteFeedbackFlag:2//0x2:close
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0"); // 预期结果 TC_CANTest SOA check RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0//
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("RearMirrorHeatService_ErrStruct.OpeNRC 0"); // 预期结果 TC_CANTest SOA check RearMirrorHeatService_ErrStruct.OpeNRC 0
+  g_EM_SOAClient_Swc_SOA_CHECK("RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0"); // 预期结果 TC_CANTest SOA check RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0//
+  g_EM_SOAClient_Swc_SOA_CHECK("RearMirrorHeatService_ErrStruct.OpeNRC 0"); // 预期结果 TC_CANTest SOA check RearMirrorHeatService_ErrStruct.OpeNRC 0
+  g_HIL_Bus_Swc_Check("J_DO_LS_DeforstrRly 1"); // 预期结果 Step Check J_DO_LS_DeforstrRly 1//输出加热驱动，IO=J1-15,低有效
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_RearMirrorHeatOutputSt 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_RearMirrorHeatOutputSt 0//后除霜输出状态Not active
+  g_EM_SOAClient_Swc_SOA_StopSubPeriod(); // 测试步骤 TC_CANTest SOA StopSubPeriod
+}
+
+testcase SYS_LDCU_RearMirrorHeat_002()
+{
+  TestDescription("后挡风玻璃加热开启       低压未开启");
+  g_HIL_Bus_Swc_Set("J_BAT_VOLT_SV 7.5"); // 测试步骤 Step Set J_BAT_VOLT_SV 7.5//蓄电池低压=7.5V
+  g_HIL_Gen_Swc_Wait("1 s"); // 测试步骤 Step Wait 1 s
+  g_EM_SOAClient_Swc_SOA_SubPeriod("RearMirrorHeatSt 1"); // 测试步骤 TC_CANTest SOA SubPeriod RearMirrorHeatSt 1
+  g_EM_SOAClient_Swc_SOA_SubPeriod("RearMirrorHeatService_ErrGrp 1"); // 测试步骤 TC_CANTest SOA SubPeriod RearMirrorHeatService_ErrGrp 1
+  g_EM_SOAClient_Swc_SOA_REQ("RearMirrorHeatCmdStruct.RearMirrorHeat:1&userid:1&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ RearMirrorHeatCmdStruct.RearMirrorHeat:1&userid:1&ServiceExecuteFeedbackFlag:2//0x1:Open
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0"); // 预期结果 TC_CANTest SOA check RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("RearMirrorHeatStStruct.RearMirrorHeatOutputSt 0"); // 预期结果 TC_CANTest SOA check RearMirrorHeatStStruct.RearMirrorHeatOutputSt 0
+  g_EM_SOAClient_Swc_SOA_CHECK("RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0"); // 预期结果 TC_CANTest SOA check RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0
+  g_EM_SOAClient_Swc_SOA_CHECK("RearMirrorHeatStStruct.RearMirrorHeatOutputSt 0"); // 预期结果 TC_CANTest SOA check RearMirrorHeatStStruct.RearMirrorHeatOutputSt 0
+  g_HIL_Bus_Swc_Check("J_DO_LS_DeforstrRly Inactive"); // 预期结果 Step Check J_DO_LS_DeforstrRly Inactive
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_RearMirrorHeatOutputSt 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_RearMirrorHeatOutputSt 0//后除霜输出状态0x0:Not active
+  g_EM_SOAClient_Swc_SOA_StopSubPeriod(); // 测试步骤 TC_CANTest SOA StopSubPeriod
+  g_HIL_Bus_Swc_Set("J_BAT_VOLT_SV 13.5"); // 测试步骤 Step Set J_BAT_VOLT_SV 13.5
+}
+
+testcase SYS_LDCU_RearMirrorHeat_003()
+{
+  TestDescription("后挡风玻璃加热开启       高压未开启");
+  g_HIL_Bus_Swc_Set("J_BAT_VOLT_SV 17.5"); // 测试步骤 Step Set J_BAT_VOLT_SV 17.5//蓄电池高压=17.5V
+  g_HIL_Gen_Swc_Wait("1 s"); // 测试步骤 Step Wait 1 s
+  g_EM_SOAClient_Swc_SOA_SubPeriod("RearMirrorHeatSt 1"); // 测试步骤 TC_CANTest SOA SubPeriod RearMirrorHeatSt 1
+  g_EM_SOAClient_Swc_SOA_SubPeriod("RearMirrorHeatService_ErrGrp 1"); // 测试步骤 TC_CANTest SOA SubPeriod RearMirrorHeatService_ErrGrp 1
+  g_EM_SOAClient_Swc_SOA_REQ("RearMirrorHeatCmdStruct.RearMirrorHeat:1&userid:1&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ RearMirrorHeatCmdStruct.RearMirrorHeat:1&userid:1&ServiceExecuteFeedbackFlag:2//0x1:Open
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0"); // 预期结果 TC_CANTest SOA check RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("RearMirrorHeatStStruct.RearMirrorHeatOutputSt 0"); // 预期结果 TC_CANTest SOA check RearMirrorHeatStStruct.RearMirrorHeatOutputSt 0
+  g_EM_SOAClient_Swc_SOA_CHECK("RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0"); // 预期结果 TC_CANTest SOA check RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0
+  g_EM_SOAClient_Swc_SOA_CHECK("RearMirrorHeatStStruct.RearMirrorHeatOutputSt 0"); // 预期结果 TC_CANTest SOA check RearMirrorHeatStStruct.RearMirrorHeatOutputSt 0
+  g_HIL_Bus_Swc_Check("J_DO_LS_DeforstrRly Inactive"); // 预期结果 Step Check J_DO_LS_DeforstrRly Inactive
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_RearMirrorHeatOutputSt 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_RearMirrorHeatOutputSt 0//后除霜输出状态0x0:Not active
+  g_EM_SOAClient_Swc_SOA_StopSubPeriod(); // 测试步骤 TC_CANTest SOA StopSubPeriod
+  g_HIL_Bus_Swc_Set("J_BAT_VOLT_SV 13.5"); // 测试步骤 Step Set J_BAT_VOLT_SV 13.5
+}
+
+testcase SYS_LDCU_RearMirrorHeat_004()
+{
+  TestDescription("后挡风玻璃加热开启       配置字未开启");
+  g_HIL_UDS_Swc_Set_UDS("SA_L1"); // 测试步骤 Step Set_UDS SA_L1
+  // Step Set_CF05 DefrostCfg disable//byte 1 // 测试步骤Set_CF05关键字不存在
+  teststep("step","Step Set_CF05 DefrostCfg disable//byte 1");
+  teststepfail("fail","Set_CF05关键字不存在");
+  g_HIL_Gen_Swc_Wait("1 s"); // 测试步骤 Step Wait 1 s
+  g_EM_SOAClient_Swc_SOA_SubPeriod("RearMirrorHeatSt 1"); // 测试步骤 TC_CANTest SOA SubPeriod RearMirrorHeatSt 1
+  g_EM_SOAClient_Swc_SOA_SubPeriod("RearMirrorHeatService_ErrGrp 1"); // 测试步骤 TC_CANTest SOA SubPeriod RearMirrorHeatService_ErrGrp 1
+  g_EM_SOAClient_Swc_SOA_REQ("RearMirrorHeatCmdStruct.RearMirrorHeat:1&userid:1&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ RearMirrorHeatCmdStruct.RearMirrorHeat:1&userid:1&ServiceExecuteFeedbackFlag:2//0x1:Open
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0"); // 预期结果 TC_CANTest SOA check RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("RearMirrorHeatStStruct.RearMirrorHeatOutputSt 0"); // 预期结果 TC_CANTest SOA check RearMirrorHeatStStruct.RearMirrorHeatOutputSt 0
+  g_EM_SOAClient_Swc_SOA_CHECK("RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0"); // 预期结果 TC_CANTest SOA check RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0
+  g_EM_SOAClient_Swc_SOA_CHECK("RearMirrorHeatStStruct.RearMirrorHeatOutputSt 0"); // 预期结果 TC_CANTest SOA check RearMirrorHeatStStruct.RearMirrorHeatOutputSt 0
+  g_HIL_Bus_Swc_Check("J_DO_LS_DeforstrRly Inactive"); // 预期结果 Step Check J_DO_LS_DeforstrRly Inactive
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_RearMirrorHeatOutputSt 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_RearMirrorHeatOutputSt 0//后除霜输出状态0x0:Not active
+  g_EM_SOAClient_Swc_SOA_StopSubPeriod(); // 测试步骤 TC_CANTest SOA StopSubPeriod
+  g_HIL_UDS_Swc_Set_UDS("SA_L1"); // 测试步骤 Step Set_UDS SA_L1
+  // Step Set_CF05 DefrostCfg enable////byte 1 // 测试步骤Set_CF05关键字不存在
+  teststep("step","Step Set_CF05 DefrostCfg enable////byte 1");
+  teststepfail("fail","Set_CF05关键字不存在");
+}
+
+testcase SYS_LDCU_RearMirrorHeat_005()
+{
+  TestDescription("后挡风玻璃加热开启       有感OTA未开启");
+  g_HIL_Clib_Swc_Clib_NormalOTA(); // 测试步骤 Step Clib NormalOTA
+  g_EM_SOAClient_Swc_SOA_SubPeriod("RearMirrorHeatSt 1"); // 测试步骤 TC_CANTest SOA SubPeriod RearMirrorHeatSt 1
+  g_EM_SOAClient_Swc_SOA_SubPeriod("RearMirrorHeatService_ErrGrp 1"); // 测试步骤 TC_CANTest SOA SubPeriod RearMirrorHeatService_ErrGrp 1
+  g_EM_SOAClient_Swc_SOA_REQ("RearMirrorHeatCmdStruct.RearMirrorHeat:1&userid:1&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ RearMirrorHeatCmdStruct.RearMirrorHeat:1&userid:1&ServiceExecuteFeedbackFlag:2//0x1:Open
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0"); // 预期结果 TC_CANTest SOA check RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("RearMirrorHeatStStruct.RearMirrorHeatOutputSt 0"); // 预期结果 TC_CANTest SOA check RearMirrorHeatStStruct.RearMirrorHeatOutputSt 0
+  g_EM_SOAClient_Swc_SOA_CHECK("RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0"); // 预期结果 TC_CANTest SOA check RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0
+  g_EM_SOAClient_Swc_SOA_CHECK("RearMirrorHeatStStruct.RearMirrorHeatOutputSt 0"); // 预期结果 TC_CANTest SOA check RearMirrorHeatStStruct.RearMirrorHeatOutputSt 0
+  g_HIL_Bus_Swc_Check("J_DO_LS_DeforstrRly Inactive"); // 预期结果 Step Check J_DO_LS_DeforstrRly Inactive
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_RearMirrorHeatOutputSt 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_RearMirrorHeatOutputSt 0//后除霜输出状态0x0:Not active
+  g_HIL_Clib_Swc_Clib_NonOTA(); // 测试步骤 Step Clib NonOTA
+  g_EM_SOAClient_Swc_SOA_StopSubPeriod(); // 测试步骤 TC_CANTest SOA StopSubPeriod
+}
+
+testcase SYS_LDCU_RearMirrorHeat_006()
+{
+  TestDescription("后挡风玻璃加热关闭 低压关闭");
+  g_EM_SOAClient_Swc_SOA_SubPeriod("RearMirrorHeatSt 1"); // 测试步骤 TC_CANTest SOA SubPeriod RearMirrorHeatSt 1
+  g_EM_SOAClient_Swc_SOA_SubPeriod("RearMirrorHeatService_ErrGrp 1"); // 测试步骤 TC_CANTest SOA SubPeriod RearMirrorHeatService_ErrGrp 1
+  g_EM_SOAClient_Swc_SOA_REQ("RearMirrorHeatCmdStruct.RearMirrorHeat:1&userid:1&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ RearMirrorHeatCmdStruct.RearMirrorHeat:1&userid:1&ServiceExecuteFeedbackFlag:2//0x1:Open
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0"); // 预期结果 TC_CANTest SOA check RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0//
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("RearMirrorHeatService_ErrStruct.OpeNRC 0"); // 预期结果 TC_CANTest SOA check RearMirrorHeatService_ErrStruct.OpeNRC 0
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("RearMirrorHeatStStruct.RearMirrorHeatOutputSt 1"); // 预期结果 TC_CANTest SOA check RearMirrorHeatStStruct.RearMirrorHeatOutputSt 1//Active
+  g_EM_SOAClient_Swc_SOA_CHECK("RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0"); // 预期结果 TC_CANTest SOA check RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0//
+  g_EM_SOAClient_Swc_SOA_CHECK("RearMirrorHeatService_ErrStruct.OpeNRC 0"); // 预期结果 TC_CANTest SOA check RearMirrorHeatService_ErrStruct.OpeNRC 0
+  g_EM_SOAClient_Swc_SOA_CHECK("RearMirrorHeatStStruct.RearMirrorHeatOutputSt 1"); // 预期结果 TC_CANTest SOA check RearMirrorHeatStStruct.RearMirrorHeatOutputSt 1//Active
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_RearMirrorHeatOutputSt 1"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_RearMirrorHeatOutputSt 1//Active
+  g_HIL_Bus_Swc_Check("J_DO_LS_DeforstrRly Active"); // 预期结果 Step Check J_DO_LS_DeforstrRly Active//输出加热驱动，IO=J1-15,低有效
+  g_HIL_Bus_Swc_Set("J_BAT_VOLT_SV 7.5"); // 测试步骤 Step Set J_BAT_VOLT_SV 7.5
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Check("J_DO_LS_DeforstrRly 1"); // 预期结果 Step Check J_DO_LS_DeforstrRly 1//输出加热驱动，IO=J1-15,低有效
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_RearMirrorHeatOutputSt 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_RearMirrorHeatOutputSt 0//后除霜输出状态Not active
+  g_EM_SOAClient_Swc_SOA_StopSubPeriod(); // 测试步骤 TC_CANTest SOA StopSubPeriod
+  g_HIL_Bus_Swc_Set("J_BAT_VOLT_SV 13.5"); // 测试步骤 Step Set J_BAT_VOLT_SV 13.5
+}
+
+testcase SYS_LDCU_RearMirrorHeat_007()
+{
+  TestDescription("后挡风玻璃加热关闭  高压关闭");
+  g_EM_SOAClient_Swc_SOA_SubPeriod("RearMirrorHeatSt 1"); // 测试步骤 TC_CANTest SOA SubPeriod RearMirrorHeatSt 1
+  g_EM_SOAClient_Swc_SOA_SubPeriod("RearMirrorHeatService_ErrGrp 1"); // 测试步骤 TC_CANTest SOA SubPeriod RearMirrorHeatService_ErrGrp 1
+  g_EM_SOAClient_Swc_SOA_REQ("RearMirrorHeatCmdStruct.RearMirrorHeat:1&userid:1&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ RearMirrorHeatCmdStruct.RearMirrorHeat:1&userid:1&ServiceExecuteFeedbackFlag:2//0x1:Open
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0"); // 预期结果 TC_CANTest SOA check RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0//
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("RearMirrorHeatService_ErrStruct.OpeNRC 0"); // 预期结果 TC_CANTest SOA check RearMirrorHeatService_ErrStruct.OpeNRC 0
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("RearMirrorHeatStStruct.RearMirrorHeatOutputSt 1"); // 预期结果 TC_CANTest SOA check RearMirrorHeatStStruct.RearMirrorHeatOutputSt 1//Active
+  g_EM_SOAClient_Swc_SOA_CHECK("RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0"); // 预期结果 TC_CANTest SOA check RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0//
+  g_EM_SOAClient_Swc_SOA_CHECK("RearMirrorHeatService_ErrStruct.OpeNRC 0"); // 预期结果 TC_CANTest SOA check RearMirrorHeatService_ErrStruct.OpeNRC 0
+  g_EM_SOAClient_Swc_SOA_CHECK("RearMirrorHeatStStruct.RearMirrorHeatOutputSt 1"); // 预期结果 TC_CANTest SOA check RearMirrorHeatStStruct.RearMirrorHeatOutputSt 1//Active
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_RearMirrorHeatOutputSt 1"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_RearMirrorHeatOutputSt 1//Active
+  g_HIL_Bus_Swc_Check("J_DO_LS_DeforstrRly Active"); // 预期结果 Step Check J_DO_LS_DeforstrRly Active//输出加热驱动，IO=J1-15,低有效
+  g_HIL_Bus_Swc_Set("J_BAT_VOLT_SV 17.5"); // 测试步骤 Step Set J_BAT_VOLT_SV 17.5
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Check("J_DO_LS_DeforstrRly 1"); // 预期结果 Step Check J_DO_LS_DeforstrRly 1//输出加热驱动，IO=J1-15,低有效
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_RearMirrorHeatOutputSt 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_RearMirrorHeatOutputSt 0//后除霜输出状态Not active
+  g_EM_SOAClient_Swc_SOA_StopSubPeriod(); // 测试步骤 TC_CANTest SOA StopSubPeriod
+  g_HIL_Bus_Swc_Set("J_BAT_VOLT_SV 13.5"); // 测试步骤 Step Set J_BAT_VOLT_SV 13.5
+}
+
+testcase SYS_LDCU_RearMirrorHeat_008()
+{
+  TestDescription("后挡风玻璃加热关闭 加热超时关闭");
+  g_EM_SOAClient_Swc_SOA_SubPeriod("RearMirrorHeatSt 1"); // 测试步骤 TC_CANTest SOA SubPeriod RearMirrorHeatSt 1
+  g_EM_SOAClient_Swc_SOA_SubPeriod("RearMirrorHeatService_ErrGrp 1"); // 测试步骤 TC_CANTest SOA SubPeriod RearMirrorHeatService_ErrGrp 1
+  g_EM_SOAClient_Swc_SOA_REQ("RearMirrorHeatCmdStruct.RearMirrorHeat:1&userid:1&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ RearMirrorHeatCmdStruct.RearMirrorHeat:1&userid:1&ServiceExecuteFeedbackFlag:2//0x1:Open
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0"); // 预期结果 TC_CANTest SOA check RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0//
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("RearMirrorHeatService_ErrStruct.OpeNRC 0"); // 预期结果 TC_CANTest SOA check RearMirrorHeatService_ErrStruct.OpeNRC 0
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("RearMirrorHeatStStruct.RearMirrorHeatOutputSt 1"); // 预期结果 TC_CANTest SOA check RearMirrorHeatStStruct.RearMirrorHeatOutputSt 1//Active
+  g_EM_SOAClient_Swc_SOA_CHECK("RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0"); // 预期结果 TC_CANTest SOA check RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0//
+  g_EM_SOAClient_Swc_SOA_CHECK("RearMirrorHeatService_ErrStruct.OpeNRC 0"); // 预期结果 TC_CANTest SOA check RearMirrorHeatService_ErrStruct.OpeNRC 0
+  g_EM_SOAClient_Swc_SOA_CHECK("RearMirrorHeatStStruct.RearMirrorHeatOutputSt 1"); // 预期结果 TC_CANTest SOA check RearMirrorHeatStStruct.RearMirrorHeatOutputSt 1//Active
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_RearMirrorHeatOutputSt 1"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_RearMirrorHeatOutputSt 1//Active
+  g_HIL_Bus_Swc_Check("J_DO_LS_DeforstrRly Active"); // 预期结果 Step Check J_DO_LS_DeforstrRly Active//输出加热驱动，IO=J1-15,低有效
+  g_HIL_Gen_Swc_Wait("600 s"); // 测试步骤 Step Wait 600 s
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_RearMirrorHeatOutputSt 1"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_RearMirrorHeatOutputSt 1//Active
+  g_HIL_Gen_Swc_Wait("301 s"); // 测试步骤 Step Wait 301 s
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_RearMirrorHeatOutputSt 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_RearMirrorHeatOutputSt 0
+  g_EM_SOAClient_Swc_SOA_StopSubPeriod(); // 测试步骤 TC_CANTest SOA StopSubPeriod
+}
+
+testcase SYS_LDCU_RearMirrorHeat_009()
+{
+  TestDescription("后挡风玻璃加热关闭     Normal OTA关闭");
+  g_EM_SOAClient_Swc_SOA_SubPeriod("RearMirrorHeatSt 1"); // 测试步骤 TC_CANTest SOA SubPeriod RearMirrorHeatSt 1
+  g_EM_SOAClient_Swc_SOA_SubPeriod("RearMirrorHeatService_ErrGrp 1"); // 测试步骤 TC_CANTest SOA SubPeriod RearMirrorHeatService_ErrGrp 1
+  g_EM_SOAClient_Swc_SOA_REQ("RearMirrorHeatCmdStruct.RearMirrorHeat:1&userid:1&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ RearMirrorHeatCmdStruct.RearMirrorHeat:1&userid:1&ServiceExecuteFeedbackFlag:2//0x1:Open
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0"); // 预期结果 TC_CANTest SOA check RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0//
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("RearMirrorHeatService_ErrStruct.OpeNRC 0"); // 预期结果 TC_CANTest SOA check RearMirrorHeatService_ErrStruct.OpeNRC 0
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("RearMirrorHeatStStruct.RearMirrorHeatOutputSt 1"); // 预期结果 TC_CANTest SOA check RearMirrorHeatStStruct.RearMirrorHeatOutputSt 1//Active
+  g_EM_SOAClient_Swc_SOA_CHECK("RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0"); // 预期结果 TC_CANTest SOA check RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0//
+  g_EM_SOAClient_Swc_SOA_CHECK("RearMirrorHeatService_ErrStruct.OpeNRC 0"); // 预期结果 TC_CANTest SOA check RearMirrorHeatService_ErrStruct.OpeNRC 0
+  g_EM_SOAClient_Swc_SOA_CHECK("RearMirrorHeatStStruct.RearMirrorHeatOutputSt 1"); // 预期结果 TC_CANTest SOA check RearMirrorHeatStStruct.RearMirrorHeatOutputSt 1//Active
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_RearMirrorHeatOutputSt 1"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_RearMirrorHeatOutputSt 1//Active
+  g_HIL_Bus_Swc_Check("J_DO_LS_DeforstrRly Active"); // 预期结果 Step Check J_DO_LS_DeforstrRly Active//输出加热驱动，IO=J1-15,低有效
+  g_HIL_Clib_Swc_Clib_NormalOTA(); // 测试步骤 Step Clib NormalOTA
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Check("J_DO_LS_DeforstrRly 1"); // 预期结果 Step Check J_DO_LS_DeforstrRly 1//输出加热驱动，IO=J1-15,低有效
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_RearMirrorHeatOutputSt 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_RearMirrorHeatOutputSt 0//后除霜输出状态Not active
+  g_EM_SOAClient_Swc_SOA_StopSubPeriod(); // 测试步骤 TC_CANTest SOA StopSubPeriod
+  g_HIL_Clib_Swc_Clib_NonOTA(); // 测试步骤 Step Clib NonOTA
+}
+
+testcase SYS_LDCU_RearMirrorHeat_010()
+{
+  TestDescription("后挡风玻璃加热关闭 OTA_ECAN关闭");
+  g_EM_SOAClient_Swc_SOA_SubPeriod("RearMirrorHeatSt 1"); // 测试步骤 TC_CANTest SOA SubPeriod RearMirrorHeatSt 1
+  g_EM_SOAClient_Swc_SOA_SubPeriod("RearMirrorHeatService_ErrGrp 1"); // 测试步骤 TC_CANTest SOA SubPeriod RearMirrorHeatService_ErrGrp 1
+  g_EM_SOAClient_Swc_SOA_REQ("RearMirrorHeatCmdStruct.RearMirrorHeat:1&userid:1&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ RearMirrorHeatCmdStruct.RearMirrorHeat:1&userid:1&ServiceExecuteFeedbackFlag:2//0x1:Open
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0"); // 预期结果 TC_CANTest SOA check RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0//
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("RearMirrorHeatService_ErrStruct.OpeNRC 0"); // 预期结果 TC_CANTest SOA check RearMirrorHeatService_ErrStruct.OpeNRC 0
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("RearMirrorHeatStStruct.RearMirrorHeatOutputSt 1"); // 预期结果 TC_CANTest SOA check RearMirrorHeatStStruct.RearMirrorHeatOutputSt 1//Active
+  g_EM_SOAClient_Swc_SOA_CHECK("RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0"); // 预期结果 TC_CANTest SOA check RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0//
+  g_EM_SOAClient_Swc_SOA_CHECK("RearMirrorHeatService_ErrStruct.OpeNRC 0"); // 预期结果 TC_CANTest SOA check RearMirrorHeatService_ErrStruct.OpeNRC 0
+  g_EM_SOAClient_Swc_SOA_CHECK("RearMirrorHeatStStruct.RearMirrorHeatOutputSt 1"); // 预期结果 TC_CANTest SOA check RearMirrorHeatStStruct.RearMirrorHeatOutputSt 1//Active
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_RearMirrorHeatOutputSt 1"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_RearMirrorHeatOutputSt 1//Active
+  g_HIL_Bus_Swc_Check("J_DO_LS_DeforstrRly Active"); // 预期结果 Step Check J_DO_LS_DeforstrRly Active//输出加热驱动，IO=J1-15,低有效
+  g_HIL_Clib_Swc_Clib_OTA_ECAN(); // 测试步骤 Step Clib OTA_ECAN
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Check("J_DO_LS_DeforstrRly 1"); // 预期结果 Step Check J_DO_LS_DeforstrRly 1//输出加热驱动，IO=J1-15,低有效
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_RearMirrorHeatOutputSt 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_RearMirrorHeatOutputSt 0//后除霜输出状态Not active
+  g_EM_SOAClient_Swc_SOA_StopSubPeriod(); // 测试步骤 TC_CANTest SOA StopSubPeriod
+  g_HIL_Clib_Swc_Clib_NonOTA(); // 测试步骤 Step Clib NonOTA
+}
+
+testcase SYS_LDCU_RearMirrorHeat_011()
+{
+  TestDescription("后挡风玻璃加热关闭 Local变化不通过-1");
+  g_HIL_Clib_Swc_Clib_LocalON(); // 测试步骤 Step Clib LocalON
+  g_EM_SOAClient_Swc_SOA_SubPeriod("RearMirrorHeatSt 1"); // 测试步骤 TC_CANTest SOA SubPeriod RearMirrorHeatSt 1
+  g_EM_SOAClient_Swc_SOA_SubPeriod("RearMirrorHeatService_ErrGrp 1"); // 测试步骤 TC_CANTest SOA SubPeriod RearMirrorHeatService_ErrGrp 1
+  g_EM_SOAClient_Swc_SOA_REQ("RearMirrorHeatCmdStruct.RearMirrorHeat:1&userid:1&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ RearMirrorHeatCmdStruct.RearMirrorHeat:1&userid:1&ServiceExecuteFeedbackFlag:2//0x1:Open
+  g_HIL_Gen_Swc_Wait("201 ms"); // 测试步骤 Step Wait 201 ms
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0"); // 预期结果 TC_CANTest SOA check RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0 //0x0:InOperation0x1:OK0x2:NG
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("RearMirrorHeatStStruct.RearMirrorHeatOutputSt 1"); // 预期结果 TC_CANTest SOA check RearMirrorHeatStStruct.RearMirrorHeatOutputSt 1
+  g_EM_SOAClient_Swc_SOA_CHECK("RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0"); // 预期结果 TC_CANTest SOA check RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0 //0x0:InOperation0x1:OK0x2:NG
+  g_EM_SOAClient_Swc_SOA_CHECK("RearMirrorHeatStStruct.RearMirrorHeatOutputSt 1"); // 预期结果 TC_CANTest SOA check RearMirrorHeatStStruct.RearMirrorHeatOutputSt 1
+  g_HIL_Bus_Swc_Check("J_DO_LS_DeforstrRly Active"); // 预期结果 Step Check J_DO_LS_DeforstrRly Active//输出加热驱动，IO=J1-15,低有效
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_RearMirrorHeatOutputSt 1"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_RearMirrorHeatOutputSt 1//后除霜输出状态active
+  g_HIL_Clib_Swc_Clib_OFF(); // 测试步骤 Step Clib OFF
+  g_EM_SOAClient_Swc_SOA_REQ("RearMirrorHeatCmdStruct.RearMirrorHeat:0&userid:1&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ RearMirrorHeatCmdStruct.RearMirrorHeat:0&userid:1&ServiceExecuteFeedbackFlag:2//0x0 no operation
+  g_HIL_Gen_Swc_Wait("201 ms"); // 测试步骤 Step Wait 201 ms
+  g_HIL_Bus_Swc_Check("J_DO_LS_DeforstrRly Inactive"); // 预期结果 Step Check J_DO_LS_DeforstrRly Inactive
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_RearMirrorHeatOutputSt 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_RearMirrorHeatOutputSt 0//后除霜输出状态0x0:Not active
+  g_EM_SOAClient_Swc_SOA_StopSubPeriod(); // 测试步骤 TC_CANTest SOA StopSubPeriod
+}
+
+testcase SYS_LDCU_RearMirrorHeat_012()
+{
+  TestDescription("后挡风玻璃加热关闭 Local变化不通过-2");
+  g_HIL_Clib_Swc_Clib_RemoteON(); // 测试步骤 Step Clib RemoteON
+  g_EM_SOAClient_Swc_SOA_SubPeriod("RearMirrorHeatSt 1"); // 测试步骤 TC_CANTest SOA SubPeriod RearMirrorHeatSt 1
+  g_EM_SOAClient_Swc_SOA_SubPeriod("RearMirrorHeatService_ErrGrp 1"); // 测试步骤 TC_CANTest SOA SubPeriod RearMirrorHeatService_ErrGrp 1
+  g_EM_SOAClient_Swc_SOA_REQ("RearMirrorHeatCmdStruct.RearMirrorHeat:1&userid:1&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ RearMirrorHeatCmdStruct.RearMirrorHeat:1&userid:1&ServiceExecuteFeedbackFlag:2//0x1:Open
+  g_HIL_Gen_Swc_Wait("201 ms"); // 测试步骤 Step Wait 201 ms
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0"); // 预期结果 TC_CANTest SOA check RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0 //0x0:InOperation0x1:OK0x2:NG
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("RearMirrorHeatStStruct.RearMirrorHeatOutputSt 1"); // 预期结果 TC_CANTest SOA check RearMirrorHeatStStruct.RearMirrorHeatOutputSt 1
+  g_EM_SOAClient_Swc_SOA_CHECK("RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0"); // 预期结果 TC_CANTest SOA check RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0 //0x0:InOperation0x1:OK0x2:NG
+  g_EM_SOAClient_Swc_SOA_CHECK("RearMirrorHeatStStruct.RearMirrorHeatOutputSt 1"); // 预期结果 TC_CANTest SOA check RearMirrorHeatStStruct.RearMirrorHeatOutputSt 1
+  g_HIL_Bus_Swc_Check("J_DO_LS_DeforstrRly Active"); // 预期结果 Step Check J_DO_LS_DeforstrRly Active//输出加热驱动，IO=J1-15,低有效
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_RearMirrorHeatOutputSt 1"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_RearMirrorHeatOutputSt 1//后除霜输出状态active
+  g_HIL_Clib_Swc_Clib_LocalON(); // 测试步骤 Step Clib LocalON
+  g_EM_SOAClient_Swc_SOA_REQ("RearMirrorHeatCmdStruct.RearMirrorHeat:0&userid:1&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ RearMirrorHeatCmdStruct.RearMirrorHeat:0&userid:1&ServiceExecuteFeedbackFlag:2//0x0 no operation
+  g_HIL_Gen_Swc_Wait("201 ms"); // 测试步骤 Step Wait 201 ms
+  g_HIL_Bus_Swc_Check("J_DO_LS_DeforstrRly Inactive"); // 预期结果 Step Check J_DO_LS_DeforstrRly Inactive
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_RearMirrorHeatOutputSt 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_RearMirrorHeatOutputSt 0//后除霜输出状态0x0:Not active
+  g_EM_SOAClient_Swc_SOA_StopSubPeriod(); // 测试步骤 TC_CANTest SOA StopSubPeriod
+}
+
+testcase SYS_LDCU_RearMirrorHeat_014()
+{
+  TestDescription("左外后视镜加热 （SOA） 开启&关闭");
+  g_HIL_Bus_Swc_Set("J_BAT_VOLT_SV 13.5"); // 测试步骤 Step Set J_BAT_VOLT_SV 13.5//蓄电池电压=13.5V
+  // Step Set_CF05 MirrorHeatedTypeCfg enable // 测试步骤Set_CF05关键字不存在
+  teststep("step","Step Set_CF05 MirrorHeatedTypeCfg enable");
+  teststepfail("fail","Set_CF05关键字不存在");
+  g_EM_SOAClient_Swc_SOA_SubPeriod("RearMirrorHeatSt 1"); // 测试步骤 TC_CANTest SOA SubPeriod RearMirrorHeatSt 1
+  g_EM_SOAClient_Swc_SOA_SubPeriod("RearMirrorHeatService_ErrGrp 1"); // 测试步骤 TC_CANTest SOA SubPeriod RearMirrorHeatService_ErrGrp 1
+  g_EM_SOAClient_Swc_SOA_REQ("RearMirrorHeatCmdStruct.RearMirrorHeat:1&userID:1&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ RearMirrorHeatCmdStruct.RearMirrorHeat:1&userID:1&ServiceExecuteFeedbackFlag:2//0x1:Open
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0"); // 预期结果 TC_CANTest SOA check RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("RearMirrorHeatService_ErrStruct.OpeNRC 0"); // 预期结果 TC_CANTest SOA check RearMirrorHeatService_ErrStruct.OpeNRC 0
+  g_EM_SOAClient_Swc_SOA_CHECK("RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0"); // 预期结果 TC_CANTest SOA check RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0
+  g_EM_SOAClient_Swc_SOA_CHECK("RearMirrorHeatService_ErrStruct.OpeNRC 0"); // 预期结果 TC_CANTest SOA check RearMirrorHeatService_ErrStruct.OpeNRC 0
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_RearMirrorHeatOutputSt 1"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_RearMirrorHeatOutputSt 1//0x1 Active
+  g_HIL_Bus_Swc_Check("J_DO_HS_LeftMirrorHeated 1"); // 预期结果 Step Check J_DO_HS_LeftMirrorHeated 1
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_LeftMirrorHeatOutputSt 1"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_LeftMirrorHeatOutputSt 1
+  g_HIL_Bus_Swc_Check("I_LDCU_BodyCtrl::I_LDCU_RDCU_RMirrorHeat 1"); // 预期结果 Step Check I_LDCU_BodyCtrl::I_LDCU_RDCU_RMirrorHeat 1
+  g_EM_SOAClient_Swc_SOA_REQ("RearMirrorHeatCmdStruct.RearMirrorHeat:2&userID:1&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ RearMirrorHeatCmdStruct.RearMirrorHeat:2&userID:1&ServiceExecuteFeedbackFlag:2//0x2:close
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0"); // 预期结果 TC_CANTest SOA check RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("RearMirrorHeatService_ErrStruct.OpeNRC 0"); // 预期结果 TC_CANTest SOA check RearMirrorHeatService_ErrStruct.OpeNRC 0
+  g_EM_SOAClient_Swc_SOA_CHECK("RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0"); // 预期结果 TC_CANTest SOA check RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0
+  g_EM_SOAClient_Swc_SOA_CHECK("RearMirrorHeatService_ErrStruct.OpeNRC 0"); // 预期结果 TC_CANTest SOA check RearMirrorHeatService_ErrStruct.OpeNRC 0
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_RearMirrorHeatOutputSt 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_RearMirrorHeatOutputSt 0//0x0 No Active
+  g_HIL_Bus_Swc_Check("J_DO_HS_LeftMirrorHeated 0"); // 预期结果 Step Check J_DO_HS_LeftMirrorHeated 0
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_LeftMirrorHeatOutputSt 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_LeftMirrorHeatOutputSt 0
+  g_HIL_Bus_Swc_Check("I_LDCU_BodyCtrl::I_LDCU_RDCU_RMirrorHeat 2"); // 预期结果 Step Check I_LDCU_BodyCtrl::I_LDCU_RDCU_RMirrorHeat 2
+  g_EM_SOAClient_Swc_SOA_StopSubPeriod(); // 测试步骤 TC_CANTest SOA StopSubPeriod
+}
+
+testcase SYS_LDCU_RearMirrorHeat_015()
+{
+  TestDescription("左外后视镜加热开启（SOA）-2 电压判断不通过");
+  g_HIL_Bus_Swc_Set("J_BAT_VOLT_SV 7.5"); // 测试步骤 Step Set J_BAT_VOLT_SV 7.5
+  g_EM_SOAClient_Swc_SOA_SubPeriod("RearMirrorHeatSt 1"); // 测试步骤 TC_CANTest SOA SubPeriod RearMirrorHeatSt 1
+  g_EM_SOAClient_Swc_SOA_SubPeriod("RearMirrorHeatService_ErrGrp 1"); // 测试步骤 TC_CANTest SOA SubPeriod RearMirrorHeatService_ErrGrp 1
+  g_EM_SOAClient_Swc_SOA_REQ("RearMirrorHeatCmdStruct.RearMirrorHeat:1&userID:1&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ RearMirrorHeatCmdStruct.RearMirrorHeat:1&userID:1&ServiceExecuteFeedbackFlag:2//0x1:Open
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0"); // 预期结果 TC_CANTest SOA check RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("RearMirrorHeatService_ErrStruct.OpeNRC 0x7"); // 预期结果 TC_CANTest SOA check RearMirrorHeatService_ErrStruct.OpeNRC 0x7
+  g_EM_SOAClient_Swc_SOA_CHECK("RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0"); // 预期结果 TC_CANTest SOA check RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0
+  g_EM_SOAClient_Swc_SOA_CHECK("RearMirrorHeatService_ErrStruct.OpeNRC 0x7"); // 预期结果 TC_CANTest SOA check RearMirrorHeatService_ErrStruct.OpeNRC 0x7
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_RearMirrorHeatOutputSt 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_RearMirrorHeatOutputSt 0//No Active
+  g_EM_SOAClient_Swc_SOA_StopSubPeriod(); // 测试步骤 TC_CANTest SOA StopSubPeriod
+}
+
+testcase SYS_LDCU_RearMirrorHeat_016()
+{
+  TestDescription("左外后视镜加热开启（SOA）-3 配置字不通过");
+  g_HIL_Bus_Swc_Set("J_BAT_VOLT_SV 13.5"); // 测试步骤 Step Set J_BAT_VOLT_SV 13.5
+  // Step Set_CF05 MirrorHeatedTypeCfg disable // 测试步骤Set_CF05关键字不存在
+  teststep("step","Step Set_CF05 MirrorHeatedTypeCfg disable");
+  teststepfail("fail","Set_CF05关键字不存在");
+  g_EM_SOAClient_Swc_SOA_SubPeriod("RearMirrorHeatSt 1"); // 测试步骤 TC_CANTest SOA SubPeriod RearMirrorHeatSt 1
+  g_EM_SOAClient_Swc_SOA_SubPeriod("RearMirrorHeatService_ErrGrp 1"); // 测试步骤 TC_CANTest SOA SubPeriod RearMirrorHeatService_ErrGrp 1
+  g_EM_SOAClient_Swc_SOA_REQ("RearMirrorHeatCmdStruct.RearMirrorHeat:1&userID:1&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ RearMirrorHeatCmdStruct.RearMirrorHeat:1&userID:1&ServiceExecuteFeedbackFlag:2//0x1:Open
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0"); // 预期结果 TC_CANTest SOA check RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("RearMirrorHeatService_ErrStruct.OpeNRC 0"); // 预期结果 TC_CANTest SOA check RearMirrorHeatService_ErrStruct.OpeNRC 0//需求回C0
+  g_EM_SOAClient_Swc_SOA_CHECK("RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0"); // 预期结果 TC_CANTest SOA check RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0
+  g_EM_SOAClient_Swc_SOA_CHECK("RearMirrorHeatService_ErrStruct.OpeNRC 0"); // 预期结果 TC_CANTest SOA check RearMirrorHeatService_ErrStruct.OpeNRC 0//需求回C0
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_LeftMirrorHeatOutputSt 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_LeftMirrorHeatOutputSt 0//No Active
+  g_EM_SOAClient_Swc_SOA_StopSubPeriod(); // 测试步骤 TC_CANTest SOA StopSubPeriod
+  // Step Set_CF05 MirrorHeatedTypeCfg enable // 测试步骤Set_CF05关键字不存在
+  teststep("step","Step Set_CF05 MirrorHeatedTypeCfg enable");
+  teststepfail("fail","Set_CF05关键字不存在");
+}
+
+testcase SYS_LDCU_RearMirrorHeat_017()
+{
+  TestDescription("左外后视镜加热开启（SOA）-4 OTA状态不通过");
+  g_HIL_Bus_Swc_Set("J_BAT_VOLT_SV 13.5"); // 测试步骤 Step Set J_BAT_VOLT_SV 13.5
+  g_HIL_Clib_Swc_Clib_NormalOTA(); // 测试步骤 Step Clib NormalOTA
+  g_EM_SOAClient_Swc_SOA_SubPeriod("RearMirrorHeatSt 1"); // 测试步骤 TC_CANTest SOA SubPeriod RearMirrorHeatSt 1
+  g_EM_SOAClient_Swc_SOA_SubPeriod("RearMirrorHeatService_ErrGrp 1"); // 测试步骤 TC_CANTest SOA SubPeriod RearMirrorHeatService_ErrGrp 1
+  g_EM_SOAClient_Swc_SOA_REQ("RearMirrorHeatCmdStruct.RearMirrorHeat:1&userID:1&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ RearMirrorHeatCmdStruct.RearMirrorHeat:1&userID:1&ServiceExecuteFeedbackFlag:2//0x1:Open
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0"); // 预期结果 TC_CANTest SOA check RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("RearMirrorHeatService_ErrStruct.OpeNRC 0xC2"); // 预期结果 TC_CANTest SOA check RearMirrorHeatService_ErrStruct.OpeNRC 0xC2
+  g_EM_SOAClient_Swc_SOA_CHECK("RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0"); // 预期结果 TC_CANTest SOA check RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0
+  g_EM_SOAClient_Swc_SOA_CHECK("RearMirrorHeatService_ErrStruct.OpeNRC 0xC2"); // 预期结果 TC_CANTest SOA check RearMirrorHeatService_ErrStruct.OpeNRC 0xC2
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_RearMirrorHeatOutputSt 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_RearMirrorHeatOutputSt 0//No Active
+  g_HIL_Clib_Swc_Clib_NonOTA(); // 测试步骤 Step Clib NonOTA
+  g_EM_SOAClient_Swc_SOA_StopSubPeriod(); // 测试步骤 TC_CANTest SOA StopSubPeriod
+}
+
+testcase SYS_LDCU_RearMirrorHeat_018()
+{
+  TestDescription("左外后视镜加热关闭（SOA）-2 低压关闭");
+  g_EM_SOAClient_Swc_SOA_SubPeriod("RearMirrorHeatSt 1"); // 测试步骤 TC_CANTest SOA SubPeriod RearMirrorHeatSt 1
+  g_EM_SOAClient_Swc_SOA_SubPeriod("RearMirrorHeatService_ErrGrp 1"); // 测试步骤 TC_CANTest SOA SubPeriod RearMirrorHeatService_ErrGrp 1
+  g_EM_SOAClient_Swc_SOA_REQ("RearMirrorHeatCmdStruct.RearMirrorHeat:1&userID:1&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ RearMirrorHeatCmdStruct.RearMirrorHeat:1&userID:1&ServiceExecuteFeedbackFlag:2//0x1:Open
+  g_HIL_Gen_Swc_Wait("302 ms"); // 测试步骤 Step Wait 302 ms
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0"); // 预期结果 TC_CANTest SOA check RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0//
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("RearMirrorHeatStStruct.LeftMirrorHeatOutputSt 1"); // 预期结果 TC_CANTest SOA check RearMirrorHeatStStruct.LeftMirrorHeatOutputSt 1
+  g_EM_SOAClient_Swc_SOA_CHECK("RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0"); // 预期结果 TC_CANTest SOA check RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0//
+  g_EM_SOAClient_Swc_SOA_CHECK("RearMirrorHeatStStruct.LeftMirrorHeatOutputSt 1"); // 预期结果 TC_CANTest SOA check RearMirrorHeatStStruct.LeftMirrorHeatOutputSt 1
+  g_HIL_Bus_Swc_Check("I_LDCU_BodyCtrl::I_LDCU_RDCU_RMirrorHeat 1"); // 预期结果 Step Check I_LDCU_BodyCtrl::I_LDCU_RDCU_RMirrorHeat 1//0x1:Open
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_LeftMirrorHeatOutputSt 1"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_LeftMirrorHeatOutputSt 1//0x1:Active
+  g_HIL_Bus_Swc_Check("J_DO_HS_LeftMirrorHeated Active"); // 预期结果 Step Check J_DO_HS_LeftMirrorHeated Active// 后视镜加热状态
+  g_HIL_Gen_Swc_Wait("3000 ms"); // 测试步骤 Step Wait 3000 ms
+  g_HIL_Bus_Swc_Set("J_BAT_VOLT_SV 7.5"); // 测试步骤 Step Set J_BAT_VOLT_SV 7.5
+  g_EM_SOAClient_Swc_SOA_REQ("RearMirrorHeatCmdStruct.RearMirrorHeat:0&userID:1&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ RearMirrorHeatCmdStruct.RearMirrorHeat:0&userID:1&ServiceExecuteFeedbackFlag:2//0x0:no operation
+  g_HIL_Gen_Swc_Wait("302 ms"); // 测试步骤 Step Wait 302 ms
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0"); // 预期结果 TC_CANTest SOA check RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("RearMirrorHeatStStruct.LeftMirrorHeatOutputSt 0"); // 预期结果 TC_CANTest SOA check RearMirrorHeatStStruct.LeftMirrorHeatOutputSt 0
+  g_EM_SOAClient_Swc_SOA_CHECK("RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0"); // 预期结果 TC_CANTest SOA check RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0
+  g_HIL_Bus_Swc_Check("J_DO_HS_LeftMirrorHeated Inactive"); // 预期结果 Step Check J_DO_HS_LeftMirrorHeated Inactive
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_LeftMirrorHeatOutputSt 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_LeftMirrorHeatOutputSt 0//左后视镜输出状态0x0:Not active
+  g_EM_SOAClient_Swc_SOA_CHECK("RearMirrorHeatStStruct.LeftMirrorHeatOutputSt 0"); // 预期结果 TC_CANTest SOA check RearMirrorHeatStStruct.LeftMirrorHeatOutputSt 0
+  g_HIL_Bus_Swc_Check("I_LDCU_BodyCtrl::I_LDCU_RDCU_RMirrorHeat 2"); // 预期结果 Step Check I_LDCU_BodyCtrl::I_LDCU_RDCU_RMirrorHeat 2// 0x2:Close
+  g_EM_SOAClient_Swc_SOA_StopSubPeriod(); // 测试步骤 TC_CANTest SOA StopSubPeriod
+}
+
+testcase SYS_LDCU_RearMirrorHeat_019()
+{
+  TestDescription("左外后视镜加热关闭（SOA）-3 高压关闭");
+  g_HIL_Bus_Swc_Set("J_BAT_VOLT_SV 13.5"); // 测试步骤 Step Set J_BAT_VOLT_SV 13.5
+  g_EM_SOAClient_Swc_SOA_SubPeriod("RearMirrorHeatSt 1"); // 测试步骤 TC_CANTest SOA SubPeriod RearMirrorHeatSt 1
+  g_EM_SOAClient_Swc_SOA_SubPeriod("RearMirrorHeatService_ErrGrp 1"); // 测试步骤 TC_CANTest SOA SubPeriod RearMirrorHeatService_ErrGrp 1
+  g_EM_SOAClient_Swc_SOA_REQ("RearMirrorHeatCmdStruct.RearMirrorHeat:1&userID:1&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ RearMirrorHeatCmdStruct.RearMirrorHeat:1&userID:1&ServiceExecuteFeedbackFlag:2//0x1:Open
+  g_HIL_Gen_Swc_Wait("302 ms"); // 测试步骤 Step Wait 302 ms
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0"); // 预期结果 TC_CANTest SOA check RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0//
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("RearMirrorHeatStStruct.LeftMirrorHeatOutputSt 1"); // 预期结果 TC_CANTest SOA check RearMirrorHeatStStruct.LeftMirrorHeatOutputSt 1
+  g_EM_SOAClient_Swc_SOA_CHECK("RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0"); // 预期结果 TC_CANTest SOA check RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0//
+  g_EM_SOAClient_Swc_SOA_CHECK("RearMirrorHeatStStruct.LeftMirrorHeatOutputSt 1"); // 预期结果 TC_CANTest SOA check RearMirrorHeatStStruct.LeftMirrorHeatOutputSt 1
+  g_HIL_Bus_Swc_Check("I_LDCU_BodyCtrl::I_LDCU_RDCU_RMirrorHeat 1"); // 预期结果 Step Check I_LDCU_BodyCtrl::I_LDCU_RDCU_RMirrorHeat 1//0x1:Open
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_LeftMirrorHeatOutputSt 1"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_LeftMirrorHeatOutputSt 1//0x1:Active
+  g_HIL_Bus_Swc_Check("J_DO_HS_LeftMirrorHeated Active"); // 预期结果 Step Check J_DO_HS_LeftMirrorHeated Active// 后视镜加热状态
+  g_HIL_Gen_Swc_Wait("3000 ms"); // 测试步骤 Step Wait 3000 ms
+  g_HIL_Bus_Swc_Set("J_BAT_VOLT_SV 17.5"); // 测试步骤 Step Set J_BAT_VOLT_SV 17.5
+  g_EM_SOAClient_Swc_SOA_REQ("RearMirrorHeatCmdStruct.RearMirrorHeat:0&userID:1&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ RearMirrorHeatCmdStruct.RearMirrorHeat:0&userID:1&ServiceExecuteFeedbackFlag:2//0x0:no operation
+  g_HIL_Gen_Swc_Wait("302 ms"); // 测试步骤 Step Wait 302 ms
+  g_HIL_Bus_Swc_Check("J_DO_HS_LeftMirrorHeated Inactive"); // 预期结果 Step Check J_DO_HS_LeftMirrorHeated Inactive
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_LeftMirrorHeatOutputSt 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_LeftMirrorHeatOutputSt 0//左后视镜输出状态0x0:Not active
+  g_HIL_Bus_Swc_Check("I_LDCU_BodyCtrl::I_LDCU_RDCU_RMirrorHeat 2"); // 预期结果 Step Check I_LDCU_BodyCtrl::I_LDCU_RDCU_RMirrorHeat 2// 0x2:Close
+  g_EM_SOAClient_Swc_SOA_StopSubPeriod(); // 测试步骤 TC_CANTest SOA StopSubPeriod
+}
+
+testcase SYS_LDCU_RearMirrorHeat_020()
+{
+  TestDescription("左外后视镜加热关闭（SOA）-4 OTA关闭");
+  g_HIL_Bus_Swc_Set("J_BAT_VOLT_SV 13.5"); // 测试步骤 Step Set J_BAT_VOLT_SV 13.5//蓄电池电压=13.5V
+  g_EM_SOAClient_Swc_SOA_SubPeriod("RearMirrorHeatSt 1"); // 测试步骤 TC_CANTest SOA SubPeriod RearMirrorHeatSt 1
+  g_EM_SOAClient_Swc_SOA_SubPeriod("RearMirrorHeatService_ErrGrp 1"); // 测试步骤 TC_CANTest SOA SubPeriod RearMirrorHeatService_ErrGrp 1
+  g_EM_SOAClient_Swc_SOA_REQ("RearMirrorHeatCmdStruct.RearMirrorHeat:1&userID:1&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ RearMirrorHeatCmdStruct.RearMirrorHeat:1&userID:1&ServiceExecuteFeedbackFlag:2//0x1:Open
+  g_HIL_Gen_Swc_Wait("201 ms"); // 测试步骤 Step Wait 201 ms
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0"); // 预期结果 TC_CANTest SOA check RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0//
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("RearMirrorHeatStStruct.LeftMirrorHeatOutputSt 1"); // 预期结果 TC_CANTest SOA check RearMirrorHeatStStruct.LeftMirrorHeatOutputSt 1
+  g_EM_SOAClient_Swc_SOA_CHECK("RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0"); // 预期结果 TC_CANTest SOA check RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0//
+  g_EM_SOAClient_Swc_SOA_CHECK("RearMirrorHeatStStruct.LeftMirrorHeatOutputSt 1"); // 预期结果 TC_CANTest SOA check RearMirrorHeatStStruct.LeftMirrorHeatOutputSt 1
+  g_HIL_Bus_Swc_Check("I_LDCU_BodyCtrl::I_LDCU_RDCU_RMirrorHeat 1"); // 预期结果 Step Check I_LDCU_BodyCtrl::I_LDCU_RDCU_RMirrorHeat 1//0x1:Open
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_LeftMirrorHeatOutputSt 1"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_LeftMirrorHeatOutputSt 1//0x1:Active
+  g_HIL_Bus_Swc_Check("J_DO_HS_LeftMirrorHeated Active"); // 预期结果 Step Check J_DO_HS_LeftMirrorHeated Active// 后视镜加热状态
+  g_HIL_Clib_Swc_Clib_NormalOTA(); // 测试步骤 Step Clib NormalOTA
+  g_EM_SOAClient_Swc_SOA_REQ("RearMirrorHeatCmdStruct.RearMirrorHeat:0&userID:1&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ RearMirrorHeatCmdStruct.RearMirrorHeat:0&userID:1&ServiceExecuteFeedbackFlag:2//0x0:no operation
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Check("J_DO_HS_LeftMirrorHeated Inactive"); // 预期结果 Step Check J_DO_HS_LeftMirrorHeated Inactive
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_LeftMirrorHeatOutputSt 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_LeftMirrorHeatOutputSt 0//左后视镜输出状态0x0:Not active
+  g_HIL_Bus_Swc_Check("I_LDCU_BodyCtrl::I_LDCU_RDCU_RMirrorHeat 2"); // 预期结果 Step Check I_LDCU_BodyCtrl::I_LDCU_RDCU_RMirrorHeat 2// 0x2:Close
+  g_HIL_Clib_Swc_Clib_NonOTA(); // 测试步骤 Step Clib NonOTA
+  g_EM_SOAClient_Swc_SOA_StopSubPeriod(); // 测试步骤 TC_CANTest SOA StopSubPeriod
+}
+
+testcase SYS_LDCU_RearMirrorHeat_021()
+{
+  TestDescription("左外后视镜加热关闭（SOA）-5 Local变化关闭-1");
+  g_HIL_Clib_Swc_Clib_RemoteON(); // 测试步骤 Step Clib RemoteON
+  g_EM_SOAClient_Swc_SOA_SubPeriod("RearMirrorHeatSt 1"); // 测试步骤 TC_CANTest SOA SubPeriod RearMirrorHeatSt 1
+  g_EM_SOAClient_Swc_SOA_SubPeriod("RearMirrorHeatService_ErrGrp 1"); // 测试步骤 TC_CANTest SOA SubPeriod RearMirrorHeatService_ErrGrp 1
+  g_EM_SOAClient_Swc_SOA_REQ("RearMirrorHeatCmdStruct.RearMirrorHeat:1&userid:1&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ RearMirrorHeatCmdStruct.RearMirrorHeat:1&userid:1&ServiceExecuteFeedbackFlag:2//0x1:Open
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0"); // 预期结果 TC_CANTest SOA check RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0//
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("RearMirrorHeatStStruct.LeftMirrorHeatOutputSt 1"); // 预期结果 TC_CANTest SOA check RearMirrorHeatStStruct.LeftMirrorHeatOutputSt 1
+  g_EM_SOAClient_Swc_SOA_CHECK("RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0"); // 预期结果 TC_CANTest SOA check RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0//
+  g_EM_SOAClient_Swc_SOA_CHECK("RearMirrorHeatStStruct.LeftMirrorHeatOutputSt 1"); // 预期结果 TC_CANTest SOA check RearMirrorHeatStStruct.LeftMirrorHeatOutputSt 1
+  g_HIL_Bus_Swc_Check("J_DO_LS_DeforstrRly Active"); // 预期结果 Step Check J_DO_LS_DeforstrRly Active//输出加热驱动，IO=J1-15,低有效
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_RearMirrorHeatOutputSt 1"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_RearMirrorHeatOutputSt 1//后除霜输出状态active
+  g_HIL_Bus_Swc_Check("I_LDCU_BodyCtrl::I_LDCU_RDCU_RMirrorHeat 1"); // 预期结果 Step Check I_LDCU_BodyCtrl::I_LDCU_RDCU_RMirrorHeat 1//0x1:Open
+  g_HIL_Clib_Swc_Clib_LocalON(); // 测试步骤 Step Clib LocalON
+  g_EM_SOAClient_Swc_SOA_REQ("RearMirrorHeatCmdStruct.RearMirrorHeat:0&userid:1&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ RearMirrorHeatCmdStruct.RearMirrorHeat:0&userid:1&ServiceExecuteFeedbackFlag:2//0x0:no operation
+  g_HIL_Gen_Swc_Wait("201 ms"); // 测试步骤 Step Wait 201 ms
+  g_HIL_Bus_Swc_Check("J_DO_HS_LeftMirrorHeated Inactive"); // 预期结果 Step Check J_DO_HS_LeftMirrorHeated Inactive
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_LeftMirrorHeatOutputSt 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_LeftMirrorHeatOutputSt 0//左后视镜输出状态0x0:Not active
+  g_HIL_Bus_Swc_Check("I_LDCU_BodyCtrl::I_LDCU_RDCU_RMirrorHeat 2"); // 预期结果 Step Check I_LDCU_BodyCtrl::I_LDCU_RDCU_RMirrorHeat 2// 0x2:Close
+  g_EM_SOAClient_Swc_SOA_StopSubPeriod(); // 测试步骤 TC_CANTest SOA StopSubPeriod
+}
+
+testcase SYS_LDCU_RearMirrorHeat_022()
+{
+  TestDescription("左外后视镜加热关闭（SOA）-6 Local变化关闭-2");
+  g_HIL_Clib_Swc_Clib_LocalON(); // 测试步骤 Step Clib LocalON
+  g_EM_SOAClient_Swc_SOA_SubPeriod("RearMirrorHeatSt 1"); // 测试步骤 TC_CANTest SOA SubPeriod RearMirrorHeatSt 1
+  g_EM_SOAClient_Swc_SOA_SubPeriod("RearMirrorHeatService_ErrGrp 1"); // 测试步骤 TC_CANTest SOA SubPeriod RearMirrorHeatService_ErrGrp 1
+  g_EM_SOAClient_Swc_SOA_REQ("RearMirrorHeatCmdStruct.RearMirrorHeat:1&userid:1&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ RearMirrorHeatCmdStruct.RearMirrorHeat:1&userid:1&ServiceExecuteFeedbackFlag:2//0x1:Open
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0"); // 预期结果 TC_CANTest SOA check RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0 //0x0:InOperation0x1:OK0x2:NG
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("RearMirrorHeatStStruct.RearMirrorHeatOutputSt 1"); // 预期结果 TC_CANTest SOA check RearMirrorHeatStStruct.RearMirrorHeatOutputSt 1
+  g_EM_SOAClient_Swc_SOA_CHECK("RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0"); // 预期结果 TC_CANTest SOA check RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0 //0x0:InOperation0x1:OK0x2:NG
+  g_EM_SOAClient_Swc_SOA_CHECK("RearMirrorHeatStStruct.RearMirrorHeatOutputSt 1"); // 预期结果 TC_CANTest SOA check RearMirrorHeatStStruct.RearMirrorHeatOutputSt 1
+  g_HIL_Bus_Swc_Check("J_DO_LS_DeforstrRly Active"); // 预期结果 Step Check J_DO_LS_DeforstrRly Active//输出加热驱动，IO=J1-15,低有效
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_RearMirrorHeatOutputSt 1"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_RearMirrorHeatOutputSt 1//后除霜输出状态active
+  g_HIL_Bus_Swc_Check("I_LDCU_BodyCtrl::I_LDCU_RDCU_RMirrorHeat 1"); // 预期结果 Step Check I_LDCU_BodyCtrl::I_LDCU_RDCU_RMirrorHeat 1//0x1:Open
+  g_HIL_Clib_Swc_Clib_OFF(); // 测试步骤 Step Clib OFF
+  g_EM_SOAClient_Swc_SOA_REQ("RearMirrorHeatCmdStruct.RearMirrorHeat:0&userid:1&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ RearMirrorHeatCmdStruct.RearMirrorHeat:0&userid:1&ServiceExecuteFeedbackFlag:2//0x0:no operation
+  g_HIL_Gen_Swc_Wait("201 ms"); // 测试步骤 Step Wait 201 ms
+  g_HIL_Bus_Swc_Check("J_DO_HS_LeftMirrorHeated Inactive"); // 预期结果 Step Check J_DO_HS_LeftMirrorHeated Inactive
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_LeftMirrorHeatOutputSt 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_LeftMirrorHeatOutputSt 0//左后视镜输出状态0x0:Not active
+  g_HIL_Bus_Swc_Check("I_LDCU_BodyCtrl::I_LDCU_RDCU_RMirrorHeat 2"); // 预期结果 Step Check I_LDCU_BodyCtrl::I_LDCU_RDCU_RMirrorHeat 2// 0x2:Close
+  g_EM_SOAClient_Swc_SOA_StopSubPeriod(); // 测试步骤 TC_CANTest SOA StopSubPeriod
+}
+
+testcase SYS_LDCU_RearMirrorHeat_023()
+{
+  TestDescription("左外后视镜加热关闭（SOA）-7 加热超时关闭");
+  g_EM_SOAClient_Swc_SOA_SubPeriod("RearMirrorHeatSt 1"); // 测试步骤 TC_CANTest SOA SubPeriod RearMirrorHeatSt 1
+  g_EM_SOAClient_Swc_SOA_SubPeriod("RearMirrorHeatService_ErrGrp 1"); // 测试步骤 TC_CANTest SOA SubPeriod RearMirrorHeatService_ErrGrp 1
+  g_EM_SOAClient_Swc_SOA_REQ("RearMirrorHeatCmdStruct.RearMirrorHeat:1&userid:1&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ RearMirrorHeatCmdStruct.RearMirrorHeat:1&userid:1&ServiceExecuteFeedbackFlag:2//0x1:Open
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0"); // 预期结果 TC_CANTest SOA check RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0//
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("RearMirrorHeatStStruct.LeftMirrorHeatOutputSt 1"); // 预期结果 TC_CANTest SOA check RearMirrorHeatStStruct.LeftMirrorHeatOutputSt 1
+  g_EM_SOAClient_Swc_SOA_CHECK("RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0"); // 预期结果 TC_CANTest SOA check RearMirrorHeatCmdRespStruct.RearMirrorHeatCmdNRC 0&RespCode 0//
+  g_EM_SOAClient_Swc_SOA_CHECK("RearMirrorHeatStStruct.LeftMirrorHeatOutputSt 1"); // 预期结果 TC_CANTest SOA check RearMirrorHeatStStruct.LeftMirrorHeatOutputSt 1
+  g_HIL_Bus_Swc_Check("I_LDCU_BodyCtrl::I_LDCU_RDCU_RMirrorHeat 1"); // 预期结果 Step Check I_LDCU_BodyCtrl::I_LDCU_RDCU_RMirrorHeat 1//0x1:Open
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_LeftMirrorHeatOutputSt 1"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_LeftMirrorHeatOutputSt 1//0x1:Active
+  g_HIL_Bus_Swc_Check("J_DO_HS_LeftMirrorHeated Active"); // 预期结果 Step Check J_DO_HS_LeftMirrorHeated Active// 后视镜加热状态
+  g_HIL_Gen_Swc_Wait("600 s"); // 测试步骤 Step Wait 600 s
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_LeftMirrorHeatOutputSt 1"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_LeftMirrorHeatOutputSt 1//0x1:Active
+  g_HIL_Gen_Swc_Wait("301 s"); // 测试步骤 Step Wait 301 s
+  g_HIL_Bus_Swc_Check("J_DO_HS_LeftMirrorHeated Inactive"); // 预期结果 Step Check J_DO_HS_LeftMirrorHeated Inactive
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_LeftMirrorHeatOutputSt 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_LeftMirrorHeatOutputSt 0//左后视镜输出状态0x0:Not active
+  g_HIL_Bus_Swc_Check("I_LDCU_BodyCtrl::I_LDCU_RDCU_RMirrorHeat 2"); // 预期结果 Step Check I_LDCU_BodyCtrl::I_LDCU_RDCU_RMirrorHeat 2// 0x2:Close
+  g_EM_SOAClient_Swc_SOA_StopSubPeriod(); // 测试步骤 TC_CANTest SOA StopSubPeriod
+}
+
+testcase SYS_LDCU_RearMirrorHeat_028()
+{
+  TestDescription("左外后视镜加热开启&关闭（实体按键)");
+  g_HIL_Clib_Swc_Clib_LocalON(); // 测试步骤 Step Clib LocalON
+  g_HIL_Bus_Swc_Set("J_BAT_VOLT_SV 13.5"); // 测试步骤 Step Set J_BAT_VOLT_SV 13.5//蓄电池电压=13.5V
+  // Step Set_CF05 MirrorHeatedTypeCfg enable // 测试步骤Set_CF05关键字不存在
+  teststep("step","Step Set_CF05 MirrorHeatedTypeCfg enable");
+  teststepfail("fail","Set_CF05关键字不存在");
+  g_HIL_Gen_Swc_Wait("201 ms"); // 测试步骤 Step Wait 201 ms
+  g_HIL_Bus_Swc_Check("I_RDCU_BodySysSt3::I_RDCU_RightMirrorHeatOutputSt 0"); // 预期结果 Step Check I_RDCU_BodySysSt3::I_RDCU_RightMirrorHeatOutputSt 0
+  g_HIL_Bus_Swc_Set("J_AI_MirrorHeatFoldAdjSw 2.6"); // 测试步骤 Step Set  J_AI_MirrorHeatFoldAdjSw 2.6//J5-38
+  g_HIL_Gen_Swc_Wait("201 ms"); // 测试步骤 Step Wait 201 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_SshdCtrl::I_MirrorSwSts 4 1 s"); // 预期结果 Step Check I_LDCU_SshdCtrl::I_MirrorSwSts 4 1 s//0x4:Heat
+  g_HIL_Bus_Swc_Check("J_DO_HS_LeftMirrorHeated 1"); // 预期结果 Step Check J_DO_HS_LeftMirrorHeated 1//0x1 Active
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_LeftMirrorHeatOutputSt 1 1 s"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_LeftMirrorHeatOutputSt 1 1 s//0x1:Active
+  g_HIL_Bus_Swc_Check("I_LDCU_BodyCtrl::I_LDCU_RDCU_RMirrorHeat 1"); // 预期结果 Step Check I_LDCU_BodyCtrl::I_LDCU_RDCU_RMirrorHeat 1//0x1:Open
+  g_HIL_Gen_Swc_Wait("1 s"); // 测试步骤 Step Wait 1 s
+  g_HIL_Bus_Swc_Set("J_AI_MirrorHeatFoldAdjSw 3"); // 测试步骤 Step Set J_AI_MirrorHeatFoldAdjSw 3//J5-38 断路为N档
+  g_HIL_Gen_Swc_Wait("302 ms"); // 测试步骤 Step Wait 302 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_SshdCtrl::I_MirrorSwSts 0"); // 预期结果 Step Check I_LDCU_SshdCtrl::I_MirrorSwSts 0//0x0 Neutral
+  g_HIL_Bus_Swc_Check("I_LDCU_BodyCtrl::I_LDCU_RDCU_RMirrorHeat 2"); // 预期结果 Step Check I_LDCU_BodyCtrl::I_LDCU_RDCU_RMirrorHeat 2//0x2:close
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_LeftMirrorHeatOutputSt 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_LeftMirrorHeatOutputSt 0//0x1:Not active
+  g_HIL_Bus_Swc_Check("J_DO_HS_LeftMirrorHeated Inactive"); // 预期结果 Step Check J_DO_HS_LeftMirrorHeated Inactive
+}
+
+testcase SYS_LDCU_RearMirrorHeat_029()
+{
+  TestDescription("左外后视镜加热开启关闭（实体按键）   低压关闭");
+  g_HIL_Clib_Swc_Clib_LocalON(); // 测试步骤 Step Clib LocalON
+  g_HIL_Bus_Swc_Set("J_BAT_VOLT_SV 7.5"); // 测试步骤 Step Set J_BAT_VOLT_SV 7.5
+  g_HIL_Bus_Swc_Set("J_AI_MirrorHeatFoldAdjSw >= 2 and <= 2.9"); // 测试步骤 Step Set  J_AI_MirrorHeatFoldAdjSw >= 2 and <= 2.9//J5-38
+  g_HIL_Gen_Swc_Wait("201 ms"); // 测试步骤 Step Wait 201 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_SshdCtrl::I_MirrorSwSts 0"); // 预期结果 Step Check I_LDCU_SshdCtrl::I_MirrorSwSts 0//0x0 Neutral
+  g_HIL_Bus_Swc_Check("I_LDCU_BodyCtrl::I_LDCU_RDCU_RMirrorHeat 2"); // 预期结果 Step Check I_LDCU_BodyCtrl::I_LDCU_RDCU_RMirrorHeat 2//0x2:close
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_LeftMirrorHeatOutputSt 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_LeftMirrorHeatOutputSt 0//0x1:Not active
+  g_HIL_Bus_Swc_Check("J_DO_HS_LeftMirrorHeated Inactive"); // 预期结果 Step Check J_DO_HS_LeftMirrorHeated Inactive
+  g_HIL_Bus_Swc_Set("J_BAT_VOLT_SV 13.5"); // 测试步骤 Step Set J_BAT_VOLT_SV 13.5
+}
+
+testcase SYS_LDCU_RearMirrorHeat_030()
+{
+  TestDescription("左外后视镜加热开启关闭（实体按键） 高压关闭");
+  g_HIL_Clib_Swc_Clib_LocalON(); // 测试步骤 Step Clib LocalON
+  g_HIL_Bus_Swc_Set("J_BAT_VOLT_SV 18.5"); // 测试步骤 Step Set J_BAT_VOLT_SV 18.5
+  g_HIL_Bus_Swc_Set("J_AI_MirrorHeatFoldAdjSw 2.6"); // 测试步骤 Step Set  J_AI_MirrorHeatFoldAdjSw 2.6//J5-38
+  g_HIL_Gen_Swc_Wait("201 ms"); // 测试步骤 Step Wait 201 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_SshdCtrl::I_MirrorSwSts 0"); // 预期结果 Step Check I_LDCU_SshdCtrl::I_MirrorSwSts 0//0x0 Neutral
+  g_HIL_Bus_Swc_Check("I_LDCU_BodyCtrl::I_LDCU_RDCU_RMirrorHeat 2"); // 预期结果 Step Check I_LDCU_BodyCtrl::I_LDCU_RDCU_RMirrorHeat 2//0x2:close
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_LeftMirrorHeatOutputSt 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_LeftMirrorHeatOutputSt 0//0x1:Not active
+  g_HIL_Bus_Swc_Check("J_DO_HS_LeftMirrorHeated Inactive"); // 预期结果 Step Check J_DO_HS_LeftMirrorHeated Inactive
+  g_HIL_Bus_Swc_Set("J_BAT_VOLT_SV 13.5"); // 测试步骤 Step Set J_BAT_VOLT_SV 13.5
+}
+
+testcase SYS_LDCU_RearMirrorHeat_031()
+{
+  TestDescription("左外后视镜加热开启（实体按键） 配置字未使能  未开启");
+  g_HIL_Clib_Swc_Clib_LocalON(); // 测试步骤 Step Clib LocalON
+  g_HIL_Bus_Swc_Set("J_BAT_VOLT_SV 13.5"); // 测试步骤 Step Set J_BAT_VOLT_SV 13.5//蓄电池电压=13.5V
+  // Step Set_CF05 MirrorHeatedTypeCfg disable // 测试步骤Set_CF05关键字不存在
+  teststep("step","Step Set_CF05 MirrorHeatedTypeCfg disable");
+  teststepfail("fail","Set_CF05关键字不存在");
+  g_HIL_Bus_Swc_Set("J_AI_MirrorHeatFoldAdjSw 2.6"); // 测试步骤 Step Set  J_AI_MirrorHeatFoldAdjSw 2.6//J5-38
+  g_HIL_Gen_Swc_Wait("201 ms"); // 测试步骤 Step Wait 201 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_SshdCtrl::I_MirrorSwSts 0"); // 预期结果 Step Check I_LDCU_SshdCtrl::I_MirrorSwSts 0//0x0 Neutral
+  g_HIL_Bus_Swc_Check("I_LDCU_BodyCtrl::I_LDCU_RDCU_RMirrorHeat 2"); // 预期结果 Step Check I_LDCU_BodyCtrl::I_LDCU_RDCU_RMirrorHeat 2//0x2:close
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_LeftMirrorHeatOutputSt 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_LeftMirrorHeatOutputSt 0//0x1:Not active
+  g_HIL_Bus_Swc_Check("J_DO_HS_LeftMirrorHeated Inactive"); // 预期结果 Step Check J_DO_HS_LeftMirrorHeated Inactive
+  // Step Set_CF05 MirrorHeatedTypeCfg enable // 测试步骤Set_CF05关键字不存在
+  teststep("step","Step Set_CF05 MirrorHeatedTypeCfg enable");
+  teststepfail("fail","Set_CF05关键字不存在");
+}
+
+testcase SYS_LDCU_RearMirrorHeat_032()
+{
+  TestDescription("左外后视镜加热开启（实体按键） 车型配置字错误 未开启");
+  g_HIL_Clib_Swc_Clib_LocalON(); // 测试步骤 Step Clib LocalON
+  g_HIL_Bus_Swc_Set("J_BAT_VOLT_SV 13.5"); // 测试步骤 Step Set J_BAT_VOLT_SV 13.5//蓄电池电压=13.5V
+  g_HIL_UDS_Swc_Set_Config("VehicleType 35"); // 测试步骤 Step Set_Config VehicleType 35
+  g_HIL_Bus_Swc_Set("J_AI_MirrorHeatFoldAdjSw 2.6"); // 测试步骤 Step Set  J_AI_MirrorHeatFoldAdjSw 2.6//J5-38
+  g_HIL_Gen_Swc_Wait("201 ms"); // 测试步骤 Step Wait 201 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_SshdCtrl::I_MirrorSwSts 0"); // 预期结果 Step Check I_LDCU_SshdCtrl::I_MirrorSwSts 0//0x0 Neutral
+  g_HIL_Bus_Swc_Check("I_LDCU_BodyCtrl::I_LDCU_RDCU_RMirrorHeat 2"); // 预期结果 Step Check I_LDCU_BodyCtrl::I_LDCU_RDCU_RMirrorHeat 2//0x2:close
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_LeftMirrorHeatOutputSt 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_LeftMirrorHeatOutputSt 0//0x1:Not active
+  g_HIL_Bus_Swc_Check("J_DO_HS_LeftMirrorHeated Inactive"); // 预期结果 Step Check J_DO_HS_LeftMirrorHeated Inactive
+  g_HIL_UDS_Swc_Set_Config("VehicleType 03"); // 测试步骤 Step Set_Config VehicleType 03
+}
+
+testcase SYS_LDCU_RearMirrorHeat_033()
+{
+  TestDescription("左外后视镜加热开启（实体按键） 有感OTA模式  未开启");
+  g_HIL_Clib_Swc_Clib_LocalON(); // 测试步骤 Step Clib LocalON
+  g_HIL_Bus_Swc_Set("J_BAT_VOLT_SV 13.5"); // 测试步骤 Step Set J_BAT_VOLT_SV 13.5//蓄电池电压=13.5V
+  g_HIL_Clib_Swc_Clib_NormalOTA(); // 测试步骤 Step Clib NormalOTA
+  g_HIL_Bus_Swc_Set("J_AI_MirrorHeatFoldAdjSw >= 2 and <= 2.9"); // 测试步骤 Step Set  J_AI_MirrorHeatFoldAdjSw >= 2 and <= 2.9//J5-38
+  g_HIL_Gen_Swc_Wait("201 ms"); // 测试步骤 Step Wait 201 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_SshdCtrl::I_MirrorSwSts 0"); // 预期结果 Step Check I_LDCU_SshdCtrl::I_MirrorSwSts 0//0x0 Neutral
+  g_HIL_Bus_Swc_Check("I_LDCU_BodyCtrl::I_LDCU_RDCU_RMirrorHeat 2"); // 预期结果 Step Check I_LDCU_BodyCtrl::I_LDCU_RDCU_RMirrorHeat 2//0x2:close
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_LeftMirrorHeatOutputSt 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_LeftMirrorHeatOutputSt 0//0x1:Not active
+  g_HIL_Bus_Swc_Check("J_DO_HS_LeftMirrorHeated Inactive"); // 预期结果 Step Check J_DO_HS_LeftMirrorHeated Inactive
+  g_HIL_Clib_Swc_Clib_NonOTA(); // 测试步骤 Step Clib NonOTA
+}
+
+testcase SYS_LDCU_RearMirrorHeat_034()
+{
+  TestDescription("镜片加热输出状态 Active&Not active");
+  g_EM_SOAClient_Swc_SOA_SubPeriod("RearMirrorHeatSt 1"); // 测试步骤 TC_CANTest SOA SubPeriod RearMirrorHeatSt 1
+  g_EM_SOAClient_Swc_SOA_SubPeriod("RearMirrorHeatService_ErrGrp 1"); // 测试步骤 TC_CANTest SOA SubPeriod RearMirrorHeatService_ErrGrp 1
+  g_EM_SOAClient_Swc_SOA_REQ("RearMirrorHeatCmdStruct.RearMirrorHeat:1&userid:1&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ RearMirrorHeatCmdStruct.RearMirrorHeat:1&userid:1&ServiceExecuteFeedbackFlag:2//0x1:Open
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_LeftMirrorHeatOutputSt 1"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_LeftMirrorHeatOutputSt 1//0x1:Active
+  g_HIL_Bus_Swc_Check("I_RDCU_BodySysSt3::I_RDCU_RightMirrorHeatOutputSt 0"); // 预期结果 Step Check I_RDCU_BodySysSt3::I_RDCU_RightMirrorHeatOutputSt 0//0x0 Not active
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_RearMirrorHeatOutputSt 1"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_RearMirrorHeatOutputSt 1//0x1 Active
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt3::I_IMSHeatingSt 0"); // 预期结果 Step Check I_LDCU_BodySysSt3::I_IMSHeatingSt 0//0x0 OFF
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_MirrorHeatOutputSt 1"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_MirrorHeatOutputSt 1//0x1 Active
+  g_EM_SOAClient_Swc_SOA_REQ("RearMirrorHeatCmdStruct.RearMirrorHeat:2&userid:1&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ RearMirrorHeatCmdStruct.RearMirrorHeat:2&userid:1&ServiceExecuteFeedbackFlag:2//0x2:Open
+  g_HIL_Gen_Swc_Wait("301 ms"); // 测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_LeftMirrorHeatOutputSt 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_LeftMirrorHeatOutputSt 0//0x0:Not active
+  g_HIL_Bus_Swc_Check("I_RDCU_BodySysSt3::I_RDCU_RightMirrorHeatOutputSt 0"); // 预期结果 Step Check I_RDCU_BodySysSt3::I_RDCU_RightMirrorHeatOutputSt 0//0x0 Not active
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_RearMirrorHeatOutputSt 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_RearMirrorHeatOutputSt 0//0x0:Not active
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt3::I_IMSHeatingSt 0"); // 预期结果 Step Check I_LDCU_BodySysSt3::I_IMSHeatingSt 0//0x0 OFF
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt2::I_LDCU_MirrorHeatOutputSt 0"); // 预期结果 Step Check I_LDCU_BodySysSt2::I_LDCU_MirrorHeatOutputSt 0//0x0:Not active
+  g_EM_SOAClient_Swc_SOA_StopSubPeriod(); // 测试步骤 TC_CANTest SOA StopSubPeriod
+}

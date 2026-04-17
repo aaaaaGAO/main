@@ -147,7 +147,7 @@ def format_step_error_lines(
         return [
             f"  // {original_line} // {role_prefix}关键字匹配失败",
             f'  teststep("step","{original_line.replace(chr(34), chr(92)+chr(34))}");',
-            f'  teststepfail("fail","");',
+            '  teststepfail("fail","");',
         ]
     escaped_line = original_line.replace('"', '\\"')
     escaped_detail = error_detail.replace('"', '\\"')

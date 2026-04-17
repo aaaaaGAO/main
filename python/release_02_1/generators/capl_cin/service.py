@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import logging
 import os
-from typing import Any, Optional
+from typing import Optional
 
 from core.error_module import ErrorModuleResolver
 from core.common.name_sanitize import sanitize_clib_name
@@ -37,9 +37,9 @@ class CINGeneratorService:
         返回: 生成的 .cin 文件绝对路径，无输出时 None。
         """
         sheet_names = [
-            s.strip()
-            for s in str(runtime.get("sheet_names_str", "")).split(",")
-            if s and str(s).strip()
+            sheet_name.strip()
+            for sheet_name in str(runtime.get("sheet_names_str", "")).split(",")
+            if sheet_name and str(sheet_name).strip()
         ]
         if not sheet_names:
             sheet_names = [DEFAULT_KEYWORD_SHEET_NAME]
@@ -87,15 +87,15 @@ class CINGeneratorService:
         cin_content = cin_content.replace("\r\n", "\n").replace("\n", "\r\n")
         out_path = os.path.join(runtime["output_dir"], runtime["output_cin_filename"])
         os.makedirs(os.path.dirname(out_path), exist_ok=True)
-        with open(out_path, "wb") as f:
-            f.write(cin_content.encode("gb18030", errors="replace"))
+        with open(out_path, "wb") as output_binary_file:
+            output_binary_file.write(cin_content.encode("gb18030", errors="replace"))
 
-        self._log_error_records(error_records)
+        self.log_error_records(error_records)
         if self.logger:
             self.logger.info(f"[cin] .cin 文件已生成: {out_path}")
         return out_path
 
-    def _log_error_records(self, error_records) -> None:
+    def log_error_records(self, error_records) -> None:
         """将 error_records 按行写入 logger。参数: error_records — (func_name, teststep_content, teststepfail_content) 列表。无返回值。"""
         if not error_records or not self.logger:
             return

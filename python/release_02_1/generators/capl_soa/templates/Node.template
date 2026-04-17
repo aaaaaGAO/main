@@ -1,0 +1,29 @@
+/*@!Encoding:936*/
+includes
+{
+  #include "../SOALib/SOALib_Node.cin"
+}
+
+variables
+{
+  char     SOA_NodeName[512] = "{{NodeName}}";
+  
+  dword    SOA_NodeProtocol = {{Protocol}};
+  dword    SOA_NodePort = {{Port}};
+  
+  const SOA_NodeProvidedServiceListNum = {{ProvidedServiceListNum}};
+  struct SOALib_ProvidedServiceType SOA_NodeProvidedServiceList[SOA_NodeProvidedServiceListNum] = 
+  {
+    {% for service in ProvidedServiceList %}
+    { {{ service.ServiceId }}, {{ service.InstanceId }}, {{ service.Major }}, {{ service.Minor }} }{% if not loop.last %},{% endif %}
+    {% endfor %}
+  };
+  
+  const SOA_NodeConsumedServiceListNum = {{ConsumedServiceListNum}};
+  struct SOALib_ConsumedServiceType SOA_NodeConsumedServiceList[SOA_NodeConsumedServiceListNum] = 
+  {
+    {% for service in ConsumedServiceList %}
+    { {{ service.ServiceId }}, {{ service.InstanceId }}, {{ service.Major }}, {{ service.Minor }} }{% if not loop.last %},{% endif %}
+    {% endfor %}
+  };
+}

@@ -12,31 +12,17 @@ import configparser
 import os
 from typing import List, Optional
 
-from infra.filesystem import resolve_fixed_config_path
-
-_FIXED_KEYS = [
-    "unified_mapping_excel",
-    "mapping_sheets",
-    "cin_mapping_sheet",
-    "output_filename",
-    "cin_output_filename",
-    "xml_output_filename",
-    "didinfo_output_filename",
-    "didconfig_output_filename",
-    "uart_output_filename",
-    "uds_output_filename",
-    "didinfo_variants",
-    "mapping_excel",
-    "cin_mapping_excel",
-]
+from infra.filesystem import resolve_fixed_config_path, resolve_runtime_path
+from services.config_constants import PATHS_MERGED_PRESERVE_OPTION_NAMES, SECTION_PATHS
 
 
 def read_config(config_path: str) -> configparser.ConfigParser:
     """读取主配置文件，保留选项名大小写。参数: config_path — 配置文件路径。返回: ConfigParser。"""
     cfg = configparser.ConfigParser()
     cfg.optionxform = str
-    with open(config_path, "r", encoding="utf-8", errors="replace") as f:
-        cfg.read_file(f)
+    resolved_path = resolve_runtime_path(None, config_path)
+    with open(resolved_path, "r", encoding="utf-8", errors="replace") as config_file:
+        cfg.read_file(config_file)
     return cfg
 
 
@@ -44,13 +30,14 @@ def read_config_if_exists(config_path: str) -> configparser.ConfigParser:
     """读取存在的主配置文件；文件不存在时返回空 ConfigParser。"""
     config = configparser.ConfigParser()
     config.optionxform = str
-    if not config_path or not os.path.exists(config_path):
+    resolved_path = resolve_runtime_path(None, config_path)
+    if not resolved_path or not os.path.exists(resolved_path):
         return config
 
     try:
-        config.read(config_path, encoding="utf-8")
+        config.read(resolved_path, encoding="utf-8")
     except Exception:
-        with open(config_path, "r", encoding="utf-8", errors="replace") as config_file:
+        with open(resolved_path, "r", encoding="utf-8", errors="replace") as config_file:
             config.read_file(config_file)
     return config
 
@@ -59,8 +46,9 @@ def read_config_tolerant_duplicates(config_path: str) -> configparser.ConfigPars
     """读取主配置文件，同节内重复选项去重后解析。参数: config_path — 配置文件路径。返回: ConfigParser。"""
     config = configparser.ConfigParser()
     config.optionxform = str
-    with open(config_path, "r", encoding="utf-8", errors="replace") as f:
-        lines = f.readlines()
+    resolved_path = resolve_runtime_path(None, config_path)
+    with open(resolved_path, "r", encoding="utf-8", errors="replace") as config_file:
+        lines = config_file.readlines()
     seen_options: dict[str, set[str]] = {}
     current_section: Optional[str] = None
     cleaned_lines: List[str] = []
@@ -86,7 +74,7 @@ def read_config_tolerant_duplicates(config_path: str) -> configparser.ConfigPars
             cleaned_lines.append(line)
         else:
             cleaned_lines.append(line)
-    config.read_string("".join(cleaned_lines), source=config_path)
+    config.read_string("".join(cleaned_lines), source=resolved_path)
     return config
 
 
@@ -103,10 +91,10 @@ def read_fixed_config(base_dir: str) -> dict[str, str]:
         fixed_cfg.optionxform = str
         fixed_cfg.read(fixed_config_path, encoding="utf-8")
 
-        if fixed_cfg.has_section("PATHS"):
-            for key in _FIXED_KEYS:
-                if fixed_cfg.has_option("PATHS", key):
-                    fixed_config[key] = fixed_cfg.get("PATHS", key)
+        if fixed_cfg.has_section(SECTION_PATHS):
+            for key in PATHS_MERGED_PRESERVE_OPTION_NAMES:
+                if fixed_cfg.has_option(SECTION_PATHS, key):
+                    fixed_config[key] = fixed_cfg.get(SECTION_PATHS, key)
     except Exception as error:
         print(f"警告: 读取固定配置文件失败: {error}")
 

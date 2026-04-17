@@ -119,3 +119,11 @@
 日期：2026-04-14
 1.xml生成时会将同一个sheet中同功能模块放到一个列表里面聚合，改为不合并同名模块
 
+
+版本 4.17
+----------------------------------------
+日期：2026-04-17
+1.预期结果中同时出现soa check和traceback，找该用例中的soa req如果有soa req将加了prepare的移动到soa req前面，如果没有找前面的等待时间wait tc_sleep就放在等待时间的前面
+2.xml取消对功能模块的处理
+3.更改can文件的路径  #include "..\..\..\Public\TESTmode\TestMoudleControl\TestMoudleControl_Swc.can",#include "..\..\..\Public\ILNode\SecOc\CAN\LDCU.cin"
+4.cdcu即中央域部分，在首个testcase和最后一个testcase中分别加g_EM_SOAGen_Swc_SOA_CONNECT();g_EM_SOAGen_Swc_SOA_CLOSE();

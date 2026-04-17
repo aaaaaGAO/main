@@ -71,7 +71,7 @@ class CANExcelRepository:
     ) -> None:
         self.base_dir = base_dir
         self.config = config
-        self._case_filter = CaseFilter(
+        self.case_filter = CaseFilter(
             allowed_levels=allowed_levels,
             allowed_platforms=allowed_platforms,
             allowed_models=allowed_models,
@@ -102,21 +102,21 @@ class CANExcelRepository:
                     if sheet_key not in self.selected_filter.get(excel_name_lower, set()):
                         continue
                 ws = wb[sheet_name]
-                cases = self._load_sheet_cases(ws, excel_path, excel_name)
+                cases = self.load_sheet_cases(ws, excel_path, excel_name)
                 # 有通过用例或虽无通过但有跳过事件时都加入，便于 CAN 日志与 XML 一致（处理Sheet/跳过逐条）
                 if cases or self.skip_events_map.get((excel_path, sheet_name)):
                     out[(excel_path, sheet_name)] = cases
         finally:
             wb.close()
         # 合并 CaseFilter 的过滤统计到 RepoStats
-        self.stats.filtered_by_level += self._case_filter.stats.filtered_by_level
-        self.stats.filtered_by_platform += self._case_filter.stats.filtered_by_platform
-        self.stats.filtered_by_model += self._case_filter.stats.filtered_by_model
-        self.stats.filtered_by_type += self._case_filter.stats.filtered_by_type
-        self.stats.filtered_by_target_version += self._case_filter.stats.filtered_by_target_version
+        self.stats.filtered_by_level += self.case_filter.stats.filtered_by_level
+        self.stats.filtered_by_platform += self.case_filter.stats.filtered_by_platform
+        self.stats.filtered_by_model += self.case_filter.stats.filtered_by_model
+        self.stats.filtered_by_type += self.case_filter.stats.filtered_by_type
+        self.stats.filtered_by_target_version += self.case_filter.stats.filtered_by_target_version
         return out, self.stats.to_dict()
 
-    def _load_sheet_cases(self, ws, excel_path: str, excel_name: str) -> list[CANTestCase]:
+    def load_sheet_cases(self, ws, excel_path: str, excel_name: str) -> list[CANTestCase]:
         """
         加载单个 sheet 的用例。
 
@@ -311,7 +311,7 @@ class CANExcelRepository:
                 self.stats.total_cases += 1
 
                 # 过滤逻辑与 XML 含义一致：等级 -> 平台 -> 车型 -> Target Version -> 用例类型
-                filtered, reason = self._case_filter.is_filtered(
+                filtered, reason = self.case_filter.is_filtered(
                     level, platform, model, case_type, target_version=target_version
                 )
                 if filtered:
@@ -397,9 +397,17 @@ class CANExcelRepository:
                 expected_text = str(raw_expected) if raw_expected is not None else ""
                 expected_lines = expected_text.splitlines() if expected_text else []
 
-            for i in range(max(len(step_lines), len(expected_lines))):
-                step_line = norm_str(step_lines[i]) if i < len(step_lines) else ""
-                expected_line = norm_str(expected_lines[i]) if i < len(expected_lines) else ""
+            for line_pair_index in range(max(len(step_lines), len(expected_lines))):
+                step_line = (
+                    norm_str(step_lines[line_pair_index])
+                    if line_pair_index < len(step_lines)
+                    else ""
+                )
+                expected_line = (
+                    norm_str(expected_lines[line_pair_index])
+                    if line_pair_index < len(expected_lines)
+                    else ""
+                )
                 if step_line:
                     current_case.raw_steps.append(
                         CANRawStep(content=step_line, source="step", excel_row=row_idx)
@@ -415,7 +423,7 @@ class CANExcelRepository:
             self.skip_events_map[sheet_key] = skip_events
         return cases
 
-    def _build_column_mapper(self, header_row: Iterable[object]) -> ColumnMapper | None:
+    def build_column_mapper(self, header_row: Iterable[object]) -> ColumnMapper | None:
         mapper = ColumnMapper(
             aliases={
                 # 与 XML 列识别保持一致：同时支持「用例ID」和「用例 ID」等写法，
@@ -445,7 +453,7 @@ class CANExcelRepository:
         ok = mapper.scan(header_row)
         return mapper if ok else None
 
-    def _collect_raw_steps(self, row: tuple, row_idx: int, mapper: ColumnMapper) -> list[CANRawStep]:
+    def collect_raw_steps(self, row: tuple, row_idx: int, mapper: ColumnMapper) -> list[CANRawStep]:
         items: list[CANRawStep] = []
         step_lines: list[str] = []
         expected_lines: list[str] = []
@@ -458,9 +466,17 @@ class CANExcelRepository:
             expected_text = str(raw_expected) if raw_expected is not None else ""
             expected_lines = expected_text.splitlines() if expected_text else []
 
-        for i in range(max(len(step_lines), len(expected_lines))):
-            step_line = norm_str(step_lines[i]) if i < len(step_lines) else ""
-            expected_line = norm_str(expected_lines[i]) if i < len(expected_lines) else ""
+        for line_pair_index in range(max(len(step_lines), len(expected_lines))):
+            step_line = (
+                norm_str(step_lines[line_pair_index])
+                if line_pair_index < len(step_lines)
+                else ""
+            )
+            expected_line = (
+                norm_str(expected_lines[line_pair_index])
+                if line_pair_index < len(expected_lines)
+                else ""
+            )
             if step_line:
                 items.append(CANRawStep(content=step_line, source="step", excel_row=row_idx))
             if expected_line:
@@ -468,7 +484,7 @@ class CANExcelRepository:
         return items
 
     @staticmethod
-    def _row_value(row: tuple, mapper: ColumnMapper, field: str) -> str:
+    def row_value(row: tuple, mapper: ColumnMapper, field: str) -> str:
         if not mapper.has(field):
             return ""
         idx = mapper.get(field)
@@ -476,7 +492,7 @@ class CANExcelRepository:
             return ""
         return norm_str(row[idx])
 
-    def _missing_header_details(self, header_row: Iterable[object]) -> list[str]:
+    def missing_header_details(self, header_row: Iterable[object]) -> list[str]:
         mapper = ColumnMapper(
             aliases={
                 "case_id": ("用例ID", "用例id", "用例编号"),

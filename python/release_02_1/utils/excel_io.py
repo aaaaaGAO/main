@@ -14,7 +14,7 @@ import unicodedata
 from typing import List, Tuple
 
 from core.common.excel_header import ColumnMapper
-from core.common.input_parser import split_input_lines as _split_input_lines_impl
+from core.common.input_parser import split_input_lines as core_split_input_lines
 from infra.excel.workbook import ExcelService, merged_cell_value
 
 
@@ -34,7 +34,7 @@ def nfc_normalize(s: str) -> str:
 
 def split_input_lines(text: str) -> List[Tuple[str, str]]:
     """解析 Inputs 配置多行格式（path | sheet1,sheet2）。参数: text — 配置文本。返回: [(path, sheets_str), ...]。"""
-    return _split_input_lines_impl(text)
+    return core_split_input_lines(text)
 
 
 # ExcelService、merged_cell_value 已自 infra.excel.workbook 导入并 re-export，供既有调用方使用

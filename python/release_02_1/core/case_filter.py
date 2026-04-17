@@ -48,14 +48,23 @@ class CaseFilter:
             allowed_models: 允许的车型集合，None 或空表示不过滤。
             allowed_target_versions: 允许的 Target Version 集合（已按 IPDT 规则展开），None 或空表示不过滤。
         """
-        self.allowed_levels = {str(x).upper().strip() for x in (allowed_levels or set())}
-        self.allowed_platforms = {str(x).upper().strip() for x in (allowed_platforms or set())}
-        self.allowed_models = {str(x).upper().strip() for x in (allowed_models or set())}
-        self.allowed_target_versions = {str(x).strip() for x in (allowed_target_versions or set())}
+        self.allowed_levels = {
+            str(level_item).upper().strip() for level_item in (allowed_levels or set())
+        }
+        self.allowed_platforms = {
+            str(platform_item).upper().strip()
+            for platform_item in (allowed_platforms or set())
+        }
+        self.allowed_models = {
+            str(model_item).upper().strip() for model_item in (allowed_models or set())
+        }
+        self.allowed_target_versions = {
+            str(version_item).strip() for version_item in (allowed_target_versions or set())
+        }
         self.stats = FilterStats()
 
     @staticmethod
-    def _is_auto_case_type(case_type: str) -> bool:
+    def is_auto_case_type(case_type: str) -> bool:
         """判断用例类型是否视为「自动测试」（空或包含「自动」则通过）。参数：case_type — 用例类型字符串。返回：True 表示通过自动测试过滤。"""
         if not case_type:
             return True
@@ -102,7 +111,7 @@ class CaseFilter:
                 return True, f"Target Version 过滤：生成{{{allowed}}} 当前'{target_version_str}'"
         # Target Version 为空时默认通过
 
-        if not self._is_auto_case_type(case_type):
+        if not self.is_auto_case_type(case_type):
             self.stats.filtered_by_type += 1
             return True, "非自动测试/空"
 
@@ -157,7 +166,7 @@ class CaseFilter:
     _IPDT_NUMBER_RE = re.compile(r"IPDT\s*(\d+)", re.IGNORECASE)
 
     @classmethod
-    def _extract_ipdt_number(cls, option: str) -> Optional[int]:
+    def extract_ipdt_number(cls, option: str) -> Optional[int]:
         """从选项字符串中提取 IPDT 编号（如 CEA2.x_IPDT4.0 -> 4，CEA2.x_VP1.1(IPDT1.0) -> 1）。"""
         match = cls._IPDT_NUMBER_RE.search(option)
         return int(match.group(1)) if match else None
@@ -192,7 +201,7 @@ class CaseFilter:
         # 含 IPDT 的选项：取选中项中的最大 IPDT 编号 N，将 all_options 中所有 IPDT 编号 <= N 的项加入 allowed
         max_ipdt: Optional[int] = None
         for selected_option in selected:
-            ipdt_number = cls._extract_ipdt_number(selected_option)
+            ipdt_number = cls.extract_ipdt_number(selected_option)
             if ipdt_number is not None:
                 max_ipdt = ipdt_number if max_ipdt is None else max(max_ipdt, ipdt_number)
         if max_ipdt is not None and all_opts:
@@ -200,7 +209,7 @@ class CaseFilter:
                 option_text = available_option.strip()
                 if not option_text or option_text in allowed:
                     continue
-                candidate_ipdt_number = cls._extract_ipdt_number(option_text)
+                candidate_ipdt_number = cls.extract_ipdt_number(option_text)
                 if candidate_ipdt_number is not None and candidate_ipdt_number <= max_ipdt:
                     allowed.add(option_text)
         return allowed if allowed else None
