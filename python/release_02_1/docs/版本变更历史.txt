@@ -127,3 +127,4 @@
 2.xml取消对功能模块的处理
 3.更改can文件的路径  #include "..\..\..\Public\TESTmode\TestMoudleControl\TestMoudleControl_Swc.can",#include "..\..\..\Public\ILNode\SecOc\CAN\LDCU.cin"
 4.cdcu即中央域部分，在首个testcase和最后一个testcase中分别加g_EM_SOAGen_Swc_SOA_CONNECT();g_EM_SOAGen_Swc_SOA_CLOSE();
+5.集成soa部分服务通信矩阵生成路径为用户选择路径+\ILNode\SOANode
