@@ -18,26 +18,31 @@ from infra.filesystem.pathing import (
     resolve_target_subdir,
 )
 from core.generator_config import GeneratorConfig
-from services.config_constants import OPTION_OUTPUT_DIR
+from services.config_constants import (
+    OPTION_OUTPUT_DIR,
+    OPTION_SRV_EXCEL,
+    OPTION_SRV_EXCEL_CANDIDATES,
+)
 
 
-def _str(value: Any) -> str:
-    if value is None:
+def normalize_text(item_value: Any) -> str:
+    if item_value is None:
         return ""
-    return str(value).strip()
+    return str(item_value).strip()
 
 
-def _resolve_base_and_config(base_dir: str | None, config_path: str | None) -> GeneratorConfig:
+def resolve_base_and_config(base_dir: str | None, config_path: str | None) -> GeneratorConfig:
     resolved_base_dir = RuntimePathResolver.resolve_base_dir(__file__, base_dir)
     resolved_config_path = RuntimePathResolver.resolve_config_path(resolved_base_dir, config_path)
     return GeneratorConfig(resolved_base_dir, config_path=resolved_config_path).load()
 
 
-def _load_paths(gconfig: GeneratorConfig, base_dir: str, domain: str) -> tuple[str, str]:
-    srv_excel = (
-        gconfig.get_from_section(domain, "srv_excel", fallback="")
-        or gconfig.get_from_section(domain, "Srv_Excel", fallback="")
-    ).strip()
+def load_paths(gconfig: GeneratorConfig, base_dir: str, domain: str) -> tuple[str, str]:
+    srv_excel = ""
+    for option_name in (OPTION_SRV_EXCEL, *OPTION_SRV_EXCEL_CANDIDATES):
+        srv_excel = gconfig.get_from_section(domain, option_name, fallback="").strip()
+        if srv_excel:
+            break
     if not srv_excel:
         raise ValueError(f"未配置 [{domain}] srv_excel（服务通信矩阵）")
     output_dir = gconfig.get_required_from_section(domain, OPTION_OUTPUT_DIR).strip()
@@ -48,7 +53,7 @@ def _load_paths(gconfig: GeneratorConfig, base_dir: str, domain: str) -> tuple[s
     return excel_path, soa_output_dir
 
 
-def _read_variables_list_from_excel(excel_path: str) -> list[dict[str, Any]]:
+def read_variables_list_from_excel(excel_path: str) -> list[dict[str, Any]]:
     workbook = ExcelService.open_workbook(excel_path, data_only=True, read_only=False)
     if "Service_Deployment" not in workbook.sheetnames:
         workbook.close()
@@ -67,13 +72,13 @@ def _read_variables_list_from_excel(excel_path: str) -> list[dict[str, Any]]:
     node_data: dict[str, dict[str, Any]] = {}
 
     for row in sheet.iter_rows(min_row=3, values_only=True):
-        provider_node = _str(row[node_name_col]) if len(row) > node_name_col else ""
-        service_id = _str(row[service_id_col]) if len(row) > service_id_col else ""
-        instance_id = _str(row[instance_id_col]) if len(row) > instance_id_col else ""
-        major = _str(row[major_col]) if len(row) > major_col else ""
-        minor = _str(row[minor_col]) if len(row) > minor_col else ""
-        protocol = _str(row[protocol_col]) if len(row) > protocol_col else ""
-        port = _str(row[port_col]) if len(row) > port_col else ""
+        provider_node = normalize_text(row[node_name_col]) if len(row) > node_name_col else ""
+        service_id = normalize_text(row[service_id_col]) if len(row) > service_id_col else ""
+        instance_id = normalize_text(row[instance_id_col]) if len(row) > instance_id_col else ""
+        major = normalize_text(row[major_col]) if len(row) > major_col else ""
+        minor = normalize_text(row[minor_col]) if len(row) > minor_col else ""
+        protocol = normalize_text(row[protocol_col]) if len(row) > protocol_col else ""
+        port = normalize_text(row[port_col]) if len(row) > port_col else ""
 
         if not provider_node or not service_id:
             continue
@@ -97,8 +102,8 @@ def _read_variables_list_from_excel(excel_path: str) -> list[dict[str, Any]]:
         )
 
         for col_index in range(consumer_start_col, sheet.max_column):
-            consumer_node = _str(sheet.cell(row=2, column=col_index + 1).value)
-            has_mark = len(row) > col_index and _str(row[col_index]).lower() == "x"
+            consumer_node = normalize_text(sheet.cell(row=2, column=col_index + 1).value)
+            has_mark = len(row) > col_index and normalize_text(row[col_index]).lower() == "x"
             if not consumer_node or not has_mark:
                 continue
             if consumer_node not in node_data:
@@ -124,7 +129,7 @@ def _read_variables_list_from_excel(excel_path: str) -> list[dict[str, Any]]:
     return list(node_data.values())
 
 
-def _render_nodes_to_files(variables_list: list[dict[str, Any]], output_dir: str) -> None:
+def render_nodes_to_files(variables_list: list[dict[str, Any]], output_dir: str) -> None:
     template_dir = os.path.join(os.path.dirname(__file__), "templates")
     env = Environment(loader=FileSystemLoader(template_dir), autoescape=False)
     template = env.get_template("Node.template")
@@ -140,17 +145,28 @@ def run_generation(
     base_dir: str | None = None,
     domain: str = "CENTRAL",
 ) -> None:
-    gconfig = _resolve_base_and_config(base_dir, config_path)
+    gconfig = resolve_base_and_config(base_dir, config_path)
     resolved_base_dir = gconfig.base_dir
-    excel_path, output_dir = _load_paths(gconfig, resolved_base_dir, domain)
+    excel_path, output_dir = load_paths(gconfig, resolved_base_dir, domain)
     if not os.path.isfile(excel_path):
         raise FileNotFoundError(f"服务通信矩阵不存在: {excel_path}")
-    variables_list = _read_variables_list_from_excel(excel_path)
-    _render_nodes_to_files(variables_list, output_dir)
+    variables_list = read_variables_list_from_excel(excel_path)
+    render_nodes_to_files(variables_list, output_dir)
     print(f"[soa] 生成完成：{len(variables_list)} 个节点文件，输出目录: {output_dir}")
 
 
-def main(
+class SOAGenerationUtility:
+    """SOA 生成入口能力统一工具类。"""
+
+    normalize_text = staticmethod(normalize_text)
+    resolve_base_and_config = staticmethod(resolve_base_and_config)
+    load_paths = staticmethod(load_paths)
+    read_variables_list_from_excel = staticmethod(read_variables_list_from_excel)
+    render_nodes_to_files = staticmethod(render_nodes_to_files)
+    run_generation = staticmethod(run_generation)
+
+
+def run_cli(
     config_path: str | None = None,
     base_dir: str | None = None,
     domain: str = "CENTRAL",
@@ -159,5 +175,5 @@ def main(
 
 
 if __name__ == "__main__":
-    main()
+    run_cli()
 

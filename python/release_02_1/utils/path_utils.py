@@ -3,7 +3,7 @@
 """
 路径解析工具（供所有生成器复用）
 
-- get_base_dir()          : 获取运行基准目录（兼容 PyInstaller 打包）
+- get_base_dir()          : 获取运行基准目录（支持 PyInstaller 打包）
 - resolve_target_subdir() : 智能查找输出子目录（TESTmode / Configuration）
 - find_config_path()      : 定位主配置文件
 """
@@ -110,7 +110,7 @@ def resolve_target_subdir(base_dir: str, configured_dir: str, subdir_name: str) 
     return pathing_resolve_target_subdir(base_dir, configured_dir, subdir_name)
 
 
-# 兼容旧调用名（CAN/CIN/XML 中曾用 _resolve_target_subdir_smart）
+# 旧调用名映射（CAN/CIN/XML 中曾用 _resolve_target_subdir_smart）
 resolve_target_subdir_smart = resolve_target_subdir
 
 
@@ -127,6 +127,9 @@ def list_excel_files(excel_dir: str) -> list[str]:
             continue
         if name.lower().endswith(exts):
             files.append(os.path.join(excel_dir, name))
-    return sorted(files, key=lambda p: os.path.basename(p).lower())
+    return sorted(
+        files,
+        key=lambda file_path: os.path.basename(file_path).lower(),
+    )
 
 

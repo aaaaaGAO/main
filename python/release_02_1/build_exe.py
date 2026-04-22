@@ -1,5 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+"""
+PyInstaller 单文件 EXE 打包脚本（与 `app.py` 同处工程根目录）。
+
+作用：
+- 以 `app.py` 为入口，生成 **--onefile** 单可执行文件，名称取自 `app.TOOL_DISPLAY_NAME`（与 Web 展示名一致）。
+- 将 `templates/`、`static/`、`generators/capl_soa/templates/` 等以 `--add-data` 打入包内，并补充 `--hidden-import` 列表，避免运行时缺模块。
+- 打包前可删除同目录下旧同名 EXE；结束后提示 `config/`、`input/` 等部署注意（与 `README.md`、`docs/必需文件说明.txt` 一致）。
+
+无命令行子命令：在项目根执行 ``python build_exe.py`` 即开始打包。依赖已安装 PyInstaller。
+"""
 
 import PyInstaller.__main__
 import os
@@ -33,6 +43,12 @@ if os.path.exists(templates_path):
 static_path = os.path.join(base_dir, 'static')
 if os.path.exists(static_path):
     args.append(f'--add-data={os.path.normpath(static_path)};static')
+# SOA 生成模板（Jinja2）资源
+soa_templates_path = os.path.join(base_dir, 'generators', 'capl_soa', 'templates')
+if os.path.exists(soa_templates_path):
+    args.append(
+        f'--add-data={os.path.normpath(soa_templates_path)};generators/capl_soa/templates'
+    )
 
 # 2. 隐藏导入 (确保动态加载的模块被包含)
 hidden_imports = [
@@ -52,6 +68,8 @@ hidden_imports = [
     'generators.capl_didinfo.entrypoint',
     'generators.capl_didconfig.entrypoint',
     'generators.capl_uart.entrypoint',
+    'generators.capl_soa.entrypoint',
+    'generators.capl_soa',
     'generators.capl_didconfig',
     'generators.capl_didconfig.service',
     # 领域层（原根目录模块已迁入 core）

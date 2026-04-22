@@ -10,7 +10,7 @@ generators.capl_resetdid：ResetDid_Value 生成器（命名收口层）。
 
 from generators.capl_didinfo.service import DIDInfoGeneratorService as ResetDidGeneratorService
 
-# 兼容旧类名，避免调用方改动过大
+# 同时导出 DIDInfoGeneratorService，统一现有调用入口
 DIDInfoGeneratorService = ResetDidGeneratorService
 
 __all__ = ["ResetDidGeneratorService", "DIDInfoGeneratorService"]

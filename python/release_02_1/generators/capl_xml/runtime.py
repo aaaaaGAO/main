@@ -4,7 +4,7 @@
 XML 运行期：解析根目录、加载配置、初始化日志，供 XMLGeneratorService 无 hooks 调用。
 
 实现已迁入本包：配置与日志在本模块，Excel 查找/解析/分组/生成在 runtime_io。
-入口在 generators.capl_xml.entrypoint.main。
+入口在 generators.capl_xml.entrypoint.run_generation。
 """
 
 from __future__ import annotations
@@ -24,11 +24,19 @@ from services.config_constants import (
     DEFAULT_DOMAIN_LR_REAR,
     OPTION_INPUT_EXCEL,
     OPTION_OUTPUT_DIR,
+    OPTION_SELECTED_SHEETS,
+    OPTION_XML_INPUT_EXCEL,
     SECTION_CENTRAL,
     SECTION_DTC,
     SECTION_FILTER,
     SECTION_LR_REAR,
-    SECTION_PATHS,
+    XML_RUNTIME_KEY_ALLOWED_LEVELS,
+    XML_RUNTIME_KEY_ALLOWED_MODELS,
+    XML_RUNTIME_KEY_ALLOWED_PLATFORMS,
+    XML_RUNTIME_KEY_ALLOWED_TARGET_VERSIONS,
+    XML_RUNTIME_KEY_EXCEL_PATH,
+    XML_RUNTIME_KEY_OUTPUT_XML_PATH,
+    XML_RUNTIME_KEY_SELECTED_FILTER,
 )
 from utils.logger import PROGRESS_LEVEL
 from utils.sheet_filter import parse_selected_sheets
@@ -48,7 +56,7 @@ _parse_logger: Optional[logging.Logger] = None
 _LOG_MANAGER: Optional[GeneratorLogger] = None
 
 
-class _BlankLineFriendlyFormatter(logging.Formatter):
+class BlankLineFriendlyFormatter(logging.Formatter):
     """让 logger.info('') 写入真正空行；PROGRESS 只输出时间+消息。"""
 
     def format(self, record: logging.LogRecord) -> str:
@@ -70,7 +78,7 @@ class _BlankLineFriendlyFormatter(logging.Formatter):
         return formatted
 
 
-class _SafeStreamHandler(logging.StreamHandler):
+class SafeStreamHandler(logging.StreamHandler):
     """控制台编码异常时降级为 gbk replace 输出，避免日志写控制台失败。"""
 
     def emit(self, record: logging.LogRecord) -> None:
@@ -87,7 +95,7 @@ class _SafeStreamHandler(logging.StreamHandler):
                 pass
 
 
-class _TeeToLogger:
+class TeeToLogger:
     """把 print 输出转到 logger（并保留控制台输出）。"""
 
     def __init__(self, logger: logging.Logger, level: int, original: Any):
@@ -97,20 +105,20 @@ class _TeeToLogger:
         self.buffer_text = ""
         self.is_logging_in_progress = False
 
-    def write(self, s: str) -> int:
+    def write(self, text_chunk: str) -> int:
         if self.is_logging_in_progress:
             try:
                 if self.original:
-                    self.original.write(s)
+                    self.original.write(text_chunk)
             except Exception:
                 pass
-            return len(s)
+            return len(text_chunk)
         try:
             if self.original:
-                self.original.write(s)
+                self.original.write(text_chunk)
         except Exception:
             pass
-        self.buffer_text += s
+        self.buffer_text += text_chunk
         while "\n" in self.buffer_text:
             line, self.buffer_text = self.buffer_text.split("\n", 1)
             msg = line.rstrip("\r")
@@ -138,7 +146,7 @@ class _TeeToLogger:
                     self.logger.log(self.level, msg)
             finally:
                 self.is_logging_in_progress = False
-        return len(s)
+        return len(text_chunk)
 
     def flush(self) -> None:
         try:
@@ -149,7 +157,7 @@ class _TeeToLogger:
 
 
 def create_blank_line_friendly_formatter(format_string: str) -> logging.Formatter:
-    return _BlankLineFriendlyFormatter(format_string)
+    return BlankLineFriendlyFormatter(format_string)
 
 
 def stream_has_isatty(stream_obj: Any) -> bool:
@@ -163,16 +171,6 @@ def stream_supports_tty(stream_obj: Any) -> bool:
         return bool(stream_obj.isatty())
     except Exception:
         return False
-
-
-def build_xml_domain_candidates(domain: str, *options: str) -> list[tuple[str, str]]:
-    """按 XML 域规则返回配置候选项顺序。"""
-    pairs = [(domain, option) for option in options]
-    if domain == DEFAULT_DOMAIN_LR_REAR:
-        pairs.extend([(SECTION_FILTER, option) for option in options])
-        pairs.extend([(SECTION_PATHS, option) for option in options])
-        pairs.extend([(SECTION_LR_REAR, option) for option in options])
-    return pairs
 
 
 def resolve_base_dir(base_dir: Optional[str]) -> str:
@@ -197,10 +195,15 @@ def load_runtime_config(
 
     config = gconfig.raw_config
 
+    if domain not in (SECTION_CENTRAL, SECTION_DTC, SECTION_LR_REAR):
+        raise ValueError(
+            f"XML 生成仅支持 domain 为 {SECTION_LR_REAR!r}、{SECTION_CENTRAL!r} 或 {SECTION_DTC!r}，当前为 {domain!r}"
+        )
+
     if domain == SECTION_CENTRAL:
         # CENTRAL：优先 xml_input_excel；未配置时回退 input_excel（对应界面“测试用例/测试文件夹导入”）。
         case_excel_file = (
-            gconfig.get_from_section(domain, "xml_input_excel", fallback="")
+            gconfig.get_from_section(domain, OPTION_XML_INPUT_EXCEL, fallback="")
             or gconfig.get_from_section(domain, "Xml_Input_Excel", fallback="")
             or gconfig.get_from_section(domain, OPTION_INPUT_EXCEL, fallback="")
             or gconfig.get_from_section(domain, "Input_Excel", fallback="")
@@ -215,7 +218,7 @@ def load_runtime_config(
     elif domain == SECTION_LR_REAR:
         # LR_REAR：仅 [LR_REAR] 内多键名并列，不读 [FILTER]/[PATHS]。
         case_excel_file = (
-            gconfig.get_from_section(domain, "xml_input_excel", fallback="")
+            gconfig.get_from_section(domain, OPTION_XML_INPUT_EXCEL, fallback="")
             or gconfig.get_from_section(domain, "Xml_Input_Excel", fallback="")
             or gconfig.get_from_section(domain, OPTION_INPUT_EXCEL, fallback="")
             or gconfig.get_from_section(domain, "Input_Excel", fallback="")
@@ -224,26 +227,10 @@ def load_runtime_config(
             raise ValueError(
                 "未在 [LR_REAR] 配置 XML 输入路径：请配置 xml_input_excel 或 input_excel。"
             )
-    else:
-        case_excel_file = gconfig.get_first(
-            build_xml_domain_candidates(
-                domain,
-                "xml_input_excel",
-                "Xml_Input_Excel",
-                "input_excel",
-                "Input_Excel",
-            )
-        )
-    if not case_excel_file:
-        raise ValueError(
-            "未配置 Xml_Input_Excel 或 xml_input_excel。\n"
-            "请在当前主配置文件的当前域节中配置以下选项之一：\n"
-            "  - Xml_Input_Excel 或 xml_input_excel：Excel 文件或文件夹路径"
-        )
 
     output_xml_file = gconfig.get_fixed("xml_output_filename") or "Generated_Testcase.xml"
     if domain in (SECTION_CENTRAL, SECTION_DTC):
-        output_dir = gconfig.get_required_from_section(domain, "output_dir")
+        output_dir = gconfig.get_required_from_section(domain, OPTION_OUTPUT_DIR)
     elif domain == SECTION_LR_REAR:
         output_dir = (
             gconfig.get_from_section(domain, "Output_Dir_Xml", fallback="")
@@ -255,16 +242,6 @@ def load_runtime_config(
             raise ValueError(
                 "未在 [LR_REAR] 配置 XML 输出目录：请配置 output_dir 或 Output_Dir_Xml / output_dir_xml。"
             )
-    else:
-        output_dir = gconfig.get_first(
-            build_xml_domain_candidates(
-                domain,
-                "Output_Dir_Xml",
-                "output_dir_xml",
-                "Output_Dir",
-                "output_dir",
-            )
-        )
     if not output_dir:
         raise ValueError(
             "未在当前主配置文件的当前域节中找到 Output_Dir / output_dir 或 Output_Dir_Xml / output_dir_xml，"
@@ -278,57 +255,41 @@ def load_runtime_config(
     if config.has_section(domain) or (
         domain == DEFAULT_DOMAIN_LR_REAR and (config.has_section(SECTION_FILTER) or config.has_section(SECTION_LR_REAR))
     ):
-        if domain in (SECTION_CENTRAL, SECTION_DTC, SECTION_LR_REAR):
-            case_levels_value = (
-                gconfig.get_from_section(domain, "case_levels", fallback="")
-                or gconfig.get_from_section(domain, "Case_Levels", fallback="")
-            )
-        else:
-            case_levels_value = gconfig.get_first(build_xml_domain_candidates(domain, "Case_Levels", "case_levels"))
+        case_levels_value = (
+            gconfig.get_from_section(domain, "case_levels", fallback="")
+            or gconfig.get_from_section(domain, "Case_Levels", fallback="")
+        )
         allowed_levels = CaseFilter.parse_levels(case_levels_value)
         if allowed_levels is not None:
             print(f"[xml] 等级过滤已启用: {sorted(allowed_levels)}")
         else:
             print(f"[xml] 等级过滤: 不过滤（ALL 或未配置，原始值={case_levels_value!r}）")
 
-        if domain in (SECTION_CENTRAL, SECTION_DTC, SECTION_LR_REAR):
-            case_platforms_value = (
-                gconfig.get_from_section(domain, "case_platforms", fallback="")
-                or gconfig.get_from_section(domain, "Case_Platforms", fallback="")
-            )
-        else:
-            case_platforms_value = gconfig.get_first(
-                build_xml_domain_candidates(domain, "Case_Platforms", "case_platforms")
-            )
+        case_platforms_value = (
+            gconfig.get_from_section(domain, "case_platforms", fallback="")
+            or gconfig.get_from_section(domain, "Case_Platforms", fallback="")
+        )
         allowed_platforms = CaseFilter.parse_platforms_or_models(case_platforms_value)
         if allowed_platforms is not None:
             print(f"[xml] 平台过滤已启用: {sorted(allowed_platforms)}")
         else:
             print(f"[xml] 平台过滤: 不过滤（ALL 或未配置，原始值={case_platforms_value!r}）")
 
-        if domain in (SECTION_CENTRAL, SECTION_DTC, SECTION_LR_REAR):
-            case_models_value = (
-                gconfig.get_from_section(domain, "case_models", fallback="")
-                or gconfig.get_from_section(domain, "Case_Models", fallback="")
-            )
-        else:
-            case_models_value = gconfig.get_first(build_xml_domain_candidates(domain, "Case_Models", "case_models"))
+        case_models_value = (
+            gconfig.get_from_section(domain, "case_models", fallback="")
+            or gconfig.get_from_section(domain, "Case_Models", fallback="")
+        )
         allowed_models = CaseFilter.parse_platforms_or_models(case_models_value)
         if allowed_models is not None:
             print(f"[xml] 车型过滤已启用: {sorted(allowed_models)}")
         else:
             print(f"[xml] 车型过滤: 不过滤（未配置，原始值={case_models_value!r}）")
 
-        if domain in (SECTION_CENTRAL, SECTION_DTC, SECTION_LR_REAR):
-            case_target_versions_value = (
-                gconfig.get_from_section(domain, "case_target_versions", fallback="")
-                or gconfig.get_from_section(domain, "Case_Target_Versions", fallback="")
-                or ""
-            )
-        else:
-            case_target_versions_value = (
-                gconfig.get_first(build_xml_domain_candidates(domain, "Case_Target_Versions", "case_target_versions")) or ""
-            )
+        case_target_versions_value = (
+            gconfig.get_from_section(domain, "case_target_versions", fallback="")
+            or gconfig.get_from_section(domain, "Case_Target_Versions", fallback="")
+            or ""
+        )
         try:
             fopts = parse_shaixuan_config(base_dir)
             all_target_versions = fopts.get("target_versions") or []
@@ -345,10 +306,7 @@ def load_runtime_config(
         print("[xml] 等级过滤: 未找到当前域 / [FILTER] / [LR_REAR] 配置，不过滤")
         allowed_target_versions = None
 
-    if domain in (SECTION_CENTRAL, SECTION_DTC, SECTION_LR_REAR):
-        selected_sheets_str = gconfig.get_from_section(domain, "selected_sheets", fallback="")
-    else:
-        selected_sheets_str = gconfig.get_first(build_xml_domain_candidates(domain, "selected_sheets"), fallback="")
+    selected_sheets_str = gconfig.get_from_section(domain, OPTION_SELECTED_SHEETS, fallback="")
     selected_filter = parse_selected_sheets(selected_sheets_str)
 
     excel_path = resolve_runtime_path(base_dir, case_excel_file)
@@ -357,13 +315,13 @@ def load_runtime_config(
 
     return {
         "config": config,
-        "excel_path": excel_path,
-        "output_xml_path": output_xml_path,
-        "allowed_levels": allowed_levels,
-        "allowed_platforms": allowed_platforms,
-        "allowed_models": allowed_models,
-        "allowed_target_versions": allowed_target_versions,
-        "selected_filter": selected_filter,
+        XML_RUNTIME_KEY_EXCEL_PATH: excel_path,
+        XML_RUNTIME_KEY_OUTPUT_XML_PATH: output_xml_path,
+        XML_RUNTIME_KEY_ALLOWED_LEVELS: allowed_levels,
+        XML_RUNTIME_KEY_ALLOWED_PLATFORMS: allowed_platforms,
+        XML_RUNTIME_KEY_ALLOWED_MODELS: allowed_models,
+        XML_RUNTIME_KEY_ALLOWED_TARGET_VERSIONS: allowed_target_versions,
+        XML_RUNTIME_KEY_SELECTED_FILTER: selected_filter,
     }
 
 
@@ -381,8 +339,8 @@ def init_runtime_logging(base_dir: str) -> tuple:
     )
     logger = _LOG_MANAGER.setup()
 
-    fmt = _BlankLineFriendlyFormatter("%(asctime)s %(levelname)s %(message)s")
-    ch = _SafeStreamHandler()
+    fmt = BlankLineFriendlyFormatter("%(asctime)s %(levelname)s %(message)s")
+    ch = SafeStreamHandler()
     ch.setLevel(logging.INFO)
     ch.setFormatter(fmt)
     logger.addHandler(ch)
@@ -395,8 +353,8 @@ def init_runtime_logging(base_dir: str) -> tuple:
 
     old_stdout, old_stderr = sys.stdout, sys.stderr
     if sys.__stdout__ is not None and sys.__stderr__ is not None:
-        sys.stdout = _TeeToLogger(logger, logging.INFO, sys.__stdout__)
-        sys.stderr = _TeeToLogger(logger, logging.ERROR, sys.__stderr__)
+        sys.stdout = TeeToLogger(logger, logging.INFO, sys.__stdout__)
+        sys.stderr = TeeToLogger(logger, logging.ERROR, sys.__stderr__)
     return logger, old_stdout, old_stderr
 
 
@@ -405,44 +363,68 @@ def get_quiet_skip() -> bool:
     return not stream_supports_tty(sys.stdout)
 
 
-def find_excel_files(input_path: str) -> list[str]:
-    return runtime_io.find_excel_files(input_path)
+class XMLRuntimeUtility:
+    """XML 运行期配置/日志辅助统一工具类入口。"""
+
+    create_blank_line_friendly_formatter = staticmethod(create_blank_line_friendly_formatter)
+    stream_has_isatty = staticmethod(stream_has_isatty)
+    stream_supports_tty = staticmethod(stream_supports_tty)
+    resolve_base_dir = staticmethod(resolve_base_dir)
+    load_runtime_config = staticmethod(load_runtime_config)
+    init_runtime_logging = staticmethod(init_runtime_logging)
+    get_quiet_skip = staticmethod(get_quiet_skip)
 
 
-def parse_testcases_from_excel(
-    excel_path: str,
-    *,
-    allowed_levels=None,
-    allowed_platforms=None,
-    allowed_models=None,
-    allowed_target_versions=None,
-    seen_case_ids=None,
-    excel_label=None,
-    allowed_sheet_names=None,
-    selected_filter=None,
-) -> tuple:
-    return runtime_io.parse_testcases_from_excel(
-        excel_path,
-        allowed_levels=allowed_levels,
-        allowed_platforms=allowed_platforms,
-        allowed_models=allowed_models,
-        allowed_target_versions=allowed_target_versions,
-        seen_case_ids=seen_case_ids,
-        excel_label=excel_label,
-        allowed_sheet_names=allowed_sheet_names,
-        selected_filter=selected_filter,
-        logger=_logger,
-        parse_logger=_parse_logger,
-        quiet_skip=get_quiet_skip(),
-    )
+class XMLRuntimeAPI:
+    """XML 运行期对外解析与生成功能入口。"""
+
+    @staticmethod
+    def find_excel_files(input_path: str) -> list[str]:
+        return runtime_io.XMLGenerationUtility.find_excel_files(input_path)
+
+    @staticmethod
+    def parse_testcases_from_excel(
+        excel_path: str,
+        *,
+        allowed_levels=None,
+        allowed_platforms=None,
+        allowed_models=None,
+        allowed_target_versions=None,
+        seen_case_ids=None,
+        excel_label=None,
+        allowed_sheet_names=None,
+        selected_filter=None,
+        workbook_cache=None,
+    ) -> tuple:
+        return runtime_io.XMLGenerationUtility.parse_testcases_from_excel(
+            excel_path,
+            allowed_levels=allowed_levels,
+            allowed_platforms=allowed_platforms,
+            allowed_models=allowed_models,
+            allowed_target_versions=allowed_target_versions,
+            seen_case_ids=seen_case_ids,
+            excel_label=excel_label,
+            allowed_sheet_names=allowed_sheet_names,
+            selected_filter=selected_filter,
+            workbook_cache=workbook_cache,
+            logger=_logger,
+            parse_logger=_parse_logger,
+            quiet_skip=get_quiet_skip(),
+        )
+
+    @staticmethod
+    def group_testcases_by_sheet_and_group(sheet_testcases_dict: dict) -> dict:
+        return runtime_io.XMLGenerationUtility.group_testcases_by_sheet_and_group(sheet_testcases_dict)
+
+    @staticmethod
+    def generate_xml_content(excel_files_dict: dict) -> str:
+        return runtime_io.XMLGenerationUtility.generate_xml_content(excel_files_dict, logger=_logger)
 
 
-def group_testcases_by_sheet_and_group(sheet_testcases_dict: dict) -> dict:
-    return runtime_io.group_testcases_by_sheet_and_group(sheet_testcases_dict)
-
-
-def generate_xml_content(excel_files_dict: dict) -> str:
-    return runtime_io.generate_xml_content(excel_files_dict, logger=_logger)
+find_excel_files = XMLRuntimeAPI.find_excel_files
+parse_testcases_from_excel = XMLRuntimeAPI.parse_testcases_from_excel
+group_testcases_by_sheet_and_group = XMLRuntimeAPI.group_testcases_by_sheet_and_group
+generate_xml_content = XMLRuntimeAPI.generate_xml_content
 
 
 def clear_run_logger() -> None:

@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-中央域业务路由（central_bp）
+中央域（CENTRAL）蓝图，注册前缀 **/api/central**（见 `web.create_app`）。
 
-当前实现（第一阶段）：
-- 提供一个“生成中央域 CAN+XML”的接口，内部通过 TaskService 调用 CAN / XML 生成脚本。
+与 ``POST /api/generate_central``（`common` + `GenerationRouteService` + 全量 state 落盘）**不同**：
+本路由为**可编程**子集入口，请求体**直接**传入 ``run_can`` / ``run_xml`` / ``run_uart`` / ``run_soa`` 等
+布尔开关，由 `TaskOrchestrator.run_central_bundle` 执行；**不**在路由内调 `StateConfigService`
+合并页面 state —— 主配置需已由其它接口或手工写好。
 
-说明：
-- 这里假定当前主配置文件已由其他接口（如原 /api/save_preset 或未来的中央域配置接口）写好，
-  本路由只负责触发生成任务。
+适用场景：集成测试、外部脚本、或只重跑子步骤时显式传参。
 """
 
 from __future__ import annotations
@@ -31,16 +31,23 @@ def current_base_dir() -> str:
 
 @central_bp.route("/generate", methods=["POST"])
 def generate_central():
-    """中央域生成入口：通过 TaskOrchestrator.run_central_bundle 执行 UART(可选) → CAN → XML。
-    请求体（JSON，可选）：base_dir — 工程根目录；run_can / run_xml / run_uart — 是否执行对应步骤，默认 True；
-    validate_before_run — 是否先做运行前校验，默认 True。
-    返回：200 时 {"success": True, "message": ...}；500 时 {"success": False, "message", "detail"}。
+    """
+    中央域生成：``TaskOrchestrator.run_central_bundle``，顺序与编排器实现一致（如 UART 条件、CAN、XML、SOA）。
+
+    参数：JSON 体，键均可选：
+        base_dir — 工程根，缺省为当前 `BASE_DIR`。
+        run_can / run_xml — 是否跑 CAN、XML 步，**默认** ``true``。
+        run_uart / run_soa — 子步开关，**默认** ``false``（需显式 ``true`` 与主界面「有矩阵/有路径」时一致）。
+        validate_before_run — 是否先跑 `run_validator` 域校验，**默认** ``true``。
+
+    返回：`jsonify_orchestrator_result` 统一成功 JSON（200）或失败（500 及 ``detail``）。
     """
     payload = request.get_json(silent=True) or {}
     base_dir = payload.get("base_dir") or current_base_dir()
     run_can = payload.get("run_can", True)
     run_xml = payload.get("run_xml", True)
-    run_uart = payload.get("run_uart", True)
+    run_uart = bool(payload.get("run_uart", False))
+    run_soa = bool(payload.get("run_soa", False))
     validate_before_run = payload.get("validate_before_run", True)
 
     orch = TaskOrchestrator.from_base_dir(base_dir)
@@ -48,6 +55,7 @@ def generate_central():
         run_can=run_can,
         run_xml=run_xml,
         run_uart=run_uart,
+        run_soa=run_soa,
         validate_before_run=validate_before_run,
     )
     return jsonify_orchestrator_result(result, success_separator=" / ", failure_message=None, failure_separator=" / ")

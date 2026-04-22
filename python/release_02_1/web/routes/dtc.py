@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-DTC 业务路由（dtc_bp）
+DTC 域蓝图，注册前缀 **/api/dtc**。
 
-当前实现（第一阶段）：
-- 提供一个“生成 DTC CAN+XML”的接口，内部通过 TaskService 调用 CAN / XML 生成脚本。
+与 ``POST /api/generate_dtc``（`common` + 全量 state + `get_dtc_generation_flags`）**不同**：
+本路由**直接**将 JSON 中的 ``run_cin`` / ``run_did`` / ``run_soa`` 等传入
+`TaskOrchestrator.run_dtc_bundle`；**不**在本路由内根据 Excel 路径自动推导开关。
+主配置中 ``[DTC]`` 等节应已就绪（由 `StateConfigService` / 自动保存等写入）。
 
-说明：
-- 与中央域类似，这里只负责触发生成；具体的 DTC 配置写入仍由现有逻辑负责，
-  后续可以逐步迁移到 services/config_service.py。
+与 `web/routes/central` 的「可编程子步」设计对称，供脚本/测试/高级用法使用。
 """
 
 from __future__ import annotations
@@ -31,17 +31,25 @@ def current_base_dir() -> str:
 
 @dtc_bp.route("/generate", methods=["POST"])
 def generate_dtc():
-    """DTC 域生成入口：通过 TaskOrchestrator.run_dtc_bundle 执行 DIDConfig → DIDInfo → CIN → CAN → XML（按配置与开关）。
-    请求体（JSON，可选）：base_dir — 工程根目录；run_can / run_xml / run_cin / run_did — 是否执行对应步骤，默认 True；
-    validate_before_run — 是否先做运行前校验，默认 True。
-    返回：200 时 {"success": True, "message": ...}；500 时 {"success": False, "message", "detail"}。
+    """
+    DTC 域生成：``TaskOrchestrator.run_dtc_bundle``，各子步是否执行由**请求体**显式指定（与编排器默认一致）。
+
+    参数：JSON 体，键均可选：
+        base_dir — 工程根，缺省为当前 `BASE_DIR`。
+        run_can / run_xml — **默认** ``true``。
+        run_cin / run_did / run_soa — **默认** ``false``；主界面一键生成时通常由
+        ``/api/generate_dtc`` 经 state 推导出 ``true``，此处需自行传 ``true`` 才会跑对应步。
+        validate_before_run — **默认** ``true``。
+
+    返回：`jsonify_orchestrator_result` 成功（200）或失败（500 + ``detail``）。
     """
     payload = request.get_json(silent=True) or {}
     base_dir = payload.get("base_dir") or current_base_dir()
     run_can = payload.get("run_can", True)
     run_xml = payload.get("run_xml", True)
-    run_cin = payload.get("run_cin", True)
-    run_did = payload.get("run_did", True)
+    run_cin = bool(payload.get("run_cin", False))
+    run_did = bool(payload.get("run_did", False))
+    run_soa = bool(payload.get("run_soa", False))
     validate_before_run = payload.get("validate_before_run", True)
 
     orch = TaskOrchestrator.from_base_dir(base_dir)
@@ -50,6 +58,7 @@ def generate_dtc():
         run_xml=run_xml,
         run_cin=run_cin,
         run_did=run_did,
+        run_soa=run_soa,
         validate_before_run=validate_before_run,
     )
     return jsonify_orchestrator_result(result, success_separator=" / ", failure_message=None, failure_separator=" / ")

@@ -3,7 +3,7 @@
 """
 日志 API（底层统一入口）
 
-当前阶段：直接 re-export 既有 `utils.logger`。
+当前阶段：统一导出既有 `utils.logger` 能力。
 """
 
 from utils.logger import (  # noqa: F401

@@ -11,25 +11,19 @@ from infra.excel.workbook import ExcelService
 from services.config_constants import (
     DEFAULT_DOMAIN_LR_REAR,
     OPTION_CIN_INPUT_EXCEL_CANDIDATES,
+    OPTION_INPUT_EXCEL,
     OPTION_OUTPUT_DIR,
+    OPTION_UDS_ECU_QUALIFIER,
     SECTION_CENTRAL,
     SECTION_DTC,
     SECTION_LR_REAR,
-    SECTION_PATHS,
 )
 from infra.filesystem.pathing import RuntimePathResolver
 from utils.path_utils import list_excel_files, resolve_runtime_path, resolve_target_subdir
 
 
 class CANEntrypointSupport:
-    """收拢 CAN 入口阶段的路径、配置与兼容辅助。"""
-
-    @staticmethod
-    def build_domain_candidates(domain: str, *options: str) -> list[tuple[str, str]]:
-        pairs = [(domain, option) for option in options]
-        if domain == DEFAULT_DOMAIN_LR_REAR:
-            pairs.extend([(SECTION_PATHS, option) for option in options])
-        return pairs
+    """收拢 CAN 入口阶段的路径、配置与辅助能力。"""
 
     @staticmethod
     def parse_bool(raw, default: bool = False) -> bool:
@@ -51,11 +45,11 @@ class CANEntrypointSupport:
     ) -> str:
         # 优先使用各域在当前主配置文件中配置的 uds_ecu_qualifier，
         # 这样即使多个域共用同一个 output_dir 也不会互相覆盖。
-        cfg_val = gconfig.get(domain, "uds_ecu_qualifier", fallback="").strip()
+        cfg_val = gconfig.get(domain, OPTION_UDS_ECU_QUALIFIER, fallback="").strip()
         if cfg_val:
             return cfg_val
 
-        # 兼容旧流程：若未在配置中显式填写，则尝试从 uds.txt（或自定义 uds_output_filename）中读取。
+        # 若未在配置中显式填写，则尝试从 uds.txt（或自定义 uds_output_filename）中读取。
         fixed = gconfig.fixed_config
         uds_filename = (fixed.get("uds_output_filename") or "uds.txt").strip() or "uds.txt"
         root = resolve_runtime_path(base_dir, output_dir)
@@ -79,11 +73,11 @@ class CANEntrypointSupport:
 
         if domain in (SECTION_CENTRAL, SECTION_DTC):
             # CENTRAL / DTC：定点读取本域 input_excel，不做跨节兜底。
-            raw_path = gconfig.get_required_from_section(domain, "input_excel")
+            raw_path = gconfig.get_required_from_section(domain, OPTION_INPUT_EXCEL)
         elif domain == SECTION_LR_REAR:
             # LR_REAR：仅在本节内按显式键顺序解析，不读 [PATHS]。
             raw_path = (
-                gconfig.get_from_section(domain, "input_excel", fallback="")
+                gconfig.get_from_section(domain, OPTION_INPUT_EXCEL, fallback="")
                 or gconfig.get_from_section(domain, "Input_Excel", fallback="")
             ).strip()
             if not raw_path:
@@ -91,12 +85,8 @@ class CANEntrypointSupport:
                     f"未配置输入路径：请在 [{SECTION_LR_REAR}] 配置 input_excel（或 Input_Excel）"
                 )
         else:
-            raw_path = gconfig.get_first(
-                CANEntrypointSupport.build_domain_candidates(
-                    domain,
-                    "input_excel",
-                    "Input_Excel",
-                )
+            raise ValueError(
+                f"CAN 不支持 domain={domain!r}，请使用 {SECTION_LR_REAR!r}、{SECTION_CENTRAL!r} 或 {SECTION_DTC!r}"
             )
         if not raw_path:
             raise ValueError(f"未配置输入路径：请配置 [{domain}] 的 input_excel。")
@@ -113,17 +103,15 @@ class CANEntrypointSupport:
             "unified_mapping_excel"
         )
         if not mapping_excel_file:
-            mapping_excel_file = gconfig.get(SECTION_PATHS, "Mapping_Excel")
-        if not mapping_excel_file:
             raise ValueError(
-                "未配置映射表路径，请在固定配置文件的 [PATHS] 中配置 mapping_excel 或 unified_mapping_excel。"
+                "未配置映射表路径，请在固定配置中配置 mapping_excel 或 unified_mapping_excel。"
             )
         if mapping_excel_file.startswith("./"):
             mapping_excel_file = mapping_excel_file[2:]
         mapping_excel_path = resolve_runtime_path(base_dir, mapping_excel_file)
 
         if domain in (SECTION_CENTRAL, SECTION_DTC):
-            output_dir = gconfig.get_required_from_section(domain, "output_dir")
+            output_dir = gconfig.get_required_from_section(domain, OPTION_OUTPUT_DIR)
         elif domain == SECTION_LR_REAR:
             output_dir = (
                 gconfig.get_from_section(domain, "Output_Dir_Can", fallback="")
@@ -136,26 +124,15 @@ class CANEntrypointSupport:
                     f"未配置 CAN 输出路径：请在 [{SECTION_LR_REAR}] 配置 output_dir 或 Output_Dir_Can / output_dir_can"
                 )
         else:
-            output_dir = gconfig.get_first(
-                CANEntrypointSupport.build_domain_candidates(
-                    domain,
-                    "Output_Dir_Can",
-                    "output_dir_can",
-                    "Output_Dir",
-                    "output_dir",
-                ),
-                fallback="./output",
+            raise ValueError(
+                f"CAN 不支持 domain={domain!r}，请使用 {SECTION_LR_REAR!r}、{SECTION_CENTRAL!r} 或 {SECTION_DTC!r}"
             )
         output_dir = (output_dir or "./output").strip()
         output_filename = gconfig.get_fixed("output_filename") or "generated_from_cases.can"
         cin_output_filename = (
             gconfig.get_fixed("cin_output_filename") or "generated_from_keyword.cin"
         )
-        sheet_names_str = gconfig.get_fixed("mapping_sheets") or gconfig.get(
-            SECTION_PATHS,
-            "Mapping_Sheets",
-            "HIL用例关键字说明,EM_CAN&Uart&LIN,EM_SOA,EM_总线测试专用,EM_设备&其他",
-        )
+        sheet_names_str = gconfig.get_fixed("mapping_sheets") or "HIL用例关键字说明,EM_CAN&Uart&LIN,EM_SOA,EM_总线测试专用,EM_设备&其他"
         sheet_names = [
             sheet_name.strip()
             for sheet_name in (sheet_names_str or "").split(",")
@@ -244,19 +221,15 @@ class CANEntrypointSupport:
         *,
         domain: str = DEFAULT_DOMAIN_LR_REAR,
     ) -> str:
-        if domain in (SECTION_CENTRAL, SECTION_DTC, SECTION_LR_REAR):
-            cin_excel_path = ""
-            for option_name in OPTION_CIN_INPUT_EXCEL_CANDIDATES:
-                cin_excel_path = gconfig.get(domain, option_name, fallback="").strip()
-                if cin_excel_path:
-                    break
-        else:
-            cin_excel_path = gconfig.get_first(
-                CANEntrypointSupport.build_domain_candidates(
-                    domain,
-                    *OPTION_CIN_INPUT_EXCEL_CANDIDATES,
-                )
+        if domain not in (SECTION_CENTRAL, SECTION_DTC, SECTION_LR_REAR):
+            raise ValueError(
+                f"CAN 不支持 domain={domain!r}，请使用 {SECTION_LR_REAR!r}、{SECTION_CENTRAL!r} 或 {SECTION_DTC!r}"
             )
+        cin_excel_path = ""
+        for option_name in OPTION_CIN_INPUT_EXCEL_CANDIDATES:
+            cin_excel_path = gconfig.get(domain, option_name, fallback="").strip()
+            if cin_excel_path:
+                break
         if cin_excel_path:
             cin_excel_path = resolve_runtime_path(base_dir, cin_excel_path)
         return cin_excel_path

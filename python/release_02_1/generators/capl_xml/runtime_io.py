@@ -6,6 +6,8 @@ XML 生成：Excel 查找、用例解析、分组与 XML 内容生成。供 capl
 
 from __future__ import annotations
 
+import importlib
+import importlib.util
 import os
 import re
 import glob
@@ -22,12 +24,12 @@ from core.excel_header import (
 from infra.excel.workbook import ExcelService
 
 # 拼音支持（用于 XML testcase name 转拼音）
-try:
-    from pypinyin import lazy_pinyin  # type: ignore
-    _HAS_PYPINYIN = True
-except Exception:
-    lazy_pinyin = None
-    _HAS_PYPINYIN = False
+lazy_pinyin = None
+_HAS_PYPINYIN = False
+if importlib.util.find_spec("pypinyin") is not None:
+    pypinyin_module = importlib.import_module("pypinyin")
+    lazy_pinyin = getattr(pypinyin_module, "lazy_pinyin", None)
+    _HAS_PYPINYIN = lazy_pinyin is not None
 
 _RE_HAS_CHINESE = re.compile(r"[\u4e00-\u9fff]")
 _PINYIN_WARNED: set[str] = set()
@@ -36,6 +38,22 @@ XML_TITLE = "Test Module"
 XML_VERSION = "1.0"
 XML_DESCRIPTION = "Generated from .can test cases"
 _GROUP_KEY_SEP = "\x1f"
+
+
+class XMLGenerationUtility:
+    """XML Excel 解析与内容生成功能封装。"""
+    pass
+
+
+def is_history_sheet_name(sheet_name: str) -> bool:
+    """判断是否为历史/修订工作表。"""
+    normalized_name = str(sheet_name).strip()
+    normalized_lower = normalized_name.lower()
+    return (
+        normalized_lower == "rev.hist"
+        or "rev.hist" in normalized_lower
+        or "变更历史" in normalized_name
+    )
 
 
 def find_excel_files(input_path: str) -> list[str]:
@@ -123,9 +141,9 @@ def to_pinyin_if_needed(
             if logger:
                 logger.warning("发现中文但未安装 pypinyin，无法转拼音：%r", text_value)
         return text_value
-    out = "".join(lazy_pinyin(text_value, errors=lambda non_chinese: list(non_chinese)))
-    out = re.sub(r"\s+", "_", out).strip()
-    return out
+    pinyin_result = "".join(lazy_pinyin(text_value, errors=lambda non_chinese: list(non_chinese)))
+    pinyin_result = re.sub(r"\s+", "_", pinyin_result).strip()
+    return pinyin_result
 
 
 def parse_testcases_from_sheet(
@@ -365,6 +383,7 @@ def parse_testcases_from_excel(
     excel_label: Optional[str] = None,
     allowed_sheet_names: Optional[list] = None,
     selected_filter: Optional[dict] = None,
+    workbook_cache: Optional[dict] = None,
     logger: Optional[logging.Logger] = None,
     parse_logger: Optional[logging.Logger] = None,
     quiet_skip: bool = False,
@@ -376,16 +395,26 @@ def parse_testcases_from_excel(
     if not os.path.exists(excel_path):
         raise FileNotFoundError(f"找不到 Excel 文件: {excel_path}")
 
+    normalized_excel_path = os.path.normcase(os.path.abspath(excel_path))
+    cached_workbook = None
+    should_close_workbook = workbook_cache is None
+    if workbook_cache is not None:
+        cached_workbook = workbook_cache.get(normalized_excel_path)
+
     try:
         print(f"  [正在打开工作簿] {os.path.basename(excel_path)}")
     except Exception:
         pass
     try:
-        wb = ExcelService.open_workbook(
-            excel_path,
-            data_only=True,
-            read_only=False,
-        )
+        if cached_workbook is None:
+            cached_workbook = ExcelService.open_workbook(
+                excel_path,
+                data_only=True,
+                read_only=False,
+            )
+            if workbook_cache is not None:
+                workbook_cache[normalized_excel_path] = cached_workbook
+        wb = cached_workbook
     except Exception as error:
         error_msg = str(error)
         if 'decompressing' in error_msg.lower() or 'incorrect header' in error_msg.lower() or 'badzipfile' in error_msg.lower():
@@ -445,10 +474,9 @@ def parse_testcases_from_excel(
     }
 
     for sheet_name in sheet_names:
-        sheet_name_str = str(sheet_name).strip()
-        sheet_name_lower = sheet_name_str.lower()
-        if sheet_name_lower == "rev.hist" or "rev.hist" in sheet_name_lower or "变更历史" in sheet_name_str:
+        if is_history_sheet_name(sheet_name):
             continue
+        sheet_name_str = str(sheet_name).strip()
 
         ws = wb[sheet_name]
         try:
@@ -529,6 +557,8 @@ def parse_testcases_from_excel(
         if sheet_testcases:
             sheet_testcases_dict[sheet_name] = sheet_testcases
 
+    if should_close_workbook:
+        wb.close()
     return sheet_testcases_dict, stats
 
 
@@ -577,12 +607,24 @@ def generate_xml_content(
 
             group_items = list(group_dict.items())
             for group_key, testcases in group_items:
-                for tc in testcases:
-                    tc_name = tc["name"] if tc.get("name") and tc["name"].strip() else " "
-                    tc_name_pinyin = to_pinyin_if_needed(tc_name, logger=logger)
-                    lines.append(f'\t\t\t<capltestcase name="{escape_xml(tc_name_pinyin)}">\t')
+                for testcase_item in testcases:
+                    testcase_name = (
+                        testcase_item["name"]
+                        if testcase_item.get("name") and testcase_item["name"].strip()
+                        else " "
+                    )
+                    testcase_name_pinyin = to_pinyin_if_needed(testcase_name, logger=logger)
+                    lines.append(f'\t\t\t<capltestcase name="{escape_xml(testcase_name_pinyin)}">\t')
                     lines.append('\t\t\t</capltestcase>\t')
             lines.append('\t\t</testgroup>')
         lines.append('\t</testgroup>')
     lines.append('</testmodule>')
     return '\n'.join(lines)
+
+
+XMLGenerationUtility.is_history_sheet_name = staticmethod(is_history_sheet_name)
+XMLGenerationUtility.find_excel_files = staticmethod(find_excel_files)
+XMLGenerationUtility.parse_testcases_from_sheet = staticmethod(parse_testcases_from_sheet)
+XMLGenerationUtility.parse_testcases_from_excel = staticmethod(parse_testcases_from_excel)
+XMLGenerationUtility.group_testcases_by_sheet_and_group = staticmethod(group_testcases_by_sheet_and_group)
+XMLGenerationUtility.generate_xml_content = staticmethod(generate_xml_content)

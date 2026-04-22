@@ -18,7 +18,7 @@ from infra.filesystem import resolve_runtime_path
 
 
 def merged_cell_value(ws: Any, row: int, col: int) -> Any:
-    """取单元格值，兼容合并单元格（空格取合并区域左上角值）。
+    """取单元格值，支持合并单元格（空值取合并区域左上角值）。
     参数：ws — 工作表；row, col — 行号、列号。
     返回：单元格值。
     """
@@ -42,7 +42,7 @@ class ExcelService:
 
     @staticmethod
     def open_workbook(
-        file_path: str,
+        excel_file_path: str,
         *,
         read_only: bool = True,
         data_only: bool = True,
@@ -50,17 +50,17 @@ class ExcelService:
         nfc: bool = False,
     ):
         """打开 Excel 工作簿，统一处理常见异常。
-        参数：file_path — 文件路径；read_only — 只读模式；data_only — 只读公式结果；rich_text — 富文本；nfc — 是否 NFC 归一化。
+        参数：excel_file_path — 文件路径；read_only — 只读模式；data_only — 只读公式结果；rich_text — 富文本；nfc — 是否 NFC 归一化。
         返回：openpyxl Workbook。异常：FileNotFoundError / ValueError / PermissionError。
         """
-        path = resolve_runtime_path(None, file_path)
+        excel_file_path = resolve_runtime_path(None, excel_file_path)
 
-        if not os.path.exists(path):
-            raise FileNotFoundError(f"找不到 Excel 文件: {path}")
-        if not os.path.isfile(path):
-            raise ValueError(f"路径不是文件: {path}")
-        if not path.lower().endswith((".xlsx", ".xlsm", ".xltx", ".xltm")):
-            raise ValueError(f"文件不是有效的 Excel 文件: {path}")
+        if not os.path.exists(excel_file_path):
+            raise FileNotFoundError(f"找不到 Excel 文件: {excel_file_path}")
+        if not os.path.isfile(excel_file_path):
+            raise ValueError(f"路径不是文件: {excel_file_path}")
+        if not excel_file_path.lower().endswith((".xlsx", ".xlsm", ".xltx", ".xltm")):
+            raise ValueError(f"文件不是有效的 Excel 文件: {excel_file_path}")
 
         kwargs = {"data_only": data_only, "read_only": read_only}
         if rich_text:
@@ -69,31 +69,31 @@ class ExcelService:
 
         try:
             if read_only and not rich_text:
-                path_mtime = os.path.getmtime(path)
-                cache_key = (path, path_mtime)
-                data = ExcelService._WORKBOOK_BINARY_CACHE.get(cache_key)
-                if data is None:
-                    with open(path, "rb") as fp:
-                        data = fp.read()
-                    ExcelService._WORKBOOK_BINARY_CACHE = {cache_key: data}
-                wb = load_workbook(io.BytesIO(data), **kwargs)
+                path_mtime = os.path.getmtime(excel_file_path)
+                cache_key = (excel_file_path, path_mtime)
+                payload_data = ExcelService._WORKBOOK_BINARY_CACHE.get(cache_key)
+                if payload_data is None:
+                    with open(excel_file_path, "rb") as fp:
+                        payload_data = fp.read()
+                    ExcelService._WORKBOOK_BINARY_CACHE = {cache_key: payload_data}
+                wb = load_workbook(io.BytesIO(payload_data), **kwargs)
             else:
-                wb = load_workbook(path, **kwargs)
+                wb = load_workbook(excel_file_path, **kwargs)
             try:
-                for _sn in wb.sheetnames:
+                for sheet_name in wb.sheetnames:
                     try:
-                        _ws = wb[_sn]
-                        if getattr(_ws, "_dimensions", None) is not None:
-                            _ws._dimensions = None
+                        worksheet = wb[sheet_name]
+                        if getattr(worksheet, "_dimensions", None) is not None:
+                            worksheet._dimensions = None
                     except Exception:
                         continue
             except Exception:
                 pass
             return wb
         except FileNotFoundError:
-            raise FileNotFoundError(f"找不到文件: {path}")
+            raise FileNotFoundError(f"找不到文件: {excel_file_path}")
         except PermissionError:
-            raise PermissionError(f"没有权限读取文件: {path}\n请确认文件未被其他程序打开")
+            raise PermissionError(f"没有权限读取文件: {excel_file_path}\n请确认文件未被其他程序打开")
         except Exception as error:
             error_msg = str(error).lower()
             if any(
@@ -101,11 +101,11 @@ class ExcelService:
                 for kw in ("decompressing", "incorrect header", "badzipfile", "not a zip file")
             ):
                 raise ValueError(
-                    f"Excel 文件格式错误或文件已损坏: {path}\n"
+                    f"Excel 文件格式错误或文件已损坏: {excel_file_path}\n"
                     f"错误详情: {error}\n"
                     f"请检查文件是否是有效的 Excel 文件（.xlsx 格式）"
                 )
-            raise ValueError(f"无法读取 Excel 文件: {path}\n错误详情: {error}")
+            raise ValueError(f"无法读取 Excel 文件: {excel_file_path}\n错误详情: {error}")
 
     @staticmethod
     def iter_rows(

@@ -3,14 +3,14 @@
 """
 用例表表头定位与列索引查找（供 CAN / XML / DIDConfig / DIDInfo / UART 等生成器共用）。
 
-委托 core.common.excel_header 统一实现。
+实现来自 infra.excel.header。
 """
 
 from __future__ import annotations
 
 from typing import Any, Dict, List, Tuple
 
-from core.common.excel_header import (
+from infra.excel.header import (
     TestCaseHeaderResolver,
     find_header_row_and_col_indices as common_find_header_row_and_col_indices,
 )
@@ -32,14 +32,14 @@ def find_header_row_and_col_indices(
 
 
 def find_testcase_header_row(ws, *, scan_rows: int = 50, debug_sheet_name: str = ""):
-    """兼容别名：委托 TestCaseHeaderResolver.find_header_row。参数: ws — 工作表；scan_rows — 扫描行数；debug_sheet_name — 调试用表名。返回: 表头行号（1-based）或 -1。"""
+    """委托 TestCaseHeaderResolver.find_header_row。参数: ws — 工作表；scan_rows — 扫描行数；debug_sheet_name — 调试用表名。返回: 表头行号（1-based）或 -1。"""
     return TestCaseHeaderResolver.find_header_row(
         ws, scan_rows=scan_rows, max_col=50, debug_sheet_name=debug_sheet_name
     )
 
 
 def find_col_index_by_name_in_values(header_vals, search_keywords):
-    """兼容别名：委托 TestCaseHeaderResolver.find_col_index。参数: header_vals — 表头行单元格值序列；search_keywords — 列名或别名。返回: 列索引（0-based）或 -1。"""
+    """委托 TestCaseHeaderResolver.find_col_index。参数: header_vals — 表头行单元格值序列；search_keywords — 列名或别名。返回: 列索引（0-based）或 -1。"""
     keyword_candidates = (
         search_keywords if isinstance(search_keywords, (list, tuple)) else (search_keywords,)
     )
@@ -47,7 +47,7 @@ def find_col_index_by_name_in_values(header_vals, search_keywords):
 
 
 def find_case_type_column_index_in_values(header_vals):
-    """兼容别名：委托 TestCaseHeaderResolver.find_case_type_column_index。参数: header_vals — 表头行单元格值序列。返回: 用例类型列索引（0-based）或 -1。"""
+    """委托 TestCaseHeaderResolver.find_case_type_column_index。参数: header_vals — 表头行单元格值序列。返回: 用例类型列索引（0-based）或 -1。"""
     return TestCaseHeaderResolver.find_case_type_column_index(header_vals)
 
 

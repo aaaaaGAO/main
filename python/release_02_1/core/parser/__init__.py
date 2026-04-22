@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-core.parser：领域层解析器（门面）
+core.parser：领域层解析器（统一入口）
 
 将单行步骤文本解析为 CAPL 代码片段，供 CAN/CIN 等生成器使用。
 

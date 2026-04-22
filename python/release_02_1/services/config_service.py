@@ -59,6 +59,8 @@ from services.config_constants import (
     STATE_KEY_LR_PLATFORMS,
     STATE_KEY_LR_SELECTED_SHEETS,
     STATE_KEY_LR_TARGET_VERSIONS,
+    STATE_KEY_CENTRAL_LOG_LEVEL,
+    STATE_KEY_DTC_LOG_LEVEL,
     VALID_LOG_LEVELS,
     cin_input_excel_value_from_ui_path,
     input_excel_value_from_ui_path,
@@ -88,14 +90,18 @@ class ConfigService:
 
     def __init__(
         self,
-        paths: ConfigPaths,
+        file_paths: ConfigPaths,
         *,
         config_manager: ConfigManager | None = None,
     ) -> None:
-        self.paths = paths
+        """
+        参数：file_paths — 主配置路径封装；config_manager — 可注入已构造的 `ConfigManager`，
+        缺省按 `file_paths` 自动创建。返回：无。
+        """
+        self.paths = file_paths
         self.config_manager = config_manager or ConfigManager(
-            paths.base_dir,
-            config_path=paths.config_path,
+            file_paths.base_dir,
+            config_path=file_paths.config_path,
         )
 
     # ------------------------------------------------------------------
@@ -155,16 +161,19 @@ class ConfigService:
         """
         if not cfg.has_section(section):
             return {}
-        return {k: v for k, v in cfg.items(section)}
+        return {
+            option_name: option_value
+            for option_name, option_value in cfg.items(section)
+        }
 
-    def update_section(self, section: str, values: Dict[str, Any]) -> None:
+    def update_section(self, section: str, item_values: Dict[str, Any]) -> None:
         """更新指定配置节并写回主配置文件。
         参数: section — 节名；values — 选项名到值的字典（None 会转为空串）。
         无返回值。
         """
         normalized_values = {
-            str(key): "" if value is None else str(value)
-            for key, value in values.items()
+            str(item_key): "" if item_value is None else str(item_value)
+            for item_key, item_value in item_values.items()
         }
         self.config_manager.update_domain_config(section, normalized_values)
 
@@ -176,9 +185,9 @@ class ConfigService:
         cfg = self.load_main_config()
         return self.get_section_dict(cfg, SECTION_LR_REAR)
 
-    def save_lr_rear(self, data: Dict[str, Any]) -> None:
+    def save_lr_rear(self, payload_data: Dict[str, Any]) -> None:
         """更新 [LR_REAR] 节并写回文件。参数: data — 选项名到值的字典。无返回值。"""
-        self.update_section(SECTION_LR_REAR, data)
+        self.update_section(SECTION_LR_REAR, payload_data)
 
     def build_lr_rear_section_data(self, payload: Dict[str, Any]) -> Dict[str, str]:
         """将 LR_REAR 页面请求体映射为 [LR_REAR] 节键值。"""
@@ -236,11 +245,18 @@ class ConfigService:
     # ------------------------------------------------------------------
 
     @staticmethod
-    def normalize_level(v: Any) -> str:
+    def ensure_sections(cfg: configparser.ConfigParser, sections: tuple[str, ...]) -> None:
+        """若 `cfg` 中不存在给定节名则 `add_section`。参数：cfg、节名元组。返回：无。"""
+        for section_name in sections:
+            if not cfg.has_section(section_name):
+                cfg.add_section(section_name)
+
+    @staticmethod
+    def normalize_level(level_value: Any) -> str:
         """levels 空则写 ALL。"""
-        if v is None:
+        if level_value is None:
             return "ALL"
-        level_text = str(v).strip()
+        level_text = str(level_value).strip()
         return level_text if level_text else "ALL"
 
     @staticmethod
@@ -257,9 +273,9 @@ class ConfigService:
             item = item.strip()
             if "|" in item:
                 table, sheet = item.split("|", 1)
-                key = unicodedata.normalize("NFC", os.path.basename(str(table).strip()))
+                item_key = unicodedata.normalize("NFC", os.path.basename(str(table).strip()))
                 sheet_name = unicodedata.normalize("NFC", str(sheet).strip())
-                parts.append(f"{key}|{sheet_name}")
+                parts.append(f"{item_key}|{sheet_name}")
             elif item:
                 parts.append(item)
         return ",".join(parts)
@@ -276,9 +292,15 @@ class ConfigService:
         - 不负责 CENTRAL/DTC/FILTER 等部分，保持与原函数分段一致，以便分阶段迁移。
         - cfg 为已经加载并做过重复节清理的 ConfigParser 实例。
         """
-        # 确保节存在
-        if not cfg.has_section(SECTION_LR_REAR):
-            cfg.add_section(SECTION_LR_REAR)
+        self.ensure_sections(
+            cfg,
+            (
+                SECTION_LR_REAR,
+                SECTION_IOMAPPING,
+                SECTION_DID_CONFIG,
+                SECTION_CONFIG_ENUM,
+            ),
+        )
 
         # 筛选器：levels 空则 ALL；平台/车型/Target Version 选什么写什么，空表示全部生成
         cfg.set(
@@ -314,31 +336,23 @@ class ConfigService:
             for sec in [SECTION_LR_REAR]:
                 if cfg.has_section(sec):
                     for option_name in DEPRECATED_INPUT_EXCEL_DIR_OPTION_CANDIDATES:
-                        cfg.remove_option(sec, option_name)
-            if not cfg.has_section(SECTION_LR_REAR):
-                cfg.add_section(SECTION_LR_REAR)
+                        cfg.set(sec, option_name, "")
             cfg.set(SECTION_LR_REAR, OPTION_INPUT_EXCEL, val)
 
         # IO_MAPPING
         io_val = io_inputs_value_from_ui_single_path(preset_data.get(STATE_KEY_LR_IO_EXCEL))
         if io_val:
-            if not cfg.has_section(SECTION_IOMAPPING):
-                cfg.add_section(SECTION_IOMAPPING)
             cfg.set(SECTION_IOMAPPING, OPTION_INPUTS, io_val)
 
         # DID_CONFIG + CONFIG_ENUM
         didconfig_path = str(preset_data.get(STATE_KEY_LR_DIDCONFIG_EXCEL, "") or "").strip()
         if didconfig_path:
-            if not cfg.has_section(SECTION_DID_CONFIG):
-                cfg.add_section(SECTION_DID_CONFIG)
             cfg.set(SECTION_DID_CONFIG, OPTION_INPUT_EXCEL, didconfig_path)
             if out_root:
                 cfg.set(SECTION_DID_CONFIG, OPTION_OUTPUT_DIR, out_root)
             if not cfg.has_option(SECTION_DID_CONFIG, OPTION_OUTPUT_FILENAME):
                 cfg.set(SECTION_DID_CONFIG, OPTION_OUTPUT_FILENAME, DEFAULT_DID_CONFIG_FILENAME)
 
-            if not cfg.has_section(SECTION_CONFIG_ENUM):
-                cfg.add_section(SECTION_CONFIG_ENUM)
             cfg.set(
                 SECTION_CONFIG_ENUM,
                 OPTION_INPUTS,
@@ -348,15 +362,11 @@ class ConfigService:
         # ResetDid_Value 配置表（didinfo_inputs）
         did_val = didinfo_inputs_value_from_ui_single_path(preset_data.get(STATE_KEY_LR_DIDINFO_EXCEL, ""))
         if did_val:
-            if not cfg.has_section(SECTION_LR_REAR):
-                cfg.add_section(SECTION_LR_REAR)
             cfg.set(SECTION_LR_REAR, OPTION_DIDINFO_INPUTS, did_val)
 
         # Clib 配置表（cin_input_excel）
         cin_path = cin_input_excel_value_from_ui_path(preset_data.get(STATE_KEY_LR_CIN_EXCEL, ""))
         if cin_path:
-            if not cfg.has_section(SECTION_LR_REAR):
-                cfg.add_section(SECTION_LR_REAR)
             cfg.set(SECTION_LR_REAR, OPTION_CIN_INPUT_EXCEL, cin_path)
 
         # 勾选的 sheet 与日志生成选择
@@ -364,10 +374,15 @@ class ConfigService:
         if lr_sheets:
             cfg.set(SECTION_LR_REAR, OPTION_SELECTED_SHEETS, lr_sheets)
         elif cfg.has_option(SECTION_LR_REAR, OPTION_SELECTED_SHEETS):
-            cfg.remove_option(SECTION_LR_REAR, OPTION_SELECTED_SHEETS)
+            cfg.set(SECTION_LR_REAR, OPTION_SELECTED_SHEETS, "")
 
         log_level = (
-            (preset_data.get(STATE_KEY_LR_LOG_LEVEL) or preset_data.get("c_log_level") or preset_data.get("d_log_level") or "info")
+            (
+                preset_data.get(STATE_KEY_LR_LOG_LEVEL)
+                or preset_data.get(STATE_KEY_CENTRAL_LOG_LEVEL)
+                or preset_data.get(STATE_KEY_DTC_LOG_LEVEL)
+                or "info"
+            )
             .strip()
             .lower()
         )

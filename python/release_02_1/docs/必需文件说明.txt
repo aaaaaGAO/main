@@ -40,9 +40,9 @@
 ├── 测试用例生成工具_2026.x.x.exe      ← 打包后：可执行文件（与 app/build_exe 二选一使用）
 │
 ├── config/                            ← 必需：配置文件目录
-│   ├── Configuration.ini             ← 必需：主业务配置（兼容历史 Configuration.txt）
-│   ├── FixedConfig.ini                ← 固定配置首选（兼容历史 FixedConfig.txt）
-│   └── filter_options.txt            ← 必需：筛选项（可选则下拉为空）
+│   ├── Configuration.ini             ← 必需：主业务配置（支持历史 Configuration.txt）
+│   ├── FixedConfig.ini                ← 固定配置首选（支持历史 FixedConfig.txt）
+│   └── filter_options.ini            ← 可选：筛选项（无则前端下拉链表为空；仅 .ini，代码无 .txt 名）
 │
 ├── input/                             ← 推荐：存放输入 Excel 等
 │   └── （根据 Configuration 中配置的路径放置用例表、IO 映射、关键字表等）
@@ -64,7 +64,7 @@
 
 六、快速自检
 --------------------------------------------------------------------------------
-- 启动 exe 后若浏览器能打开界面，说明至少主配置文件已被找到（优先 `.ini`，兼容 `.txt`）。
+- 启动 exe 后若浏览器能打开界面，说明至少主配置文件已被找到（优先 `.ini`，同时支持 `.txt`）。
 - 若「加载配置」或「开始运行」报错“未找到配置文件”“未配置 output_dir”等，请按上表检查对应文件是否存在、路径是否正确、编码是否为 UTF-8。
 
 

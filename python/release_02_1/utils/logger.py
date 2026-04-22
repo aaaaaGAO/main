@@ -24,7 +24,7 @@ import re
 from typing import Callable, Optional, Sequence
 
 from infra.filesystem import resolve_main_config_path
-from services.config_constants import DEFAULT_DOMAIN_LR_REAR
+from services.config_constants import DEFAULT_DOMAIN_LR_REAR, OPTION_LOG_LEVEL_MIN
 from core.error_module import ErrorModuleResolver
 from core.log_run_context import get_run_domain
 
@@ -66,7 +66,7 @@ class SubstringFilter(logging.Filter):
             msg = record.getMessage()
         except Exception:
             msg = str(record.msg)
-        hit = any(p in msg for p in self.patterns)
+        hit = any(pattern_text in msg for pattern_text in self.patterns)
         return hit if self.include else (not hit)
 
 
@@ -168,22 +168,22 @@ class TeeToLogger:
         self.strip_whitespace = strip_whitespace
         self.is_logging_in_progress = False
 
-    def write(self, s: str) -> int:
+    def write(self, text_chunk: str) -> int:
         if self.use_reentry_guard and self.is_logging_in_progress:
             try:
                 if self.original:
-                    self.original.write(s)
+                    self.original.write(text_chunk)
             except Exception:
                 pass
-            return len(s)
+            return len(text_chunk)
 
         try:
             if self.original:
-                self.original.write(s)
+                self.original.write(text_chunk)
         except Exception:
             pass
 
-        self.buffer_text += s
+        self.buffer_text += text_chunk
         while "\n" in self.buffer_text:
             line, self.buffer_text = self.buffer_text.split("\n", 1)
             if self.strip_whitespace:
@@ -232,7 +232,7 @@ class TeeToLogger:
                 if self.use_reentry_guard:
                     self.is_logging_in_progress = False
 
-        return len(s)
+        return len(text_chunk)
 
     def flush(self) -> None:
         try:
@@ -266,7 +266,7 @@ def get_log_level_from_config(
         cfg = configparser.ConfigParser()
         config_path = resolve_main_config_path(base_dir)
         cfg.read(config_path, encoding="utf-8")
-        level_str = cfg.get(section, "log_level_min", fallback="info").strip().lower()
+        level_str = cfg.get(section, OPTION_LOG_LEVEL_MIN, fallback="info").strip().lower()
         return level_map.get(level_str, logging.INFO)
     except Exception:
         return logging.INFO
@@ -288,7 +288,7 @@ def is_progress_message(msg: str) -> bool:
         "目录模式 CAN 生成汇总",
         "Master .can 文件已生成",
         "所有文件生成完成",
-        # 兼容历史/新文案两种写法（带「文件的」与不带）
+        # 同时处理历史/新文案两种写法（带「文件的」与不带）
         "未生成 .can 文件的 Excel 汇总",
         "未生成 .can 的 Excel 汇总",
         # XML 侧未生成汇总前缀
@@ -296,7 +296,7 @@ def is_progress_message(msg: str) -> bool:
         "  Excel=",
         "  [未生成汇总] Excel=",
     )
-    return any(p in msg for p in progress_prefixes)
+    return any(progress_prefix in msg for progress_prefix in progress_prefixes)
 
 
 def log_progress_or_info(

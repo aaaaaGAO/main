@@ -3,12 +3,14 @@
 """
 CIN 生成运行期 IO 与步骤解析。
 
-从根目录脚本迁入：load_keyword_specs、read_clib_steps、render_step_lines、generate_content；
-以及 reset_runtime_state、setup_generator_logger、load_mapping_context，供根目录编排与兼容入口使用。
+负责 load_keyword_specs、read_clib_steps、render_step_lines、generate_content；
+并提供 reset_runtime_state、setup_generator_logger、load_mapping_context，供任务编排与统一入口使用。
 """
 
 from __future__ import annotations
 
+import importlib
+import importlib.util
 import os
 from typing import Any, Callable, Optional, Tuple
 
@@ -30,10 +32,13 @@ from core.translator import (
 )
 from core.common.name_sanitize import sanitize_clib_name
 
-try:
-    from infra.logger import ProgressFormatter, SubstringFilter
-except ImportError:  # pragma: no cover
-    from utils.logger import ProgressFormatter, SubstringFilter  # type: ignore[no-redef]
+ProgressFormatter = None
+SubstringFilter = None
+logger_module_name = "infra.logger" if importlib.util.find_spec("infra.logger") is not None else "utils.logger"
+if importlib.util.find_spec(logger_module_name) is not None:
+    logger_module = importlib.import_module(logger_module_name)
+    ProgressFormatter = getattr(logger_module, "ProgressFormatter", None)
+    SubstringFilter = getattr(logger_module, "SubstringFilter", None)
 
 
 def ignore_warning_message(_message: str) -> None:
@@ -48,13 +53,13 @@ def load_keyword_specs(
     excel_path: str,
     sheet_names: list[str],
     *,
-    warn: Optional[Callable[[str], None]] = None,
+    warn_callback: Optional[Callable[[str], None]] = None,
 ) -> dict:
     """读取关键字-CAPL 映射表。"""
     return load_keyword_specs_from_excel(
         excel_path,
         sheet_names,
-        warn=warn or ignore_warning_message,
+        warn_callback=warn_callback or ignore_warning_message,
     )
 
 
@@ -78,17 +83,17 @@ def read_clib_steps(excel_path: str, clib_sheet: Optional[str] = None) -> tuple[
             ws = wb[sn]
 
     header_row = next(ws.iter_rows(min_row=1, max_row=1, values_only=True), ())
-    header = [str(h).strip() if h is not None else "" for h in header_row]
+    header = [str(header_cell).strip() if header_cell is not None else "" for header_cell in header_row]
     if not header:
         raise ValueError(f"[cin] 错误: 工作表 '{ws.title}' 没有表头")
 
     name_idx = step_idx = None
-    for i, h in enumerate(header):
-        h_lower = h.lower()
+    for header_index, header_text in enumerate(header):
+        h_lower = header_text.lower()
         if "name" in h_lower and name_idx is None and "project" not in h_lower:
-            name_idx = i
+            name_idx = header_index
         if "step" in h_lower and step_idx is None:
-            step_idx = i
+            step_idx = header_index
     if name_idx is None:
         name_idx = 2 if len(header) >= 2 and "project" in header[1].lower() else 1
     if step_idx is None:
@@ -118,9 +123,9 @@ def read_clib_steps(excel_path: str, clib_sheet: Optional[str] = None) -> tuple[
     return ws.title, ordered
 
 
-def is_numeric_value(s: str) -> bool:
+def is_numeric_value(value_text: str) -> bool:
     try:
-        float(s)
+        float(value_text)
         return True
     except ValueError:
         return False
@@ -166,33 +171,33 @@ def parse_step_line_cin(
         if result is None:
             return None
         return (result.code_lines, result.original_line_full)
-    except IOMappingParseError as e:
-        last_parse_error_state["type"] = "iomapping_conflict" if "CONFLICT" in str(e) else "iomapping"
-        last_parse_error_state["reason"] = str(e)
+    except IOMappingParseError as exc:
+        last_parse_error_state["type"] = "iomapping_conflict" if "CONFLICT" in str(exc) else "iomapping"
+        last_parse_error_state["reason"] = str(exc)
         if logger:
             step_text = original.strip()
-            reason = str(e)
+            reason = str(exc)
             fail_text = reason if reason.startswith("IO_mapping") else f"IO_mapping 表中{reason}"
             name_part = f"Clib_Name：{name}" if name else "Clib_Name：未知"
             err_mod = ErrorModuleResolver.resolve(fail_text)
             logger.error(f"错误模块【{err_mod}】 {name_part} 用例步骤：{step_text}  原因：{fail_text}")
         return None
-    except ConfigEnumParseError as e:
+    except ConfigEnumParseError as exc:
         last_parse_error_state["type"] = "config_enum"
-        last_parse_error_state["reason"] = str(e)
+        last_parse_error_state["reason"] = str(exc)
         if logger:
             step_text = original.strip()
-            reason = str(e)
+            reason = str(exc)
             fail_text = reason if reason.startswith("CONFIG_ENUM") else f"CONFIG_ENUM 表中{reason}"
             name_part = f"Clib_Name：{name}" if name else "Clib_Name：未知"
             err_mod = ErrorModuleResolver.resolve(fail_text)
             logger.error(f"错误模块【{err_mod}】 {name_part} 用例步骤：{step_text}  原因：{fail_text}")
         return None
-    except (KeywordMatchError, StepSyntaxError) as e:
-        last_parse_error_state["type"] = "keyword" if isinstance(e, KeywordMatchError) else "syntax"
-        last_parse_error_state["reason"] = str(e)
-        if logger and isinstance(e, StepSyntaxError):
-            fail_text = f"步骤语法错误: {e}"
+    except (KeywordMatchError, StepSyntaxError) as exc:
+        last_parse_error_state["type"] = "keyword" if isinstance(exc, KeywordMatchError) else "syntax"
+        last_parse_error_state["reason"] = str(exc)
+        if logger and isinstance(exc, StepSyntaxError):
+            fail_text = f"步骤语法错误: {exc}"
             name_part = f"Clib_Name：{name}" if name else "Clib_Name：未知"
             err_mod = ErrorModuleResolver.resolve(fail_text)
             logger.error(f"错误模块【{err_mod}】 {name_part} 用例步骤：{original.strip()}  原因：{fail_text}")
@@ -324,7 +329,7 @@ def setup_generator_logger(base_dir: str) -> GeneratorLogger:
 def load_mapping_context(
     cfg: Any, base_dir: str, config_path: str, domain: str = DEFAULT_DOMAIN_LR_REAR
 ) -> Tuple[Any, Any]:
-    """步骤 ②：按 domain 加载 io_mapping 与 Configuration 枚举上下文；写入模块级供 legacy 使用。"""
+    """步骤 ②：按 domain 加载 io_mapping 与 Configuration 枚举上下文；写入模块级上下文。"""
     global io_mapping_context, config_enum_context
     io_mapping_context, config_enum_context = CINEntrypointSupport.load_mapping_context(
         cfg, base_dir=base_dir, config_path=config_path, domain=domain
@@ -332,6 +337,23 @@ def load_mapping_context(
     return io_mapping_context, config_enum_context
 
 
-def legacy_read_clib_steps(excel_path: str, clib_sheet: Optional[str] = None) -> tuple:
-    """兼容入口：从 Clib Excel 读取 Name/Step，与 read_clib_steps 行为一致。"""
+def read_clib_steps_entry(excel_path: str, clib_sheet: Optional[str] = None) -> tuple:
+    """统一入口：从 Clib Excel 读取 Name/Step，与 read_clib_steps 行为一致。"""
     return read_clib_steps(excel_path, clib_sheet=clib_sheet)
+
+
+class CINRuntimeIOUtility:
+    """CIN 运行期 IO/步骤解析统一工具类入口。"""
+
+    create_progress_formatter = staticmethod(create_progress_formatter)
+    load_keyword_specs = staticmethod(load_keyword_specs)
+    read_clib_steps = staticmethod(read_clib_steps)
+    is_numeric_value = staticmethod(is_numeric_value)
+    apply_default_param_parsing = staticmethod(apply_default_param_parsing)
+    parse_step_line_cin = staticmethod(parse_step_line_cin)
+    render_step_lines = staticmethod(render_step_lines)
+    generate_content = staticmethod(generate_content)
+    reset_runtime_state = staticmethod(reset_runtime_state)
+    setup_generator_logger = staticmethod(setup_generator_logger)
+    load_mapping_context = staticmethod(load_mapping_context)
+    read_clib_steps_entry = staticmethod(read_clib_steps_entry)

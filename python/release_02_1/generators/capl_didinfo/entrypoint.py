@@ -15,17 +15,17 @@ from .service import DIDInfoGeneratorService
 def run_generation_workflow(domain: str | None = None):
     """DIDInfo 生成主编排，委托 Service 完成读配置、初始化日志、解析 Excel、写 DIDInfo、清理。
 
-    功能：创建 DIDInfoGeneratorService 并执行 run_legacy_pipeline，内部完成所有步骤。
+    功能：创建 DIDInfoGeneratorService 并执行 run_pipeline，内部完成所有步骤。
 
-    形参：domain — 业务域；为 ``DTC`` 时仅从 ``[DTC]`` 读取 didinfo 相关路径，其它值或未传则保持原 LR/PATHS 行为。
+    形参：domain — 业务域；为 ``DTC`` 时仅从 ``[DTC]`` 读取；未传则视为 ``LR_REAR``，且仅从 ``[LR_REAR]`` 读取（不再跨节读 ``[PATHS]``）。
 
     返回：Service 内部可能返回输出路径等；本入口不向外返回该值。
     """
     service = DIDInfoGeneratorService()
-    return service.run_legacy_pipeline(domain=domain)
+    return service.run_pipeline(domain=domain)
 
 
-def main(domain: str | None = None) -> None:
+def run_generation(domain: str | None = None) -> None:
     """DIDInfo 生成主入口，供 TaskService 与命令行调用。
 
     功能：执行 run_generation_workflow，完成从配置到 DIDInfo.txt 的整条流水线。
@@ -37,14 +37,12 @@ def main(domain: str | None = None) -> None:
     run_generation_workflow(domain=domain)
 
 
-def run_generation(domain: str | None = None) -> None:
-    """语义化入口别名：等价于 main。"""
-    main(domain=domain)
+class DIDInfoEntrypointWorkflowUtility:
+    """DIDInfo 入口编排统一工具类。"""
 
-
-# 兼容旧调用名
-execute_workflow = run_generation_workflow
+    run_generation_workflow = staticmethod(run_generation_workflow)
+    run_generation = staticmethod(run_generation)
 
 
 if __name__ == "__main__":
-    main()
+    run_generation()

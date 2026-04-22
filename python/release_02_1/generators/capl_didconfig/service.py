@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""DIDConfig 生成调度 service。不再依赖 DIDConfigLegacyHooks，通过 .runtime 委托根脚本与公共模块。"""
+"""DIDConfig 生成调度 service，通过 .runtime 委托根脚本与公共模块。"""
 
 from __future__ import annotations
 
@@ -31,9 +31,9 @@ from . import runtime as didconfig_generator_runtime
 
 
 class DIDConfigGeneratorService:
-    """接管 DIDConfig 旧版主编排流程的 service。"""
+    """接管 DIDConfig 主编排流程的 service。"""
 
-    def run_legacy_pipeline(self, domain: str | None = None):
+    def run_pipeline(self, domain: str | None = None):
         base_dir = didconfig_generator_runtime.resolve_base_dir()
         gconfig = didconfig_generator_runtime.load_runtime(base_dir)
         if gconfig is None:
@@ -80,9 +80,9 @@ class DIDConfigGeneratorService:
                     gconfig.get_fixed("didconfig_output_filename")
                     or next(
                         (
-                            value
+                            item_value
                             for option_name in OPTION_OUTPUT_FILENAME_CANDIDATES
-                            if (value := cfg.get(SECTION_DTC, option_name, fallback=None))
+                            if (item_value := cfg.get(SECTION_DTC, option_name, fallback=None))
                         ),
                         DEFAULT_DID_CONFIG_FILENAME,
                     )
@@ -121,9 +121,9 @@ class DIDConfigGeneratorService:
                 output_name = gconfig.get_fixed("didconfig_output_filename") or DEFAULT_DID_CONFIG_FILENAME
                 if cfg.has_section(SECTION_DID_CONFIG):
                     for option_name in OPTION_OUTPUT_FILENAME_CANDIDATES:
-                        v = cfg.get(SECTION_DID_CONFIG, option_name, fallback=None)
-                        if v:
-                            output_name = v
+                        output_filename_value = cfg.get(SECTION_DID_CONFIG, option_name, fallback=None)
+                        if output_filename_value:
+                            output_name = output_filename_value
                             break
             else:
                 if not cfg.has_section(SECTION_DID_CONFIG):
@@ -148,9 +148,9 @@ class DIDConfigGeneratorService:
                     gconfig.get_fixed("didconfig_output_filename")
                     or next(
                         (
-                            value
+                            item_value
                             for option_name in OPTION_OUTPUT_FILENAME_CANDIDATES
-                            if (value := cfg.get(SECTION_DID_CONFIG, option_name, fallback=None))
+                            if (item_value := cfg.get(SECTION_DID_CONFIG, option_name, fallback=None))
                         ),
                         DEFAULT_DID_CONFIG_FILENAME,
                     )
@@ -245,7 +245,13 @@ class DIDConfigGeneratorService:
 
                 did_id = sheet_name if sheet_name.startswith("0x") else f"0x{sheet_name}"
                 output_content.append(f"[{did_id}]")
-                max_byte = max((b for (_, _, b, _) in parsed_rows), default=None)
+                max_byte = max(
+                    (
+                        byte_position
+                        for (excel_row, name, byte_position, bit_raw) in parsed_rows
+                    ),
+                    default=None,
+                )
                 did_length = (max_byte + 1) if isinstance(max_byte, int) else 0
                 output_content.append(f"DIDLength:{did_length};//DID数据长度BYTE")
 

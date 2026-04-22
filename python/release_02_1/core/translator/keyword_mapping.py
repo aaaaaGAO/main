@@ -27,6 +27,7 @@ class KeywordSpec:
 
     @property
     def full_key(self) -> str:
+        """映射表行唯一键：``func_name::keyword``、单独函数名或 ``::keyword``，供查找与去重。返回：拼接字符串。"""
         if self.func_name and self.keyword:
             return f"{self.func_name}::{self.keyword}"
         if self.func_name:
@@ -39,10 +40,10 @@ def load_keyword_specs_from_excel(
     excel_path: str,
     sheet_names: list[str],
     *,
-    warn: Callable[[str], None] | None = None,
+    warn_callback: Callable[[str], None] | None = None,
 ) -> dict[str, KeywordSpec]:
     """从「关键字-CAPL函数映射表」Excel 读取多 Sheet，返回 full_key.lower() -> KeywordSpec 的字典。
-    参数: excel_path — 映射表 xlsx 路径；sheet_names — 要读取的 Sheet 名列表；warn — 可选告警回调。
+    参数: excel_path — 映射表 xlsx 路径；sheet_names — 要读取的 Sheet 名列表；warn_callback — 可选告警回调。
     返回: 关键字规格字典。文件不存在或损坏时按 warn 提示并返回空字典或抛 ValueError。
     """
     specs: dict[str, KeywordSpec] = {}
@@ -56,8 +57,8 @@ def load_keyword_specs_from_excel(
             read_only=False,
         )
     except FileNotFoundError:
-        if warn:
-            warn(f"未找到映射表: {excel_path}")
+        if warn_callback:
+            warn_callback(f"未找到映射表: {excel_path}")
         return specs
     except Exception as error:
         raise ValueError(str(error)) from error
@@ -65,8 +66,8 @@ def load_keyword_specs_from_excel(
     try:
         for sheet_name in sheet_names:
             if sheet_name not in wb.sheetnames:
-                if warn:
-                    warn(f"Sheet '{sheet_name}' 不存在，跳过")
+                if warn_callback:
+                    warn_callback(f"Sheet '{sheet_name}' 不存在，跳过")
                 continue
 
             ws = wb[sheet_name]
@@ -96,8 +97,8 @@ def load_keyword_specs_from_excel(
             if capl_idx is None:
                 capl_idx = 1 if len(header_norm) > 1 else None
             if capl_idx is None:
-                if warn:
-                    warn(f"Sheet '{sheet_name}' 缺少 CAPL函数 列，跳过")
+                if warn_callback:
+                    warn_callback(f"Sheet '{sheet_name}' 缺少 CAPL函数 列，跳过")
                 continue
 
             for row_idx, row in enumerate(ws.iter_rows(min_row=2, values_only=True), start=2):
@@ -134,13 +135,13 @@ def load_keyword_specs_from_excel(
                 )
                 full_key = spec.full_key
                 if not full_key:
-                    if warn:
-                        warn(f"Sheet '{sheet_name}' 第{row_idx}行：函数和关键字都为空，跳过")
+                    if warn_callback:
+                        warn_callback(f"Sheet '{sheet_name}' 第{row_idx}行：函数和关键字都为空，跳过")
                     continue
 
                 lowered_key = full_key.lower()
-                if lowered_key in specs and warn:
-                    warn(f"重复的键: {full_key} (sheet={sheet_name}, 行{row_idx})")
+                if lowered_key in specs and warn_callback:
+                    warn_callback(f"重复的键: {full_key} (sheet={sheet_name}, 行{row_idx})")
                 specs[lowered_key] = spec
     finally:
         wb.close()

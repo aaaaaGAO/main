@@ -32,6 +32,7 @@ LogSpec = Tuple[str, str]  # (subdir, basename)
 
 
 def create_progress_formatter(format_string: str) -> logging.Formatter:
+    """工厂：返回可识别 `PROGRESS_LEVEL` 的 `ProgressFormatter` 实例。参数：format_string — 与标准 Formatter 相同。返回：Formatter。"""
     return ProgressFormatter(format_string)
 
 

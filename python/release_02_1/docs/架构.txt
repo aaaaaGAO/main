@@ -1,6 +1,6 @@
 ================================================================================
                     测试用例生成工具 — 项目架构说明
-                    版本：release_02_1 | 更新日期：2026-03-14
+                    版本：release_02_1 | 更新日期：2026-04-21
 ================================================================================
 
 一、完整目录与文件结构
@@ -12,9 +12,9 @@ project_root/
 ├── build_exe.py                    # PyInstaller 打包脚本，生成单文件 exe
 │
 ├── config/                         # 配置文件目录（与 exe 同目录或工程根下）
-│   ├── Configuration.ini          # 业务配置（兼容历史 Configuration.txt）
-│   ├── FixedConfig.ini             # 固定配置（兼容历史 FixedConfig.txt）
-│   └── filter_options.txt          # 筛选项配置（等级/平台/车型/UDS_ECU 下拉）
+│   ├── Configuration.ini          # 业务配置
+│   ├── FixedConfig.ini             # 固定配置
+│   └── filter_options.ini         # 筛选项配置（等级/平台/车型/UDS_ECU 下拉；）
 │
 ├── web/                            # 【Web 层】HTTP 路由与请求分发
 │   ├── __init__.py                 # create_app：创建 Flask 应用、注册蓝图、BASE_DIR
@@ -29,9 +29,9 @@ project_root/
 │   ├── config_manager.py           # INI 配置统一读写（主配置 / 固定配置）、格式化、同步
 │   ├── config_service.py           # 对前端暴露的配置接口（路径、筛选项、预设、域配置）
 │   ├── gui_service.py              # Tkinter 弹窗（文件/文件夹选择、另存为）、文件结构解析（Excel/CAN/XML）
-│   ├── task_orchestrator.py        # 一键生成任务编排：按域（LR_REAR/中央/DTC）调用各生成器入口
-│   ├── task_service.py             # 单任务启动：CAN/XML/CIN/DIDInfo/DIDConfig/UART 分别调用 generators.*.entrypoint.main
-│   ├── filter_service.py          # 解析 filter_options.txt，提供等级/平台/车型/UDS_ECU 下拉选项
+│   ├── task_orchestrator.py        # 一键生成任务编排：按域（LR_REAR/中央/DTC）调用各生成器入口；请求级 workbook_cache 复用并在任务结束统一关闭
+│   ├── task_service.py             # 单任务启动：CAN/XML/CIN/DIDInfo/DIDConfig/UART 分别调用 generators.*.entrypoint.run_generation/run_cli
+│   ├── filter_service.py          # 解析 config/filter_options.ini，提供等级/平台/车型/UDS_ECU 下拉选项
 │   ├── run_validator.py            # 运行前校验：输出目录可写、输入路径存在、域必填项
 │   └── __init__.py
 │
@@ -52,10 +52,7 @@ project_root/
 │   ├── common/
 │   │   ├── sanitizer.py            # 用例 ID 清洗：非法字符、中文转拼音、SYS- 提取
 │   │   ├── name_sanitize.py        # Clib 名称清洗：删除 +/-，供 CAPL 函数名拼接
-│   │   ├── excel_header.py         # 表头列索引（兼容入口，实现于 infra.excel.header）
-│   │   ├── input_parser.py         # 输入行解析（兼容入口，实现于 infra.config.input_parser）
-│   │   ├── pathing.py              # 路径解析（兼容入口，实现于 infra.filesystem.pathing）
-│   │   ├── config_access.py        # 配置项访问（兼容入口，实现于 infra.config.config_access）
+│   │   ├── __init__.py             # 公共导出入口：统一暴露常用函数
 │   │   └── generation_summary.py   # 生成结果汇总（未生成原因拼装）
 │   ├── parser/
 │   │   ├── step_parser.py          # 步骤行解析：关键字匹配、参数翻译、Clib/SetRepeat/AutoIncreaseInVal 等
@@ -66,44 +63,44 @@ project_root/
 │   │   ├── keyword_mapping.py      # 关键字→CAPL 函数映射表读取（.xlsx）
 │   │   └── __init__.py
 │   └── filter/
-│       └── __init__.py             # CaseFilter 门面
+│       └── __init__.py             # CaseFilter 导出入口
 │
 ├── generators/                     # 【生成器实现】具体格式转换，复用 core/infra；各子包含 entrypoint 统一入口
 │   ├── capl_can/                   # CAN 用例 → .can CAPL
-│   │   ├── entrypoint.py           # CAN 生成入口：main、execute_workflow、read_cases_from_excel_for_can（供 TaskService/命令行）
+│   │   ├── entrypoint.py           # CAN 生成入口：run_generation / run_generation_workflow（供 TaskService/命令行）
 │   │   ├── excel_repo.py           # 读 Excel → CANTestCase（表头、清洗、去重）
 │   │   ├── translator.py           # 步骤翻译（包装 core.parser + io_mapping/config_enum）
 │   │   ├── renderer.py             # .can 文本拼装（testcase/teststep/include）
 │   │   ├── runtime.py              # CAN 主流程、路径解析、build_runtime_paths、resolve_base_dir
-│   │   ├── runtime_io.py           # 写 .can/.log、关键字表加载、CANRuntimeContext、legacy_read_cases
-│   │   ├── service.py              # CANGeneratorService、run_legacy_pipeline
+│   │   ├── runtime_io.py           # 写 .can/.log、关键字表加载、CANRuntimeContext；已收口为类内实现 + 统一导出
+│   │   ├── service.py              # CANGeneratorService、run_pipeline
 │   │   ├── models.py               # CANTestCase、CANRawStep 等
 │   │   └── logging.py              # log_progress_or_info 薄封装
 │   ├── capl_cin/
-│   │   ├── entrypoint.py           # CIN 生成入口：main、execute_workflow、read_clib_steps、load_unified_keyword_specs
+│   │   ├── entrypoint.py           # CIN 生成入口：run_generation（供 TaskService/命令行）
 │   │   ├── runtime.py              # CIN 主流程、resolve_base_dir、load_runtime_config
 │   │   ├── runtime_io.py           # Clib 步骤解析、关键字加载、步骤渲染、generate_content
-│   │   ├── service.py              # CINGeneratorService、run_legacy_pipeline
+│   │   ├── service.py              # CINGeneratorService、run_pipeline
 │   │   └── constants.py
 │   ├── capl_xml/
-│   │   ├── entrypoint.py           # XML 生成入口：main(config_path, base_dir, domain)
+│   │   ├── entrypoint.py           # XML 生成入口：run_generation(config_path, base_dir, domain)
 │   │   ├── runtime.py              # XML 主流程、resolve_base_dir、load_runtime_config
-│   │   ├── runtime_io.py           # 读 Excel、用例分组、写 XML
-│   │   └── service.py              # XMLGeneratorService、run_legacy_pipeline
+│   │   ├── runtime_io.py           # 读 Excel、用例分组、写 XML；已收口为类内实现 + 统一导出
+│   │   └── service.py              # XMLGeneratorService、run_pipeline
 │   ├── capl_didinfo/               # DID 信息（含 ResetDid_Value 配置表）→ DIDInfo.txt
-│   │   ├── entrypoint.py           # DIDInfo 生成入口：main、execute_workflow
+│   │   ├── entrypoint.py           # DIDInfo 生成入口：run_generation / run_generation_workflow
 │   │   ├── runtime.py              # resolve_base_dir、load_runtime_config、init_runtime
 │   │   ├── runtime_io.py           # 表头 Configure DID/Length/Byte/Bit、车型列、generate_from_sheet
-│   │   ├── service.py              # DIDInfoGeneratorService、run_legacy_pipeline
+│   │   ├── service.py              # DIDInfoGeneratorService、run_pipeline
 │   │   └── __init__.py
 │   ├── capl_didconfig/
-│   │   ├── entrypoint.py           # DIDConfig 生成入口：main、execute_workflow
+│   │   ├── entrypoint.py           # DIDConfig 生成入口：run_generation
 │   │   ├── runtime.py
 │   │   ├── runtime_io.py           # DID 配置表解析、输出 DIDConfig.txt
 │   │   ├── service.py
 │   │   └── __init__.py
 │   └── capl_uart/
-│       ├── entrypoint.py           # UART 生成入口：main（配置 + Excel → Uart.txt）
+│       ├── entrypoint.py           # UART 生成入口：run_generation（配置 + Excel → Uart.txt）
 │       ├── runtime.py
 │       ├── runtime_io.py           # UART 矩阵解析、Uart.txt 生成
 │       ├── service.py
@@ -128,7 +125,7 @@ project_root/
 │
 ├── utils/                          # 【通用工具】薄封装，各层复用
 │   ├── config.py                   # 读取 INI、ConfigCenter 单例
-│   ├── excel_io.py                 # norm_str、nfc_normalize、split_input_lines、ColumnMapper；ExcelService/merged_cell_value 自 infra  re-export
+│   ├── excel_io.py                 # norm_str、nfc_normalize、split_input_lines、ColumnMapper；统一导出 ExcelService/merged_cell_value
 │   ├── file_io.py                  # write_text_safe（utf-8/gb18030 回退）
 │   ├── logger.py                   # TeeToLogger、PROGRESS_LEVEL、过滤器、get_log_level_from_config
 │   ├── path_utils.py               # get_base_dir、find_config_path、get_project_root、resolve_target_subdir、list_excel_files
@@ -150,24 +147,24 @@ project_root/
 │
 ├── docs/                           # 设计/验收文档
 │   ├── 架构.txt                    # 本文件
-│   ├── 函数注释规范.md
 │   ├── 验收清单说明.md
 │   └── 必需文件说明.txt
+│
 │
 ├── input/                          # 输入样例（Excel、配置等，可选）
 ├── output/                         # 生成结果输出目录（由配置指定，可为子目录）
 ├── log/                            # 运行日志根目录（其下按时间戳 log_YYYYMMDD_HHMMSS 建子目录）
 │
-（主配置位于 config/：优先 `Configuration.ini` / `FixedConfig.ini`，兼容历史 `Configuration.txt` / `FixedConfig.txt`，详见《必需文件说明.txt》）
+（主配置位于 config/：优先 `Configuration.ini` / `FixedConfig.ini`，支持历史 `Configuration.txt` / `FixedConfig.txt`，详见《必需文件说明.txt》）
 
 
 二、各目录/模块设计说明
 --------------------------------------------------------------------------------
 
 【根目录脚本】
-  - app.py：程序入口。打包后 exe 或桌面启动用，负责创建 Flask 应用、心跳监控、端口探测、自动打开浏览器；run_app.py 为开发环境启动，端口 5000、debug。
+  - app.py：程序入口。打包后 exe 或桌面启动用，负责创建 Flask 应用、心跳监控、端口探测、自动打开浏览器。
   - build_exe.py：一键打包为单文件 exe，纳入 templates/static/ 及必要配置，便于交付无 Python 环境用户。
-  - 生成任务入口已收口至 generators 各子包内的 entrypoint 模块（无根目录 generate_*.py），Web/任务编排通过 TaskService 调用 generators.capl_can.entrypoint.main 等，避免根目录脚本散落与误触。
+  - 生成任务入口已收口至 generators 各子包内的 entrypoint 模块（无根目录 generate_*.py），Web/任务编排通过 TaskService 调用 generators.*.entrypoint.run_generation / run_cli 等接口，避免根目录脚本散落与误触。
 
 【web/】
   - 职责：HTTP 路由与请求分发，不包含业务算法。create_app 创建 Flask 应用并注册 common、lr_rear、central、dtc 四个蓝图。
@@ -178,10 +175,10 @@ project_root/
   - 职责：应用服务层，组合领域逻辑，供 Web 调用。把“配置读写”“任务编排”“弹窗与文件解析”“运行前校验”从 Web 中剥离，便于测试与复用。
   - config_manager：统一读写主配置文件、固定配置文件，保证格式一致、去重、同步。
   - config_service：对前端暴露的配置接口（路径、筛选项、预设、域配置），与 config_manager 配合。
-  - task_orchestrator：按域（左右后/中央/DTC）编排“先校验再依次执行 DIDConfig、DIDInfo、CIN、UART、CAN、XML”等任务。
-  - task_service：单任务执行（CAN/XML/CIN/DIDInfo/DIDConfig/UART），切换工作目录后调用对应 generators.*.entrypoint.main。
+  - task_orchestrator：按域（左右后/中央/DTC）编排“先校验再依次执行 DIDConfig、DIDInfo、CIN、UART、CAN、XML”等任务；同一任务内复用 workbook 对象，降低重复解析开销，并在 finally 阶段统一关闭。
+  - task_service：单任务执行（CAN/XML/CIN/DIDInfo/DIDConfig/UART），调用对应 generators.*.entrypoint.run_generation / run_cli。
   - gui_service：Tkinter 弹窗（文件/文件夹选择、另存为）、文件/文件夹结构解析（Excel sheet、CAN testcase、XML testgroup）。
-  - filter_service：解析 filter_options.txt，提供等级/平台/车型等下拉数据。
+  - filter_service：解析 config/filter_options.ini，提供等级/平台/车型等下拉数据（缺文件时返回空列表；仅支持此文件名，无 .txt 回退）。
   - run_validator：运行前校验输出目录可写、输入路径存在，避免执行到一半才报错。
 
 【core/】
@@ -190,12 +187,14 @@ project_root/
   - parser/step_parser、translator/（io_mapping、config_enum、keyword_mapping）：步骤行解析与参数/枚举翻译，CAN 与 CIN 共用。
   - generator_logging、run_context、log_run_context、parse_table_loggers、caseid_log_dedup：日志与运行上下文管理，避免多任务串状态。
   - step_error_detail、keyword_error、error_module：统一错误明细与模块归类，便于前端与日志展示。
-  - common/：通用小工具（用例 ID 清洗、Clib 名称清洗、表头解析、路径/配置访问、生成汇总），多数为对 infra 的兼容入口。
+  - common/：通用小工具（用例 ID 清洗、Clib 名称清洗、生成汇总）+ 少量统一导出入口。
 
 【generators/】
   - 职责：具体格式转换实现。每个子包（capl_can、capl_cin、capl_xml、capl_didinfo、capl_didconfig、capl_uart）只关心“自己这种输出格式”的编排与写出，读表、过滤、步骤解析等复用 core/infra。
-  - 入口约定：各子包提供 entrypoint 模块，对外暴露 main（及部分兼容性函数如 read_cases_from_excel_for_can），供 TaskService 与命令行（python -m generators.capl_can.entrypoint）调用；具体编排与实现仍在 runtime、runtime_io、service 中。
-  - 设计目的：新增一种输出格式时，只需新增一个 generator 子包并在其内实现 entrypoint.main，不改动 core 与 Web。
+  - 入口约定：各子包提供 entrypoint 模块，对外暴露 run_generation / run_cli（及别名），供 TaskService 与命令行（python -m generators.capl_can.entrypoint）调用；具体编排与实现仍在 runtime、runtime_io、service 中。
+  - 域隔离约定：各 runtime 仅读取当前 domain 对应 section，缺失即报错；已移除 get_first 跨节兜底与 runtime 内对 [PATHS] 的跨域读取。
+  - 结构收口约定：CAN/XML/UART 的 runtime_io 已完成“散函数命名收口 + Utility 统一导出”，外部调用保持稳定，内部实现更集中。
+  - 设计目的：新增一种输出格式时，只需新增一个 generator 子包并在其内实现 entrypoint.run_generation（或 run_cli），不改动 core 与 Web。
 
 【infra/】
   - 职责：基础设施层，技术细节。与“业务规则”解耦，便于替换实现（如换 Excel 库、换路径约定）。
@@ -204,7 +203,7 @@ project_root/
   - config/：配置项读取、Inputs 行解析（path | sheet）。
 
 【utils/】
-  - 职责：通用工具薄封装，各层复用。字符串处理、INI 读取、日志级别、路径解析、sheet 勾选解析等；Excel 读写中与 openpyxl 强相关的部分已迁至 infra.excel，utils 仅保留通用能力与兼容 re-export。
+  - 职责：通用工具薄封装，各层复用。字符串处理、INI 读取、日志级别、路径解析、sheet 勾选解析等；Excel 读写中与 openpyxl 强相关的部分已迁至 infra.excel，utils 仅保留通用能力与统一导出。
 
 【static/js/】
   - api.js：封装所有与后端的 fetch 请求（文件选择、解析结构、加载配置、筛选项、生成、预设、心跳等），供页面与 config_handler、ui_controls 调用。
@@ -218,7 +217,7 @@ project_root/
   - 存放架构说明、函数注释规范、验收清单说明、必需文件说明等，便于交付与验收。
 
 【config/ 下配置文件】
-  - 主配置文件、固定配置文件、filter_options.txt 为运行时必需，通常置于工程根目录下的 config/ 中，与 exe 同目录时则为 exe 同级 config/。当前规则为优先 `*.ini`，兼容历史 `*.txt`。详见《必需文件说明.txt》。
+  - 主配置文件、固定配置文件为运行所需；`filter_options.ini` 为**可选**（无则前端「等级/平台/车型」等下拉链表为空），且**仅**识别 `filter_options.ini`（与代码 `resolve_filter_options_path` 一致，不支持 `filter_options.txt`）。主/固定配置可选用 `Configuration.ini`/`FixedConfig.ini`（对历史 `*.txt` 的说明见《必需文件说明.txt》）。文件通常放在工程根下 `config/`，与 exe 同目录时即 exe 同级 `config/`。
 
 
 ================================================================================

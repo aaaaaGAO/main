@@ -19,6 +19,7 @@ from infra.excel.workbook import ExcelService
 from core.parse_table_loggers import get_uart_matrix_logger
 from services.config_constants import (
     OPTION_OUTPUT_DIR,
+    OPTION_UART_EXCEL,
     PATHS_UART_FRAME_TYPE_OPTION_CANDIDATES,
     PATHS_UART_INPUT_OPTION_CANDIDATES,
     PATHS_UART_KNOWN_OPTION_KEYS,
@@ -51,8 +52,18 @@ _UART_REQUIRED_COLS_DISPLAY = {
 }
 
 
+class UARTExcelParser:
+    """UART Excel 读取与解析工具。"""
+    pass
+
+
+class UARTGenerationUtility:
+    """UART 运行期路径、配置与内容生成工具。"""
+    pass
+
+
 def normalize_header_text(cell_value: str | None) -> str:
-    """将表头单元格规范化：去掉换行、回车、制表符及首尾空白，连续空白压成单个空格，便于兼容误输入。"""
+    """将表头单元格规范化：去掉换行、回车、制表符及首尾空白，连续空白压成单个空格，便于处理误输入。"""
     if cell_value is None:
         return ""
     normalized_text = str(cell_value).strip()
@@ -238,7 +249,7 @@ def resolve_io_paths(config: configparser.ConfigParser, base_dir: str) -> tuple[
     fixed = read_fixed_config(base_dir)
     input_excel = ""
     if config.has_section(SECTION_CENTRAL):
-        input_excel = config.get(SECTION_CENTRAL, "uart_excel", fallback="").strip()
+        input_excel = config.get(SECTION_CENTRAL, OPTION_UART_EXCEL, fallback="").strip()
     if not input_excel and config.has_section(SECTION_PATHS):
         for option_name in PATHS_UART_INPUT_OPTION_CANDIDATES:
             input_excel = config.get(SECTION_PATHS, option_name, fallback="").strip()
@@ -269,7 +280,12 @@ def resolve_io_paths(config: configparser.ConfigParser, base_dir: str) -> tuple[
     return input_excel, output_file, output_path
 
 
-def read_uart_excel_data(excel_path: str, sheet_name: str = "IVIToMCU") -> list:
+def read_uart_excel_data(
+    excel_path: str,
+    sheet_name: str = "IVIToMCU",
+    *,
+    workbook: object | None = None,
+) -> list:
     """
     从 UART 通信矩阵 Excel 指定 Sheet 读取消息与信号，按 Msg ID 聚合为消息列表。
     Sheet 不存在或缺少必填列时返回 []。
@@ -278,24 +294,28 @@ def read_uart_excel_data(excel_path: str, sheet_name: str = "IVIToMCU") -> list:
     if not os.path.exists(resolved_excel_path):
         raise FileNotFoundError(f"找不到 Excel 文件: {resolved_excel_path}")
 
-    workbook = ExcelService.open_workbook(
-        resolved_excel_path,
-        data_only=True,
-        read_only=True,
-    )
+    workbook_obj = workbook
+    should_close_workbook = workbook_obj is None
+    if workbook_obj is None:
+        workbook_obj = ExcelService.open_workbook(
+            resolved_excel_path,
+            data_only=True,
+            read_only=True,
+        )
 
-    if sheet_name not in workbook.sheetnames:
-        error_message = f"Sheet '{sheet_name}' 不存在，可用的 Sheet: {workbook.sheetnames}"
+    if sheet_name not in workbook_obj.sheetnames:
+        error_message = f"Sheet '{sheet_name}' 不存在，可用的 Sheet: {workbook_obj.sheetnames}"
         print(f"[错误] UART 表头解析失败 - {sheet_name}: {error_message}")
         if _parse_uart_logger:
             _parse_uart_logger.error("UART 表头解析失败 - %s: %s", sheet_name, error_message)
-        try:
-            workbook.close()
-        except Exception:
-            pass
+        if should_close_workbook:
+            try:
+                workbook_obj.close()
+            except Exception:
+                pass
         return []
 
-    worksheet = workbook[sheet_name]
+    worksheet = workbook_obj[sheet_name]
     print(f"正在使用工作表: {sheet_name}")
 
     header_row = next(worksheet.iter_rows(min_row=1, max_row=1, values_only=True))
@@ -311,7 +331,7 @@ def read_uart_excel_data(excel_path: str, sheet_name: str = "IVIToMCU") -> list:
         "value_type": None,
     }
     for column_index, header_text in enumerate(header):
-        # 规范化表头：兼容单元格内误输入的换行符、多余空格等
+        # 规范化表头：处理单元格内误输入的换行符、多余空格等
         normalized_header = normalize_header_text(header_text)
         normalized_header_lower = normalized_header.lower()
         if "msg id" in normalized_header_lower and "hex" in normalized_header_lower:
@@ -348,10 +368,11 @@ def read_uart_excel_data(excel_path: str, sheet_name: str = "IVIToMCU") -> list:
         print(f"[错误] UART 表头解析失败 - {sheet_name}: 缺少必填列 {'、'.join(display_names)}，跳过该 sheet")
         print(f"  当前表头: {header}")
         print("  必填列要求: Msg ID (Hex)、Message Name / 消息名称、DLC (Byte)、Signal Name / 信号名称、Array、Length (Bits)、Value Type")
-        try:
-            workbook.close()
-        except Exception:
-            pass
+        if should_close_workbook:
+            try:
+                workbook_obj.close()
+            except Exception:
+                pass
         return []
 
     messages = []
@@ -392,6 +413,11 @@ def read_uart_excel_data(excel_path: str, sheet_name: str = "IVIToMCU") -> list:
 
     if current_msg is not None:
         messages.append(current_msg)
+    if should_close_workbook:
+        try:
+            workbook_obj.close()
+        except Exception:
+            pass
     return messages
 
 
@@ -473,3 +499,19 @@ def generate_uart_content(
 def write_text_safe(output_path: str, content: str) -> None:
     """写入文本文件，utf-8 优先，失败时回退 gb18030。"""
     file_io.write_text_safe(output_path, content, encoding="utf-8", fallback_encoding="gb18030")
+
+
+UARTExcelParser.normalize_header_text = staticmethod(normalize_header_text)
+UARTExcelParser.read_uart_excel_data = staticmethod(read_uart_excel_data)
+
+UARTGenerationUtility.flush_std_streams = staticmethod(flush_std_streams)
+UARTGenerationUtility.resolve_runtime_paths = staticmethod(resolve_runtime_paths)
+UARTGenerationUtility.setup_logging = staticmethod(setup_logging)
+UARTGenerationUtility.get_parse_logger = staticmethod(get_parse_logger)
+UARTGenerationUtility.build_stdout_tee = staticmethod(build_stdout_tee)
+UARTGenerationUtility.load_config_with_repair = staticmethod(load_config_with_repair)
+UARTGenerationUtility.read_uart_rs232_config = staticmethod(read_uart_rs232_config)
+UARTGenerationUtility.read_frame_type_value = staticmethod(read_frame_type_value)
+UARTGenerationUtility.resolve_io_paths = staticmethod(resolve_io_paths)
+UARTGenerationUtility.generate_uart_content = staticmethod(generate_uart_content)
+UARTGenerationUtility.write_text_safe = staticmethod(write_text_safe)

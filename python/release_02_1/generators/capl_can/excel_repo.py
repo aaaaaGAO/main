@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-CAN Excel 仓库：只负责 Excel 读取、过滤、清洗。
+"""CAN Excel 读取仓储模块。
+
+负责解析工作簿、识别表头、筛选用例并输出 CAN 生成所需的结构化数据。
 """
 
 from __future__ import annotations
@@ -23,7 +24,7 @@ from core.excel_header import (
 
 from .models import CANRawStep, CANTestCase
 
-# 表头/数据扫描列数：与 XML 一致并兼容“大灯高度调节”等表头靠右的表格（用例ID 可能在 50 列之后）
+# 表头/数据扫描列数：与 XML 一致并支持“大灯高度调节”等表头靠右的表格（用例ID 可能在 50 列之后）
 CAN_SHEET_MAX_COL = 80
 
 
@@ -56,8 +57,7 @@ class RepoStats:
 
 
 class CANExcelRepository:
-    """数据提取专家：读取 Excel，做过滤，聚合为 CANTestCase。"""
-
+    """CAN Excel 仓储：负责读取 Excel 并产出 CANTestCase 数据。"""
     def __init__(
         self,
         base_dir: str,
@@ -83,10 +83,24 @@ class CANExcelRepository:
         # key: (excel_path, sheet_name) -> list[{"excel_row", "case_id", "group", "case_type", "reason"}]
         self.skip_events_map: dict[tuple[str, str], list[dict]] = {}
 
-    def load_cases(self, excel_path: str) -> tuple[dict[tuple[str, str], list[CANTestCase]], dict]:
+    def load_cases(
+        self,
+        excel_path: str,
+        *,
+        workbook_cache: dict[str, object] | None = None,
+    ) -> tuple[dict[tuple[str, str], list[CANTestCase]], dict]:
         # 与 XML 生成脚本保持一致：使用 read_only=False，方便多次 iter_rows，
         # 并让 ExcelService 内部的 _dimensions 重置逻辑生效，避免只读到 A 列。
-        wb = ExcelService.open_workbook(excel_path, read_only=False, data_only=True)
+        normalized_excel_path = os.path.normcase(os.path.abspath(excel_path))
+        workbook_obj = None
+        should_close_workbook = workbook_cache is None
+        if workbook_cache is not None:
+            workbook_obj = workbook_cache.get(normalized_excel_path)
+        if workbook_obj is None:
+            workbook_obj = ExcelService.open_workbook(excel_path, read_only=False, data_only=True)
+            if workbook_cache is not None:
+                workbook_cache[normalized_excel_path] = workbook_obj
+        wb = workbook_obj
         excel_name = os.path.basename(excel_path)
         excel_name_lower = excel_name.lower()
         out: dict[tuple[str, str], list[CANTestCase]] = {}
@@ -107,7 +121,8 @@ class CANExcelRepository:
                 if cases or self.skip_events_map.get((excel_path, sheet_name)):
                     out[(excel_path, sheet_name)] = cases
         finally:
-            wb.close()
+            if should_close_workbook:
+                wb.close()
         # 合并 CaseFilter 的过滤统计到 RepoStats
         self.stats.filtered_by_level += self.case_filter.stats.filtered_by_level
         self.stats.filtered_by_platform += self.case_filter.stats.filtered_by_platform
@@ -117,18 +132,15 @@ class CANExcelRepository:
         return out, self.stats.to_dict()
 
     def load_sheet_cases(self, ws, excel_path: str, excel_name: str) -> list[CANTestCase]:
-        """
-        加载单个 sheet 的用例。
+        """从单个工作表加载并过滤用例。
 
-        表头/列识别复用 core.excel_header：
-        - 使用 find_testcase_header_row 在前 50 行内找到真正的表头
-        - 使用 find_col_index_by_name_in_values / find_case_type_column_index_in_values
-          查找用例ID/用例名称/测试步骤/预期结果（必填）、功能模块/等级/平台/车型/用例类型（可选）
-        - 缺失任一本表必填列时记入 header_validation_failed 并返回空列表
+        Args:
+            ws: 当前 Excel 工作表对象。
+            excel_path: Excel 文件绝对路径。
+            excel_name: Excel 文件名（用于日志展示）。
 
-        数据行读取仍保持 CAN 原有行为：
-        - 同一个用例可跨多行填写步骤/预期（case_id 只出现在第一行）
-        - 使用 CANTestCase.raw_steps 收集 step/expected 列的多行内容
+        Returns:
+            list[CANTestCase]: 通过筛选并解析成功的用例列表。
         """
         sheet_name = str(ws.title)
 

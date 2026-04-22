@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-core.filter：领域层筛选器（门面）
+core.filter：领域层筛选器（统一入口）
 
 导出符号说明：
 - CaseFilter(allowed_levels=None, allowed_platforms=None, allowed_models=None)

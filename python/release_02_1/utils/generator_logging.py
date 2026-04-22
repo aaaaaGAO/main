@@ -11,5 +11,5 @@
 
 from __future__ import annotations
 
-# 委托 generators.capl_cin.constants，保持向后兼容
+# 委托 generators.capl_cin.constants，保持现有调用稳定
 from generators.capl_cin.constants import CASEID_LOG_PATTERNS

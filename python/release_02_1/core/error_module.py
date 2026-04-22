@@ -36,7 +36,7 @@ class ErrorModuleResolver:
             return "Configuration"
         if "关键字不存在" in fail_text or "关键字匹配失败" in fail_text:
             return "关键字映射表"
-        # 兼容 CAN 的「clib表中没有」与 CIN 的「Clib表中未找到...关键字」
+        # 同时处理 CAN 的「clib表中没有」与 CIN 的「Clib表中未找到...关键字」
         if "clib表中没有" in fail_text or (
             "clib表中未找到" in fail_text.lower() and "关键字" in fail_text
         ):

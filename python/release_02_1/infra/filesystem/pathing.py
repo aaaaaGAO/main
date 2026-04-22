@@ -3,7 +3,7 @@
 """
 路径解析工具（底层）
 
-- get_base_dir()     : 获取运行基准目录（兼容 PyInstaller 打包）
+- get_base_dir()     : 获取运行基准目录（支持 PyInstaller 打包）
 - find_config_path() : 定位主配置文件
 """
 
@@ -198,11 +198,11 @@ def find_config_path(base_dir: str, filename: str = "Configuration.ini") -> str 
     返回: 绝对路径，找不到为 None。
     """
     if filename == "Configuration.ini":
-        path = resolve_main_config_path(base_dir)
+        file_path = resolve_main_config_path(base_dir)
     else:
-        path = ProjectPaths.from_base_dir(base_dir, config_filename=filename).config_path
-    if os.path.exists(path):
-        return path
+        file_path = ProjectPaths.from_base_dir(base_dir, config_filename=filename).config_path
+    if os.path.exists(file_path):
+        return file_path
     return None
 
 
@@ -238,7 +238,7 @@ def resolve_named_subdir(
     *,
     create_dir: bool = False,
 ) -> str | None:
-    """解析配置目录下的目标子目录，兼容“已指向子目录”与“父目录下存在同名子目录”两种写法。"""
+    """解析配置目录下的目标子目录，支持“已指向子目录”与“父目录下存在同名子目录”两种写法。"""
     root_dir = resolve_configured_path(base_dir, configured_dir)
     if not root_dir:
         return None

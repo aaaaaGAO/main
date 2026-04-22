@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import os
 import sys
+from typing import Any
 
 from services.config_constants import DEFAULT_DOMAIN_LR_REAR
 
@@ -23,14 +24,15 @@ if sys.stderr is None:
 from .service import XMLGeneratorService
 
 
-def main(
+def run_generation(
     config_path: str | None = None,
     base_dir: str | None = None,
     domain: str = DEFAULT_DOMAIN_LR_REAR,
+    workbook_cache: dict[str, Any] | None = None,
 ) -> None:
     """XML 生成统一入口，供 TaskService 与命令行调用。
 
-    功能：创建 XMLGeneratorService 并执行 run_legacy_pipeline，依次完成读配置、初始化日志、
+    功能：创建 XMLGeneratorService 并执行 run_pipeline，依次完成读配置、初始化日志、
     查找 Excel、解析分组、写 XML、汇总。
 
     形参：
@@ -41,21 +43,19 @@ def main(
     返回：无。
     """
     service = XMLGeneratorService()
-    service.run_legacy_pipeline(
+    service.run_pipeline(
         config_path=config_path,
         base_dir=base_dir,
         domain=domain,
+        workbook_cache=workbook_cache,
     )
 
 
-def run_generation(
-    config_path: str | None = None,
-    base_dir: str | None = None,
-    domain: str = DEFAULT_DOMAIN_LR_REAR,
-) -> None:
-    """语义化入口别名：等价于 main。"""
-    main(config_path=config_path, base_dir=base_dir, domain=domain)
+class XMLEntrypointWorkflowUtility:
+    """XML 入口编排统一工具类。"""
+
+    run_generation = staticmethod(run_generation)
 
 
 if __name__ == "__main__":
-    main()
+    run_generation()

@@ -9,25 +9,32 @@ CAPL CIN 生成入口模块。
 
 from __future__ import annotations
 
+import importlib
+import importlib.util
 import os
-import sys
 
 from core.run_context import tee_stdout_stderr, restore_stdout_stderr, clear_run_logger
-from services.config_constants import DEFAULT_DOMAIN_LR_REAR
+from services.config_constants import (
+    CIN_RUNTIME_KEY_CFG,
+    CIN_RUNTIME_KEY_CONFIG_ENUM_CTX,
+    CIN_RUNTIME_KEY_CONFIG_PATH,
+    CIN_RUNTIME_KEY_INPUT_EXCEL_PATH,
+    CIN_RUNTIME_KEY_INPUT_SHEET,
+    CIN_RUNTIME_KEY_IO_MAPPING_CTX,
+    DEFAULT_DOMAIN_LR_REAR,
+)
 from .runtime import CINEntrypointSupport
 from .service import CINGeneratorService
 from .runtime_io import (
     reset_runtime_state,
     setup_generator_logger,
     load_mapping_context,
-    read_clib_steps,
-    load_keyword_specs,
 )
 
-try:
-    from utils.logger import PROGRESS_LEVEL
-except ImportError:
-    PROGRESS_LEVEL = 15
+PROGRESS_LEVEL = 15
+if importlib.util.find_spec("utils.logger") is not None:
+    utils_logger_module = importlib.import_module("utils.logger")
+    PROGRESS_LEVEL = getattr(utils_logger_module, "PROGRESS_LEVEL", 15)
 
 
 def run_generation_workflow(domain: str = DEFAULT_DOMAIN_LR_REAR):
@@ -35,7 +42,7 @@ def run_generation_workflow(domain: str = DEFAULT_DOMAIN_LR_REAR):
 
     功能：重置状态 → 解析 base_dir → 初始化日志并劫持 stdout/stderr
     → 读配置得到 runtime 字典 → 按 domain 加载 io_mapping 与 config_enum
-    → 调用 CINGeneratorService.run_legacy_pipeline 完成读 Clib、翻译、写 .cin。
+    → 调用 CINGeneratorService.run_pipeline 完成读 Clib、翻译、写 .cin。
 
     形参：domain — 业务域（LR_REAR / CENTRAL / DTC），用于映射与日志级别，默认 LR_REAR。
     返回：无。
@@ -54,20 +61,20 @@ def run_generation_workflow(domain: str = DEFAULT_DOMAIN_LR_REAR):
         print(">>> 开始执行 CIN 生成任务...", flush=True)
         runtime = CINEntrypointSupport.load_runtime_config(base_dir, domain=domain)
         sheet_title = CINEntrypointSupport.detect_sheet_title(
-            runtime["input_excel_path"], runtime["input_sheet"]
+            runtime[CIN_RUNTIME_KEY_INPUT_EXCEL_PATH], runtime[CIN_RUNTIME_KEY_INPUT_SHEET]
         )
         if logger:
             logger.log(
                 PROGRESS_LEVEL,
-                f"处理Excel={os.path.basename(runtime['input_excel_path'])} sheet名={sheet_title}",
+                f"处理Excel={os.path.basename(runtime[CIN_RUNTIME_KEY_INPUT_EXCEL_PATH])} sheet名={sheet_title}",
             )
         io_ctx, enum_ctx = load_mapping_context(
-            runtime["cfg"], base_dir, runtime["config_path"], domain=domain
+            runtime[CIN_RUNTIME_KEY_CFG], base_dir, runtime[CIN_RUNTIME_KEY_CONFIG_PATH], domain=domain
         )
-        runtime["io_mapping_ctx"] = io_ctx
-        runtime["config_enum_ctx"] = enum_ctx
+        runtime[CIN_RUNTIME_KEY_IO_MAPPING_CTX] = io_ctx
+        runtime[CIN_RUNTIME_KEY_CONFIG_ENUM_CTX] = enum_ctx
         service = CINGeneratorService(logger=logger)
-        out_path = service.run_legacy_pipeline(runtime)
+        out_path = service.run_pipeline(runtime)
         if not out_path:
             print("[cin] 未读取到任何有效的 Name/Step 记录，未生成文件。")
         else:
@@ -79,7 +86,7 @@ def run_generation_workflow(domain: str = DEFAULT_DOMAIN_LR_REAR):
         log_mgr.clear()
 
 
-def main(domain: str = DEFAULT_DOMAIN_LR_REAR):
+def run_generation(domain: str = DEFAULT_DOMAIN_LR_REAR):
     """CIN 生成主入口，供 TaskService 与命令行调用。
 
     功能：执行 run_generation_workflow，完成从配置读取到 .cin 写出的整条流水线。
@@ -90,46 +97,12 @@ def main(domain: str = DEFAULT_DOMAIN_LR_REAR):
     run_generation_workflow(domain=domain)
 
 
-def run_generation(domain: str = DEFAULT_DOMAIN_LR_REAR):
-    """语义化入口别名：等价于 main。"""
-    main(domain=domain)
+class CINEntrypointWorkflowUtility:
+    """CIN 入口编排统一工具类。"""
 
-
-# 兼容旧调用名
-execute_workflow = run_generation_workflow
-
-
-def read_clib_steps_from_excel_for_cin(excel_path, clib_sheet=None):
-    """从 Clib Excel 读取 Name/Step 并按 Name 聚合的兼容性入口。
-
-    功能：委托 runtime_io.read_clib_steps，与旧版调用方式一致。
-
-    形参：
-        excel_path：Clib Excel 文件路径。
-        clib_sheet：指定 Sheet 名；None 时由内部自动选择。
-
-    返回：(sheet_title, [(name, step_items), ...])，按 Name 聚合的步骤列表。
-    """
-    return read_clib_steps(excel_path, clib_sheet=clib_sheet)
-
-
-def load_unified_keyword_specs(excel_path, sheet_names):
-    """加载关键字到 CAPL 函数映射表的兼容性入口。
-
-    功能：读取映射表 Excel 的指定 Sheet，返回 full_key -> KeywordSpec 字典；告警通过 stderr 输出。
-
-    形参：
-        excel_path：映射表 xlsx 路径。
-        sheet_names：Sheet 名列表。
-
-    返回：关键字规格字典。
-    """
-    return load_keyword_specs(
-        excel_path,
-        sheet_names,
-        warn=lambda msg: print(f"[cin] 警告: {msg}", file=sys.stderr),
-    )
+    run_generation_workflow = staticmethod(run_generation_workflow)
+    run_generation = staticmethod(run_generation)
 
 
 if __name__ == "__main__":
-    main()
+    run_generation()

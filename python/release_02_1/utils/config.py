@@ -3,9 +3,9 @@
 """
 配置中心（供所有生成器复用）
 
-- read_config()       : 读取主配置文件（委托 core.common.config_access）
+- read_config()       : 读取主配置文件（委托 infra.config）
 - read_config_if_exists() : 读取存在的主配置文件；不存在时返回空配置
-- read_fixed_config() : 读取固定配置文件（委托 core.common.config_access）
+- read_fixed_config() : 读取固定配置文件（委托 infra.config）
 - ConfigCenter        : 单例，统一管理主配置 + 固定配置
 """
 
@@ -101,23 +101,23 @@ class ConfigCenter:
     def base_dir(self) -> str:
         return self.base_dir_value
 
-    def get(self, section: str, key: str, fallback: str = "") -> str:
+    def get(self, section: str, item_key: str, fallback: str = "") -> str:
         """
         获取配置值，优先固定配置，其次主配置文件。
         """
-        fixed_val = self.fixed_config.get(key)
+        fixed_val = self.fixed_config.get(item_key)
         if fixed_val is not None:
             return fixed_val
         try:
-            return self.raw_config.get(section, key, fallback=fallback)
+            return self.raw_config.get(section, item_key, fallback=fallback)
         except (configparser.NoSectionError, configparser.NoOptionError):
             return fallback
 
-    def get_path(self, section: str, key: str, fallback: str = "") -> Path:
+    def get_path(self, section: str, item_key: str, fallback: str = "") -> Path:
         """
         获取路径值：统一 NFC 归一化 + 转为 Path 对象。
         """
-        raw = self.get(section, key, fallback)
+        raw = self.get(section, item_key, fallback)
         if not raw:
             return Path(fallback) if fallback else Path()
         normalized = unicodedata.normalize("NFC", raw.strip())
@@ -126,8 +126,8 @@ class ConfigCenter:
     def has_section(self, section: str) -> bool:
         return self.raw_config.has_section(section)
 
-    def has_option(self, section: str, key: str) -> bool:
-        return self.raw_config.has_option(section, key)
+    def has_option(self, section: str, item_key: str) -> bool:
+        return self.raw_config.has_option(section, item_key)
 
     @staticmethod
     def reset() -> None:

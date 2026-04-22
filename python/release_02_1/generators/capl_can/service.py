@@ -33,19 +33,23 @@ from .logging import log_progress_or_info
 from .models import CANTestCase
 from .renderer import CANFileRenderer
 from .runtime import CANEntrypointSupport
-from .legacy_generated_cases_context import build_legacy_generated_cases_run_context
+from .generated_cases_context import build_generated_cases_run_context
 from .translator import CANStepTranslator
 
 
 @dataclass(slots=True)
 class TaskLogBuffer:
+    """`CANGeneratorService` 在 extract/transform 阶段暂存人可读信息/错误，供 `load` 中写入 logger。"""
+
     infos: list[str]
     errors: list[str]
 
     def add_info(self, message: str) -> None:
+        """追加一条信息字符串。参数：message — 文本。返回：无。"""
         self.infos.append(message)
 
     def add_error(self, message: str) -> None:
+        """追加一条错误字符串。参数：message — 文本。返回：无。"""
         self.errors.append(message)
 
 
@@ -77,6 +81,7 @@ class CANGeneratorService(BaseGeneratorTask):
 
     @property
     def task_name(self) -> str:
+        """`BaseGeneratorTask` 展示用任务名。返回：固定中文字符串。"""
         return "CAN 生成（重构骨架）"
 
     def setup_logging(self) -> logging.Logger:
@@ -106,21 +111,21 @@ class CANGeneratorService(BaseGeneratorTask):
         self.log_buffer.add_info(f"过滤统计：{repository_stats}")
         return cases
 
-    def transform(self, data: list[CANTestCase]) -> list[CANTestCase]:
+    def transform(self, payload_data: list[CANTestCase]) -> list[CANTestCase]:
         """对用例步骤做关键字/IO/枚举翻译，填充 steps 与 error_records。参数: data — 用例列表。返回: 同一列表（原地修改）。"""
         translator = CANStepTranslator(
             io_mapping_ctx=self.io_mapping_context,
             config_enum_ctx=self.config_enum_context,
             keyword_specs=self.keyword_specs,
         )
-        for case in data:
+        for case in payload_data:
             for raw_step in case.raw_steps:
                 translate_result = translator.translate(raw_step)
                 case.steps.extend(translate_result.code_lines)
                 case.error_records.extend(translate_result.errors)
             # SOA REQ / CHECK / CHECKREQ 顺序调整与 _Prepare 后缀由 renderer 渲染阶段统一处理
         self.log_buffer.add_info("步骤翻译完成")
-        return data
+        return payload_data
 
     def load(self, content: list[CANTestCase]) -> None:
         """将翻译后的用例渲染为 .can 文件并写入 output_dir，同时生成 Master.can。参数: content — 用例列表。无返回值。"""
@@ -145,6 +150,11 @@ class CANGeneratorService(BaseGeneratorTask):
                 self.logger.error(error_message)
 
     def ensure_runtime_paths(self) -> None:
+        """
+        在 CLI/BaseTask 路径下从 INI 补全 `input_path` 与 `output_dir`；缺任一则抛 `ValueError`。
+
+        参数：无。返回：无。
+        """
         if not self.input_path:
             self.input_path = self.get_config_value(SECTION_LR_REAR, OPTION_INPUT_EXCEL, fallback="")
         if not self.output_dir:
@@ -157,13 +167,13 @@ class CANGeneratorService(BaseGeneratorTask):
             raise ValueError(f"未配置 {OPTION_OUTPUT_DIR}（可传参或配置 [{SECTION_PATH}]/[{SECTION_LR_REAR}]）")
 
     @staticmethod
-    def write_gbk_file(path: str, content: str) -> None:
+    def write_gbk_file(file_path: str, content: str) -> None:
         """以 gbk、\\r\\n 写入 CAPL 文件。参数: path — 文件路径；content — 文本内容。无返回值。"""
-        os.makedirs(os.path.dirname(path), exist_ok=True)
-        with open(path, "w", encoding="gbk", newline="\r\n", errors="replace") as file_obj:
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
+        with open(file_path, "w", encoding="gbk", newline="\r\n", errors="replace") as file_obj:
             file_obj.write(content)
 
-    def run_legacy_pipeline(
+    def run_pipeline(
         self,
         gconfig,
         *,
@@ -173,11 +183,12 @@ class CANGeneratorService(BaseGeneratorTask):
         io_mapping_ctx=None,
         config_enum_ctx=None,
         main_log_path: str | None = None,
+        workbook_cache: dict[str, object] | None = None,
     ) -> None:
         """
-        接管 CAN 生成主编排流程（入口在 entrypoint.main）。
+        接管 CAN 生成主编排流程（入口在 entrypoint.run_generation）。
 
-        不再依赖 CANLegacyHooks；路径、写文件、日志、关键字与 Clib 校验均在内部通过
+        路径、写文件、日志、关键字与 Clib 校验均在内部通过
         runtime_io 与 CANEntrypointSupport 完成。
         """
         if run_dirs is None:
@@ -191,7 +202,7 @@ class CANGeneratorService(BaseGeneratorTask):
         can_log_root = os.path.join(run_dirs.gen_dir, "can")
         os.makedirs(can_log_root, exist_ok=True)
 
-        ctx = build_legacy_generated_cases_run_context(
+        ctx = build_generated_cases_run_context(
             gconfig=gconfig,
             base_dir=base_dir,
             domain=domain,
@@ -223,6 +234,7 @@ class CANGeneratorService(BaseGeneratorTask):
                 generated_can_files=generated_can_files,
                 excel_can_map=excel_can_map,
                 excel_stats_map=excel_stats_map,
+                workbook_cache=workbook_cache,
             )
 
         if not generated_can_files:
@@ -253,13 +265,19 @@ class CANGeneratorService(BaseGeneratorTask):
             excel_files=runtime_paths["excel_files"],
             excel_can_map=excel_can_map,
             excel_stats_map=excel_stats_map,
+            selected_filter=ctx.selected_filter,
         )
 
 
-def main(base_dir: str | None = None) -> None:
+def run_cli(base_dir: str | None = None) -> None:
+    """
+    命令行 / ``python -m`` 调试用：构造 `CANGeneratorService` 并执行 `BaseGeneratorTask.run()` 主流程。
+
+    参数：base_dir — 工程根，``None`` 时由基类从 `__file__` 推断。返回：无。
+    """
     service = CANGeneratorService(base_dir=base_dir)
     service.run()
 
 
 if __name__ == "__main__":
-    main()
+    run_cli()

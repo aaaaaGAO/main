@@ -1,13 +1,8 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-任务服务（TaskService）
+"""任务执行服务。
 
-职责：
-- 作为 Web 层与 generators 包内入口之间的“调度中间层”
-- 统一封装：运行哪个生成任务（CAN / XML / CIN / DIDINFO / DIDCONFIG / UART）、
-  base_dir / config_path、异常捕获与结果封装。
-- 调用方式：from generators.capl_can.entrypoint import run_generation，不再依赖根目录 generate_*.py。
+负责统一封装各生成步骤（CAN/XML/CIN/DID/UART/SOA）的调用、耗时日志与错误返回。
 """
 
 from __future__ import annotations
@@ -38,13 +33,13 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class TaskResult:
-    """统一的任务执行结果结构，供 Web 层与编排层使用。
+    """任务执行结果数据结构。
 
-    属性：
-        success：是否执行成功。
-        message：简要结果消息（如「LR_REAR CAN 生成完成」）。
-        detail：详情（如 traceback 文本），失败时便于排查。
-        extra：可选扩展数据（如各子步结果字典）。
+    Attributes:
+        success: 是否执行成功。
+        message: 结果摘要信息。
+        detail: 异常详情或补充信息。
+        extra: 可选扩展字段。
     """
 
     success: bool
@@ -54,16 +49,13 @@ class TaskResult:
 
 
 class TaskService:
-    """生成任务调度服务：封装对各 generators.*.entrypoint.main 的调用与异常处理，供 Web 与 TaskOrchestrator 使用。"""
-
+    """各生成步骤服务封装层。"""
     def __init__(self, base_dir: str, config_path: Optional[str] = None) -> None:
-        """初始化任务服务，绑定工程根目录与配置文件路径。
+        """初始化任务服务。
 
-        形参：
-            base_dir：工程根目录，生成任务将在此目录下执行（影响相对路径解析）。
-            config_path：配置文件路径；None 时自动解析当前主配置文件 `Configuration.ini`。
-
-        返回：无。
+        Args:
+            base_dir: 项目根目录。
+            config_path: 可选，指定配置文件路径；不传则使用默认主配置路径。
         """
         self.base_dir = os.path.abspath(base_dir)
         if config_path is None:
@@ -76,10 +68,13 @@ class TaskService:
     # ------------------------------------------------------------------
     @classmethod
     def from_base_dir(cls, base_dir: str) -> "TaskService":
-        """从工程根目录创建 TaskService 实例。
+        """从项目根目录快速创建 TaskService。
 
-        形参：base_dir — 工程根目录。
-        返回：TaskService 实例（config_path 使用默认主配置路径解析规则）。
+        Args:
+            base_dir: 项目根目录。
+
+        Returns:
+            TaskService: 初始化后的任务服务实例。
         """
         return cls(base_dir=base_dir)
 
@@ -87,11 +82,13 @@ class TaskService:
     # 各类生成任务封装
     # ------------------------------------------------------------------
     def log_task_start(self, *, step: str, domain: str) -> float:
+        """打任务开始日志并返回 `perf_counter` 起点。参数：step — 子任务名；domain — 域。返回：t0 浮点秒。"""
         started = time.perf_counter()
         logger.info("[TaskService] event=start domain=%s step=%s", domain, step)
         return started
 
     def log_task_done(self, *, step: str, domain: str, elapsed_ms: float) -> None:
+        """子任务成功结束时的结构化 info 日志。参数：elapsed_ms — 耗时毫秒。返回：无。"""
         logger.info(
             "[TaskService] event=done domain=%s step=%s success=true elapsed_ms=%.1f",
             domain,
@@ -100,6 +97,7 @@ class TaskService:
         )
 
     def log_task_skip(self, *, step: str, domain: str, reason: str, elapsed_ms: float) -> None:
+        """子任务被跳过时打 info。参数：reason — 人可读原因。返回：无。"""
         logger.info(
             "[TaskService] event=skip domain=%s step=%s reason=%s elapsed_ms=%.1f",
             domain,
@@ -116,6 +114,7 @@ class TaskService:
         error: Exception,
         elapsed_ms: float,
     ) -> None:
+        """子任务抛错时打 error 级日志。参数：error — 异常对象。返回：无。"""
         logger.error(
             "[TaskService] event=failed domain=%s step=%s error_type=%s error=%s elapsed_ms=%.1f",
             domain,
@@ -125,13 +124,19 @@ class TaskService:
             elapsed_ms,
         )
 
-    def run_can(self, domain: str = DEFAULT_DOMAIN_LR_REAR) -> TaskResult:
-        """运行 CAN 生成任务。
+    def run_can(
+        self,
+        domain: str = DEFAULT_DOMAIN_LR_REAR,
+        *,
+        workbook_cache: Dict[str, Any] | None = None,
+    ) -> TaskResult:
+        """执行 CAN 生成任务。
 
-        功能：调用 generators.capl_can.entrypoint.main（传入 base_dir 与 config_path）；中央域未配置 input_excel 时按"跳过"处理不视为失败。
+        Args:
+            domain: 生成域，默认 LR_REAR。
 
-        形参：domain — 业务域（LR_REAR / CENTRAL / DTC），默认 LR_REAR。
-        返回：TaskResult（success、message、detail）。
+        Returns:
+            TaskResult: 执行结果。
         """
         started = self.log_task_start(step="can", domain=domain)
         try:
@@ -139,6 +144,7 @@ class TaskService:
                 config_path=self.config_path,
                 base_dir=self.base_dir,
                 domain=domain,
+                workbook_cache=workbook_cache,
             )
             self.log_task_done(
                 step="can",
@@ -174,13 +180,19 @@ class TaskService:
                 detail=traceback_text,
             )
 
-    def run_xml(self, domain: str = DEFAULT_DOMAIN_LR_REAR) -> TaskResult:
-        """运行 XML 生成任务。
+    def run_xml(
+        self,
+        domain: str = DEFAULT_DOMAIN_LR_REAR,
+        *,
+        workbook_cache: Dict[str, Any] | None = None,
+    ) -> TaskResult:
+        """执行 XML 生成任务。
 
-        功能：调用 generators.capl_xml.entrypoint.main（传入 base_dir 与 config_path）；中央域未配置 Xml_Input_Excel 时按"跳过"处理。
+        Args:
+            domain: 生成域，默认 LR_REAR。
 
-        形参：domain — 业务域，默认 LR_REAR。
-        返回：TaskResult（success、message、detail）。
+        Returns:
+            TaskResult: 执行结果。
         """
         started = self.log_task_start(step="xml", domain=domain)
         try:
@@ -188,6 +200,7 @@ class TaskService:
                 config_path=self.config_path,
                 base_dir=self.base_dir,
                 domain=domain,
+                workbook_cache=workbook_cache,
             )
             self.log_task_done(
                 step="xml",
@@ -223,12 +236,13 @@ class TaskService:
             )
 
     def run_cin(self, domain: str = DEFAULT_DOMAIN_LR_REAR) -> TaskResult:
-        """运行 CIN 生成任务。
+        """执行 CIN 生成任务。
 
-        功能：调用 generators.capl_cin.entrypoint.main；domain 用于按域加载 io_mapping 与日志级别。
+        Args:
+            domain: 生成域，默认 LR_REAR。
 
-        形参：domain — 业务域（LR_REAR / CENTRAL / DTC），默认 LR_REAR。
-        返回：TaskResult（success、message、detail）。
+        Returns:
+            TaskResult: 执行结果。
         """
         started = self.log_task_start(step="cin", domain=domain)
         try:
@@ -254,12 +268,13 @@ class TaskService:
             )
 
     def run_did_info(self, domain: str | None = None) -> TaskResult:
-        """运行 ResetDid(DIDInfo) 生成任务。
+        """执行 DIDInfo（ResetDid）生成任务。
 
-        功能：调用 generators.capl_resetdid.entrypoint.main；未配置 ResetDid_Value 配置表时按"跳过"处理不视为失败。
+        Args:
+            domain: 可选生成域，不传则默认 LR_REAR。
 
-        形参：domain — 为 ``DTC`` 时从 ``[DTC]`` 定点读取 didinfo 输入/输出；未传则沿用 LR/PATHS 逻辑。
-        返回：TaskResult（success、message、detail）。
+        Returns:
+            TaskResult: 执行结果。
         """
         run_domain = domain or DEFAULT_DOMAIN_LR_REAR
         started = self.log_task_start(step="did_info", domain=run_domain)
@@ -297,12 +312,13 @@ class TaskService:
             )
 
     def run_did_config(self, domain: str | None = None) -> TaskResult:
-        """运行 DIDConfig 生成任务。
+        """执行 DIDConfig 生成任务。
 
-        功能：调用 generators.capl_didconfig.entrypoint.main。
+        Args:
+            domain: 可选生成域，不传则默认 LR_REAR。
 
-        形参：domain — 为 ``DTC`` 时从 ``[DTC_CONFIG_ENUM]`` / ``[DTC]`` 定点读配置；未传则沿用 ``[DID_CONFIG]``。
-        返回：TaskResult（success、message、detail）。
+        Returns:
+            TaskResult: 执行结果。
         """
         run_domain = domain or DEFAULT_DOMAIN_LR_REAR
         started = self.log_task_start(step="did_config", domain=run_domain)
@@ -342,17 +358,15 @@ class TaskService:
                 detail=traceback_text,
             )
 
-    def run_uart(self) -> TaskResult:
-        """运行 UART 生成任务。
+    def run_uart(self, *, workbook_cache: Dict[str, Any] | None = None) -> TaskResult:
+        """执行 UART 生成任务。
 
-        功能：调用 generators.capl_uart.entrypoint.main。
-
-        形参：无。
-        返回：TaskResult（success、message、detail）。
+        Returns:
+            TaskResult: 执行结果。
         """
         started = self.log_task_start(step="uart", domain=SECTION_CENTRAL)
         try:
-            run_uart_generation()
+            run_uart_generation(workbook_cache=workbook_cache)
             self.log_task_done(
                 step="uart",
                 domain=SECTION_CENTRAL,
@@ -374,7 +388,14 @@ class TaskService:
             )
 
     def run_soa(self, domain: str = SECTION_CENTRAL) -> TaskResult:
-        """运行 SOA Node 生成任务（中央域服务通信矩阵）。"""
+        """执行 SOA 节点生成任务。
+
+        Args:
+            domain: 生成域，默认 CENTRAL。
+
+        Returns:
+            TaskResult: 执行结果。
+        """
         started = self.log_task_start(step="soa", domain=domain)
         try:
             run_soa_generation(
@@ -401,4 +422,5 @@ class TaskService:
                 message=f"{domain} SOA Node 生成失败: {error}",
                 detail=traceback_text,
             )
+
 

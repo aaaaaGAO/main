@@ -11,6 +11,6 @@ generators.capl_xml：XML 用例/配置生成器
 """
 
 from .service import XMLGeneratorService
-from .entrypoint import main
+from .entrypoint import run_generation
 
-__all__ = ["XMLGeneratorService", "main"]
+__all__ = ["XMLGeneratorService", "run_generation"]

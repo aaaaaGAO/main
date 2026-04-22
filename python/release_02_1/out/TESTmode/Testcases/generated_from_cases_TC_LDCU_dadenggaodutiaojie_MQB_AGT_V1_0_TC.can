@@ -28,7 +28,7 @@ testcase SYS_LDCU_HeadlightLevelingControl_002()
   g_HIL_Clib_Swc_Clib_BrkLocalON(); // 测试步骤 Step Clib BrkLocalON
   g_HIL_UDS_Swc_Set_UDS("SA_L1"); // 测试步骤 Step Set_UDS SA_L1
   g_HIL_UDS_Swc_Set_UDS("2E CF 0B 00 0A"); // 测试步骤 Step Set_UDS 2E CF 0B 00 0A //无此配置
-  g_HIL_Bus_Swc_Set("J_PI_VehicleHeightSensorFb 0"); // 测试步骤 Step Set J_PI_VehicleHeightSensorFb 0
+  g_HIL_Bus_Swc_Set("VTS::VT2516_3_Ch1::DigitalOutput 0"); // 测试步骤 Step Set J_PI_VehicleHeightSensorFb 0
   g_HIL_Gen_Swc_Wait("500 ms"); // 测试步骤 Step Wait 500 ms
   g_HIL_Bus_Swc_Check("I_LDCU_VheicleLevelingAngle::I_VehicleLevelingSt_PWM 400"); // 预期结果 Step Check I_LDCU_VheicleLevelingAngle::I_VehicleLevelingSt_PWM 400
   g_HIL_Bus_Swc_Check("I_LDCU_VheicleLevelingAngle::I_VheicleLevelingSt_PWMVD 2"); // 预期结果 Step Check I_LDCU_VheicleLevelingAngle::I_VheicleLevelingSt_PWMVD 2//0:Not Initialized;2:Invalid；
@@ -46,7 +46,7 @@ testcase SYS_LDCU_HeadlightLevelingControl_003()
   TestDescription("自动调节后轴高度传感器角度检测--角度检测");
   g_HIL_UDS_Swc_Set_UDS("SA_L1"); // 测试步骤 Step Set_UDS SA_L1
   g_HIL_UDS_Swc_Set_UDS("2E CF 0B 00 04"); // 测试步骤 Step Set_UDS 2E CF 0B 00 04 //左域控制器大灯高度调节感知传感器配置前大灯控制模块大灯高度调节驱动配置
-  g_HIL_Bus_Swc_Set("J_PI_VehicleHeightSensorFb 0"); // 测试步骤 Step Set J_PI_VehicleHeightSensorFb 0
+  g_HIL_Bus_Swc_Set("VTS::VT2516_3_Ch1::DigitalOutput 0"); // 测试步骤 Step Set J_PI_VehicleHeightSensorFb 0
   g_HIL_Clib_Swc_Clib_BrkLocalON(); // 测试步骤 Step Clib BrkLocalON
   g_HIL_Bus_Swc_Check("I_LDCU_VheicleLevelingAngle::I_VehicleLevelingSt_PWM 200"); // 预期结果 Step Check I_LDCU_VheicleLevelingAngle::I_VehicleLevelingSt_PWM 200
   g_HIL_Bus_Swc_Check("I_LDCU_VheicleLevelingAngle::I_VheicleLevelingSt_PWMVD 2"); // 预期结果 Step Check I_LDCU_VheicleLevelingAngle::I_VheicleLevelingSt_PWMVD 2//0:Not Initialized;2:Invalid；
@@ -56,47 +56,47 @@ testcase SYS_LDCU_HeadlightLevelingControl_003()
   g_HIL_Gen_Swc_Wait("1600 ms"); // 测试步骤 Step Wait 1600 ms
   g_HIL_Bus_Swc_Check("I_LDCU_VheicleLevelingAngle::I_VehicleLevelingSt_PWM 400"); // 预期结果 Step Check I_LDCU_VheicleLevelingAngle::I_VehicleLevelingSt_PWM 400
   g_HIL_Bus_Swc_Check("I_LDCU_VheicleLevelingAngle::I_VheicleLevelingSt_PWMVD 0"); // 预期结果 Step Check I_LDCU_VheicleLevelingAngle::I_VheicleLevelingSt_PWMVD 0//0:Not Initialized;2:Invalid；
-  g_HIL_Bus_Swc_Set("J_PI_VehicleHeightSensorFb 0.125"); // 测试步骤 Step Set J_PI_VehicleHeightSensorFb 0.125 //实际小于0.107时变成invaild  395
+  g_HIL_Bus_Swc_Set("VTS::VT2516_3_Ch1::DigitalOutput 0.125"); // 测试步骤 Step Set J_PI_VehicleHeightSensorFb 0.125 //实际小于0.107时变成invaild  395
   g_HIL_Gen_Swc_Wait("5 s"); // 测试步骤 Step Wait 5 s //角度是线性变化的 非常慢
   g_HIL_Bus_Swc_Check("I_LDCU_VheicleLevelingAngle::I_VehicleLevelingSt_PWM >= 350 and <= 450"); // 预期结果 Step Check I_LDCU_VheicleLevelingAngle::I_VehicleLevelingSt_PWM >= 350 and <= 450
   g_HIL_Bus_Swc_Check("I_LDCU_VheicleLevelingAngle::I_VheicleLevelingSt_PWMVD 2"); // 预期结果 Step Check I_LDCU_VheicleLevelingAngle::I_VheicleLevelingSt_PWMVD 2//0:Not Initialized;2:Invalid；
-  g_HIL_Bus_Swc_Set("J_PI_VehicleHeightSensorFb 0.25"); // 测试步骤 Step Set J_PI_VehicleHeightSensorFb 0.25
+  g_HIL_Bus_Swc_Set("VTS::VT2516_3_Ch1::DigitalOutput 0.25"); // 测试步骤 Step Set J_PI_VehicleHeightSensorFb 0.25
   g_HIL_Gen_Swc_Wait("5 s"); // 测试步骤 Step Wait 5 s
   g_HIL_Bus_Swc_Check("I_LDCU_VheicleLevelingAngle::I_VehicleLevelingSt_PWM >= 550 and <= 650"); // 预期结果 Step Check I_LDCU_VheicleLevelingAngle::I_VehicleLevelingSt_PWM >= 550 and <= 650
   g_HIL_Bus_Swc_Check("I_LDCU_VheicleLevelingAngle::I_VheicleLevelingSt_PWMVD 1"); // 预期结果 Step Check I_LDCU_VheicleLevelingAngle::I_VheicleLevelingSt_PWMVD 1//0:Not Initialized;2:Invalid；
-  g_HIL_Bus_Swc_Set("J_PI_VehicleHeightSensorFb 0.375"); // 测试步骤 Step Set J_PI_VehicleHeightSensorFb 0.375
+  g_HIL_Bus_Swc_Set("VTS::VT2516_3_Ch1::DigitalOutput 0.375"); // 测试步骤 Step Set J_PI_VehicleHeightSensorFb 0.375
   g_HIL_Gen_Swc_Wait("5 s"); // 测试步骤 Step Wait 5 s
   g_HIL_Bus_Swc_Check("I_LDCU_VheicleLevelingAngle::I_VehicleLevelingSt_PWM >= 750 and <= 850"); // 预期结果 Step Check I_LDCU_VheicleLevelingAngle::I_VehicleLevelingSt_PWM >= 750 and <= 850
   g_HIL_Bus_Swc_Check("I_LDCU_VheicleLevelingAngle::I_VheicleLevelingSt_PWMVD 1"); // 预期结果 Step Check I_LDCU_VheicleLevelingAngle::I_VheicleLevelingSt_PWMVD 1//0:Not Initialized;2:Invalid；
-  g_HIL_Bus_Swc_Set("J_PI_VehicleHeightSensorFb 0.375"); // 测试步骤 Step Set J_PI_VehicleHeightSensorFb 0.375
+  g_HIL_Bus_Swc_Set("VTS::VT2516_3_Ch1::DigitalOutput 0.375"); // 测试步骤 Step Set J_PI_VehicleHeightSensorFb 0.375
   g_HIL_Gen_Swc_Wait("5 s"); // 测试步骤 Step Wait 5 s
   g_HIL_Bus_Swc_Check("I_LDCU_VheicleLevelingAngle::I_VehicleLevelingSt_PWM >= 750 and <= 850"); // 预期结果 Step Check I_LDCU_VheicleLevelingAngle::I_VehicleLevelingSt_PWM >= 750 and <= 850
   g_HIL_Bus_Swc_Check("I_LDCU_VheicleLevelingAngle::I_VheicleLevelingSt_PWMVD 1"); // 预期结果 Step Check I_LDCU_VheicleLevelingAngle::I_VheicleLevelingSt_PWMVD 1//0:Not Initialized;2:Invalid；
-  g_HIL_Bus_Swc_Set("J_PI_VehicleHeightSensorFb 0.50"); // 测试步骤 Step Set J_PI_VehicleHeightSensorFb 0.50
+  g_HIL_Bus_Swc_Set("VTS::VT2516_3_Ch1::DigitalOutput 0.50"); // 测试步骤 Step Set J_PI_VehicleHeightSensorFb 0.50
   g_HIL_Gen_Swc_Wait("5 s"); // 测试步骤 Step Wait 5 s
   g_HIL_Bus_Swc_Check("I_LDCU_VheicleLevelingAngle::I_VehicleLevelingSt_PWM >= 950 and <= 1050"); // 预期结果 Step Check I_LDCU_VheicleLevelingAngle::I_VehicleLevelingSt_PWM >= 950 and <= 1050
   g_HIL_Bus_Swc_Check("I_LDCU_VheicleLevelingAngle::I_VheicleLevelingSt_PWMVD 1"); // 预期结果 Step Check I_LDCU_VheicleLevelingAngle::I_VheicleLevelingSt_PWMVD 1//0:Not Initialized;2:Invalid；
-  g_HIL_Bus_Swc_Set("J_PI_VehicleHeightSensorFb 0.50"); // 测试步骤 Step Set J_PI_VehicleHeightSensorFb 0.50
+  g_HIL_Bus_Swc_Set("VTS::VT2516_3_Ch1::DigitalOutput 0.50"); // 测试步骤 Step Set J_PI_VehicleHeightSensorFb 0.50
   g_HIL_Gen_Swc_Wait("5 s"); // 测试步骤 Step Wait 5 s
   g_HIL_Bus_Swc_Check("I_LDCU_VheicleLevelingAngle::I_VehicleLevelingSt_PWM >= 950 and <= 1050"); // 预期结果 Step Check I_LDCU_VheicleLevelingAngle::I_VehicleLevelingSt_PWM >= 950 and <= 1050
   g_HIL_Bus_Swc_Check("I_LDCU_VheicleLevelingAngle::I_VheicleLevelingSt_PWMVD 1"); // 预期结果 Step Check I_LDCU_VheicleLevelingAngle::I_VheicleLevelingSt_PWMVD 1//0:Not Initialized;2:Invalid；
-  g_HIL_Bus_Swc_Set("J_PI_VehicleHeightSensorFb 0.625"); // 测试步骤 Step Set J_PI_VehicleHeightSensorFb 0.625
+  g_HIL_Bus_Swc_Set("VTS::VT2516_3_Ch1::DigitalOutput 0.625"); // 测试步骤 Step Set J_PI_VehicleHeightSensorFb 0.625
   g_HIL_Gen_Swc_Wait("5 s"); // 测试步骤 Step Wait 5 s
   g_HIL_Bus_Swc_Check("I_LDCU_VheicleLevelingAngle::I_VehicleLevelingSt_PWM >= 1150 and <= 1250"); // 预期结果 Step Check I_LDCU_VheicleLevelingAngle::I_VehicleLevelingSt_PWM >= 1150 and <= 1250
   g_HIL_Bus_Swc_Check("I_LDCU_VheicleLevelingAngle::I_VheicleLevelingSt_PWMVD 1"); // 预期结果 Step Check I_LDCU_VheicleLevelingAngle::I_VheicleLevelingSt_PWMVD 1//0:Not Initialized;2:Invalid；
-  g_HIL_Bus_Swc_Set("J_PI_VehicleHeightSensorFb 0.75"); // 测试步骤 Step Set J_PI_VehicleHeightSensorFb 0.75
+  g_HIL_Bus_Swc_Set("VTS::VT2516_3_Ch1::DigitalOutput 0.75"); // 测试步骤 Step Set J_PI_VehicleHeightSensorFb 0.75
   g_HIL_Gen_Swc_Wait("5 s"); // 测试步骤 Step Wait 5 s
   g_HIL_Bus_Swc_Check("I_LDCU_VheicleLevelingAngle::I_VehicleLevelingSt_PWM >= 1350 and <= 1450"); // 预期结果 Step Check I_LDCU_VheicleLevelingAngle::I_VehicleLevelingSt_PWM >= 1350 and <= 1450
   g_HIL_Bus_Swc_Check("I_LDCU_VheicleLevelingAngle::I_VheicleLevelingSt_PWMVD 1"); // 预期结果 Step Check I_LDCU_VheicleLevelingAngle::I_VheicleLevelingSt_PWMVD 1//0:Not Initialized;2:Invalid；
-  g_HIL_Bus_Swc_Set("J_PI_VehicleHeightSensorFb 0.875"); // 测试步骤 Step Set J_PI_VehicleHeightSensorFb 0.875 //实际高于0.866时，进入invaild,同时角度止步于1650
+  g_HIL_Bus_Swc_Set("VTS::VT2516_3_Ch1::DigitalOutput 0.875"); // 测试步骤 Step Set J_PI_VehicleHeightSensorFb 0.875 //实际高于0.866时，进入invaild,同时角度止步于1650
   g_HIL_Gen_Swc_Wait("5 s"); // 测试步骤 Step Wait 5 s
   g_HIL_Bus_Swc_Check("I_LDCU_VheicleLevelingAngle::I_VehicleLevelingSt_PWM >= 1550 and <= 1650"); // 预期结果 Step Check I_LDCU_VheicleLevelingAngle::I_VehicleLevelingSt_PWM >= 1550 and <= 1650
   g_HIL_Bus_Swc_Check("I_LDCU_VheicleLevelingAngle::I_VheicleLevelingSt_PWMVD 2"); // 预期结果 Step Check I_LDCU_VheicleLevelingAngle::I_VheicleLevelingSt_PWMVD 2//0:Not Initialized;2:Invalid；
-  g_HIL_Bus_Swc_Set("J_PI_VehicleHeightSensorFb 1"); // 测试步骤 Step Set J_PI_VehicleHeightSensorFb 1
+  g_HIL_Bus_Swc_Set("VTS::VT2516_3_Ch1::DigitalOutput 1"); // 测试步骤 Step Set J_PI_VehicleHeightSensorFb 1
   g_HIL_Gen_Swc_Wait("5 s"); // 测试步骤 Step Wait 5 s
   g_HIL_Bus_Swc_Check("I_LDCU_VheicleLevelingAngle::I_VehicleLevelingSt_PWM >= 1750 and <= 1850"); // 预期结果 Step Check I_LDCU_VheicleLevelingAngle::I_VehicleLevelingSt_PWM >= 1750 and <= 1850
   g_HIL_Bus_Swc_Check("I_LDCU_VheicleLevelingAngle::I_VheicleLevelingSt_PWMVD 2"); // 预期结果 Step Check I_LDCU_VheicleLevelingAngle::I_VheicleLevelingSt_PWMVD 2//0:Not Initialized;2:Invalid；
-  g_HIL_Bus_Swc_Set("J_PI_VehicleHeightSensorFb 0"); // 测试步骤 Step Set J_PI_VehicleHeightSensorFb 0
+  g_HIL_Bus_Swc_Set("VTS::VT2516_3_Ch1::DigitalOutput 0"); // 测试步骤 Step Set J_PI_VehicleHeightSensorFb 0
   g_HIL_Bus_Swc_Check("I_LDCU_VheicleLevelingAngle::I_VehicleLevelingSt_PWM 200"); // 预期结果 Step Check I_LDCU_VheicleLevelingAngle::I_VehicleLevelingSt_PWM 200
   g_HIL_Bus_Swc_Check("I_LDCU_VheicleLevelingAngle::I_VheicleLevelingSt_PWMVD 2"); // 预期结果 Step Check I_LDCU_VheicleLevelingAngle::I_VheicleLevelingSt_PWMVD 2//0:Not Initialized;2:Invalid；
   g_HIL_Clib_Swc_Clib_OFF(); // 测试步骤 Step Clib OFF
@@ -107,7 +107,7 @@ testcase SYS_LDCU_HeadlightLevelingControl_004()
   TestDescription("自动调节后轴高度传感器角度检测--角度检测-下电不检测");
   g_HIL_UDS_Swc_Set_UDS("SA_L1"); // 测试步骤 Step Set_UDS SA_L1
   g_HIL_UDS_Swc_Set_UDS("2E CF 0B 00 04"); // 测试步骤 Step Set_UDS 2E CF 0B 00 04 //左域控制器大灯高度调节感知传感器配置前大灯控制模块大灯高度调节驱动配置
-  g_HIL_Bus_Swc_Set("J_PI_VehicleHeightSensorFb 0"); // 测试步骤 Step Set J_PI_VehicleHeightSensorFb 0
+  g_HIL_Bus_Swc_Set("VTS::VT2516_3_Ch1::DigitalOutput 0"); // 测试步骤 Step Set J_PI_VehicleHeightSensorFb 0
   g_HIL_Clib_Swc_Clib_BrkLocalON(); // 测试步骤 Step Clib BrkLocalON
   g_HIL_Bus_Swc_Check("I_LDCU_VheicleLevelingAngle::I_VehicleLevelingSt_PWM 200"); // 预期结果 Step Check I_LDCU_VheicleLevelingAngle::I_VehicleLevelingSt_PWM 200
   g_HIL_Bus_Swc_Check("I_LDCU_VheicleLevelingAngle::I_VheicleLevelingSt_PWMVD 2"); // 预期结果 Step Check I_LDCU_VheicleLevelingAngle::I_VheicleLevelingSt_PWMVD 2//0:Not Initialized;2:Invalid；
@@ -117,51 +117,51 @@ testcase SYS_LDCU_HeadlightLevelingControl_004()
   g_HIL_Gen_Swc_Wait("1600 ms"); // 测试步骤 Step Wait 1600 ms
   g_HIL_Bus_Swc_Check("I_LDCU_VheicleLevelingAngle::I_VehicleLevelingSt_PWM 400"); // 预期结果 Step Check I_LDCU_VheicleLevelingAngle::I_VehicleLevelingSt_PWM 400
   g_HIL_Bus_Swc_Check("I_LDCU_VheicleLevelingAngle::I_VheicleLevelingSt_PWMVD 0"); // 预期结果 Step Check I_LDCU_VheicleLevelingAngle::I_VheicleLevelingSt_PWMVD 0//0:Not Initialized;2:Invalid；
-  g_HIL_Bus_Swc_Set("J_PI_VehicleHeightSensorFb 0.125"); // 测试步骤 Step Set J_PI_VehicleHeightSensorFb 0.125 //实际小于0.107时变成invaild  395
+  g_HIL_Bus_Swc_Set("VTS::VT2516_3_Ch1::DigitalOutput 0.125"); // 测试步骤 Step Set J_PI_VehicleHeightSensorFb 0.125 //实际小于0.107时变成invaild  395
   g_HIL_Gen_Swc_Wait("5 s"); // 测试步骤 Step Wait 5 s //角度是线性变化的 非常慢
   g_HIL_Bus_Swc_Check("I_LDCU_VheicleLevelingAngle::I_VehicleLevelingSt_PWM >= 350 and <= 450"); // 预期结果 Step Check I_LDCU_VheicleLevelingAngle::I_VehicleLevelingSt_PWM >= 350 and <= 450
   g_HIL_Bus_Swc_Check("I_LDCU_VheicleLevelingAngle::I_VheicleLevelingSt_PWMVD 2"); // 预期结果 Step Check I_LDCU_VheicleLevelingAngle::I_VheicleLevelingSt_PWMVD 2//0:Not Initialized;2:Invalid；
-  g_HIL_Bus_Swc_Set("J_PI_VehicleHeightSensorFb 0.25"); // 测试步骤 Step Set J_PI_VehicleHeightSensorFb 0.25
+  g_HIL_Bus_Swc_Set("VTS::VT2516_3_Ch1::DigitalOutput 0.25"); // 测试步骤 Step Set J_PI_VehicleHeightSensorFb 0.25
   g_HIL_Gen_Swc_Wait("5 s"); // 测试步骤 Step Wait 5 s
   g_HIL_Bus_Swc_Check("I_LDCU_VheicleLevelingAngle::I_VehicleLevelingSt_PWM >= 550 and <= 650"); // 预期结果 Step Check I_LDCU_VheicleLevelingAngle::I_VehicleLevelingSt_PWM >= 550 and <= 650
   g_HIL_Bus_Swc_Check("I_LDCU_VheicleLevelingAngle::I_VheicleLevelingSt_PWMVD 1"); // 预期结果 Step Check I_LDCU_VheicleLevelingAngle::I_VheicleLevelingSt_PWMVD 1//0:Not Initialized;2:Invalid；
-  g_HIL_Bus_Swc_Set("J_PI_VehicleHeightSensorFb 0.375"); // 测试步骤 Step Set J_PI_VehicleHeightSensorFb 0.375
+  g_HIL_Bus_Swc_Set("VTS::VT2516_3_Ch1::DigitalOutput 0.375"); // 测试步骤 Step Set J_PI_VehicleHeightSensorFb 0.375
   g_HIL_Gen_Swc_Wait("5 s"); // 测试步骤 Step Wait 5 s
   g_HIL_Bus_Swc_Check("I_LDCU_VheicleLevelingAngle::I_VehicleLevelingSt_PWM >= 750 and <= 850"); // 预期结果 Step Check I_LDCU_VheicleLevelingAngle::I_VehicleLevelingSt_PWM >= 750 and <= 850
   g_HIL_Bus_Swc_Check("I_LDCU_VheicleLevelingAngle::I_VheicleLevelingSt_PWMVD 1"); // 预期结果 Step Check I_LDCU_VheicleLevelingAngle::I_VheicleLevelingSt_PWMVD 1//0:Not Initialized;2:Invalid；
-  g_HIL_Bus_Swc_Set("J_PI_VehicleHeightSensorFb 0.375"); // 测试步骤 Step Set J_PI_VehicleHeightSensorFb 0.375
+  g_HIL_Bus_Swc_Set("VTS::VT2516_3_Ch1::DigitalOutput 0.375"); // 测试步骤 Step Set J_PI_VehicleHeightSensorFb 0.375
   g_HIL_Gen_Swc_Wait("5 s"); // 测试步骤 Step Wait 5 s
   g_HIL_Bus_Swc_Check("I_LDCU_VheicleLevelingAngle::I_VehicleLevelingSt_PWM >= 750 and <= 850"); // 预期结果 Step Check I_LDCU_VheicleLevelingAngle::I_VehicleLevelingSt_PWM >= 750 and <= 850
   g_HIL_Bus_Swc_Check("I_LDCU_VheicleLevelingAngle::I_VheicleLevelingSt_PWMVD 1"); // 预期结果 Step Check I_LDCU_VheicleLevelingAngle::I_VheicleLevelingSt_PWMVD 1//0:Not Initialized;2:Invalid；
-  g_HIL_Bus_Swc_Set("J_PI_VehicleHeightSensorFb 0.5"); // 测试步骤 Step Set J_PI_VehicleHeightSensorFb 0.5
+  g_HIL_Bus_Swc_Set("VTS::VT2516_3_Ch1::DigitalOutput 0.5"); // 测试步骤 Step Set J_PI_VehicleHeightSensorFb 0.5
   g_HIL_Gen_Swc_Wait("5 s"); // 测试步骤 Step Wait 5 s
   g_HIL_Bus_Swc_Check("I_LDCU_VheicleLevelingAngle::I_VehicleLevelingSt_PWM >= 950 and <= 1050"); // 预期结果 Step Check I_LDCU_VheicleLevelingAngle::I_VehicleLevelingSt_PWM >= 950 and <= 1050
   g_HIL_Bus_Swc_Check("I_LDCU_VheicleLevelingAngle::I_VheicleLevelingSt_PWMVD 1"); // 预期结果 Step Check I_LDCU_VheicleLevelingAngle::I_VheicleLevelingSt_PWMVD 1//0:Not Initialized;2:Invalid；
-  g_HIL_Bus_Swc_Set("J_PI_VehicleHeightSensorFb 0.5"); // 测试步骤 Step Set J_PI_VehicleHeightSensorFb 0.5
+  g_HIL_Bus_Swc_Set("VTS::VT2516_3_Ch1::DigitalOutput 0.5"); // 测试步骤 Step Set J_PI_VehicleHeightSensorFb 0.5
   g_HIL_Gen_Swc_Wait("5 s"); // 测试步骤 Step Wait 5 s
   g_HIL_Bus_Swc_Check("I_LDCU_VheicleLevelingAngle::I_VehicleLevelingSt_PWM >= 950 and <= 1050"); // 预期结果 Step Check I_LDCU_VheicleLevelingAngle::I_VehicleLevelingSt_PWM >= 950 and <= 1050
   g_HIL_Bus_Swc_Check("I_LDCU_VheicleLevelingAngle::I_VheicleLevelingSt_PWMVD 1"); // 预期结果 Step Check I_LDCU_VheicleLevelingAngle::I_VheicleLevelingSt_PWMVD 1//0:Not Initialized;2:Invalid；
   g_HIL_Clib_Swc_Clib_OFF(); // 测试步骤 Step Clib OFF
   g_HIL_Bus_Swc_Check("I_LDCU_VheicleLevelingAngle::I_VehicleLevelingSt_PWM 400"); // 预期结果 Step Check I_LDCU_VheicleLevelingAngle::I_VehicleLevelingSt_PWM 400
   g_HIL_Bus_Swc_Check("I_LDCU_VheicleLevelingAngle::I_VheicleLevelingSt_PWMVD 0"); // 预期结果 Step Check I_LDCU_VheicleLevelingAngle::I_VheicleLevelingSt_PWMVD 0//0:Not Initialized;2:Invalid；
-  g_HIL_Bus_Swc_Set("J_PI_VehicleHeightSensorFb 0.625"); // 测试步骤 Step Set J_PI_VehicleHeightSensorFb 0.625
+  g_HIL_Bus_Swc_Set("VTS::VT2516_3_Ch1::DigitalOutput 0.625"); // 测试步骤 Step Set J_PI_VehicleHeightSensorFb 0.625
   g_HIL_Gen_Swc_Wait("5 s"); // 测试步骤 Step Wait 5 s
   g_HIL_Bus_Swc_Check("I_LDCU_VheicleLevelingAngle::I_VehicleLevelingSt_PWM 400"); // 预期结果 Step Check I_LDCU_VheicleLevelingAngle::I_VehicleLevelingSt_PWM 400
   g_HIL_Bus_Swc_Check("I_LDCU_VheicleLevelingAngle::I_VheicleLevelingSt_PWMVD 0"); // 预期结果 Step Check I_LDCU_VheicleLevelingAngle::I_VheicleLevelingSt_PWMVD 0//0:Not Initialized;2:Invalid；
-  g_HIL_Bus_Swc_Set("J_PI_VehicleHeightSensorFb 0.75"); // 测试步骤 Step Set J_PI_VehicleHeightSensorFb 0.75
+  g_HIL_Bus_Swc_Set("VTS::VT2516_3_Ch1::DigitalOutput 0.75"); // 测试步骤 Step Set J_PI_VehicleHeightSensorFb 0.75
   g_HIL_Gen_Swc_Wait("5 s"); // 测试步骤 Step Wait 5 s
   g_HIL_Bus_Swc_Check("I_LDCU_VheicleLevelingAngle::I_VehicleLevelingSt_PWM 400"); // 预期结果 Step Check I_LDCU_VheicleLevelingAngle::I_VehicleLevelingSt_PWM 400
   g_HIL_Bus_Swc_Check("I_LDCU_VheicleLevelingAngle::I_VheicleLevelingSt_PWMVD 0"); // 预期结果 Step Check I_LDCU_VheicleLevelingAngle::I_VheicleLevelingSt_PWMVD 0//0:Not Initialized;2:Invalid；
   g_HIL_Clib_Swc_Clib_BrkLocalON(); // 测试步骤 Step Clib BrkLocalON
-  g_HIL_Bus_Swc_Set("J_PI_VehicleHeightSensorFb 0.75"); // 测试步骤 Step Set J_PI_VehicleHeightSensorFb 0.75
+  g_HIL_Bus_Swc_Set("VTS::VT2516_3_Ch1::DigitalOutput 0.75"); // 测试步骤 Step Set J_PI_VehicleHeightSensorFb 0.75
   g_HIL_Gen_Swc_Wait("5 s"); // 测试步骤 Step Wait 5 s
   g_HIL_Bus_Swc_Check("I_LDCU_VheicleLevelingAngle::I_VehicleLevelingSt_PWM >= 1350 and <= 1450"); // 预期结果 Step Check I_LDCU_VheicleLevelingAngle::I_VehicleLevelingSt_PWM >= 1350 and <= 1450
   g_HIL_Bus_Swc_Check("I_LDCU_VheicleLevelingAngle::I_VheicleLevelingSt_PWMVD 1"); // 预期结果 Step Check I_LDCU_VheicleLevelingAngle::I_VheicleLevelingSt_PWMVD 1//0:Not Initialized;2:Invalid；
-  g_HIL_Bus_Swc_Set("J_PI_VehicleHeightSensorFb 1"); // 测试步骤 Step Set J_PI_VehicleHeightSensorFb 1
+  g_HIL_Bus_Swc_Set("VTS::VT2516_3_Ch1::DigitalOutput 1"); // 测试步骤 Step Set J_PI_VehicleHeightSensorFb 1
   g_HIL_Gen_Swc_Wait("5 s"); // 测试步骤 Step Wait 5 s
   g_HIL_Bus_Swc_Check("I_LDCU_VheicleLevelingAngle::I_VehicleLevelingSt_PWM >= 1750 and <= 1850"); // 预期结果 Step Check I_LDCU_VheicleLevelingAngle::I_VehicleLevelingSt_PWM >= 1750 and <= 1850
   g_HIL_Bus_Swc_Check("I_LDCU_VheicleLevelingAngle::I_VheicleLevelingSt_PWMVD 2"); // 预期结果 Step Check I_LDCU_VheicleLevelingAngle::I_VheicleLevelingSt_PWMVD 2//0:Not Initialized;2:Invalid；
-  g_HIL_Bus_Swc_Set("J_PI_VehicleHeightSensorFb 0"); // 测试步骤 Step Set J_PI_VehicleHeightSensorFb 0
+  g_HIL_Bus_Swc_Set("VTS::VT2516_3_Ch1::DigitalOutput 0"); // 测试步骤 Step Set J_PI_VehicleHeightSensorFb 0
   g_HIL_Bus_Swc_Check("I_LDCU_VheicleLevelingAngle::I_VehicleLevelingSt_PWM 200"); // 预期结果 Step Check I_LDCU_VheicleLevelingAngle::I_VehicleLevelingSt_PWM 200
   g_HIL_Bus_Swc_Check("I_LDCU_VheicleLevelingAngle::I_VheicleLevelingSt_PWMVD 2"); // 预期结果 Step Check I_LDCU_VheicleLevelingAngle::I_VheicleLevelingSt_PWMVD 2//0:Not Initialized;2:Invalid；
   g_HIL_Clib_Swc_Clib_OFF(); // 测试步骤 Step Clib OFF
@@ -172,7 +172,7 @@ testcase SYS_LDCU_HeadlightLevelingControl_005()
   TestDescription("自动调节后轴高度传感器角度检测--角度检测-电源模式");
   g_HIL_UDS_Swc_Set_UDS("SA_L1"); // 测试步骤 Step Set_UDS SA_L1
   g_HIL_UDS_Swc_Set_UDS("2E CF 0B 00 04"); // 测试步骤 Step Set_UDS 2E CF 0B 00 04 //左域控制器大灯高度调节感知传感器配置前大灯控制模块大灯高度调节驱动配置
-  g_HIL_Bus_Swc_Set("J_PI_VehicleHeightSensorFb 0"); // 测试步骤 Step Set J_PI_VehicleHeightSensorFb 0
+  g_HIL_Bus_Swc_Set("VTS::VT2516_3_Ch1::DigitalOutput 0"); // 测试步骤 Step Set J_PI_VehicleHeightSensorFb 0
   g_HIL_Clib_Swc_Clib_RemoteON(); // 测试步骤 Step Clib RemoteON
   g_HIL_Bus_Swc_Check("I_LDCU_VheicleLevelingAngle::I_VehicleLevelingSt_PWM 200"); // 预期结果 Step Check I_LDCU_VheicleLevelingAngle::I_VehicleLevelingSt_PWM 200
   g_HIL_Bus_Swc_Check("I_LDCU_VheicleLevelingAngle::I_VheicleLevelingSt_PWMVD 2"); // 预期结果 Step Check I_LDCU_VheicleLevelingAngle::I_VheicleLevelingSt_PWMVD 2//0:Not Initialized;2:Invalid；
@@ -182,47 +182,47 @@ testcase SYS_LDCU_HeadlightLevelingControl_005()
   g_HIL_Gen_Swc_Wait("1600 ms"); // 测试步骤 Step Wait 1600 ms
   g_HIL_Bus_Swc_Check("I_LDCU_VheicleLevelingAngle::I_VehicleLevelingSt_PWM 400"); // 预期结果 Step Check I_LDCU_VheicleLevelingAngle::I_VehicleLevelingSt_PWM 400
   g_HIL_Bus_Swc_Check("I_LDCU_VheicleLevelingAngle::I_VheicleLevelingSt_PWMVD 0"); // 预期结果 Step Check I_LDCU_VheicleLevelingAngle::I_VheicleLevelingSt_PWMVD 0//0:Not Initialized;2:Invalid；
-  g_HIL_Bus_Swc_Set("J_PI_VehicleHeightSensorFb 0.125"); // 测试步骤 Step Set J_PI_VehicleHeightSensorFb 0.125 //实际小于0.107时变成invaild  395
+  g_HIL_Bus_Swc_Set("VTS::VT2516_3_Ch1::DigitalOutput 0.125"); // 测试步骤 Step Set J_PI_VehicleHeightSensorFb 0.125 //实际小于0.107时变成invaild  395
   g_HIL_Gen_Swc_Wait("5 s"); // 测试步骤 Step Wait 5 s //角度是线性变化的 非常慢
   g_HIL_Bus_Swc_Check("I_LDCU_VheicleLevelingAngle::I_VehicleLevelingSt_PWM >= 350 and <= 450"); // 预期结果 Step Check I_LDCU_VheicleLevelingAngle::I_VehicleLevelingSt_PWM >= 350 and <= 450
   g_HIL_Bus_Swc_Check("I_LDCU_VheicleLevelingAngle::I_VheicleLevelingSt_PWMVD 2"); // 预期结果 Step Check I_LDCU_VheicleLevelingAngle::I_VheicleLevelingSt_PWMVD 2//0:Not Initialized;2:Invalid；
-  g_HIL_Bus_Swc_Set("J_PI_VehicleHeightSensorFb 0.25"); // 测试步骤 Step Set J_PI_VehicleHeightSensorFb 0.25
+  g_HIL_Bus_Swc_Set("VTS::VT2516_3_Ch1::DigitalOutput 0.25"); // 测试步骤 Step Set J_PI_VehicleHeightSensorFb 0.25
   g_HIL_Gen_Swc_Wait("5 s"); // 测试步骤 Step Wait 5 s
   g_HIL_Bus_Swc_Check("I_LDCU_VheicleLevelingAngle::I_VehicleLevelingSt_PWM >= 550 and <= 650"); // 预期结果 Step Check I_LDCU_VheicleLevelingAngle::I_VehicleLevelingSt_PWM >= 550 and <= 650
   g_HIL_Bus_Swc_Check("I_LDCU_VheicleLevelingAngle::I_VheicleLevelingSt_PWMVD 1"); // 预期结果 Step Check I_LDCU_VheicleLevelingAngle::I_VheicleLevelingSt_PWMVD 1//0:Not Initialized;2:Invalid；
-  g_HIL_Bus_Swc_Set("J_PI_VehicleHeightSensorFb 0.375"); // 测试步骤 Step Set J_PI_VehicleHeightSensorFb 0.375
+  g_HIL_Bus_Swc_Set("VTS::VT2516_3_Ch1::DigitalOutput 0.375"); // 测试步骤 Step Set J_PI_VehicleHeightSensorFb 0.375
   g_HIL_Gen_Swc_Wait("5 s"); // 测试步骤 Step Wait 5 s
   g_HIL_Bus_Swc_Check("I_LDCU_VheicleLevelingAngle::I_VehicleLevelingSt_PWM >= 750 and <= 850"); // 预期结果 Step Check I_LDCU_VheicleLevelingAngle::I_VehicleLevelingSt_PWM >= 750 and <= 850
   g_HIL_Bus_Swc_Check("I_LDCU_VheicleLevelingAngle::I_VheicleLevelingSt_PWMVD 1"); // 预期结果 Step Check I_LDCU_VheicleLevelingAngle::I_VheicleLevelingSt_PWMVD 1//0:Not Initialized;2:Invalid；
-  g_HIL_Bus_Swc_Set("J_PI_VehicleHeightSensorFb 0.375"); // 测试步骤 Step Set J_PI_VehicleHeightSensorFb 0.375
+  g_HIL_Bus_Swc_Set("VTS::VT2516_3_Ch1::DigitalOutput 0.375"); // 测试步骤 Step Set J_PI_VehicleHeightSensorFb 0.375
   g_HIL_Gen_Swc_Wait("5 s"); // 测试步骤 Step Wait 5 s
   g_HIL_Bus_Swc_Check("I_LDCU_VheicleLevelingAngle::I_VehicleLevelingSt_PWM >= 750 and <= 850"); // 预期结果 Step Check I_LDCU_VheicleLevelingAngle::I_VehicleLevelingSt_PWM >= 750 and <= 850
   g_HIL_Bus_Swc_Check("I_LDCU_VheicleLevelingAngle::I_VheicleLevelingSt_PWMVD 1"); // 预期结果 Step Check I_LDCU_VheicleLevelingAngle::I_VheicleLevelingSt_PWMVD 1//0:Not Initialized;2:Invalid；
-  g_HIL_Bus_Swc_Set("J_PI_VehicleHeightSensorFb 0.5"); // 测试步骤 Step Set J_PI_VehicleHeightSensorFb 0.5
+  g_HIL_Bus_Swc_Set("VTS::VT2516_3_Ch1::DigitalOutput 0.5"); // 测试步骤 Step Set J_PI_VehicleHeightSensorFb 0.5
   g_HIL_Gen_Swc_Wait("5 s"); // 测试步骤 Step Wait 5 s
   g_HIL_Bus_Swc_Check("I_LDCU_VheicleLevelingAngle::I_VehicleLevelingSt_PWM >= 950 and <= 1050"); // 预期结果 Step Check I_LDCU_VheicleLevelingAngle::I_VehicleLevelingSt_PWM >= 950 and <= 1050
   g_HIL_Bus_Swc_Check("I_LDCU_VheicleLevelingAngle::I_VheicleLevelingSt_PWMVD 1"); // 预期结果 Step Check I_LDCU_VheicleLevelingAngle::I_VheicleLevelingSt_PWMVD 1//0:Not Initialized;2:Invalid；
-  g_HIL_Bus_Swc_Set("J_PI_VehicleHeightSensorFb 0.5"); // 测试步骤 Step Set J_PI_VehicleHeightSensorFb 0.5
+  g_HIL_Bus_Swc_Set("VTS::VT2516_3_Ch1::DigitalOutput 0.5"); // 测试步骤 Step Set J_PI_VehicleHeightSensorFb 0.5
   g_HIL_Gen_Swc_Wait("5 s"); // 测试步骤 Step Wait 5 s
   g_HIL_Bus_Swc_Check("I_LDCU_VheicleLevelingAngle::I_VehicleLevelingSt_PWM >= 950 and <= 1050"); // 预期结果 Step Check I_LDCU_VheicleLevelingAngle::I_VehicleLevelingSt_PWM >= 950 and <= 1050
   g_HIL_Bus_Swc_Check("I_LDCU_VheicleLevelingAngle::I_VheicleLevelingSt_PWMVD 1"); // 预期结果 Step Check I_LDCU_VheicleLevelingAngle::I_VheicleLevelingSt_PWMVD 1//0:Not Initialized;2:Invalid；
-  g_HIL_Bus_Swc_Set("J_PI_VehicleHeightSensorFb 0.625"); // 测试步骤 Step Set J_PI_VehicleHeightSensorFb 0.625
+  g_HIL_Bus_Swc_Set("VTS::VT2516_3_Ch1::DigitalOutput 0.625"); // 测试步骤 Step Set J_PI_VehicleHeightSensorFb 0.625
   g_HIL_Gen_Swc_Wait("5 s"); // 测试步骤 Step Wait 5 s
   g_HIL_Bus_Swc_Check("I_LDCU_VheicleLevelingAngle::I_VehicleLevelingSt_PWM >= 1150 and <= 1250"); // 预期结果 Step Check I_LDCU_VheicleLevelingAngle::I_VehicleLevelingSt_PWM >= 1150 and <= 1250
   g_HIL_Bus_Swc_Check("I_LDCU_VheicleLevelingAngle::I_VheicleLevelingSt_PWMVD 1"); // 预期结果 Step Check I_LDCU_VheicleLevelingAngle::I_VheicleLevelingSt_PWMVD 1//0:Not Initialized;2:Invalid；
-  g_HIL_Bus_Swc_Set("J_PI_VehicleHeightSensorFb 0.75"); // 测试步骤 Step Set J_PI_VehicleHeightSensorFb 0.75
+  g_HIL_Bus_Swc_Set("VTS::VT2516_3_Ch1::DigitalOutput 0.75"); // 测试步骤 Step Set J_PI_VehicleHeightSensorFb 0.75
   g_HIL_Gen_Swc_Wait("5 s"); // 测试步骤 Step Wait 5 s
   g_HIL_Bus_Swc_Check("I_LDCU_VheicleLevelingAngle::I_VehicleLevelingSt_PWM >= 1350 and <= 1450"); // 预期结果 Step Check I_LDCU_VheicleLevelingAngle::I_VehicleLevelingSt_PWM >= 1350 and <= 1450
   g_HIL_Bus_Swc_Check("I_LDCU_VheicleLevelingAngle::I_VheicleLevelingSt_PWMVD 1"); // 预期结果 Step Check I_LDCU_VheicleLevelingAngle::I_VheicleLevelingSt_PWMVD 1//0:Not Initialized;2:Invalid；
-  g_HIL_Bus_Swc_Set("J_PI_VehicleHeightSensorFb 0.875"); // 测试步骤 Step Set J_PI_VehicleHeightSensorFb 0.875 //实际高于0.866时，进入invaild,同时角度止步于1650
+  g_HIL_Bus_Swc_Set("VTS::VT2516_3_Ch1::DigitalOutput 0.875"); // 测试步骤 Step Set J_PI_VehicleHeightSensorFb 0.875 //实际高于0.866时，进入invaild,同时角度止步于1650
   g_HIL_Gen_Swc_Wait("5 s"); // 测试步骤 Step Wait 5 s
   g_HIL_Bus_Swc_Check("I_LDCU_VheicleLevelingAngle::I_VehicleLevelingSt_PWM >= 1550 and <= 1650"); // 预期结果 Step Check I_LDCU_VheicleLevelingAngle::I_VehicleLevelingSt_PWM >= 1550 and <= 1650
   g_HIL_Bus_Swc_Check("I_LDCU_VheicleLevelingAngle::I_VheicleLevelingSt_PWMVD 2"); // 预期结果 Step Check I_LDCU_VheicleLevelingAngle::I_VheicleLevelingSt_PWMVD 2//0:Not Initialized;2:Invalid；
-  g_HIL_Bus_Swc_Set("J_PI_VehicleHeightSensorFb 1"); // 测试步骤 Step Set J_PI_VehicleHeightSensorFb 1
+  g_HIL_Bus_Swc_Set("VTS::VT2516_3_Ch1::DigitalOutput 1"); // 测试步骤 Step Set J_PI_VehicleHeightSensorFb 1
   g_HIL_Gen_Swc_Wait("5 s"); // 测试步骤 Step Wait 5 s
   g_HIL_Bus_Swc_Check("I_LDCU_VheicleLevelingAngle::I_VehicleLevelingSt_PWM >= 1750 and <= 1850"); // 预期结果 Step Check I_LDCU_VheicleLevelingAngle::I_VehicleLevelingSt_PWM >= 1750 and <= 1850
   g_HIL_Bus_Swc_Check("I_LDCU_VheicleLevelingAngle::I_VheicleLevelingSt_PWMVD 2"); // 预期结果 Step Check I_LDCU_VheicleLevelingAngle::I_VheicleLevelingSt_PWMVD 2//0:Not Initialized;2:Invalid；
-  g_HIL_Bus_Swc_Set("J_PI_VehicleHeightSensorFb 0"); // 测试步骤 Step Set J_PI_VehicleHeightSensorFb 0
+  g_HIL_Bus_Swc_Set("VTS::VT2516_3_Ch1::DigitalOutput 0"); // 测试步骤 Step Set J_PI_VehicleHeightSensorFb 0
   g_HIL_Bus_Swc_Check("I_LDCU_VheicleLevelingAngle::I_VehicleLevelingSt_PWM 200"); // 预期结果 Step Check I_LDCU_VheicleLevelingAngle::I_VehicleLevelingSt_PWM 200
   g_HIL_Bus_Swc_Check("I_LDCU_VheicleLevelingAngle::I_VheicleLevelingSt_PWMVD 2"); // 预期结果 Step Check I_LDCU_VheicleLevelingAngle::I_VheicleLevelingSt_PWMVD 2//0:Not Initialized;2:Invalid；
   g_HIL_Clib_Swc_Clib_OFF(); // 测试步骤 Step Clib OFF

@@ -4,7 +4,7 @@
 DIDConfig 运行期 IO 与编排用 API（去脚本化）。
 
 从根目录迁入：resolve_base_dir、load_runtime、init_logging（setup_generator_logger + tee）。
-供 DIDConfigGeneratorService 与根目录编排脚本调用。
+供 DIDConfigGeneratorService 与任务编排层调用。
 """
 
 from __future__ import annotations
@@ -71,3 +71,13 @@ def init_logging(base_dir: str) -> tuple:
 def get_progress_level() -> int:
     """供 service 使用的 PROGRESS_LEVEL。"""
     return PROGRESS_LEVEL
+
+
+class DIDConfigRuntimeIOUtility:
+    """DIDConfig 运行期 IO 与编排接口统一工具类。"""
+
+    resolve_base_dir = staticmethod(resolve_base_dir)
+    load_runtime = staticmethod(load_runtime)
+    setup_generator_logger = staticmethod(setup_generator_logger)
+    init_logging = staticmethod(init_logging)
+    get_progress_level = staticmethod(get_progress_level)

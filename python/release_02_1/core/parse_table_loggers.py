@@ -39,16 +39,17 @@ def get_parse_file_logger(base_dir: str, *, filename: str, logger_name: str) -> 
 
     # 同进程多次运行：若 logger 指向旧路径，则重建 handler
     has_desired = any(
-        isinstance(h, logging.FileHandler) and os.path.abspath(getattr(h, "baseFilename", "")) == desired_path
-        for h in logger.handlers
+        isinstance(logger_handler, logging.FileHandler)
+        and os.path.abspath(getattr(logger_handler, "baseFilename", "")) == desired_path
+        for logger_handler in logger.handlers
     )
     if logger.handlers and not has_desired:
-        for h in logger.handlers[:]:
+        for logger_handler in logger.handlers[:]:
             try:
-                h.close()
+                logger_handler.close()
             except Exception:
                 pass
-            logger.removeHandler(h)
+            logger.removeHandler(logger_handler)
 
     if not logger.handlers:
         fmt = logging.Formatter("%(asctime)s %(levelname)s %(message)s")

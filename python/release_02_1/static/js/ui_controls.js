@@ -257,7 +257,7 @@
         var container = document.getElementById('d_io_sheets_container');
         if (!container) return;
 
-        // 只要有有效路径并开始解析，就确保外层灰色区域可见（兼容刷新后从配置还原的场景）
+        // 只要有有效路径并开始解析，就确保外层灰色区域可见（支持刷新后从配置还原的场景）
         var wrap = document.getElementById('d_io_sheets_wrapper');
 
         // 未选择 IO_Mapping 文件时，保持区域为空（不显示提示文字）

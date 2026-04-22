@@ -12,7 +12,7 @@ from typing import Union
 
 
 def write_text_safe(
-    path: str,
+    file_path: str,
     content: Union[str, list[str]],
     encoding: str = "utf-8",
     fallback_encoding: str = "gb18030",
@@ -35,10 +35,10 @@ def write_text_safe(
         text = content
 
     try:
-        with open(path, "w", encoding=encoding, newline="") as text_output_file:
+        with open(file_path, "w", encoding=encoding, newline="") as text_output_file:
             text_output_file.write(text)
         return
     except (UnicodeEncodeError, OSError):
         pass
-    with open(path, "w", encoding=fallback_encoding, newline="") as text_output_file:
+    with open(file_path, "w", encoding=fallback_encoding, newline="") as text_output_file:
         text_output_file.write(text)

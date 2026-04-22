@@ -93,6 +93,11 @@ class GeneratorConfig:
 
     @staticmethod
     def clone_config_parser(source: configparser.ConfigParser) -> configparser.ConfigParser:
+        """
+        深拷贝主配置 `ConfigParser`：保留 `optionxform`、各节**原始**选项值（`raw=True`），避免多实例共享。
+
+        参数：source — 已加载的源解析器。返回：新 `ConfigParser` 实例。
+        """
         cloned = configparser.ConfigParser()
         cloned.optionxform = str
         if source.defaults():
@@ -101,7 +106,7 @@ class GeneratorConfig:
             cloned.read_dict({section_name: dict(source.items(section_name, raw=True))})
         return cloned
 
-    def get(self, section: str, key: str, fallback: str = "") -> str:
+    def get(self, section: str, item_key: str, fallback: str = "") -> str:
         """
         获取配置值：优先从固定配置取（key 或 key 小写），再从主配置的 section/key 取。
         形参：section — 节名；key — 选项名；fallback — 未找到时的默认值。
@@ -110,54 +115,56 @@ class GeneratorConfig:
         if not self.loaded:
             self.load()
         if self.fixed_config_data:
-            fixed_value = self.fixed_config_data.get(key) or self.fixed_config_data.get(
-                key.lower() if key else ""
+            fixed_value = self.fixed_config_data.get(item_key) or self.fixed_config_data.get(
+                item_key.lower() if item_key else ""
             )
             if fixed_value is not None:
                 return (fixed_value or "").strip()
         if self.config_parser is None:
             return fallback
         try:
-            return (self.config_parser.get(section, key, fallback=fallback) or "").strip()
+            return (self.config_parser.get(section, item_key, fallback=fallback) or "").strip()
         except (configparser.NoSectionError, configparser.NoOptionError):
             return fallback
 
-    def get_fixed(self, key: str, fallback: str = "") -> str:
+    def get_fixed(self, item_key: str, fallback: str = "") -> str:
         """仅从 FixedConfig 取指定键。参数: key — 固定配置项名；fallback — 未找到时的默认值。返回: 配置值字符串。"""
         if not self.loaded:
             self.load()
-        if self.fixed_config_data and key in self.fixed_config_data:
-            return (self.fixed_config_data.get(key) or "").strip()
+        if self.fixed_config_data and item_key in self.fixed_config_data:
+            return (self.fixed_config_data.get(item_key) or "").strip()
         return fallback
 
-    def get_from_section(self, section: str, key: str, fallback: str = "") -> str:
+    def get_from_section(self, section: str, item_key: str, fallback: str = "") -> str:
         """仅从主配置指定节读取键值（不读取 FixedConfig）。"""
         if not self.loaded:
             self.load()
         if self.config_parser is None:
             return fallback
         try:
-            return (self.config_parser.get(section, key, fallback=fallback) or "").strip()
+            return (self.config_parser.get(section, item_key, fallback=fallback) or "").strip()
         except (configparser.NoSectionError, configparser.NoOptionError):
             return fallback
 
-    def get_required_from_section(self, section: str, key: str) -> str:
+    def get_required_from_section(self, section: str, item_key: str) -> str:
         """仅从主配置指定节读取必填键；缺失或为空时抛错。"""
-        value = self.get_from_section(section, key, fallback="")
-        if value:
-            return value
-        raise ValueError(f"缺少必填配置: [{section}] {key}")
+        item_value = self.get_from_section(section, item_key, fallback="")
+        if item_value:
+            return item_value
+        raise ValueError(f"缺少必填配置: [{section}] {item_key}")
 
-    def get_first(
+    def coalesce_options_in_section(
         self,
-        candidates: Sequence[tuple[str, str]],
+        section_name: str,
+        option_names: Sequence[str],
+        *,
         fallback: str = "",
     ) -> str:
-        """按候选顺序获取第一个非空配置值。参数：candidates — [(section, option), ...] 候选列表；fallback — 所有候选均为空时返回的默认值。返回：第一个非空配置值或 fallback。"""
-        for section, key in candidates:
-            value = self.get(section, key, fallback="")
-            if value:
-                return value
+        """仅在同一配置节内，按选项名顺序取第一个非空值（使用 ``get``，含固定配置覆盖逻辑）；不跨节扫描。"""
+        for item_key in option_names:
+            item_value = self.get(section_name, item_key, fallback="").strip()
+            if item_value:
+                return item_value
         return fallback
 
     def has_section(self, section: str) -> bool:

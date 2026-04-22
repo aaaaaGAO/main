@@ -11,91 +11,98 @@ from typing import Iterable, Sequence
 from .models import CANTestCase
 
 
-def split_capl_comment_parts(line: str) -> tuple[str, str]:
-    if "//" not in line:
-        return line, ""
-    code, comment = line.split("//", 1)
-    return code, comment
+class CANRenderUtility:
+    """CAPL CAN 文本渲染辅助函数统一工具类入口。"""
 
+    @staticmethod
+    def split_capl_comment_parts(line: str) -> tuple[str, str]:
+        """以首个 ``//`` 为界拆成代码与注释；无则注释为空串。参数：line — 单行 CAPL。返回：``(code, comment)``。"""
+        if "//" not in line:
+            return line, ""
+        code, comment = line.split("//", 1)
+        return code, comment
 
-def is_test_step_line(line: str) -> bool:
-    _, comment = split_capl_comment_parts(line)
-    return "测试步骤" in comment or "\u6d4b\u8bd5\u6b65\u9aa4" in comment
+    @staticmethod
+    def is_test_step_line(line: str) -> bool:
+        """注释中含「测试步骤」关键字（中/简）则视为测试步骤行。参数：line — 已翻译后一行。返回：bool。"""
+        _, comment = CANRenderUtility.split_capl_comment_parts(line)
+        return "测试步骤" in comment or "\u6d4b\u8bd5\u6b65\u9aa4" in comment
 
+    @staticmethod
+    def is_expect_line(line: str) -> bool:
+        """注释中含「预期结果」则视为预期结果行。返回：bool。"""
+        _, comment = CANRenderUtility.split_capl_comment_parts(line)
+        return "预期结果" in comment or "\u9884\u671f\u7ed3\u679c" in comment
 
-def is_expect_line(line: str) -> bool:
-    _, comment = split_capl_comment_parts(line)
-    return "预期结果" in comment or "\u9884\u671f\u7ed3\u679c" in comment
+    @staticmethod
+    def is_soa_expect_check_line(line: str) -> bool:
+        """SOA 场景下为 CHECK+CHECKREQ 成对之一（非 `_Prepare` 行）。返回：bool。"""
+        if "_Prepare" in line or "_PREPARE" in line:
+            return False
+        code_part, _ = CANRenderUtility.split_capl_comment_parts(line)
+        code_upper = code_part.upper()
+        if "SOA" not in code_upper:
+            return False
+        return "SOA_CHECK(" in code_upper or "CHECKREQ(" in code_upper
 
+    @staticmethod
+    def is_soa_expect_check_only_line(line: str) -> bool:
+        """仅含 `SOA_CHECK` 且不含 `CHECKREQ` 的预期行。返回：bool。"""
+        if "_Prepare" in line or "_PREPARE" in line:
+            return False
+        code_part, _ = CANRenderUtility.split_capl_comment_parts(line)
+        code_upper = code_part.upper()
+        if "SOA" not in code_upper:
+            return False
+        return "SOA_CHECK(" in code_upper and "CHECKREQ(" not in code_upper
 
-def is_soa_expect_check_line(line: str) -> bool:
-    """判断是否为 SOA CHECK / CHECKREQ 的预期结果行（排除已带 _Prepare）。"""
-    if "_Prepare" in line or "_PREPARE" in line:
-        return False
-    code_part, _ = split_capl_comment_parts(line)
-    code_upper = code_part.upper()
-    if "SOA" not in code_upper:
-        return False
-    return "SOA_CHECK(" in code_upper or "CHECKREQ(" in code_upper
+    @staticmethod
+    def has_traceback_token(line: str) -> bool:
+        """行内（含注释）出现 ``traceback`` 类词则 True，用于错误传播识别。返回：bool。"""
+        code_part, comment_part = CANRenderUtility.split_capl_comment_parts(line)
+        text = f"{code_part} {comment_part}"
+        return bool(re.search(r"\btraceback\d*\b", text, re.IGNORECASE))
 
-
-def is_soa_expect_check_only_line(line: str) -> bool:
-    """仅匹配 SOA_CHECK（不包含 CHECKREQ）的预期结果行。"""
-    if "_Prepare" in line or "_PREPARE" in line:
-        return False
-    code_part, _ = split_capl_comment_parts(line)
-    code_upper = code_part.upper()
-    if "SOA" not in code_upper:
-        return False
-    return "SOA_CHECK(" in code_upper and "CHECKREQ(" not in code_upper
-
-
-def has_traceback_token(line: str) -> bool:
-    """是否包含 traceback（不区分大小写，允许 traceback7 这类写法）。"""
-    code_part, comment_part = split_capl_comment_parts(line)
-    text = f"{code_part} {comment_part}"
-    return bool(re.search(r"\btraceback\d*\b", text, re.IGNORECASE))
-
-
-def is_wait_or_sleep_test_step(line: str) -> bool:
-    """仅看注释里的测试步骤语义，不看生成后的 CAPL 函数名。"""
-    _, comment = split_capl_comment_parts(line)
-    if not comment.strip():
-        return False
-    return bool(
-        re.search(
-            r"\b(?:wait|TC_4G_Time_Delay_Second|TC_Sleep)\b",
-            comment,
-            re.IGNORECASE,
+    @staticmethod
+    def is_wait_or_sleep_test_step(line: str) -> bool:
+        """测试步骤且注释中匹配 wait/延时等关键字。返回：bool。"""
+        _, comment = CANRenderUtility.split_capl_comment_parts(line)
+        if not comment.strip():
+            return False
+        return bool(
+            re.search(
+                r"\b(?:wait|TC_4G_Time_Delay_Second|TC_Sleep)\b",
+                comment,
+                re.IGNORECASE,
+            )
         )
-    )
 
+    @staticmethod
+    def is_soa_req_test_step(line: str) -> bool:
+        """测试步骤行且代码部含 `SOA_REQ` 等。返回：bool。"""
+        if not CANRenderUtility.is_test_step_line(line):
+            return False
+        code_part, _ = CANRenderUtility.split_capl_comment_parts(line)
+        code_upper = code_part.upper()
+        return "SOA_REQ(" in code_upper or "SOA REQ" in code_upper
 
-def is_soa_req_test_step(line: str) -> bool:
-    """是否为 SOA REQ 测试步骤行（仅看代码部分）。"""
-    if not is_test_step_line(line):
-        return False
-    code_part, _ = split_capl_comment_parts(line)
-    code_upper = code_part.upper()
-    return "SOA_REQ(" in code_upper or "SOA REQ" in code_upper
-
-
-def add_prepare_suffix_to_line(line: str) -> str:
-    """生成带 _Prepare 后缀的副本。"""
-    parts = line.split("//", 1)
-    code_part = parts[0]
-    comment_part = "//" + parts[1] if len(parts) > 1 else ""
-    match = re.search(r"(\b\w+)(\s*\()", code_part)
-    if match:
-        func_name = match.group(1)
-        new_code = (
-            code_part[: match.start(1)]
-            + func_name
-            + "_Prepare"
-            + code_part[match.end(1) :]
-        )
-        return new_code + comment_part
-    return line
+    @staticmethod
+    def add_prepare_suffix_to_line(line: str) -> str:
+        """在首段函数名后插 `_Prepare`，供 SOA 成对重排。参数：line — 单步 CAPL 行。返回：新行。"""
+        parts = line.split("//", 1)
+        code_part = parts[0]
+        comment_part = "//" + parts[1] if len(parts) > 1 else ""
+        match = re.search(r"(\b\w+)(\s*\()", code_part)
+        if match:
+            func_name = match.group(1)
+            new_code = (
+                code_part[: match.start(1)]
+                + func_name
+                + "_Prepare"
+                + code_part[match.end(1) :]
+            )
+            return new_code + comment_part
+        return line
 
 
 class CANFileRenderer:
@@ -107,13 +114,18 @@ class CANFileRenderer:
         *,
         central_sheet_soa_wrapper_enabled: bool = False,
     ) -> None:
+        """
+        参数：include_files — Master 中额外 `#include`；central_sheet_soa_wrapper_enabled — 是否注入中央域 SOA 包壳 connect/close。返回：无。
+        """
         self.include_files = list(include_files or [])
         self.central_sheet_soa_wrapper_enabled = central_sheet_soa_wrapper_enabled
 
     def render_single_file(self, case: CANTestCase) -> str:
+        """单用例等效于 `render_sheet_file([case])`。"""
         return self.render_sheet_file([case])
 
     def render_sheet_file(self, cases: Iterable[CANTestCase]) -> str:
+        """将同一 sheet 的若干用例拼成单文件 CAPL 文本（含头段 includes/variables 骨架）。参数：cases — 可迭代。返回：CRLF 结尾全文。"""
         case_list = list(cases or [])
         lines: list[str] = [
             "/*@!Encoding: 936*/",
@@ -143,6 +155,7 @@ class CANFileRenderer:
         return "\r\n".join(lines).rstrip() + "\r\n"
 
     def render_master(self, cases: Iterable[CANTestCase]) -> str:
+        """基于各 `case.target_path`  basename 生成仅含 includes+variables 的轻量 Master 文本（`BaseTask.load` 路径用）。"""
         include_files = list(self.include_files)
         for case in cases:
             if case.target_path:
@@ -163,6 +176,11 @@ class CANFileRenderer:
         inject_connect: bool = False,
         inject_close: bool = False,
     ) -> list[str]:
+        """
+        渲染单条 `testcase` 块：TestDescription、可选 SOA 包壳、步骤经 `apply_soa_prepare_reorder` 后落行。
+
+        参数：case — 含 `steps` 等；inject_connect / inject_close — 中央域多 case 时首尾注入 SOA 宏。返回：行列表（无换行符）。
+        """
         # CAPL 标识符不能含连字符，需替换为下划线
         case_name = (case.case_id or "unnamed_case").replace("-", "_")
 
@@ -214,7 +232,7 @@ class CANFileRenderer:
         if not lines:
             return lines
 
-        n = len(lines)
+        total_line_count = len(lines)
         # 记录每个“节点首行测试步骤”前/后需要插入的 Prepare 行
         prepare_before: dict[int, list[str]] = {}
         prepare_after: dict[int, list[str]] = {}
@@ -222,37 +240,37 @@ class CANFileRenderer:
         scheduled_prepares: list[tuple[int, int, str, str]] = []
 
         node_scan_index = 0
-        while node_scan_index < n:
-            if not is_test_step_line(lines[node_scan_index]):
+        while node_scan_index < total_line_count:
+            if not CANRenderUtility.is_test_step_line(lines[node_scan_index]):
                 node_scan_index += 1
                 continue
 
             node_start = node_scan_index
             node_end_index = node_scan_index + 1
             # 节点范围：[node_start, node_end_index) —— 直到下一个测试步骤或结尾
-            while node_end_index < n and not is_test_step_line(lines[node_end_index]):
+            while node_end_index < total_line_count and not CANRenderUtility.is_test_step_line(lines[node_end_index]):
                 node_end_index += 1
 
             # 在该节点范围内查找 SOA CHECK / CHECKREQ 预期结果行
-            node_is_wait_or_sleep = is_wait_or_sleep_test_step(lines[node_start])
+            node_is_wait_or_sleep = CANRenderUtility.is_wait_or_sleep_test_step(lines[node_start])
             for line_index in range(node_start, node_end_index):
                 if (
-                    is_expect_line(lines[line_index])
-                    and is_soa_expect_check_line(lines[line_index])
+                    CANRenderUtility.is_expect_line(lines[line_index])
+                    and CANRenderUtility.is_soa_expect_check_line(lines[line_index])
                 ):
-                    prepare_line = add_prepare_suffix_to_line(lines[line_index])
+                    prepare_line = CANRenderUtility.add_prepare_suffix_to_line(lines[line_index])
                     # 新增规则：
                     # SOA_CHECK（不含 CHECKREQ）且该行出现 traceback* 时，
                     # 优先前插到最近的前置 SOA REQ 测试步骤前；
                     # 若前面没有 SOA REQ，则前插到最近的前置 wait/sleep 测试步骤前。
                     if (
-                        is_soa_expect_check_only_line(lines[line_index])
-                        and has_traceback_token(lines[line_index])
+                        CANRenderUtility.is_soa_expect_check_only_line(lines[line_index])
+                        and CANRenderUtility.has_traceback_token(lines[line_index])
                     ):
                         nearest_soa_req_idx = None
-                        for p in range(line_index - 1, -1, -1):
-                            if is_soa_req_test_step(lines[p]):
-                                nearest_soa_req_idx = p
+                        for reverse_scan_index in range(line_index - 1, -1, -1):
+                            if CANRenderUtility.is_soa_req_test_step(lines[reverse_scan_index]):
+                                nearest_soa_req_idx = reverse_scan_index
                                 break
 
                         if nearest_soa_req_idx is not None:
@@ -262,9 +280,12 @@ class CANFileRenderer:
                             continue
 
                         nearest_wait_idx = None
-                        for p in range(line_index - 1, -1, -1):
-                            if is_test_step_line(lines[p]) and is_wait_or_sleep_test_step(lines[p]):
-                                nearest_wait_idx = p
+                        for reverse_scan_index in range(line_index - 1, -1, -1):
+                            if (
+                                CANRenderUtility.is_test_step_line(lines[reverse_scan_index])
+                                and CANRenderUtility.is_wait_or_sleep_test_step(lines[reverse_scan_index])
+                            ):
+                                nearest_wait_idx = reverse_scan_index
                                 break
 
                         if nearest_wait_idx is not None:
@@ -315,5 +336,4 @@ class CANFileRenderer:
         raw_id = case.raw_id or case.case_id
         return f"原始用例id为{raw_id}"
 
-
-__all__ = ["CANFileRenderer"]
+__all__ = ["CANFileRenderer", "CANRenderUtility"]

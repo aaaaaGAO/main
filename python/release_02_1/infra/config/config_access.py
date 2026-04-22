@@ -65,9 +65,9 @@ def read_config_tolerant_duplicates(config_path: str) -> configparser.ConfigPars
         elif not first_section_found:
             cleaned_lines.append(line)
         elif "=" in stripped and not stripped.startswith("#"):
-            key = stripped.split("=", 1)[0].strip()
-            if current_section and key:
-                key_lower = key.lower()
+            item_key = stripped.split("=", 1)[0].strip()
+            if current_section and item_key:
+                key_lower = item_key.lower()
                 if key_lower in seen_options.get(current_section, set()):
                     continue
                 seen_options.setdefault(current_section, set()).add(key_lower)
@@ -92,9 +92,9 @@ def read_fixed_config(base_dir: str) -> dict[str, str]:
         fixed_cfg.read(fixed_config_path, encoding="utf-8")
 
         if fixed_cfg.has_section(SECTION_PATHS):
-            for key in PATHS_MERGED_PRESERVE_OPTION_NAMES:
-                if fixed_cfg.has_option(SECTION_PATHS, key):
-                    fixed_config[key] = fixed_cfg.get(SECTION_PATHS, key)
+            for item_key in PATHS_MERGED_PRESERVE_OPTION_NAMES:
+                if fixed_cfg.has_option(SECTION_PATHS, item_key):
+                    fixed_config[item_key] = fixed_cfg.get(SECTION_PATHS, item_key)
     except Exception as error:
         print(f"警告: 读取固定配置文件失败: {error}")
 

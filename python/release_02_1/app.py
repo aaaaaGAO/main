@@ -6,7 +6,7 @@ Flask 应用入口（骨架版）
 重构后 app.py 仅保留：
 - 注册蓝图（由 web.create_app 完成）
 - 首页渲染
-- 模板路径（兼容 PyInstaller 打包）
+- 模板路径（支持 PyInstaller 打包）
 - 全局错误处理
 - 心跳监控线程与启动逻辑（端口探测、自动打开浏览器）
 
@@ -36,7 +36,7 @@ from infra.filesystem import get_base_dir
 from web import create_app
 
 # 工具显示名（Web 右上角 + build_exe 打包时的 EXE 文件名，只改此处即可）
-TOOL_DISPLAY_NAME = "测试用例生成工具_2026.4.17"
+TOOL_DISPLAY_NAME = "测试用例生成工具_2026.4.21_V1.0"
 
 # ---------------------------------------------------------------------------
 # 配置
@@ -70,8 +70,8 @@ def find_available_port(start_port: int = 5001) -> int:
     """
     port = start_port
     while port < 6000:
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            if s.connect_ex(("127.0.0.1", port)) != 0:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as socket_client:
+            if socket_client.connect_ex(("127.0.0.1", port)) != 0:
                 return port
         port += 1
     return start_port
@@ -100,16 +100,16 @@ def index():
     return render_template("index.html", app_name=TOOL_DISPLAY_NAME)
 
 
-def handle_500(e):
-    """统一处理 HTTP 500：将异常信息返回为 JSON。参数 e: 触发的异常对象。"""
-    return jsonify(success=False, message=str(e) if e else "Internal Server Error"), 500
+def handle_500(error_obj):
+    """统一处理 HTTP 500：将异常信息返回为 JSON。参数 error_obj: 触发的异常对象。"""
+    return jsonify(success=False, message=str(error_obj) if error_obj else "Internal Server Error"), 500
 
 
-def handle_exception(e):
-    """全局异常处理：HTTPException 原样返回，其余转 500。参数 e: 触发的异常对象。"""
-    if isinstance(e, HTTPException):
-        return e
-    return handle_500(e)
+def handle_exception(error_obj):
+    """全局异常处理：HTTPException 原样返回，其余转 500。参数 error_obj: 触发的异常对象。"""
+    if isinstance(error_obj, HTTPException):
+        return error_obj
+    return handle_500(error_obj)
 
 
 # ---------------------------------------------------------------------------
@@ -124,7 +124,7 @@ def make_app() -> Flask:
     # 它会自动注册所有的蓝图（lr_rear, central, dtc, common）
     app = create_app()
 
-    # 2. 兼容 PyInstaller：配置模板与静态资源目录路径
+    # 2. 支持 PyInstaller：配置模板与静态资源目录路径
     app.template_folder = get_resource_path("templates")
     app.static_folder = get_resource_path("static")
 
@@ -144,6 +144,10 @@ app = make_app()
 
 @app.before_request
 def track_heartbeat():
+    """在每个请求前执行：若本次为 ``POST /api/heartbeat``，则刷新全局 ``last_heartbeat_time`` 供无活动检测。
+
+    参数：无。返回：无。
+    """
     global last_heartbeat_time
     if request.path == "/api/heartbeat" and request.method == "POST":
         last_heartbeat_time = time.time()

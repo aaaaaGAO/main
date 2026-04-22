@@ -10,6 +10,8 @@
 from __future__ import annotations
 
 import gc
+import importlib
+import importlib.util
 import os
 import re
 import threading
@@ -20,12 +22,12 @@ from typing import Any, Dict, List, Literal, Optional
 from infra.excel.workbook import ExcelService
 from infra.filesystem import resolve_runtime_path
 
-try:
-    import tkinter as tk
-    from tkinter import filedialog
-except ImportError:  # pragma: no cover - headless / minimal Python
-    tk = None  # type: ignore[assignment]
-    filedialog = None  # type: ignore[assignment]
+tk = None  # type: ignore[assignment]
+filedialog = None  # type: ignore[assignment]
+if importlib.util.find_spec("tkinter") is not None:
+    tkinter_module = importlib.import_module("tkinter")
+    tk = tkinter_module
+    filedialog = importlib.import_module("tkinter.filedialog")
 
 # 线程锁：无 GUI 环境仍可通过 try/except 导入本模块
 tk_lock = threading.Lock()
@@ -65,14 +67,14 @@ class GuiService:
                 root.update_idletasks()
 
                 if file_type == "folder":
-                    path = filedialog.askdirectory(parent=root, title="选择文件夹")
+                    file_path = filedialog.askdirectory(parent=root, title="选择文件夹")
                 else:
-                    path = filedialog.askopenfilename(
+                    file_path = filedialog.askopenfilename(
                         parent=root,
                         title="选择 Excel 文件",
                         filetypes=[("Excel files", "*.xlsx;*.xlsm"), ("All files", "*.*")],
                     )
-                return path or None
+                return file_path or None
             except Exception as error:
                 print(f"弹出选择框出错: {error}\n{traceback.format_exc()}")
                 return None
@@ -108,14 +110,14 @@ class GuiService:
                 root.withdraw()
                 root.attributes("-topmost", True)
                 root.update_idletasks()
-                path = filedialog.asksaveasfilename(
+                file_path = filedialog.asksaveasfilename(
                     parent=root,
                     title=title,
                     defaultextension=defaultextension,
                     filetypes=GuiService.config_filetypes(),
                     initialfile=initialfile,
                 )
-                return path or None
+                return file_path or None
             except Exception as error:
                 print(f"另存为弹窗出错: {error}\n{traceback.format_exc()}")
                 return None
@@ -152,12 +154,12 @@ class GuiService:
                 root.withdraw()
                 root.attributes("-topmost", True)
                 root.update_idletasks()
-                path = filedialog.askopenfilename(
+                file_path = filedialog.askopenfilename(
                     parent=root,
                     title=title,
                     filetypes=filetypes,
                 )
-                return path or None
+                return file_path or None
             except Exception as error:
                 print(f"打开文件弹窗出错: {error}\n{traceback.format_exc()}")
                 return None
@@ -243,15 +245,15 @@ class GuiService:
         return {"type": "unknown", "error": "不支持的文件格式，仅支持 Excel(.xlsx/.xlsm)、CAN(.can)、XML(.xml)"}
 
     @classmethod
-    def parse_file_structure(cls, path: str, base_dir: str | None = None) -> Dict[str, Any]:
+    def parse_file_structure(cls, file_path: str, base_dir: str | None = None) -> Dict[str, Any]:
         """解析文件或文件夹下的 Excel/CAN/XML 结构（sheet、testcase、testgroup 等）。
         参数：path — 文件或文件夹路径；文件夹时遍历其下 Excel/CAN/XML。
              base_dir — 项目根目录；当 path 为相对路径时用于拼接解析。
         返回：{"success": True, "data": [...]} 或 {"success": False, "message": str}。
         """
-        if not path or not path.strip():
+        if not file_path or not file_path.strip():
             return {"success": False, "message": "未提供路径"}
-        raw_path = path.strip()
+        raw_path = file_path.strip()
         resolved_path = resolve_runtime_path(base_dir, raw_path)
         if not os.path.exists(resolved_path):
             return {

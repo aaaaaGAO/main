@@ -11,26 +11,28 @@ from __future__ import annotations
 
 import sys
 import traceback
+from typing import Any
 
 from .service import UARTGeneratorService
 
 
-def main() -> None:
+def run_generation(*, workbook_cache: dict[str, Any] | None = None) -> None:
     """UART 生成主流程，供 TaskService 与命令行调用。
 
-    功能：调用 UARTGeneratorService.run_legacy_pipeline，内部完成配置解析、Excel 解析、
+    功能：调用 UARTGeneratorService.run_pipeline，内部完成配置解析、Excel 解析、
     文本拼装与写入（[UARTRS232]、[IVIToMCU]、[MCUToIVI] 等段）。
 
     形参：无（配置与路径从当前主配置文件、固定配置文件及当前工作目录解析）。
 
     返回：无。
     """
-    UARTGeneratorService().run_legacy_pipeline()
+    UARTGeneratorService().run_pipeline(workbook_cache=workbook_cache)
 
 
-def run_generation() -> None:
-    """语义化入口别名：等价于 main。"""
-    main()
+class UARTEntrypointWorkflowUtility:
+    """UART 入口编排统一工具类。"""
+
+    run_generation = staticmethod(run_generation)
 
 
 if __name__ == "__main__":
@@ -45,7 +47,7 @@ if __name__ == "__main__":
         except (AttributeError, OSError):
             pass
     try:
-        main()
+        run_generation()
     except KeyboardInterrupt:
         print("\n用户中断执行", file=sys.stderr)
         sys.exit(1)

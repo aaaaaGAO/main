@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Compatibility export for CAPL CAN logging helpers."""
+"""CAPL CAN 日志能力导出。"""
 
 from utils.logger import log_progress_or_info
 

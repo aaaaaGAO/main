@@ -38,12 +38,21 @@ class CANStepTranslator:
         keyword_specs: dict[str, dict[str, object]] | None = None,
         clib_validator=None,
     ) -> None:
+        """
+        参数：io_mapping_ctx / config_enum_ctx — 来自 `MappingContext`；keyword_specs — 关键字表；
+        clib_validator — 可选 Clib 名校验回调。返回：无。
+        """
         self.io_mapping_ctx = io_mapping_ctx
         self.config_enum_ctx = config_enum_ctx
         self.keyword_specs = keyword_specs or {}
         self.clib_validator = clib_validator
 
     def translate(self, raw_step: CANRawStep) -> StepTranslateResult:
+        """
+        将单行 `CANRawStep` 经 `parse_step_line` 转为 CAPL 行集合；错误时 `build_error_result` 生成可编译失败桩。
+
+        参数：raw_step — 含 `content`、可选 `source`（step/expected）。返回：`StepTranslateResult`。
+        """
         line = (raw_step.content or "").strip()
         if not line:
             return StepTranslateResult()
@@ -79,8 +88,8 @@ class CANStepTranslator:
                 else:
                     new_lines.append(line)
             return StepTranslateResult(code_lines=new_lines)
-        except KeywordMatchError as e:
-            raw_reason = f"关键字匹配失败: {getattr(e, 'func_token', line)}"
+        except KeywordMatchError as exc:
+            raw_reason = f"关键字匹配失败: {getattr(exc, 'func_token', line)}"
             detail = StepErrorDetailBuilder.build_detail(
                 "keyword",
                 raw_reason,
@@ -88,19 +97,24 @@ class CANStepTranslator:
                 self.keyword_specs,
             )
             return self.build_error_result(raw_step, "keyword", detail)
-        except IOMappingParseError as e:
-            return self.build_error_result(raw_step, "iomapping", f"io_mapping 解析失败: {e}")
-        except ConfigEnumParseError as e:
-            return self.build_error_result(raw_step, "config_enum", f"Configuration 解析失败: {e}")
-        except ClibMatchError as e:
-            clib_name = getattr(e, "clib_name", "")
+        except IOMappingParseError as exc:
+            return self.build_error_result(raw_step, "iomapping", f"io_mapping 解析失败: {exc}")
+        except ConfigEnumParseError as exc:
+            return self.build_error_result(raw_step, "config_enum", f"Configuration 解析失败: {exc}")
+        except ClibMatchError as exc:
+            clib_name = getattr(exc, "clib_name", "")
             return self.build_error_result(raw_step, "clib", f"clib表中没有{clib_name}")
-        except StepSyntaxError as e:
-            return self.build_error_result(raw_step, "syntax", f"步骤语法错误: {e}")
+        except StepSyntaxError as exc:
+            return self.build_error_result(raw_step, "syntax", f"步骤语法错误: {exc}")
         except Exception as error:  # pragma: no cover
             return self.build_error_result(raw_step, "unknown", f"翻译异常: {error}")
 
     def build_error_result(self, raw_step: CANRawStep, error_type: str, message: str) -> StepTranslateResult:
+        """
+        构造带 `teststep`/`teststepfail` 桩及注释的 `StepTranslateResult`，供渲染阶段落盘并写日志。
+
+        参数：raw_step — 原始步骤；error_type — 内部分类用字符串；message — 人可读原因。返回：结果对象。
+        """
         escaped_step = raw_step.content.replace('"', '\\"')
         escaped_msg = message.replace('"', '\\"')
         # 根据来源标记是测试步骤还是预期结果（默认按测试步骤处理）

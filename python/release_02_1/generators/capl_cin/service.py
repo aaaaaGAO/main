@@ -3,7 +3,7 @@
 """
 CIN 生成调度服务。
 
-不再依赖 CINLegacyHooks；关键字加载、读 Clib、步骤渲染、内容拼装均在 runtime_io 内完成。
+关键字加载、读 Clib、步骤渲染、内容拼装均在 runtime_io 内完成。
 """
 
 from __future__ import annotations
@@ -14,6 +14,16 @@ from typing import Optional
 
 from core.error_module import ErrorModuleResolver
 from core.common.name_sanitize import sanitize_clib_name
+from services.config_constants import (
+    CIN_RUNTIME_KEY_CONFIG_ENUM_CTX,
+    CIN_RUNTIME_KEY_INPUT_EXCEL_PATH,
+    CIN_RUNTIME_KEY_INPUT_SHEET,
+    CIN_RUNTIME_KEY_IO_MAPPING_CTX,
+    CIN_RUNTIME_KEY_MAPPING_EXCEL_PATH,
+    CIN_RUNTIME_KEY_OUTPUT_CIN_FILENAME,
+    CIN_RUNTIME_KEY_OUTPUT_DIR,
+    CIN_RUNTIME_KEY_SHEET_NAMES_STR,
+)
 
 from .runtime_io import (
     generate_content as io_generate_content,
@@ -25,34 +35,34 @@ from .constants import DEFAULT_KEYWORD_SHEET_NAME
 
 
 class CINGeneratorService:
-    """接管 CIN 旧版主编排流程的 service。"""
+    """接管 CIN 主编排流程的 service。"""
 
     def __init__(self, *, logger: Optional[logging.Logger] = None) -> None:
         """参数: logger — 可选 logger，用于输出进度与错误。"""
         self.logger = logger
 
-    def run_legacy_pipeline(self, runtime: dict) -> str | None:
+    def run_pipeline(self, runtime: dict) -> str | None:
         """执行 CIN 生成：读 Clib 步骤、翻译、写 .cin 文件。
         参数: runtime — 含 mapping_excel_path, sheet_names_str, input_excel_path, input_sheet, output_dir, output_cin_filename；可选 io_mapping_ctx, config_enum_ctx。
         返回: 生成的 .cin 文件绝对路径，无输出时 None。
         """
         sheet_names = [
             sheet_name.strip()
-            for sheet_name in str(runtime.get("sheet_names_str", "")).split(",")
+            for sheet_name in str(runtime.get(CIN_RUNTIME_KEY_SHEET_NAMES_STR, "")).split(",")
             if sheet_name and str(sheet_name).strip()
         ]
         if not sheet_names:
             sheet_names = [DEFAULT_KEYWORD_SHEET_NAME]
 
-        keyword_specs = io_load_keyword_specs(runtime["mapping_excel_path"], sheet_names)
+        keyword_specs = io_load_keyword_specs(runtime[CIN_RUNTIME_KEY_MAPPING_EXCEL_PATH], sheet_names)
 
         sheet_title, raw_ordered = io_read_clib_steps(
-            runtime["input_excel_path"],
-            clib_sheet=runtime.get("input_sheet"),
+            runtime[CIN_RUNTIME_KEY_INPUT_EXCEL_PATH],
+            clib_sheet=runtime.get(CIN_RUNTIME_KEY_INPUT_SHEET),
         )
 
-        io_mapping_ctx = runtime.get("io_mapping_ctx")
-        config_enum_ctx = runtime.get("config_enum_ctx")
+        io_mapping_ctx = runtime.get(CIN_RUNTIME_KEY_IO_MAPPING_CTX)
+        config_enum_ctx = runtime.get(CIN_RUNTIME_KEY_CONFIG_ENUM_CTX)
 
         ordered = []
         for name, raw_steps in raw_ordered:
@@ -71,7 +81,7 @@ class CINGeneratorService:
                     config_enum_ctx=config_enum_ctx,
                     logger=self.logger,
                     source_id=name,
-                    excel_name=os.path.basename(runtime["input_excel_path"]),
+                    excel_name=os.path.basename(runtime[CIN_RUNTIME_KEY_INPUT_EXCEL_PATH]),
                     sheet_name=sheet_title,
                     name=name,
                     excel_row_num=excel_row_num,
@@ -85,7 +95,7 @@ class CINGeneratorService:
 
         cin_content, error_records = io_generate_content(ordered, include_files=None)
         cin_content = cin_content.replace("\r\n", "\n").replace("\n", "\r\n")
-        out_path = os.path.join(runtime["output_dir"], runtime["output_cin_filename"])
+        out_path = os.path.join(runtime[CIN_RUNTIME_KEY_OUTPUT_DIR], runtime[CIN_RUNTIME_KEY_OUTPUT_CIN_FILENAME])
         os.makedirs(os.path.dirname(out_path), exist_ok=True)
         with open(out_path, "wb") as output_binary_file:
             output_binary_file.write(cin_content.encode("gb18030", errors="replace"))

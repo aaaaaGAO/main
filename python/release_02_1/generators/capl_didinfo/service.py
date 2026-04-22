@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""DIDInfo 生成调度 service。不再依赖 DIDInfoLegacyHooks，通过 .runtime 委托根脚本实现。"""
+"""DIDInfo 生成调度 service，通过 .runtime 委托根脚本实现。"""
 
 from __future__ import annotations
 
@@ -14,9 +14,9 @@ from utils.path_utils import resolve_runtime_path
 
 
 class DIDInfoGeneratorService:
-    """接管 DIDInfo 旧版主编排流程的 service。"""
+    """接管 DIDInfo 主编排流程的 service。"""
 
-    def run_legacy_pipeline(self, domain: str | None = None):
+    def run_pipeline(self, domain: str | None = None):
         logger_obj = None
         base_dir = didinfo_generator_runtime.resolve_base_dir()
         logger_obj, old_stdout, old_stderr = didinfo_generator_runtime.init_runtime(base_dir)
@@ -84,9 +84,9 @@ class DIDInfoGeneratorService:
                         continue
                     try:
                         variant_cols = didinfo_generator_runtime.find_variant_cols(ws, header_row, variant_names)
-                    except RuntimeError as e:
+                    except RuntimeError as exc:
                         print(
-                            f"[resetdid] ERROR 跳过 sheet: Excel={excel_path.name} sheet={sheet_name} 表里少了必须列（车型列）：{e}"
+                            f"[resetdid] ERROR 跳过 sheet: Excel={excel_path.name} sheet={sheet_name} 表里少了必须列（车型列）：{exc}"
                         )
                         continue
 
@@ -119,7 +119,9 @@ class DIDInfoGeneratorService:
                 print("[resetdid] 未从输入的 Excel 中解析到有效 DID 信息，不生成文件。")
                 return
 
-            final_content = "\n\n".join([p for p in all_parts if p.strip()]) + "\n"
+            final_content = "\n\n".join(
+                [content_part for content_part in all_parts if content_part.strip()]
+            ) + "\n"
             output_path.parent.mkdir(parents=True, exist_ok=True)
             output_path.write_text(final_content, encoding="utf-8")
             print(f"已生成: {output_path}")

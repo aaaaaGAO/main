@@ -8,14 +8,17 @@
 
 from __future__ import annotations
 
+import importlib
+import importlib.util
 import re
 from typing import Any, Tuple
 
-try:
-    from pypinyin import Style, lazy_pinyin  # type: ignore
-except ImportError:  # pragma: no cover
-    Style = None  # type: ignore[assignment]
-    lazy_pinyin = None  # type: ignore[assignment]
+Style = None  # type: ignore[assignment]
+lazy_pinyin = None  # type: ignore[assignment]
+if importlib.util.find_spec("pypinyin") is not None:
+    pypinyin_module = importlib.import_module("pypinyin")
+    Style = getattr(pypinyin_module, "Style", None)  # type: ignore[assignment]
+    lazy_pinyin = getattr(pypinyin_module, "lazy_pinyin", None)  # type: ignore[assignment]
 
 # 用于从混杂字符串中尽量提取出 SYS-... 片段（宽松，避免误删中间内容）
 _RE_SYS_ID = re.compile(r"(SYS-[^\r\n]+)")
@@ -53,8 +56,8 @@ def sanitize_case_id(raw: Any) -> Tuple[str, bool, str]:
     if not raw_str:
         return ("", False, "empty")
 
-    m = _RE_SYS_ID.search(raw_str)
-    candidate = m.group(1).strip() if m else raw_str
+    sys_id_match = _RE_SYS_ID.search(raw_str)
+    candidate = sys_id_match.group(1).strip() if sys_id_match else raw_str
 
     cleaned = _RE_ILLEGAL.sub("", candidate)
     cleaned = cleaned.rstrip(_TRAILING_PUNCT).strip()
@@ -77,7 +80,7 @@ def sanitize_case_id(raw: Any) -> Tuple[str, bool, str]:
         return (cleaned, False, "ok")
     if not cleaned:
         return (cleaned, True, "strip_all")
-    if m and candidate != raw_str:
+    if sys_id_match and candidate != raw_str:
         return (cleaned, True, "extract_SYS_pattern")
     if _RE_ILLEGAL.search(candidate) or " " in candidate:
         return (cleaned, True, "remove_spaces_or_illegal_chars")

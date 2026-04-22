@@ -100,6 +100,11 @@ class IOProgressFormatter(logging.Formatter):
     """进度类消息只输出时间+消息，不显示等级名。"""
 
     def format(self, record: logging.LogRecord) -> str:
+        """
+        记录为 `PROGRESS_LEVEL` 时隐藏等级名并略整格式；否则走父类 `Formatter.format`。
+
+        参数：record — 日志记录。返回：格式化后的单行字符串。
+        """
         if record.levelno == PROGRESS_LEVEL:
             old_name = record.levelname
             record.levelname = " "
@@ -131,31 +136,33 @@ def setup_logging(base_dir: Optional[str], section: Optional[str] = None) -> log
     if ACTIVE_LOGGER is not None:
         desired = os.path.abspath(log_path)
         has_correct = any(
-            isinstance(h, logging.FileHandler)
-            and os.path.abspath(getattr(h, "baseFilename", "")) == desired
-            for h in ACTIVE_LOGGER.handlers
+            isinstance(logger_handler, logging.FileHandler)
+            and os.path.abspath(getattr(logger_handler, "baseFilename", "")) == desired
+            for logger_handler in ACTIVE_LOGGER.handlers
         )
         if has_correct:
             # 复用已有 logger 时仍按当前配置刷新日志级别（界面修改 error 后再次运行可生效）
             user_level_new = get_log_level_from_config(base_dir, section=section)
-            for h in ACTIVE_LOGGER.handlers:
+            for logger_handler in ACTIVE_LOGGER.handlers:
                 if (
-                    isinstance(h, logging.FileHandler)
-                    and os.path.abspath(getattr(h, "baseFilename", "")) == desired
+                    isinstance(logger_handler, logging.FileHandler)
+                    and os.path.abspath(getattr(logger_handler, "baseFilename", "")) == desired
                     and any(
                         isinstance(filter_item, _ExcludeProgressFilter)
-                        for filter_item in (h.filters if hasattr(h, "filters") else [])
+                        for filter_item in (
+                            logger_handler.filters if hasattr(logger_handler, "filters") else []
+                        )
                     )
                 ):
-                    h.setLevel(user_level_new)
+                    logger_handler.setLevel(user_level_new)
                     break
             return ACTIVE_LOGGER
-        for h in ACTIVE_LOGGER.handlers[:]:
+        for logger_handler in ACTIVE_LOGGER.handlers[:]:
             try:
-                h.close()
+                logger_handler.close()
             except Exception:
                 pass
-            ACTIVE_LOGGER.removeHandler(h)
+            ACTIVE_LOGGER.removeHandler(logger_handler)
 
     logger = logging.getLogger("io_mapping")
     logger.setLevel(logging.DEBUG)
@@ -359,17 +366,17 @@ def parse_values_cell(values_cell: str) -> Dict[str, str]:
                         while probe_index < len(line) and line[probe_index].isspace():
                             probe_index += 1
                         pair_start = probe_index
-                left = line[pair_start:colon_pos].strip()
+                mapped_value_text = line[pair_start:colon_pos].strip()
                 value_start = numeric_pair_match.end()
                 value_end = (
                     numeric_pair_matches[match_index + 1].start()
                     if match_index + 1 < len(numeric_pair_matches)
                     else len(line)
                 )
-                right = line[value_start:value_end].strip()
-                if not left or not right:
+                enum_label_text = line[value_start:value_end].strip()
+                if not mapped_value_text or not enum_label_text:
                     continue
-                mapping[normalize_enum_key(right)] = left
+                mapping[normalize_enum_key(enum_label_text)] = mapped_value_text
             continue
 
         current_index = 0
@@ -378,8 +385,8 @@ def parse_values_cell(values_cell: str) -> Dict[str, str]:
             colon_index = find_colon(line, current_index)
             if colon_index < 0:
                 break
-            left = line[current_index:colon_index].strip()
-            if not left:
+            mapped_value_text = line[current_index:colon_index].strip()
+            if not mapped_value_text:
                 current_index = colon_index + 1
                 continue
             after_colon_index = colon_index + 1
@@ -389,16 +396,16 @@ def parse_values_cell(values_cell: str) -> Dict[str, str]:
             pair_boundary_match = re.search(r"\s+\S+\s*[:\uFF1A]", line[start_right:])
             next_pair_pos = start_right + pair_boundary_match.start() if pair_boundary_match else None
             if next_pair_pos is None:
-                right = line[start_right:].strip()
+                enum_label_text = line[start_right:].strip()
                 current_index = line_length
             else:
-                right = line[start_right:next_pair_pos].strip()
+                enum_label_text = line[start_right:next_pair_pos].strip()
                 current_index = next_pair_pos
                 while current_index < line_length and line[current_index].isspace():
                     current_index += 1
-            if not right:
+            if not enum_label_text:
                 continue
-            mapping[normalize_enum_key(right)] = left.strip()
+            mapping[normalize_enum_key(enum_label_text)] = mapped_value_text.strip()
     return mapping
 
 
@@ -430,23 +437,23 @@ class IOMappingContext:
         token_text = str(value_token).strip()
         if not token_text:
             return value_token
-        keys = list(values_map.keys())
+        item_keys = list(values_map.keys())
         current_key = normalize_enum_key(token_text)
-        if len(keys) != 2:
-            if len(keys) > 2 and current_key in values_map:
+        if len(item_keys) != 2:
+            if len(item_keys) > 2 and current_key in values_map:
                 if upper_name not in LS_INVERT_WARNED_NAMES:
                     LS_INVERT_WARNED_NAMES.add(upper_name)
-                    enum_preview = ", ".join(sorted(keys)[:20])
-                    more = "" if len(keys) <= 20 else f" ...(+{len(keys)-20})"
+                    enum_preview = ", ".join(sorted(item_keys)[:20])
+                    more = "" if len(item_keys) <= 20 else f" ...(+{len(item_keys)-20})"
                     emit_log_message(
                         logging.ERROR,
                         "[io_mapping][ERROR] J_DI*LS 枚举反转仅支持 2 值，但该 Name 的 Values 有 "
-                        f"{len(keys)} 值：name={name!r} enums=[{enum_preview}{more}] 当前输入={value_token!r}（本次将不反转）",
+                        f"{len(item_keys)} 值：name={name!r} enums=[{enum_preview}{more}] 当前输入={value_token!r}（本次将不反转）",
                     )
             return value_token
         if current_key not in values_map:
             return value_token
-        return keys[0] if keys[1] == current_key else keys[1]
+        return item_keys[0] if item_keys[1] == current_key else item_keys[1]
 
     @staticmethod
     def is_j_di_ls(name: str) -> bool:
@@ -513,11 +520,11 @@ class IOMappingContext:
         name_key = normalize_name_key(raw_name)
         if name_key not in self.name_to_path and name_key not in self.name_to_values:
             raise IOMappingParseError(f"Name 未找到: {raw_name}")
-        path = self.name_to_path.get(name_key, "")
-        if not path:
+        file_path = self.name_to_path.get(name_key, "")
+        if not file_path:
             raise IOMappingParseError(f"Path 为空: {raw_name}")
         values_map = self.name_to_values.get(name_key, {})
-        transformed_args: List[str] = [path]
+        transformed_args: List[str] = [file_path]
         if len(args) == 1:
             return transformed_args
         rest_tokens: List[str] = [
@@ -617,7 +624,7 @@ class IOMappingContext:
 
 
 def get_io_mapping_inputs_text(config, domain: str) -> str:
-    """从配置中按域读取 [IOMAPPING] 的 Inputs 文本。参数: config — 配置对象；domain — 域（LR_REAR 兼容全局 IOMAPPING）。返回: Inputs 字符串。"""
+    """从配置中按域读取 [IOMAPPING] 的 Inputs 文本。参数: config — 配置对象；domain — 域（LR_REAR 支持全局 IOMAPPING）。返回: Inputs 字符串。"""
     section_candidates = get_io_mapping_section_candidates(domain)
     for section in section_candidates:
         if not config.has_section(section):
@@ -883,4 +890,21 @@ def load_io_mapping_from_config(
                 )
 
     return IOMappingContext(name_to_path=name_to_path, name_to_values=name_to_values)
+
+
+class IOMappingUtility:
+    """IO Mapping 相关功能统一工具类入口（统一工具类入口）。"""
+
+    setup_logging = staticmethod(setup_logging)
+    emit_log_message = staticmethod(emit_log_message)
+    normalize_header_text = staticmethod(normalize_header_text)
+    find_header_row_and_indices = staticmethod(find_header_row_and_indices)
+    find_colon = staticmethod(find_colon)
+    is_numeric_value = staticmethod(is_numeric_value)
+    normalize_name_key = staticmethod(normalize_name_key)
+    normalize_enum_key = staticmethod(normalize_enum_key)
+    has_expression_chars = staticmethod(has_expression_chars)
+    parse_values_cell = staticmethod(parse_values_cell)
+    get_io_mapping_inputs_text = staticmethod(get_io_mapping_inputs_text)
+    load_io_mapping_from_config = staticmethod(load_io_mapping_from_config)
 

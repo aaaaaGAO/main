@@ -59,7 +59,8 @@ class CaseFilter:
             str(model_item).upper().strip() for model_item in (allowed_models or set())
         }
         self.allowed_target_versions = {
-            str(version_item).strip() for version_item in (allowed_target_versions or set())
+            str(version_item).upper().strip()
+            for version_item in (allowed_target_versions or set())
         }
         self.stats = FilterStats()
 
@@ -85,7 +86,7 @@ class CaseFilter:
         level = str(level or "").strip().upper()
         platform = str(platform or "").strip().upper()
         model = str(model or "").strip().upper()
-        target_version_str = str(target_version or "").strip()
+        target_version_str = str(target_version or "").upper().strip()
 
         if self.allowed_levels and level and "ALL" not in level and level not in self.allowed_levels:
             self.stats.filtered_by_level += 1
@@ -187,7 +188,7 @@ class CaseFilter:
         if not normalized_text:
             return None
         selected = [
-            item.strip()
+            item.upper().strip()
             for item in normalized_text.replace("，", ",").replace(" ", ",").split(",")
             if item.strip()
         ]
@@ -197,7 +198,7 @@ class CaseFilter:
             return None
 
         allowed: Set[str] = set(selected)
-        all_opts = list(all_options or [])
+        all_opts = [str(option).upper().strip() for option in (all_options or []) if str(option).strip()]
         # 含 IPDT 的选项：取选中项中的最大 IPDT 编号 N，将 all_options 中所有 IPDT 编号 <= N 的项加入 allowed
         max_ipdt: Optional[int] = None
         for selected_option in selected:

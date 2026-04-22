@@ -40,6 +40,7 @@ class StepTranslateResult:
 
     @property
     def ok(self) -> bool:
+        """是否翻译成功（`errors` 列表为空）。"""
         return len(self.errors) == 0
 
 

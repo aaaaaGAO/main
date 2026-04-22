@@ -79,7 +79,7 @@ class BaseGeneratorTask(ABC):
         """从 Excel / 配置文件读取源数据。无参数。返回: 任意结构的源数据，供 transform 使用。"""
 
     @abstractmethod
-    def transform(self, data: Any) -> Any:
+    def transform(self, payload_data: Any) -> Any:
         """将源数据转换为目标格式。参数: data — extract_data 的返回值。返回: 供 load 写入的内容。"""
 
     @abstractmethod
@@ -133,8 +133,8 @@ class BaseGeneratorTask(ABC):
             print(f"开始执行任务: {self.task_name}")
             print(f"{'=' * 60}")
 
-            data = self.extract_data()
-            content = self.transform(data)
+            payload_data = self.extract_data()
+            content = self.transform(payload_data)
             self.load(content)
 
             print(f"任务完成: {self.task_name}")
@@ -193,14 +193,14 @@ class BaseGeneratorTask(ABC):
         self.previous_stdout = None
         self.previous_stderr = None
 
-    def get_config_value(self, section: str, key: str, fallback: str = "") -> str:
+    def get_config_value(self, section: str, item_key: str, fallback: str = "") -> str:
         """获取配置值：优先从固定配置文件读取，其次从主配置文件读取。参数：section — 节名；key — 配置项键名；fallback — 未找到时的默认值。返回：对应的配置值字符串。"""
-        fixed_val = self.fixed_config.get(key)
+        fixed_val = self.fixed_config.get(item_key)
         if fixed_val is not None:
             return fixed_val
         if self.config is None:
             return fallback
         try:
-            return self.config.get(section, key, fallback=fallback)
+            return self.config.get(section, item_key, fallback=fallback)
         except Exception:
             return fallback

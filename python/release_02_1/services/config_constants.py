@@ -54,6 +54,7 @@ OPTION_DIDINFO_INPUTS = "didinfo_inputs"
 # 历史键：仅填单个 Excel 路径（与 ``didinfo_inputs`` 的 ``路径 | *`` 管道格式不同）
 OPTION_DIDINFO_INPUT_EXCEL = "didinfo_input_excel"
 OPTION_CIN_INPUT_EXCEL = "cin_input_excel"
+OPTION_SRV_EXCEL = "srv_excel"
 
 # ---------------------------------------------------------------------------
 # 需求第3条：界面「ResetDid」/ DIDInfo 源表 ↔ collectCurrentState 键 ↔ ini didinfo_inputs
@@ -160,6 +161,7 @@ UI_FIELD_TARGET_VERSIONS = "target_versions"
 STATE_KEY_LR_TARGET_VERSIONS = UI_FIELD_TARGET_VERSIONS
 STATE_KEY_DTC_TARGET_VERSIONS = "d_target_versions"
 UI_FIELD_UDS_ECU_QUALIFIER = OPTION_UDS_ECU_QUALIFIER
+STATE_KEY_LR_UDS_ECU_QUALIFIER = UI_FIELD_UDS_ECU_QUALIFIER
 
 OPTION_UART_EXCEL = "uart_excel"
 OPTION_XML_INPUT_EXCEL = "xml_input_excel"
@@ -217,29 +219,55 @@ LR_STATE_KEYS: tuple[str, ...] = (
     STATE_KEY_LR_SRV_EXCEL,
     STATE_KEY_LR_IO_EXCEL,
     STATE_KEY_LR_DIDCONFIG_EXCEL,
-    "uds_ecu_qualifier",
+    STATE_KEY_LR_UDS_ECU_QUALIFIER,
 )
 
+# CENTRAL 域 state 键（用于 StateConfigService / Route 统一引用）
+STATE_KEY_CENTRAL_CAN_INPUT = "c_input"
+STATE_KEY_CENTRAL_OUT_ROOT = "c_out_root"
+STATE_KEY_CENTRAL_LEVELS = "c_levels"
+STATE_KEY_CENTRAL_PLATFORMS = "c_platforms"
+STATE_KEY_CENTRAL_MODELS = "c_models"
+STATE_KEY_CENTRAL_TARGET_VERSIONS = "c_target_versions"
+STATE_KEY_CENTRAL_SELECTED_SHEETS = "c_selected_sheets"
+STATE_KEY_CENTRAL_LOG_LEVEL = "c_log_level"
+STATE_KEY_CENTRAL_UDS_ECU_QUALIFIER = "c_uds_ecu_qualifier"
+STATE_KEY_CENTRAL_UART = "c_uart"
+STATE_KEY_CENTRAL_SRV_EXCEL = "c_srv"
+STATE_KEY_CENTRAL_UART_COMM = "c_uart_comm"
+STATE_KEY_CENTRAL_PWR = "c_pwr"
+STATE_KEY_CENTRAL_RLY = "c_rly"
+STATE_KEY_CENTRAL_IG = "c_ig"
+STATE_KEY_CENTRAL_PW = "c_pw"
+STATE_KEY_CENTRAL_IGN_WAIT_TIME = "c_ign_waitTime"
+STATE_KEY_CENTRAL_IGN_CURRENT = "c_ign_current"
+STATE_KEY_CENTRAL_LOGIN_USERNAME = "c_login_username"
+STATE_KEY_CENTRAL_LOGIN_PASSWORD = "c_login_password"
+
+# DTC 域补充 state 键
+STATE_KEY_DTC_UDS_ECU_QUALIFIER = "d_uds_ecu_qualifier"
+STATE_KEY_DTC_IO_SELECTED_SHEETS = "d_io_selected_sheets"
+
 CENTRAL_STATE_KEYS: tuple[str, ...] = (
-    "c_input",
-    "c_out_root",
-    "c_levels",
-    "c_platforms",
-    "c_models",
-    "c_target_versions",
-    "c_uart",
-    "c_srv",
-    "c_uart_comm",
-    "c_selected_sheets",
-    "c_uds_ecu_qualifier",
-    "c_pwr",
-    "c_rly",
-    "c_ig",
-    "c_pw",
-    "c_ign_waitTime",
-    "c_ign_current",
-    "c_login_username",
-    "c_login_password",
+    STATE_KEY_CENTRAL_CAN_INPUT,
+    STATE_KEY_CENTRAL_OUT_ROOT,
+    STATE_KEY_CENTRAL_LEVELS,
+    STATE_KEY_CENTRAL_PLATFORMS,
+    STATE_KEY_CENTRAL_MODELS,
+    STATE_KEY_CENTRAL_TARGET_VERSIONS,
+    STATE_KEY_CENTRAL_UART,
+    STATE_KEY_CENTRAL_SRV_EXCEL,
+    STATE_KEY_CENTRAL_UART_COMM,
+    STATE_KEY_CENTRAL_SELECTED_SHEETS,
+    STATE_KEY_CENTRAL_UDS_ECU_QUALIFIER,
+    STATE_KEY_CENTRAL_PWR,
+    STATE_KEY_CENTRAL_RLY,
+    STATE_KEY_CENTRAL_IG,
+    STATE_KEY_CENTRAL_PW,
+    STATE_KEY_CENTRAL_IGN_WAIT_TIME,
+    STATE_KEY_CENTRAL_IGN_CURRENT,
+    STATE_KEY_CENTRAL_LOGIN_USERNAME,
+    STATE_KEY_CENTRAL_LOGIN_PASSWORD,
 )
 
 DTC_STATE_KEYS: tuple[str, ...] = (
@@ -250,13 +278,34 @@ DTC_STATE_KEYS: tuple[str, ...] = (
     STATE_KEY_DTC_MODELS,
     STATE_KEY_DTC_TARGET_VERSIONS,
     STATE_KEY_DTC_SELECTED_SHEETS,
-    "d_uds_ecu_qualifier",
+    STATE_KEY_DTC_UDS_ECU_QUALIFIER,
     STATE_KEY_DTC_IO_EXCEL,
     STATE_KEY_DTC_DIDCONFIG_EXCEL,
     STATE_KEY_DTC_DIDINFO_EXCEL,
     STATE_KEY_DTC_CIN_EXCEL,
     STATE_KEY_DTC_SRV_EXCEL,
 )
+
+# CIN 运行期上下文字典键（runtime dict）
+CIN_RUNTIME_KEY_CONFIG_PATH = "config_path"
+CIN_RUNTIME_KEY_CFG = "cfg"
+CIN_RUNTIME_KEY_INPUT_SHEET = "input_sheet"
+CIN_RUNTIME_KEY_INPUT_EXCEL_PATH = "input_excel_path"
+CIN_RUNTIME_KEY_MAPPING_EXCEL_PATH = "mapping_excel_path"
+CIN_RUNTIME_KEY_SHEET_NAMES_STR = "sheet_names_str"
+CIN_RUNTIME_KEY_OUTPUT_DIR = "output_dir"
+CIN_RUNTIME_KEY_OUTPUT_CIN_FILENAME = "output_cin_filename"
+CIN_RUNTIME_KEY_IO_MAPPING_CTX = "io_mapping_ctx"
+CIN_RUNTIME_KEY_CONFIG_ENUM_CTX = "config_enum_ctx"
+
+# XML 运行期上下文字典键（runtime dict）
+XML_RUNTIME_KEY_EXCEL_PATH = "excel_path"
+XML_RUNTIME_KEY_OUTPUT_XML_PATH = "output_xml_path"
+XML_RUNTIME_KEY_ALLOWED_LEVELS = "allowed_levels"
+XML_RUNTIME_KEY_ALLOWED_PLATFORMS = "allowed_platforms"
+XML_RUNTIME_KEY_ALLOWED_MODELS = "allowed_models"
+XML_RUNTIME_KEY_ALLOWED_TARGET_VERSIONS = "allowed_target_versions"
+XML_RUNTIME_KEY_SELECTED_FILTER = "selected_filter"
 
 # ---------------------------------------------------------------------------
 # 前端状态键与配置项映射
@@ -284,10 +333,10 @@ UART_COMM_KEY_MAP: dict[str, str] = {
 }
 
 CENTRAL_FILTER_KEY_MAP: list[tuple[str, str]] = [
-    ("c_levels", OPTION_CASE_LEVELS),
-    ("c_platforms", OPTION_CASE_PLATFORMS),
-    ("c_models", OPTION_CASE_MODELS),
-    ("c_target_versions", OPTION_CASE_TARGET_VERSIONS),
+    (STATE_KEY_CENTRAL_LEVELS, OPTION_CASE_LEVELS),
+    (STATE_KEY_CENTRAL_PLATFORMS, OPTION_CASE_PLATFORMS),
+    (STATE_KEY_CENTRAL_MODELS, OPTION_CASE_MODELS),
+    (STATE_KEY_CENTRAL_TARGET_VERSIONS, OPTION_CASE_TARGET_VERSIONS),
 ]
 
 DTC_FILTER_KEY_MAP: list[tuple[str, str]] = [
@@ -366,8 +415,9 @@ OPTION_DIDINFO_INPUT_EXCEL_CANDIDATES: tuple[str, str] = ("Didinfo_Input_Excel",
 OPTION_DIDINFO_OUTPUT_DIR_CANDIDATES: tuple[str, str] = ("Output_Dir_Didinfo", "output_dir_didinfo")
 OPTION_DIDINFO_VARIANTS_CANDIDATES: tuple[str, str] = ("Didinfo_Variants", "didinfo_variants")
 OPTION_CIN_INPUT_EXCEL_CANDIDATES: tuple[str, str] = ("Cin_Input_Excel", OPTION_CIN_INPUT_EXCEL)
+OPTION_SRV_EXCEL_CANDIDATES: tuple[str, str] = ("Srv_Excel", OPTION_SRV_EXCEL)
 # 候选键维护规则：
-# - 元组顺序表达“兼容读取优先级”；
+# - 元组顺序表达“读取优先级”；
 # - 新增历史别名时，只改这里，业务代码里用循环/拼接引用这些候选。
 
 PATHS_UART_INPUT_OPTION_CANDIDATES: tuple[str, ...] = ("Uart_Input_Excel",)
@@ -396,7 +446,7 @@ PATHS_UART_KNOWN_OPTION_KEYS: tuple[str, ...] = (
 )
 PATHS_CAN_OUTPUT_DIR_OPTION_CANDIDATES: tuple[str, ...] = ("output_dir_can", "Output_Dir_Can", "Output_Dir")
 PATHS_DIDINFO_OUTPUT_DIR_OPTION_CANDIDATES: tuple[str, ...] = ("output_dir_didinfo", "Output_Dir_Didinfo", "output_dir", "Output_Dir")
-# [PATHS] 节：先尝试 didinfo_inputs 管道键，再尝试 didinfo_input_excel 单路径键（顺序与既有 get_first 行为一致）
+# [PATHS] 节：didinfo_inputs 管道键与 didinfo_input_excel 单路径键的候选顺序（历史说明）
 PATHS_DIDINFO_INPUT_PIPE_OPTION_CANDIDATES: tuple[str, str] = (
     OPTION_DIDINFO_INPUTS,
     OPTION_DIDINFO_INPUTS_CANDIDATES[0],
@@ -438,7 +488,7 @@ PATHS_MERGED_PRESERVE_OPTION_NAMES: tuple[str, ...] = (
 
 LR_REAR_SAVE_NORMALIZE_OPTION_NAMES: tuple[str, ...] = (
     OPTION_INPUT_EXCEL,
-    "srv_excel",
+    OPTION_SRV_EXCEL,
     OPTION_OUTPUT_DIR,
     *FILTER_OPTION_KEYS,
     OPTION_SELECTED_SHEETS,
@@ -450,9 +500,9 @@ LR_REAR_SAVE_NORMALIZE_OPTION_NAMES: tuple[str, ...] = (
 
 CENTRAL_SAVE_NORMALIZE_OPTION_NAMES: tuple[str, ...] = (
     OPTION_INPUT_EXCEL,
-    "srv_excel",
+    OPTION_SRV_EXCEL,
     OPTION_UART_EXCEL,
-    "srv_excel",
+    OPTION_SRV_EXCEL,
     "pwr_excel",
     "rly_excel",
     OPTION_SELECTED_SHEETS,
@@ -473,7 +523,7 @@ CENTRAL_SAVE_NORMALIZE_OPTION_NAMES: tuple[str, ...] = (
 
 DTC_SAVE_NORMALIZE_OPTION_NAMES: tuple[str, ...] = (
     OPTION_INPUT_EXCEL,
-    "srv_excel",
+    OPTION_SRV_EXCEL,
     OPTION_SELECTED_SHEETS,
     OPTION_OUTPUT_DIR,
     *FILTER_OPTION_KEYS,

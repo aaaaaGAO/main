@@ -19,7 +19,21 @@ import re
 from typing import Any, Dict, List, Optional
 
 from infra.filesystem import resolve_named_subdir
-from services.config_constants import OPTION_OUTPUT_DIR, SECTION_CENTRAL, SECTION_IGNITION_CYCLE
+from services.config_constants import (
+    OPTION_C_IG,
+    OPTION_C_PW,
+    OPTION_C_PWR,
+    OPTION_C_RLY,
+    OPTION_IGNITION_CYCLE_CURRENT,
+    OPTION_IGNITION_CYCLE_WAIT_TIME,
+    OPTION_IGN_CURRENT,
+    OPTION_IGN_WAITTIME,
+    OPTION_LOGIN_PASSWORD,
+    OPTION_LOGIN_USERNAME,
+    OPTION_OUTPUT_DIR,
+    SECTION_CENTRAL,
+    SECTION_IGNITION_CYCLE,
+)
 from services.config_constants import (
     DEFAULT_IGNITION_CYCLE_FILENAME,
     DEFAULT_LOGIN_FILENAME,
@@ -166,7 +180,7 @@ class DerivedConfigFilesService:
         default_values: Dict[str, str],
         include_init_comment: bool = False,
     ) -> None:
-        data = config_data if (config_data and config_data.get("equipmentType")) else {}
+        payload_data = config_data if (config_data and config_data.get("equipmentType")) else {}
         lines = [
             f"[{title}]",
             "//Equipment_Type设备类型：Power/Relay",
@@ -177,10 +191,10 @@ class DerivedConfigFilesService:
         lines.extend(
             [
                 "//eqPosition设备位置",
-                f"Equipment_Type={data.get('equipmentType', default_values['equipmentType'])}",
-                f"ChannelNumber={data.get('channelNumber', default_values['channelNumber'])}",
-                f"initStatus={data.get('initStatus', default_values['initStatus'])}",
-                f"eqPosition={data.get('eqPosition', default_values['eqPosition'])}",
+                f"Equipment_Type={payload_data.get('equipmentType', default_values['equipmentType'])}",
+                f"ChannelNumber={payload_data.get('channelNumber', default_values['channelNumber'])}",
+                f"initStatus={payload_data.get('initStatus', default_values['initStatus'])}",
+                f"eqPosition={payload_data.get('eqPosition', default_values['eqPosition'])}",
                 "",
             ]
         )
@@ -195,19 +209,23 @@ class DerivedConfigFilesService:
         except Exception:
             return
 
-        power_config = self.parse_json_config_option(config, SECTION_CENTRAL, "c_pwr", {})
-        relay_configs = self.parse_json_config_option(config, SECTION_CENTRAL, "c_rly", [])
-        ig_config = self.parse_json_config_option(config, SECTION_CENTRAL, "c_ig", {})
-        pw_config = self.parse_json_config_option(config, SECTION_CENTRAL, "c_pw", {})
+        power_config = self.parse_json_config_option(config, SECTION_CENTRAL, OPTION_C_PWR, {})
+        relay_configs = self.parse_json_config_option(config, SECTION_CENTRAL, OPTION_C_RLY, [])
+        ig_config = self.parse_json_config_option(config, SECTION_CENTRAL, OPTION_C_IG, {})
+        pw_config = self.parse_json_config_option(config, SECTION_CENTRAL, OPTION_C_PW, {})
 
         ignition_wait_time = ""
         ignition_current = ""
         if config.has_section(SECTION_IGNITION_CYCLE):
-            ignition_wait_time = (config.get(SECTION_IGNITION_CYCLE, "waitTime", fallback="") or "").strip()
-            ignition_current = (config.get(SECTION_IGNITION_CYCLE, "current", fallback="") or "").strip()
+            ignition_wait_time = (
+                config.get(SECTION_IGNITION_CYCLE, OPTION_IGNITION_CYCLE_WAIT_TIME, fallback="") or ""
+            ).strip()
+            ignition_current = (
+                config.get(SECTION_IGNITION_CYCLE, OPTION_IGNITION_CYCLE_CURRENT, fallback="") or ""
+            ).strip()
         if (not ignition_wait_time and not ignition_current) and config.has_section(SECTION_CENTRAL):
-            ignition_wait_time = (config.get(SECTION_CENTRAL, "ign_waittime", fallback="") or "").strip()
-            ignition_current = (config.get(SECTION_CENTRAL, "ign_current", fallback="") or "").strip()
+            ignition_wait_time = (config.get(SECTION_CENTRAL, OPTION_IGN_WAITTIME, fallback="") or "").strip()
+            ignition_current = (config.get(SECTION_CENTRAL, OPTION_IGN_CURRENT, fallback="") or "").strip()
 
         power_config_path = os.path.join(config_dir, DEFAULT_POWER_RELAY_CONFIG_FILENAME)
         if not self.has_power_relay_config(power_config, relay_configs, ig_config, pw_config):
@@ -262,14 +280,14 @@ class DerivedConfigFilesService:
                 with open(ignition_path, "w", encoding="utf-8") as ignition_file:
                     ignition_file.write("[IgnitionCycle]\n")
                     if ignition_wait_time:
-                        ignition_file.write(f"waitTime={ignition_wait_time}\n")
+                        ignition_file.write(f"{OPTION_IGNITION_CYCLE_WAIT_TIME}={ignition_wait_time}\n")
                     if ignition_current:
-                        ignition_file.write(f"current={ignition_current}\n")
+                        ignition_file.write(f"{OPTION_IGNITION_CYCLE_CURRENT}={ignition_current}\n")
             except Exception as error:
                 print(f"生成 {DEFAULT_IGNITION_CYCLE_FILENAME} 失败: {error}")
 
-        login_username = (config.get(SECTION_CENTRAL, "login_username", fallback="") or "").strip()
-        login_password = (config.get(SECTION_CENTRAL, "login_password", fallback="") or "").strip()
+        login_username = (config.get(SECTION_CENTRAL, OPTION_LOGIN_USERNAME, fallback="") or "").strip()
+        login_password = (config.get(SECTION_CENTRAL, OPTION_LOGIN_PASSWORD, fallback="") or "").strip()
         login_path = os.path.join(config_dir, DEFAULT_LOGIN_FILENAME)
         try:
             with open(login_path, "w", encoding="utf-8") as login_file:

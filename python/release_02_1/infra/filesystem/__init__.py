@@ -15,7 +15,7 @@ infra.filesystem：路径与文件系统相关能力（底层）
 - resolve_configured_path(base_dir: str, configured_path: str) -> str
   将配置中的相对/绝对路径统一解析为绝对路径。
 - resolve_named_subdir(base_dir: str, configured_dir: str, subdir_name: str, create_dir=False) -> str | None
-  解析配置目录下的目标子目录，兼容“父目录”与“已直接指向子目录”两种写法。
+  解析配置目录下的目标子目录，支持“父目录”与“已直接指向子目录”两种写法。
 - resolve_target_subdir(base_dir: str, configured_dir: str, subdir_name: str) -> str
   解析目标子目录；找不到时抛出 RuntimeError，供生成器直接使用。
 """

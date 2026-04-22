@@ -40,7 +40,7 @@ _COLON_CHARS = (":", "\uFF1A")
 def find_colon(text: str, start: int) -> int:
     """在 text[start:] 中查找第一个冒号（半角/全角）位置。参数: text — 字符串；start — 起始下标。返回: 索引，无则 -1。"""
     candidates = [text.find(separator_char, start) for separator_char in _COLON_CHARS]
-    candidates = [p for p in candidates if p >= 0]
+    candidates = [candidate_pos for candidate_pos in candidates if candidate_pos >= 0]
     return min(candidates) if candidates else -1
 
 
@@ -76,8 +76,8 @@ def parse_values_cell(values_cell: str) -> Dict[str, str]:
             continue
 
         cursor_pos = 0
-        n = len(line)
-        while cursor_pos < n:
+        line_length = len(line)
+        while cursor_pos < line_length:
             colon_index = find_colon(line, cursor_pos)
             if colon_index < 0:
                 break
@@ -86,7 +86,7 @@ def parse_values_cell(values_cell: str) -> Dict[str, str]:
                 cursor_pos = colon_index + 1
                 continue
             right_start = colon_index + 1
-            while right_start < n and line[right_start].isspace():
+            while right_start < line_length and line[right_start].isspace():
                 right_start += 1
             start_right = right_start
             next_pair_pos = None
@@ -95,11 +95,11 @@ def parse_values_cell(values_cell: str) -> Dict[str, str]:
                 next_pair_pos = start_right + next_pair_match.start()
             if next_pair_pos is None:
                 right = line[start_right:].strip()
-                cursor_pos = n
+                cursor_pos = line_length
             else:
                 right = line[start_right:next_pair_pos].strip()
                 cursor_pos = next_pair_pos
-                while cursor_pos < n and line[cursor_pos].isspace():
+                while cursor_pos < line_length and line[cursor_pos].isspace():
                     cursor_pos += 1
             if not right:
                 continue
@@ -194,7 +194,7 @@ class ConfigEnumContext:
 
 
 def get_config_enum_inputs_text(config, domain: str) -> str:
-    """从配置中按域读取 CONFIG_ENUM 的 Inputs 文本。参数: config — 配置对象；domain — 域（如 LR_REAR，兼容全局 CONFIG_ENUM）。返回: Inputs 字符串。"""
+    """从配置中按域读取 CONFIG_ENUM 的 Inputs 文本。参数: config — 配置对象；domain — 域（如 LR_REAR，支持全局 CONFIG_ENUM）。返回: Inputs 字符串。"""
     section_candidates = get_config_enum_section_candidates(domain)
     for section in section_candidates:
         if not config.has_section(section):
@@ -284,7 +284,7 @@ def load_config_enum_from_config(
                 header = next(ws.iter_rows(min_row=1, max_row=1, values_only=True))
             except StopIteration:
                 continue
-            headers = [str(h).strip() if h is not None else "" for h in header]
+            headers = [str(header_cell).strip() if header_cell is not None else "" for header_cell in header]
 
             name_idx = None
             values_idx = None
@@ -314,8 +314,21 @@ def load_config_enum_from_config(
     return ConfigEnumContext(name_to_values=name_to_values)
 
 
+class ConfigEnumUtility:
+    """Configuration 枚举翻译统一工具类入口。"""
+
+    find_colon = staticmethod(find_colon)
+    normalize_enum_name_key = staticmethod(normalize_enum_name_key)
+    is_numeric_value = staticmethod(is_numeric_value)
+    has_expression_chars = staticmethod(has_expression_chars)
+    parse_values_cell = staticmethod(parse_values_cell)
+    get_config_enum_inputs_text = staticmethod(get_config_enum_inputs_text)
+    load_config_enum_from_config = staticmethod(load_config_enum_from_config)
+
+
 __all__ = [
     "load_config_enum_from_config",
+    "ConfigEnumUtility",
     "ConfigEnumContext",
     "ConfigEnumParseError",
 ]

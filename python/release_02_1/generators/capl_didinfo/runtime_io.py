@@ -33,8 +33,8 @@ def find_header_row_and_cols(ws: Any) -> Tuple[int, dict]:
                     col_map[column_value] = column_index
             return row_index, col_map
     raise RuntimeError("Header row not found (missing required columns).")
-def norm_variant(s: str) -> str:
-    return norm_str(s).upper()
+def norm_variant(variant_text: str) -> str:
+    return norm_str(variant_text).upper()
 
 
 def find_variant_cols(ws: Any, header_row: int, variant_names: list[str]) -> dict[str, int]:
@@ -46,9 +46,9 @@ def find_variant_cols(ws: Any, header_row: int, variant_names: list[str]) -> dic
     for row_index in range(1, header_row + 1):
         for column_index in range(1, ws.max_column + 1):
             cell_value = norm_str(ws.cell(row_index, column_index).value)
-            key = norm_variant(cell_value)
-            if key in canonical_to_original:
-                orig = canonical_to_original[key]
+            item_key = norm_variant(cell_value)
+            if item_key in canonical_to_original:
+                orig = canonical_to_original[item_key]
                 if orig not in found:
                     found[orig] = column_index
         if len(found) == len(variant_names):
@@ -72,9 +72,9 @@ def pick_sheet_name(wb: Any, preferred: str | None) -> str:
 def merged_cell_value(ws: Any, row: int, col: int) -> Any:
     """取单元格值，若在合并区域内则取左上角的值。"""
     cell = ws.cell(row, col)
-    v = cell.value
-    if v is not None:
-        return v
+    cell_value = cell.value
+    if cell_value is not None:
+        return cell_value
     try:
         coord = cell.coordinate
         for merged_range in getattr(ws.merged_cells, "ranges", []):
@@ -82,7 +82,7 @@ def merged_cell_value(ws: Any, row: int, col: int) -> Any:
                 return ws.cell(merged_range.min_row, merged_range.min_col).value
     except Exception:
         pass
-    return v
+    return cell_value
 def parse_int_or_range(byte_text: str) -> Optional[Tuple[int, int]]:
     """解析 Byte 列：单个数字或 a-b/a~b，返回 (start, end)。"""
     byte_text = norm_str(byte_text)
@@ -127,16 +127,16 @@ def normalize_did(did_str: str) -> Optional[str]:
     return None
 def normalize_field_data(cell_val: Any) -> str:
     """规范化 Field_Data：空->0x00；0x 开头原样；含空格去空格。"""
-    s = norm_str(cell_val)
-    if not s or not s.strip():
+    normalized_text = norm_str(cell_val)
+    if not normalized_text or not normalized_text.strip():
         return "0x00"
-    s = s.strip()
-    if s.lower().startswith("0x"):
-        return s
-    if " " in s:
-        compact = "".join(s.split())
+    normalized_text = normalized_text.strip()
+    if normalized_text.lower().startswith("0x"):
+        return normalized_text
+    if " " in normalized_text:
+        compact = "".join(normalized_text.split())
         return compact if compact else "0x00"
-    return s
+    return normalized_text
 
 
 @dataclass
@@ -313,8 +313,8 @@ def generate_from_sheet(
         field_data = normalize_field_data(ws.cell(row_index, variant_col).value)
 
         if byte_is_explicit_cell and current_did is not None and current_len is not None:
-            key = (current_did, current_len)
-            prev_map = seen_byte_pos.setdefault(key, {})
+            item_key = (current_did, current_len)
+            prev_map = seen_byte_pos.setdefault(item_key, {})
             prev_row = prev_map.get(byte_pos)
             if prev_row is not None:
                 print(
@@ -346,3 +346,20 @@ def generate_from_sheet(
     final_did = last_written_did if last_written_did is not None else (last_did or "")
     final_len = last_written_len if last_written_len is not None else (last_len or 0)
     return (content, final_sheet, final_variant, final_did, final_len)
+
+
+class DIDInfoRuntimeIOUtility:
+    """DIDInfo 单表解析/生成统一工具类入口。"""
+
+    find_header_row_and_cols = staticmethod(find_header_row_and_cols)
+    norm_variant = staticmethod(norm_variant)
+    find_variant_cols = staticmethod(find_variant_cols)
+    pick_sheet_name = staticmethod(pick_sheet_name)
+    merged_cell_value = staticmethod(merged_cell_value)
+    parse_int_or_range = staticmethod(parse_int_or_range)
+    parse_bit = staticmethod(parse_bit)
+    normalize_did = staticmethod(normalize_did)
+    normalize_field_data = staticmethod(normalize_field_data)
+    compute_positions_and_length = staticmethod(compute_positions_and_length)
+    flush_did_header = staticmethod(flush_did_header)
+    generate_from_sheet = staticmethod(generate_from_sheet)

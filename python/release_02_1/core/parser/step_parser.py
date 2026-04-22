@@ -15,22 +15,25 @@
 - KeepOpenWithTime, KeepShToGNDWithTime, KeepShToPOWWithTime, KeepOverCurWithTime
   （后接：变量/数字/单位如 abc 100 ms → 原样写入 CAPL；或 io_mapping 的 Name 如 J_xxx+ → 换成 Path 后与后续参数一起写入；configuration 名如 ATLEnableConfigure 出现则报错 io_mapping 表中 Name 找不到）
 
-并保留 CIN 的“自动补 Step 前缀”兼容逻辑。
+并保留 CIN 的“自动补 Step 前缀”处理逻辑。
 """
 
 from __future__ import annotations
 
+import importlib
+import importlib.util
 from dataclasses import dataclass
 from typing import Any, Callable, List, Optional, Sequence
 
-try:
-    from core.translator.io_mapping import IOMappingParseError
-except ImportError:  # pragma: no cover - 兼容兜底
-    IOMappingParseError = Exception  # type: ignore[misc, assignment]
-try:
-    from core.translator.config_enum import ConfigEnumParseError
-except ImportError:  # pragma: no cover - 兼容兜底
-    ConfigEnumParseError = Exception  # type: ignore[misc, assignment]
+IOMappingParseError = Exception  # type: ignore[misc, assignment]
+if importlib.util.find_spec("core.translator.io_mapping") is not None:
+    io_mapping_module = importlib.import_module("core.translator.io_mapping")
+    IOMappingParseError = getattr(io_mapping_module, "IOMappingParseError", Exception)  # type: ignore[misc, assignment]
+
+ConfigEnumParseError = Exception  # type: ignore[misc, assignment]
+if importlib.util.find_spec("core.translator.config_enum") is not None:
+    config_enum_module = importlib.import_module("core.translator.config_enum")
+    ConfigEnumParseError = getattr(config_enum_module, "ConfigEnumParseError", Exception)  # type: ignore[misc, assignment]
 
 
 class KeywordMatchError(Exception):
@@ -77,24 +80,24 @@ def iter_inclusive_values(start: float, end: float, step: float) -> List[float]:
     """生成 [start, end] 步长为 step 的数列（含端点）。参数: start/end/step — 起止与步长。返回: 数值列表。"""
     if step == 0:
         return []
-    values: List[float] = []
+    item_values: List[float] = []
     cur = start
     if step > 0:
         while cur <= end + 1e-12:
-            values.append(cur)
+            item_values.append(cur)
             cur += step
     else:
         while cur >= end - 1e-12:
-            values.append(cur)
+            item_values.append(cur)
             cur += step
-    return values
+    return item_values
 
 
-def format_numeric_value(value: float) -> str:
+def format_numeric_value(item_value: float) -> str:
     """浮点数格式化为字符串，整数则去掉小数部分。参数: value — 数值。返回: 字符串。"""
-    if abs(value - int(value)) < 1e-12:
-        return str(int(value))
-    return str(value)
+    if abs(item_value - int(item_value)) < 1e-12:
+        return str(int(item_value))
+    return str(item_value)
 
 
 def escape_c_string(text: str) -> str:
@@ -566,7 +569,7 @@ def parse_step_line(
     )
 
     if args:
-        one_arg = " ".join([str(a) for a in args]).strip()
+        one_arg = " ".join([str(arg_token) for arg_token in args]).strip()
 
         one_arg = escape_c_string(one_arg)
         main_code = f'  {spec.capl_func}("{one_arg}");'

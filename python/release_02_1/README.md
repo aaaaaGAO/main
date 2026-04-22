@@ -23,7 +23,7 @@
 | `config/FixedConfig.ini` / `config/FixedConfig.txt` | 固定配置：部分输出文件名、路径等（可选，缺省用代码默认值） |
 | `config/filter_options.ini` | 筛选项配置：等级、平台、车型、UDS_ECU 等下拉列表（可选，缺省下拉为空） |
 
-程序会从 **工程根目录下的 config/** 中读取上述配置。主配置/固定配置当前规则为：优先已有 `*.ini`，兼容已有 `*.txt`。开发时工程根目录 = 含主配置的目录；打包后 = EXE 所在目录。
+程序会从 **工程根目录下的 config/** 中读取上述配置。主配置/固定配置当前规则为：优先已有 `*.ini`，同时支持已有 `*.txt`。开发时工程根目录 = 含主配置的目录；打包后 = EXE 所在目录。
 
 ### 3. 推荐目录（可选）
 
@@ -39,7 +39,7 @@
 
 ### 方式一：开发环境（有 Python）
 
-1. 确保根目录下存在 **config/Configuration.ini** 或 **config/Configuration.txt**（优先使用 `.ini`，也兼容历史 `.txt`）。
+1. 确保根目录下存在 **config/Configuration.ini** 或 **config/Configuration.txt**（优先使用 `.ini`，同时支持历史 `.txt`）。
 2. 在项目根目录执行：
    ```bash
    python app.py
@@ -66,7 +66,7 @@
 2. **配置路径与筛选项**  
    - 在「左右后域」「中央域」「DTC」Tab 中填写或通过「选择文件/文件夹」选择用例 Excel、输出目录等。  
    - 等级、平台、车型等筛选项若已配置 `config/filter_options.ini`，会出现在下拉框中。  
-  - 可勾选要参与的 Sheet，配置会自动保存到当前主配置文件（优先 `config/Configuration.ini`，兼容 `config/Configuration.txt`）。
+  - 可勾选要参与的 Sheet，配置会自动保存到当前主配置文件（优先 `config/Configuration.ini`，同时支持 `config/Configuration.txt`）。
 
 3. **开始运行**  
    - 在对应 Tab 点击「开始运行」，执行该域的一键生成（DIDConfig → DIDInfo → CIN → UART → CAN → XML 等，按域组合）。  

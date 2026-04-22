@@ -13,11 +13,11 @@ import unicodedata
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 
-def normalize_cell_text(value: Any) -> str:
+def normalize_cell_text(item_value: Any) -> str:
     """单元格值规范化：None 转空串，否则去首尾空白。参数: value — 任意值。返回: str。"""
-    if value is None:
+    if item_value is None:
         return ""
-    return str(value).strip()
+    return str(item_value).strip()
 
 
 def normalize_nfc_text(text: str) -> str:
@@ -42,9 +42,9 @@ class ColumnMapper:
         self.mapping: dict[str, int] = {}
 
     @staticmethod
-    def normalize_header(value: object) -> str:
+    def normalize_header(item_value: object) -> str:
         """表头单元格规范化：去空白、NFC、去空格与下划线、小写。参数: value — 单元格值。返回: str。"""
-        normalized_text = normalize_cell_text(value)
+        normalized_text = normalize_cell_text(item_value)
         normalized_text = normalize_nfc_text(normalized_text)
         normalized_text = re.sub(r"\s+", "", normalized_text.replace("　", " "))
         return normalized_text.replace("_", "").lower()
@@ -66,7 +66,7 @@ class ColumnMapper:
                         break
                 if field in self.mapping:
                     break
-        return all(key in self.mapping for key in self.required)
+        return all(item_key in self.mapping for item_key in self.required)
 
     def has(self, field: str) -> bool:
         """判断逻辑列是否已映射。参数: field — 逻辑列名。返回: bool。"""
@@ -79,11 +79,11 @@ class ColumnMapper:
         return self.mapping[field]
 
 
-def normalize_header_cell(value: Any) -> str:
+def normalize_header_cell(item_value: Any) -> str:
     """表头单元格规范化：去空白、去空格与全角空格、小写。参数: value — 单元格值。返回: str。"""
-    if value is None:
+    if item_value is None:
         return ""
-    return str(value).strip().replace(" ", "").replace("　", "").lower()
+    return str(item_value).strip().replace(" ", "").replace("　", "").lower()
 
 
 def find_header_row_and_col_indices(
@@ -101,9 +101,13 @@ def find_header_row_and_col_indices(
 
     alias_sets: Dict[str, set] = {}
     display_names: Dict[str, str] = {}
-    for key, aliases in column_aliases.items():
-        alias_sets[key] = set(normalize_header_cell(a) for a in aliases if a)
-        display_names[key] = aliases[0] if aliases else key
+    for item_key, aliases in column_aliases.items():
+        alias_sets[item_key] = set(
+            normalize_header_cell(alias_name)
+            for alias_name in aliases
+            if alias_name
+        )
+        display_names[item_key] = aliases[0] if aliases else item_key
 
     for row_index in range(1, min(ws.max_row, max_scan_rows) + 1):
         found: Dict[str, int] = {}
@@ -143,7 +147,7 @@ class TestCaseHeaderResolver:
 
     @staticmethod
     def find_col_index(header_vals: List[Any], search_keywords: Tuple[str, ...]) -> Optional[int]:
-        """在表头行中按关键字找列索引。表头与关键字均做规范化：去空格、小写，兼容「Target Version」等带空格表头。
+        """在表头行中按关键字找列索引。表头与关键字均做规范化：去空格、小写，支持「Target Version」等带空格表头。
         参数: header_vals — 表头行值列表；search_keywords — 列名别名元组。返回: 0-based 列索引或 None。"""
         if not header_vals:
             return None

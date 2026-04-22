@@ -1,0 +1,115 @@
+/*@!Encoding: 936*/
+
+includes
+{
+}
+
+variables
+{
+}
+
+testcase SYS_LDCU_light_001()
+{
+  TestDescription("初始化车型配置-1");
+  g_HIL_Sysvar_Swc_SetOpen("VTS::VT2848_2_Ch24::CurBit 0"); // 测试步骤 Step SetOpen J_DO_LS_DeforstrRly 0
+  g_HIL_Bus_Swc_Set("I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 1"); // 预期结果 Step AutoIncreaseInVal 1 15 2 Set I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq
+  g_HIL_Bus_Swc_Set("I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 3"); // 预期结果 Step AutoIncreaseInVal 1 15 2 Set I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq
+  g_HIL_Bus_Swc_Set("I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 5"); // 预期结果 Step AutoIncreaseInVal 1 15 2 Set I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq
+  g_HIL_Bus_Swc_Set("I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 7"); // 预期结果 Step AutoIncreaseInVal 1 15 2 Set I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq
+  g_HIL_Bus_Swc_Set("I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 9"); // 预期结果 Step AutoIncreaseInVal 1 15 2 Set I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq
+  g_HIL_Bus_Swc_Set("I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 11"); // 预期结果 Step AutoIncreaseInVal 1 15 2 Set I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq
+  g_HIL_Bus_Swc_Set("I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 13"); // 预期结果 Step AutoIncreaseInVal 1 15 2 Set I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq
+  g_HIL_Bus_Swc_Set("I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 15"); // 预期结果 Step AutoIncreaseInVal 1 15 2 Set I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq
+  g_HIL_Sysvar_Swc_SetOpen("VTS::VT2848_2_Ch24::CurBit 1"); // 测试步骤 Step SetOpen J_DO_LS_DeforstrRly 1
+  // Step SetOpen J_DO_LS_DeforstrRly abc // 预期结果io_mapping 解析失败: Values 未匹配: abc
+  teststep("step","Step SetOpen J_DO_LS_DeforstrRly abc");
+  teststepfail("fail","io_mapping 解析失败: Values 未匹配: abc");
+  g_HIL_Bus_Swc_Set("VTS::VT2848_2_Ch26::CurBit 1"); // 测试步骤 Step Set J_DO_HS_KL15_BackUp Active
+  // Step Set_config abc 0x2 // 预期结果Configuration 解析失败: Name 未找到: abc
+  teststep("step","Step Set_config abc 0x2");
+  teststepfail("fail","Configuration 解析失败: Name 未找到: abc");
+  g_HIL_Bus_Swc_Set("VTS::VT2848_2_Ch26::CurBit 3"); // 测试步骤 Step Set J_DO_HS_KL15_BackUp 3
+  g_HIL_Sysvar_Swc_SetOpen("VTS::VT2848_2_Ch7::CurBit 6"); // 预期结果 Step SetOpen J_Hbridge_RightLeverCtr+ 6
+  // Step SetOpen J_Hbridge_RightLeverCtr+ abc // 预期结果io_mapping 解析失败: Values 为空: Name=J_Hbridge_RightLeverCtr+, Value=abc
+  teststep("step","Step SetOpen J_Hbridge_RightLeverCtr+ abc");
+  teststepfail("fail","io_mapping 解析失败: Values 为空: Name=J_Hbridge_RightLeverCtr+, Value=abc");
+  g_HIL_Bus_Swc_Set("VTS::VT2516_5_Ch4::PWMDC > 0.95"); // 测试步骤 Step Set J_PO_LS_LDoorHandleLight_Duty OFF
+  g_HIL_UDS_Swc_Set_Config("CF09Reserve01 0"); // 预期结果 Step Set_config CF09Reserve01 0
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch18::DigitalOutput 1"); // 测试步骤 Step Set J_DI_RDoorInnerSw_LS Active
+  // Step Set_config CF09Reserve01 abc // 预期结果Configuration 解析失败: Values 为空: Name=CF09Reserve01, Value=abc
+  teststep("step","Step Set_config CF09Reserve01 abc");
+  teststepfail("fail","Configuration 解析失败: Values 为空: Name=CF09Reserve01, Value=abc");
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch18::DigitalOutput 0"); // 测试步骤 Step Set J_DI_RDoorInnerSw_LS Inactive
+  g_HIL_Sysvar_Swc_SetOpen("VTS::VT2848_2_Ch24::CurBit 1"); // 预期结果 Step SetRepeatKeyword 10 SetOpen J_DO_LS_DeforstrRly 1
+  g_HIL_Sysvar_Swc_SetOpen("VTS::VT2848_2_Ch24::CurBit 1"); // 预期结果 Step SetRepeatKeyword 10 SetOpen J_DO_LS_DeforstrRly 1
+  g_HIL_Sysvar_Swc_SetOpen("VTS::VT2848_2_Ch24::CurBit 1"); // 预期结果 Step SetRepeatKeyword 10 SetOpen J_DO_LS_DeforstrRly 1
+  g_HIL_Sysvar_Swc_SetOpen("VTS::VT2848_2_Ch24::CurBit 1"); // 预期结果 Step SetRepeatKeyword 10 SetOpen J_DO_LS_DeforstrRly 1
+  g_HIL_Sysvar_Swc_SetOpen("VTS::VT2848_2_Ch24::CurBit 1"); // 预期结果 Step SetRepeatKeyword 10 SetOpen J_DO_LS_DeforstrRly 1
+  g_HIL_Sysvar_Swc_SetOpen("VTS::VT2848_2_Ch24::CurBit 1"); // 预期结果 Step SetRepeatKeyword 10 SetOpen J_DO_LS_DeforstrRly 1
+  g_HIL_Sysvar_Swc_SetOpen("VTS::VT2848_2_Ch24::CurBit 1"); // 预期结果 Step SetRepeatKeyword 10 SetOpen J_DO_LS_DeforstrRly 1
+  g_HIL_Sysvar_Swc_SetOpen("VTS::VT2848_2_Ch24::CurBit 1"); // 预期结果 Step SetRepeatKeyword 10 SetOpen J_DO_LS_DeforstrRly 1
+  g_HIL_Sysvar_Swc_SetOpen("VTS::VT2848_2_Ch24::CurBit 1"); // 预期结果 Step SetRepeatKeyword 10 SetOpen J_DO_LS_DeforstrRly 1
+  g_HIL_Sysvar_Swc_SetOpen("VTS::VT2848_2_Ch24::CurBit 1"); // 预期结果 Step SetRepeatKeyword 10 SetOpen J_DO_LS_DeforstrRly 1
+  g_HIL_UDS_Swc_Set_Config("PhysicalKeyTypeConfig 0x02"); // 测试步骤 Step Set_Config PhysicalKeyTypeConfig BLEPhysicalKeyOnly
+  // Step AutoIncreaseInVal Set J_DO_LS_DeforstrRly 2 100 3 // 预期结果步骤语法错误: AutoIncreaseInVal 数值参数错误: ['Set', 'J_DO_LS_DeforstrRly', '2']
+  teststep("step","Step AutoIncreaseInVal Set J_DO_LS_DeforstrRly 2 100 3");
+  teststepfail("fail","步骤语法错误: AutoIncreaseInVal 数值参数错误: ['Set', 'J_DO_LS_DeforstrRly', '2']");
+  g_HIL_Sysvar_Swc_KeepOpenWithTime("VTS::VT2848_2_Ch25::CurBit 500 ms"); // 测试步骤 Step KeepOpenWithTime J_DO_HS_BMSEmergencyStop 500 ms
+  // Step Clib abc // 预期结果clib表中没有abc
+  teststep("step","Step Clib abc");
+  teststepfail("fail","clib表中没有abc");
+}
+
+testcase SYS_LDCU_light_002()
+{
+  TestDescription("初始化车型配置-1");
+  g_HIL_Sysvar_Swc_SetOpen("VTS::VT2848_2_Ch24::CurBit 0"); // 测试步骤 Step SetOpen J_DO_LS_DeforstrRly 0
+  g_HIL_Sysvar_Swc_SetOpen("VTS::VT2848_2_Ch24::CurBit 1"); // 测试步骤 Step SetOpen J_DO_LS_DeforstrRly 1
+  // Step SetOpen J_DO_LS_DeforstrRly abc // 预期结果io_mapping 解析失败: Values 未匹配: abc
+  teststep("step","Step SetOpen J_DO_LS_DeforstrRly abc");
+  teststepfail("fail","io_mapping 解析失败: Values 未匹配: abc");
+}
+
+testcase SYS_LDCU_light_002_1()
+{
+  TestDescription("初始化车型配置-1");
+  teststep("warning","原始用例id为SYS-LDCU-light-002");
+  g_HIL_Sysvar_Swc_SetOpen("VTS::VT2848_2_Ch24::CurBit 0"); // 测试步骤 Step SetOpen J_DO_LS_DeforstrRly 0
+  g_HIL_Sysvar_Swc_SetOpen("VTS::VT2848_2_Ch24::CurBit 1"); // 测试步骤 Step SetOpen J_DO_LS_DeforstrRly 1
+  // Step SetOpen J_DO_LS_DeforstrRly abc // 预期结果io_mapping 解析失败: Values 未匹配: abc
+  teststep("step","Step SetOpen J_DO_LS_DeforstrRly abc");
+  teststepfail("fail","io_mapping 解析失败: Values 未匹配: abc");
+}
+
+testcase nihao()
+{
+  TestDescription("初始化车型配置-1");
+  teststep("warning","原始用例id为你好");
+  g_HIL_Sysvar_Swc_SetOpen("VTS::VT2848_2_Ch24::CurBit 0"); // 测试步骤 Step SetOpen J_DO_LS_DeforstrRly 0
+  g_HIL_Sysvar_Swc_SetOpen("VTS::VT2848_2_Ch24::CurBit 1"); // 测试步骤 Step SetOpen J_DO_LS_DeforstrRly 1
+  // Step SetOpen J_DO_LS_DeforstrRly abc // 预期结果io_mapping 解析失败: Values 未匹配: abc
+  teststep("step","Step SetOpen J_DO_LS_DeforstrRly abc");
+  teststepfail("fail","io_mapping 解析失败: Values 未匹配: abc");
+}
+
+testcase SYS_LDCU_light_003()
+{
+  TestDescription("初始化车型配置-1");
+  teststep("warning","原始用例id为SYS-（LDCU-light-003");
+  g_HIL_Sysvar_Swc_SetOpen("VTS::VT2848_2_Ch24::CurBit 0"); // 测试步骤 Step SetOpen J_DO_LS_DeforstrRly 0
+  g_HIL_Sysvar_Swc_SetOpen("VTS::VT2848_2_Ch24::CurBit 1"); // 测试步骤 Step SetOpen J_DO_LS_DeforstrRly 1
+  // Step SetOpen J_DO_LS_DeforstrRly abc // 预期结果io_mapping 解析失败: Values 未匹配: abc
+  teststep("step","Step SetOpen J_DO_LS_DeforstrRly abc");
+  teststepfail("fail","io_mapping 解析失败: Values 未匹配: abc");
+}
+
+testcase SYS_LDCU_light_004()
+{
+  TestDescription("初始化车型配置-1");
+  teststep("warning","原始用例id为SYS-LDCU-light-004）");
+  g_HIL_Sysvar_Swc_SetOpen("VTS::VT2848_2_Ch24::CurBit 0"); // 测试步骤 Step SetOpen J_DO_LS_DeforstrRly 0
+  g_HIL_Sysvar_Swc_SetOpen("VTS::VT2848_2_Ch24::CurBit 1"); // 测试步骤 Step SetOpen J_DO_LS_DeforstrRly 1
+  // Step SetOpen J_DO_LS_DeforstrRly abc // 预期结果io_mapping 解析失败: Values 未匹配: abc
+  teststep("step","Step SetOpen J_DO_LS_DeforstrRly abc");
+  teststepfail("fail","io_mapping 解析失败: Values 未匹配: abc");
+}

@@ -24,6 +24,13 @@ class FilterService:
 
     @staticmethod
     def lines_from_ini_value(raw: str) -> List[str]:
+        """将 ini 中某选项的多行文本拆成去空行后的字符串列表（筛选项用）。
+
+        参数：
+            raw — 配置中读出的原始字符串，可为空；按换行切分，忽略仅空白行。
+
+        返回：非空行的列表；raw 为空或仅空白时返回 []。
+        """
         if not raw:
             return []
         out: List[str] = []

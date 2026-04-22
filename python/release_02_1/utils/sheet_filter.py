@@ -21,10 +21,10 @@ def parse_selected_sheets(filter_str: Optional[str]) -> Optional[Dict[str, Set[s
     filter_map: Dict[str, Set[str]] = {}
     if not filter_str or not str(filter_str).strip():
         return None
-    for p in str(filter_str).split(","):
-        if "|" not in p:
+    for selected_item in str(filter_str).split(","):
+        if "|" not in selected_item:
             continue
-        table, sheet = p.split("|", 1)
+        table, sheet = selected_item.split("|", 1)
         table_key = os.path.basename(str(table).strip()).lower()
         sheet_val = str(sheet).strip().lower()
         if not table_key or not sheet_val:

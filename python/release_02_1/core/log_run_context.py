@@ -51,11 +51,11 @@ def reset_run_context() -> None:
     - 清除用于缓存本次“生成任务”日志目录的环境变量，
       使得下一次调用 ensure_run_log_dirs 时一定会基于最新时间戳创建新目录。
     - 清空 caseid_clean_dup 的去重集合，确保二次点击时能写入新日志目录。
-    - 典型用法：在每次任务入口（如 generators.capl_can.entrypoint.main）开始时调用，
+    - 典型用法：在每次任务入口（如 generators.capl_can.entrypoint.run_generation）开始时调用，
       确保每次点击“生成”都会落在全新的 log_YYYYMMDD_HHMMSS 目录中。
     """
-    for key in (ENV_RUN_LOG_ROOT, ENV_RUN_LOG_GEN_DIR, ENV_RUN_LOG_PARSE_DIR, ENV_RUN_LOG_DOMAIN):
-        os.environ.pop(key, None)
+    for item_key in (ENV_RUN_LOG_ROOT, ENV_RUN_LOG_GEN_DIR, ENV_RUN_LOG_PARSE_DIR, ENV_RUN_LOG_DOMAIN):
+        os.environ.pop(item_key, None)
     try:
         reset_dedup_filter()
     except Exception:

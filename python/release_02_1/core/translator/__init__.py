@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-core.translator：领域层翻译器（门面）
+core.translator：领域层翻译器（统一入口）
 
 提供配置与 Excel 映射的加载与查询，供解析器、生成器将“名称”转为“路径/枚举值”：
 

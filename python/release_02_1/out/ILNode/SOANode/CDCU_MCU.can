@@ -1,0 +1,35 @@
+/*@!Encoding:936*/
+includes
+{
+  #include "../SOALib/SOALib_Node.cin"
+}
+
+variables
+{
+  char     SOA_NodeName[512] = "CDCU_MCU";
+  
+  dword    SOA_NodeProtocol = 17;
+  dword    SOA_NodePort = 55130;
+  
+  const SOA_NodeProvidedServiceListNum = 1;
+  struct SOALib_ProvidedServiceType SOA_NodeProvidedServiceList[SOA_NodeProvidedServiceListNum] = 
+  {
+    
+    { 0x0000, 0x00, 0x00, 0x00 }
+    
+  };
+  
+  const SOA_NodeConsumedServiceListNum = 4;
+  struct SOALib_ConsumedServiceType SOA_NodeConsumedServiceList[SOA_NodeConsumedServiceListNum] = 
+  {
+    
+    { 0x0000, 0x00, 0x00, 0x00 },
+    
+    { 0x0055, 0x01, 0x01, 0x00 },
+    
+    { 0x0056, 0x01, 0x01, 0x00 },
+    
+    { 0x0068, 0x01, 0x01, 0x00 }
+    
+  };
+}

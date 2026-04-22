@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""XML 生成调度 service。不再依赖 XMLLegacyHooks，通过 .runtime 委托根脚本实现。"""
+"""XML 生成调度 service，通过 .runtime 委托根脚本实现。"""
 
 from __future__ import annotations
 
@@ -9,34 +9,44 @@ import sys
 import traceback
 
 from core.common.generation_summary import build_ungenerated_reason
-from services.config_constants import DEFAULT_DOMAIN_LR_REAR
+from services.config_constants import (
+    DEFAULT_DOMAIN_LR_REAR,
+    XML_RUNTIME_KEY_ALLOWED_LEVELS,
+    XML_RUNTIME_KEY_ALLOWED_MODELS,
+    XML_RUNTIME_KEY_ALLOWED_PLATFORMS,
+    XML_RUNTIME_KEY_ALLOWED_TARGET_VERSIONS,
+    XML_RUNTIME_KEY_EXCEL_PATH,
+    XML_RUNTIME_KEY_OUTPUT_XML_PATH,
+    XML_RUNTIME_KEY_SELECTED_FILTER,
+)
 
 from . import runtime as xml_generator_runtime
 
 
 class XMLGeneratorService:
-    """接管 XML 旧版主编排流程的 service。"""
+    """接管 XML 主编排流程的 service。"""
 
     @staticmethod
     def build_ungenerated_reason(stats: dict) -> str:
         return build_ungenerated_reason(stats, generated_label="XML文件")
 
-    def run_legacy_pipeline(
+    def run_pipeline(
         self,
         *,
         config_path: str | None = None,
         base_dir: str | None = None,
         domain: str = DEFAULT_DOMAIN_LR_REAR,
+        workbook_cache: dict[str, object] | None = None,
     ):
         resolved_base_dir = xml_generator_runtime.resolve_base_dir(base_dir)
         runtime = xml_generator_runtime.load_runtime_config(config_path, resolved_base_dir, domain)
-        excel_path = runtime["excel_path"]
-        output_xml_path = runtime["output_xml_path"]
-        allowed_levels = runtime["allowed_levels"]
-        allowed_platforms = runtime["allowed_platforms"]
-        allowed_models = runtime["allowed_models"]
-        allowed_target_versions = runtime.get("allowed_target_versions")
-        selected_filter = runtime["selected_filter"]
+        excel_path = runtime[XML_RUNTIME_KEY_EXCEL_PATH]
+        output_xml_path = runtime[XML_RUNTIME_KEY_OUTPUT_XML_PATH]
+        allowed_levels = runtime[XML_RUNTIME_KEY_ALLOWED_LEVELS]
+        allowed_platforms = runtime[XML_RUNTIME_KEY_ALLOWED_PLATFORMS]
+        allowed_models = runtime[XML_RUNTIME_KEY_ALLOWED_MODELS]
+        allowed_target_versions = runtime.get(XML_RUNTIME_KEY_ALLOWED_TARGET_VERSIONS)
+        selected_filter = runtime[XML_RUNTIME_KEY_SELECTED_FILTER]
         logger, old_stdout, old_stderr = xml_generator_runtime.init_runtime_logging(resolved_base_dir)
         progress_level = xml_generator_runtime.get_progress_level()
 
@@ -96,6 +106,7 @@ class XMLGeneratorService:
                         excel_label=excel_label,
                         allowed_sheet_names=None,
                         selected_filter=selected_filter,
+                        workbook_cache=workbook_cache,
                     )
                     excel_stats_map[excel_file] = stats
 

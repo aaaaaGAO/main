@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 运行前校验（Run Validator）
@@ -10,9 +10,10 @@
 from __future__ import annotations
 
 import os
-from typing import TYPE_CHECKING, List, Tuple
+from typing import List, Tuple
 
 from infra.filesystem import resolve_configured_path
+from services.config_manager import ConfigManager
 from services.config_constants import (
     DEFAULT_DOMAIN_LR_REAR,
     LABEL_CIN_CLIB_PATH_CHECK,
@@ -30,6 +31,8 @@ from services.config_constants import (
     OPTION_INPUT_EXCEL_CANDIDATES,
     OPTION_INPUTS,
     OPTION_OUTPUT_DIR,
+    OPTION_SRV_EXCEL,
+    OPTION_SRV_EXCEL_CANDIDATES,
     OPTION_UART_EXCEL,
     OPTION_XML_INPUT_EXCEL,
     SECTION_CENTRAL,
@@ -41,11 +44,10 @@ from services.config_constants import (
     SECTION_IOMAPPING,
 )
 
-if TYPE_CHECKING:
-    from services.config_manager import ConfigManager
-
 
 class RunValidator:
+    """各域在真正生成前对必填项、文件存在与输出可写等做检查；`validate_for_domain` 为入口。"""
+
     DOMAIN_DISPLAY_NAMES = {
         DEFAULT_DOMAIN_LR_REAR: "左右后域",
         SECTION_CENTRAL: "中央域",
@@ -54,10 +56,14 @@ class RunValidator:
 
     @classmethod
     def domain_display_name(cls, domain: str) -> str:
+        """将节名/域常量映射为展示用中文名。参数：domain。返回：中文或原串。"""
         return cls.DOMAIN_DISPLAY_NAMES.get(domain, domain)
 
     @classmethod
     def extract_first_path(cls, raw_value: str) -> str:
+        """
+        从「path|sheet」或分号复合串中取**第一段**作为物理路径。参数：raw_value — 配置里读出的原串。返回：路径文本。
+        """
         text = (raw_value or "").strip()
         if not text:
             return ""
@@ -72,16 +78,17 @@ class RunValidator:
         missing_labels: List[str],
         not_found_pairs: List[Tuple[str, str]],
     ) -> None:
+        """
+        向 `errors` 列表追加人可读缺项/文件不存在信息（不返回新列表）。参数见形参；返回：无。
+        """
         domain_name = cls.domain_display_name(domain)
         if missing_labels:
             errors.append(
                 f"【{domain_name}】必要输入文件未选择：{'、'.join(missing_labels)}。请先补齐后再运行。"
             )
         if not_found_pairs:
-            details = "；".join(f"{label}（{path}）" for label, path in not_found_pairs)
+            details = "；".join(f"{label}（{file_path}）" for label, file_path in not_found_pairs)
             errors.append(f"【{domain_name}】必要输入文件不存在：{details}。请检查文件路径后再运行。")
-
-    """运行前校验器：对各域的必填路径、可写性做前置校验。"""
 
     @staticmethod
     def check_required_path_configured(target_path: str, label: str) -> Tuple[bool, str]:
@@ -266,10 +273,11 @@ class RunValidator:
                         not_found_required_pairs.append((LABEL_CIN_MISSING_LR, resolved_path))
                     else:
                         errors.append(validation_message)
-            srv_excel_raw = (
-                section.get("srv_excel", "").strip()
-                or section.get("Srv_Excel", "").strip()
-            )
+            srv_excel_raw = ""
+            for option_name in (OPTION_SRV_EXCEL, *OPTION_SRV_EXCEL_CANDIDATES):
+                srv_excel_raw = section.get(option_name, "").strip()
+                if srv_excel_raw:
+                    break
             if run_soa and not srv_excel_raw:
                 missing_required_labels.append("服务通信矩阵(srv_excel)")
             if srv_excel_raw:
@@ -319,10 +327,11 @@ class RunValidator:
                     if not is_valid:
                         errors.append(validation_message)
 
-            srv_excel_raw = (
-                section.get("srv_excel", "").strip()
-                or section.get("Srv_Excel", "").strip()
-            )
+            srv_excel_raw = ""
+            for option_name in (OPTION_SRV_EXCEL, *OPTION_SRV_EXCEL_CANDIDATES):
+                srv_excel_raw = section.get(option_name, "").strip()
+                if srv_excel_raw:
+                    break
             if run_soa and not srv_excel_raw:
                 missing_required_labels.append("服务通信矩阵(srv_excel)")
             if srv_excel_raw:
@@ -391,10 +400,11 @@ class RunValidator:
                         not_found_required_pairs.append((LABEL_CIN_MISSING_DTC, resolved_path))
                     else:
                         errors.append(validation_message)
-            srv_excel_raw = (
-                section.get("srv_excel", "").strip()
-                or section.get("Srv_Excel", "").strip()
-            )
+            srv_excel_raw = ""
+            for option_name in (OPTION_SRV_EXCEL, *OPTION_SRV_EXCEL_CANDIDATES):
+                srv_excel_raw = section.get(option_name, "").strip()
+                if srv_excel_raw:
+                    break
             if run_soa and not srv_excel_raw:
                 missing_required_labels.append("服务通信矩阵(srv_excel)")
             if srv_excel_raw:

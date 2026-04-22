@@ -40,19 +40,19 @@ def build_ungenerated_reason(
     if total == 0 and not reasons:
         reasons.append("未读取到任何用例（可能是表格格式问题或文件为空）")
     else:
-        for key, label in (
+        for item_key, label in (
             ("filtered_by_level", "等级过滤"),
             ("filtered_by_platform", "平台过滤"),
             ("filtered_by_model", "车型过滤"),
             ("filtered_by_type", "用例类型过滤"),
         ):
-            value = stats.get(key, 0)
-            if value <= 0:
+            item_value = stats.get(item_key, 0)
+            if item_value <= 0:
                 continue
-            if key == "filtered_by_type":
-                reasons.append(f"{label}：{value}个用例被过滤（非自动测试）")
+            if item_key == "filtered_by_type":
+                reasons.append(f"{label}：{item_value}个用例被过滤（非自动测试）")
             else:
-                reasons.append(f"{label}：{value}个用例被过滤")
+                reasons.append(f"{label}：{item_value}个用例被过滤")
 
         if not reasons and total > 0:
             reasons.append(f"所有{total}个用例均通过过滤，但未生成{generated_label}（可能是其他原因）")
