@@ -42,10 +42,25 @@ if importlib.util.find_spec(logger_module_name) is not None:
 
 
 def ignore_warning_message(_message: str) -> None:
+    """默认忽略关键字读取警告回调。
+
+    参数：
+        _message：告警文本。
+
+    返回：无。
+    """
     return None
 
 
 def create_progress_formatter(format_string: str) -> ProgressFormatter:
+    """创建进度日志格式化器。
+
+    参数：
+        format_string：日志格式字符串。
+
+    返回：
+        `ProgressFormatter` 实例。
+    """
     return ProgressFormatter(format_string)
 
 
@@ -124,6 +139,7 @@ def read_clib_steps(excel_path: str, clib_sheet: Optional[str] = None) -> tuple[
 
 
 def is_numeric_value(value_text: str) -> bool:
+    """判断字符串是否可解析为数值。"""
     try:
         float(value_text)
         return True
@@ -132,6 +148,14 @@ def is_numeric_value(value_text: str) -> bool:
 
 
 def apply_default_param_parsing(args: list[str]) -> list[str]:
+    """对步骤参数应用默认字符串加引号策略。
+
+    参数：
+        args：原始参数列表。
+
+    返回：
+        数字参数保持原样，非数字参数包裹双引号后的列表。
+    """
     parsed = []
     for arg in args:
         parsed.append(arg if is_numeric_value(arg) else f'"{arg}"')
@@ -269,7 +293,7 @@ def generate_content(
     """
     lines = []
     error_records: list = []
-    lines.append("/*@!Encoding:936*/")
+    lines.append("/*@!Encoding:65001*/")
     lines.append("includes")
     lines.append("{")
     if include_files:

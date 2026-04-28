@@ -38,6 +38,7 @@ class ProgressOnlyFilter(logging.Filter):
     """仅允许 PROGRESS_LEVEL 的日志通过。"""
 
     def filter(self, record: logging.LogRecord) -> bool:
+        """仅允许 PROGRESS 级别日志通过。"""
         return record.levelno == PROGRESS_LEVEL
 
 
@@ -45,6 +46,7 @@ class ExcludeProgressFilter(logging.Filter):
     """排除 PROGRESS_LEVEL 的日志。"""
 
     def filter(self, record: logging.LogRecord) -> bool:
+        """过滤掉 PROGRESS 级别日志。"""
         return record.levelno != PROGRESS_LEVEL
 
 
@@ -62,6 +64,7 @@ class SubstringFilter(logging.Filter):
         self.include = include
 
     def filter(self, record: logging.LogRecord) -> bool:
+        """按 include/exclude 模式基于子串匹配过滤日志。"""
         try:
             msg = record.getMessage()
         except Exception:
@@ -82,6 +85,7 @@ class ExcludeSubstringsFilter(logging.Filter):
         self.substrings = tuple(substring for substring in substrings if substring)
 
     def filter(self, record: logging.LogRecord) -> bool:
+        """排除命中子串或重复时间戳解析行的日志。"""
         try:
             msg = record.getMessage()
         except Exception:
@@ -169,6 +173,7 @@ class TeeToLogger:
         self.is_logging_in_progress = False
 
     def write(self, text_chunk: str) -> int:
+        """写入文本并按规则转发到 logger。"""
         if self.use_reentry_guard and self.is_logging_in_progress:
             try:
                 if self.original:
@@ -235,6 +240,7 @@ class TeeToLogger:
         return len(text_chunk)
 
     def flush(self) -> None:
+        """刷新原始输出流。"""
         try:
             if self.original:
                 self.original.flush()

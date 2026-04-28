@@ -34,6 +34,14 @@ def find_header_row_and_cols(ws: Any) -> Tuple[int, dict]:
             return row_index, col_map
     raise RuntimeError("Header row not found (missing required columns).")
 def norm_variant(variant_text: str) -> str:
+    """标准化车型名称用于匹配。
+
+    参数：
+        variant_text：车型文本。
+
+    返回：
+        去空白并转大写后的字符串。
+    """
     return norm_str(variant_text).upper()
 
 
@@ -177,6 +185,19 @@ def flush_did_header(
     last_written_did: Optional[str],
     last_written_len: Optional[int],
 ) -> Tuple[Optional[str], Optional[str], Optional[str], Optional[int]]:
+    """按需写入 DID 段头并更新去重状态。
+
+    参数：
+        out_lines：输出行列表。
+        sheet_name：sheet 名。
+        variant_name：车型名。
+        current_did：当前 DID。
+        current_len：当前 DID 长度。
+        last_written_*：上一次已写入头部状态。
+
+    返回：
+        更新后的 `(sheet, variant, did, did_len)` 状态元组。
+    """
     if current_did is None or current_len is None:
         return last_written_sheet, last_written_variant, last_written_did, last_written_len
 

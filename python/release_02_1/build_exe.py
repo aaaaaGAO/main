@@ -69,7 +69,9 @@ hidden_imports = [
     'generators.capl_didconfig.entrypoint',
     'generators.capl_uart.entrypoint',
     'generators.capl_soa.entrypoint',
+    'generators.capl_soa.soa_setserver_cin',
     'generators.capl_soa',
+    'services.central_programmatic_route_service',
     'generators.capl_didconfig',
     'generators.capl_didconfig.service',
     # 领域层（原根目录模块已迁入 core）

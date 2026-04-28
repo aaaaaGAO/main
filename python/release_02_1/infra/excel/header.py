@@ -129,6 +129,14 @@ def find_header_row_and_col_indices(
 
 
 class TestCaseHeaderResolver:
+    """测试用例表头解析工具集合。
+
+    参数：
+        通过类常量维护各业务列别名。
+
+    返回：
+        提供静态方法用于定位表头行与关键列索引。
+    """
     CASE_ID_ALIASES = ("用例ID", "用例id", "用例编号", "用例 ID")
     GROUP_ALIASES = ("功能模块", "模块", "模块名称")
     LEVEL_ALIASES = ("等级", "用例等级")

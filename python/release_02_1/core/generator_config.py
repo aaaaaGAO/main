@@ -22,8 +22,6 @@ from infra.filesystem import resolve_fixed_config_path, resolve_main_config_path
 
 
 class GeneratorConfig:
-    CONFIG_CACHE: dict[tuple[str, str, bool], tuple[float, float, configparser.ConfigParser, dict[str, str]]] = {}
-
     """
     生成器配置封装类。
 
@@ -37,7 +35,16 @@ class GeneratorConfig:
       config.load()
       value = config.get("PATHS", "Output_Dir", fallback="./output")
       mapping_excel = config.get_fixed("mapping_excel") or config.get("PATHS", "Mapping_Excel", fallback="")
+
+    参数：
+      base_dir：项目根目录，用于解析主配置与固定配置路径。
+      config_path：可选主配置绝对/相对路径；未传时按默认规则查找。
+      tolerant_duplicates：为 True 时使用容忍重复键读取，避免历史配置重复项导致解析失败。
+
+    返回：
+      本类实例提供统一的配置读取能力，供各生成器调用。
     """
+    CONFIG_CACHE: dict[tuple[str, str, bool], tuple[float, float, configparser.ConfigParser, dict[str, str]]] = {}
 
     def __init__(
         self,

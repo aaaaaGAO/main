@@ -83,6 +83,11 @@ class ConfigCenter:
         self.initialized = True
 
     def load(self) -> None:
+        """加载主配置与固定配置到内存。
+
+        参数：无（使用实例上的 `base_dir_value`）。
+        返回：无。
+        """
         self.config_path = resolve_main_config_path(self.base_dir_value)
         if self.config_path:
             self.raw_config = read_config_if_exists(self.config_path)
@@ -99,6 +104,7 @@ class ConfigCenter:
 
     @property
     def base_dir(self) -> str:
+        """返回配置中心绑定的工程根目录。"""
         return self.base_dir_value
 
     def get(self, section: str, item_key: str, fallback: str = "") -> str:
@@ -124,9 +130,11 @@ class ConfigCenter:
         return Path(normalized)
 
     def has_section(self, section: str) -> bool:
+        """判断主配置是否存在指定节。"""
         return self.raw_config.has_section(section)
 
     def has_option(self, section: str, item_key: str) -> bool:
+        """判断主配置节内是否存在指定选项。"""
         return self.raw_config.has_option(section, item_key)
 
     @staticmethod

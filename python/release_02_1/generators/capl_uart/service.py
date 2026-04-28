@@ -19,6 +19,17 @@ class UARTGeneratorService:
     """接管 UART 主编排流程的 service。"""
 
     def run_pipeline(self, *, workbook_cache: dict[str, Any] | None = None) -> None:
+        """执行 UART 生成主流程并按需复用工作簿缓存。
+
+        功能：完成「读配置 -> 读取 UART 矩阵 -> 生成文本 -> 写入 Uart.txt」全流程；
+        当传入 ``workbook_cache`` 时，优先复用同流程内已打开的工作簿，避免重复 load。
+
+        参数：
+            workbook_cache：可选的工作簿缓存字典；键为规范化后的 Excel 绝对路径，
+                值为已打开的 workbook 对象。为 ``None`` 时按原行为单次打开并在函数结束关闭。
+
+        返回：无。异常时抛出原始异常，供上层任务编排记录失败详情。
+        """
         rt.flush_std_streams()
         base_dir, config_path = rt.resolve_runtime_paths()
 

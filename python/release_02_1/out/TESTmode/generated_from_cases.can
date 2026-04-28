@@ -1,9 +1,0 @@
-/*@!Encoding:936*/
-/*@!Encoding:936*/
-includes
-{
-  #include "..\..\..\Public\TESTmode\TestMoudleControl\TestMoudleControl_Swc.cin"
-  #include "..\..\..\Public\ILNode\SecOc\CAN\LDCU.cin"
-  #include "generated_from_keyword.cin"
-  #include "Testcases\generated_from_cases_pythongongjuzhuanyijiaoyan_V1_0_-_fuben_TC.can"
-}

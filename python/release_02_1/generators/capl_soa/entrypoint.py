@@ -7,6 +7,7 @@ SOA Node 生成入口（中央域）：
 
 from __future__ import annotations
 
+import logging
 import os
 from typing import Any
 
@@ -15,29 +16,62 @@ from infra.excel.workbook import ExcelService
 from infra.filesystem.pathing import (
     RuntimePathResolver,
     resolve_configured_path,
-    resolve_target_subdir,
+    resolve_output_dir_relative_path,
 )
 from core.generator_config import GeneratorConfig
+from generators.capl_soa.soa_setserver_cin import generate_setserver_cin_from_excel
 from services.config_constants import (
     OPTION_OUTPUT_DIR,
     OPTION_SRV_EXCEL,
     OPTION_SRV_EXCEL_CANDIDATES,
 )
+from utils.logger import PROGRESS_LEVEL
+
+SOA_LOGGER_NAME = "generate_soa_startsetserver"
+logger = logging.getLogger(SOA_LOGGER_NAME)
 
 
 def normalize_text(item_value: Any) -> str:
+    """将单元格值规范为去空白字符串。
+
+    参数：
+        item_value：任意原始值（可为 None）。
+
+    返回：
+        清理后的字符串；None 返回空串。
+    """
     if item_value is None:
         return ""
     return str(item_value).strip()
 
 
 def resolve_base_and_config(base_dir: str | None, config_path: str | None) -> GeneratorConfig:
+    """解析运行根目录并加载生成器配置。
+
+    参数：
+        base_dir：可选项目根目录。
+        config_path：可选主配置路径。
+
+    返回：
+        已加载完成的 `GeneratorConfig` 实例。
+    """
     resolved_base_dir = RuntimePathResolver.resolve_base_dir(__file__, base_dir)
     resolved_config_path = RuntimePathResolver.resolve_config_path(resolved_base_dir, config_path)
     return GeneratorConfig(resolved_base_dir, config_path=resolved_config_path).load()
 
 
 def load_paths(gconfig: GeneratorConfig, base_dir: str, domain: str) -> tuple[str, str]:
+    """读取 SOA 输入矩阵与输出目录。
+
+    参数：
+        gconfig：已加载配置对象。
+        base_dir：项目根目录。
+        domain：配置域名（通常 CENTRAL）。
+
+    返回：
+        `(excel_path, soa_output_dir)` 元组。其中 `soa_output_dir` 规则为：
+        以用户配置 `output_dir` 的上一级目录为根，拼接 `public/ILNode/SOANode`。
+    """
     srv_excel = ""
     for option_name in (OPTION_SRV_EXCEL, *OPTION_SRV_EXCEL_CANDIDATES):
         srv_excel = gconfig.get_from_section(domain, option_name, fallback="").strip()
@@ -47,17 +81,50 @@ def load_paths(gconfig: GeneratorConfig, base_dir: str, domain: str) -> tuple[st
         raise ValueError(f"未配置 [{domain}] srv_excel（服务通信矩阵）")
     output_dir = gconfig.get_required_from_section(domain, OPTION_OUTPUT_DIR).strip()
     excel_path = resolve_configured_path(base_dir, srv_excel)
-    # 与 Configuration 路径策略保持一致：目录不存在时直接报错，不自动创建。
-    ilnode_dir = resolve_target_subdir(base_dir, output_dir, "ILNode")
-    soa_output_dir = resolve_target_subdir(ilnode_dir, ".", "SOANode")
+
+    # SOA Node 路径规则：
+    # 1) 取用户 output_dir 绝对路径；
+    # 2) 取其上一级目录；
+    # 3) 拼接 public/ILNode/SOANode；
+    # 4) 若目标目录不存在则直接报错，不自动创建。
+    soa_output_dir = resolve_output_dir_relative_path(
+        base_dir,
+        output_dir,
+        ("public", "ILNode", "SOANode"),
+        anchor_level="parent",
+        required=True,
+    )
     return excel_path, soa_output_dir
 
 
-def read_variables_list_from_excel(excel_path: str) -> list[dict[str, Any]]:
-    workbook = ExcelService.open_workbook(excel_path, data_only=True, read_only=False)
+def read_variables_list_from_excel(
+    excel_path: str,
+    *,
+    workbook_cache: dict[str, Any] | None = None,
+) -> list[dict[str, Any]]:
+    """从 Service_Deployment 工作表提取节点变量列表。
+
+    参数：
+        excel_path：服务通信矩阵 Excel 路径。
+        workbook_cache：可选工作簿缓存；传入时优先复用已打开 workbook，
+            并由调用方统一关闭。
+
+    返回：
+        节点变量字典列表，供模板渲染生成 `.can` 文件。
+    """
+    normalized_excel_path = os.path.normcase(os.path.abspath(excel_path))
+    should_close_workbook = workbook_cache is None
+    workbook = None
+    if workbook_cache is not None:
+        workbook = workbook_cache.get(normalized_excel_path)
+    if workbook is None:
+        workbook = ExcelService.open_workbook(normalized_excel_path, data_only=True, read_only=False)
+        if workbook_cache is not None:
+            workbook_cache[normalized_excel_path] = workbook
     if "Service_Deployment" not in workbook.sheetnames:
-        workbook.close()
-        raise ValueError(f"服务通信矩阵缺少工作表 Service_Deployment: {excel_path}")
+        error_message = f"服务通信矩阵缺少工作表 Service_Deployment: {normalized_excel_path}"
+        logger.error(error_message)
+        raise ValueError(error_message)
     sheet = workbook["Service_Deployment"]
 
     node_name_col = 0
@@ -122,7 +189,8 @@ def read_variables_list_from_excel(excel_path: str) -> list[dict[str, Any]]:
                 {"ServiceId": service_id, "InstanceId": instance_id, "Major": major, "Minor": minor}
             )
 
-    workbook.close()
+    if should_close_workbook:
+        workbook.close()
     for node in node_data.values():
         node["ProvidedServiceListNum"] = str(len(node["ProvidedServiceList"]))
         node["ConsumedServiceListNum"] = str(len(node["ConsumedServiceList"]))
@@ -130,13 +198,21 @@ def read_variables_list_from_excel(excel_path: str) -> list[dict[str, Any]]:
 
 
 def render_nodes_to_files(variables_list: list[dict[str, Any]], output_dir: str) -> None:
+    """将节点变量列表渲染并写入 SOA Node 文件。
+
+    参数：
+        variables_list：节点变量数据列表。
+        output_dir：输出目录。
+
+    返回：无。
+    """
     template_dir = os.path.join(os.path.dirname(__file__), "templates")
     env = Environment(loader=FileSystemLoader(template_dir), autoescape=False)
     template = env.get_template("Node.template")
     for variables in variables_list:
         output_path = os.path.join(output_dir, f"{variables['NodeName']}.can")
         rendered = template.render(**variables)
-        with open(output_path, "w", encoding="utf-8", newline="\r\n") as file_obj:
+        with open(output_path, "w", encoding="utf-8-sig", newline="\r\n") as file_obj:
             file_obj.write(rendered)
 
 
@@ -144,15 +220,43 @@ def run_generation(
     config_path: str | None = None,
     base_dir: str | None = None,
     domain: str = "CENTRAL",
-) -> None:
+    *,
+    workbook_cache: dict[str, Any] | None = None,
+) -> GeneratorConfig:
+    """执行 SOA 节点生成主流程。
+
+    参数：
+        config_path：可选配置路径。
+        base_dir：可选项目根目录。
+        domain：生成域，默认 `CENTRAL`。
+        workbook_cache：可选工作簿缓存字典；用于同一流程内复用已打开 Excel。
+
+    返回：
+        本流程已加载的 `GeneratorConfig` 实例，供调用方复用，避免同一次任务内再次 `load`。
+    """
     gconfig = resolve_base_and_config(base_dir, config_path)
     resolved_base_dir = gconfig.base_dir
     excel_path, output_dir = load_paths(gconfig, resolved_base_dir, domain)
     if not os.path.isfile(excel_path):
         raise FileNotFoundError(f"服务通信矩阵不存在: {excel_path}")
-    variables_list = read_variables_list_from_excel(excel_path)
+    variables_list = read_variables_list_from_excel(excel_path, workbook_cache=workbook_cache)
     render_nodes_to_files(variables_list, output_dir)
-    print(f"[soa] 生成完成：{len(variables_list)} 个节点文件，输出目录: {output_dir}")
+    logger.log(PROGRESS_LEVEL, "SOA 生成完成：%s 个节点文件，输出目录: %s", len(variables_list), output_dir)
+    return gconfig
+
+
+def run_setserver_cin_generation(excel_path: str, anchor_path: str) -> str:
+    """根据 Service_Interface 工作表生成 ``SOA_StartSetserver.cin``。
+
+    参数：
+        excel_path — 接口定义 Excel（须含 ``Service_Interface`` 表）。
+        anchor_path — 锚点路径；将其视为 `output_dir`（文件则取所在目录），
+            并按严格模式写入 ``output_dir/TESTmode``。
+
+    返回：
+        已写入文件的绝对路径。
+    """
+    return generate_setserver_cin_from_excel(excel_path, anchor_path)
 
 
 class SOAGenerationUtility:
@@ -164,6 +268,7 @@ class SOAGenerationUtility:
     read_variables_list_from_excel = staticmethod(read_variables_list_from_excel)
     render_nodes_to_files = staticmethod(render_nodes_to_files)
     run_generation = staticmethod(run_generation)
+    run_setserver_cin_generation = staticmethod(run_setserver_cin_generation)
 
 
 def run_cli(
@@ -171,6 +276,15 @@ def run_cli(
     base_dir: str | None = None,
     domain: str = "CENTRAL",
 ) -> None:
+    """命令行入口封装。
+
+    参数：
+        config_path：可选配置路径。
+        base_dir：可选项目根目录。
+        domain：生成域。
+
+    返回：无。
+    """
     run_generation(config_path=config_path, base_dir=base_dir, domain=domain)
 
 

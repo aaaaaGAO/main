@@ -40,6 +40,16 @@ def get_run_domain() -> str | None:
 
 @dataclass(frozen=True)
 class RunLogDirs:
+    """运行期日志目录信息。
+
+    参数：
+        root_dir：本次运行根日志目录（`log/log_YYYYMMDD_HHMMSS`）。
+        gen_dir：生成文件日志目录（`生成文件日志`）。
+        parse_dir：解析表格日志目录（`解析表格日志`）。
+
+    返回：
+        用于在调用链间传递目录路径的只读数据对象。
+    """
     root_dir: str     # log/log_YYYYMMDD_HHMMSS
     gen_dir: str      # .../生成文件日志
     parse_dir: str    # .../解析表格日志

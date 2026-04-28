@@ -8,8 +8,8 @@ import os
 
 from infra.filesystem.pathing import (
     RuntimePathResolver,
+    resolve_output_dir_relative_path,
     resolve_runtime_path,
-    resolve_target_subdir,
 )
 from infra.excel.workbook import ExcelService
 
@@ -48,6 +48,15 @@ class CINEntrypointSupport:
 
     @staticmethod
     def load_runtime_config(base_dir: str, domain: str = DEFAULT_DOMAIN_LR_REAR) -> dict:
+        """加载 CIN 运行所需配置与路径。
+
+        参数：
+            base_dir：项目根目录。
+            domain：生成域（LR_REAR/CENTRAL/DTC）。
+
+        返回：
+            CIN 运行时键值字典（输入 Excel、映射表、输出目录等）。
+        """
         gconfig = GeneratorConfig(base_dir).load()
         config_path = RuntimePathResolver.resolve_config_path(base_dir, gconfig.config_path)
         if not os.path.exists(config_path):
@@ -158,7 +167,13 @@ class CINEntrypointSupport:
         if mapping_excel_file.startswith("./"):
             mapping_excel_file = mapping_excel_file[2:]
         mapping_excel_path = resolve_runtime_path(base_dir, mapping_excel_file)
-        output_dir = resolve_target_subdir(base_dir, output_dir, "TESTmode")
+        output_dir = resolve_output_dir_relative_path(
+            base_dir,
+            output_dir,
+            ("TESTmode",),
+            anchor_level="self",
+            required=True,
+        )
 
         return {
             CIN_RUNTIME_KEY_CONFIG_PATH: config_path,
@@ -173,6 +188,15 @@ class CINEntrypointSupport:
 
     @staticmethod
     def detect_sheet_title(input_excel_path: str, input_sheet: str | None) -> str:
+        """探测实际使用的工作表标题。
+
+        参数：
+            input_excel_path：输入 Excel 路径。
+            input_sheet：配置中的目标 sheet，可为空。
+
+        返回：
+            可用的 sheet 标题；失败时回退到传入值或“未知”。
+        """
         try:
             wb_temp = ExcelService.open_workbook(input_excel_path, data_only=True, read_only=True)
             ws_temp = wb_temp.active
@@ -188,6 +212,17 @@ class CINEntrypointSupport:
 
     @staticmethod
     def load_mapping_context(cfg, base_dir: str, config_path: str, domain: str = DEFAULT_DOMAIN_LR_REAR):
+        """加载 CIN 所需映射上下文。
+
+        参数：
+            cfg：配置对象。
+            base_dir：项目根目录。
+            config_path：配置文件路径。
+            domain：生成域。
+
+        返回：
+            `(io_mapping, config_enum)` 元组。
+        """
         mapping_ctx = MappingContext.from_config(
             cfg,
             base_dir=base_dir,

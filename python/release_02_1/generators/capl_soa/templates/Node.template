@@ -1,4 +1,4 @@
-/*@!Encoding:936*/
+/*@!Encoding:65001*/
 includes
 {
   #include "../SOALib/SOALib_Node.cin"

@@ -12,6 +12,7 @@ from __future__ import annotations
 import os
 import sys
 from dataclasses import dataclass
+from typing import Iterable, Literal
 
 MAIN_CONFIG_CANDIDATE_NAMES = ("Configuration.ini",)
 FIXED_CONFIG_CANDIDATE_NAMES = ("FixedConfig.ini",)
@@ -52,6 +53,16 @@ class ProjectPaths:
         config_filename: str = "Configuration.ini",
         fixed_config_filename: str = "FixedConfig.ini",
     ) -> "ProjectPaths":
+        """从工程根目录构造标准路径对象。
+
+        参数：
+            base_dir：工程根目录。
+            config_filename：主配置文件名。
+            fixed_config_filename：固定配置文件名。
+
+        返回：
+            `ProjectPaths` 实例。
+        """
         return cls(
             base_dir=os.path.abspath(base_dir),
             config_filename=config_filename,
@@ -60,14 +71,17 @@ class ProjectPaths:
 
     @property
     def config_dir(self) -> str:
+        """返回 config 目录绝对路径。"""
         return os.path.join(self.base_dir, "config")
 
     @property
     def config_path(self) -> str:
+        """返回主配置文件路径。"""
         return os.path.join(self.config_dir, self.config_filename)
 
     @property
     def fixed_config_path(self) -> str:
+        """返回固定配置文件路径。"""
         return os.path.join(self.config_dir, self.fixed_config_filename)
 
 
@@ -91,6 +105,15 @@ def build_candidate_names(
     preferred_name: str | None,
     default_names: tuple[str, ...],
 ) -> tuple[str, ...]:
+    """构造候选文件名序列。
+
+    参数：
+        preferred_name：优先文件名，可为空。
+        default_names：默认候选文件名元组。
+
+    返回：
+        去重后的候选文件名元组（优先名在前）。
+    """
     candidate_names: list[str] = []
     if preferred_name:
         candidate_names.append(preferred_name)
@@ -105,6 +128,17 @@ def resolve_config_file_path(
     preferred_name: str | None,
     default_names: tuple[str, ...],
 ) -> str:
+    """解析配置文件最终路径。
+
+    参数：
+        base_dir：工程根目录。
+        explicit_path：显式路径，优先级最高。
+        preferred_name：优先文件名。
+        default_names：默认候选文件名。
+
+    返回：
+        解析后的配置文件路径（绝对路径）。
+    """
     if explicit_path is not None:
         return os.path.abspath(explicit_path)
 
@@ -283,4 +317,82 @@ def resolve_target_subdir(base_dir: str, configured_dir: str, subdir_name: str) 
     )
     print(error_msg)
     raise RuntimeError(error_msg)
+
+
+def resolve_output_dir_relative_path(
+    base_dir: str,
+    configured_output_dir: str,
+    relative_parts: Iterable[str],
+    *,
+    anchor_level: Literal["self", "parent"] = "self",
+    create_dir: bool = False,
+    required: bool = True,
+) -> str:
+    """按 output_dir 统一规则解析目标路径。
+
+    功能：
+    - 先解析 `configured_output_dir` 为绝对路径并校验其存在；
+    - 根据 `anchor_level` 选择以 `output_dir` 本身或其上一级为锚点；
+    - 在锚点后拼接 `relative_parts`，可选自动创建目录；
+    - 在 `required=True` 时，目标不存在会抛 `RuntimeError`。
+
+    参数：
+    - base_dir：工程根目录。
+    - configured_output_dir：配置中的 output_dir（相对或绝对）。
+    - relative_parts：要拼接的相对路径片段序列。
+    - anchor_level：`"self"` 表示在 output_dir 下拼，`"parent"` 表示在 output_dir 上一级下拼。
+    - create_dir：为 True 时自动创建目标目录。
+    - required：为 True 时目标目录不存在直接抛错；为 False 则直接返回目标路径。
+
+    返回：
+    - str：解析后的目标绝对路径。
+    """
+    output_dir_abs = resolve_configured_path(base_dir, configured_output_dir)
+    if not output_dir_abs or not os.path.isdir(output_dir_abs):
+        raise RuntimeError(f"错误：output_dir 目录不存在: {output_dir_abs or configured_output_dir}")
+
+    anchor_dir = output_dir_abs if anchor_level == "self" else os.path.dirname(output_dir_abs)
+    target_path = os.path.abspath(os.path.join(anchor_dir, *tuple(relative_parts)))
+
+    if create_dir:
+        os.makedirs(target_path, exist_ok=True)
+
+    if required and not os.path.isdir(target_path):
+        raise RuntimeError(f"错误：目标目录不存在: {target_path}")
+
+    return target_path
+
+
+def resolve_output_relative_dir(
+    base_dir: str,
+    configured_output_dir: str,
+    relative_parts: tuple[str, ...],
+    *,
+    create_dir: bool = False,
+) -> str:
+    """在用户 output_dir 下按相对目录链解析目标目录。
+
+    参数：
+        base_dir：工程根目录。
+        configured_output_dir：配置中的 output_dir。
+        relative_parts：相对目录段元组，如 ("TESTmode",) 或 ("Public","TESTmode","Bus")。
+        create_dir：为 True 时自动创建目录；否则目录不存在即报错。
+
+    返回：
+        目标目录绝对路径。
+    """
+    output_dir_abs = resolve_configured_path(base_dir, configured_output_dir)
+    if not output_dir_abs or not os.path.isdir(output_dir_abs):
+        raise RuntimeError(f"错误：output_dir 目录不存在: {output_dir_abs or configured_output_dir}")
+
+    target_dir = os.path.join(output_dir_abs, *relative_parts)
+    if create_dir:
+        os.makedirs(target_dir, exist_ok=True)
+        return os.path.abspath(target_dir)
+    if not os.path.isdir(target_dir):
+        raise RuntimeError(
+            f"错误：输出目录不存在: {target_dir}\n"
+            f"请确保已创建 {'/'.join(relative_parts)}。"
+        )
+    return os.path.abspath(target_dir)
 

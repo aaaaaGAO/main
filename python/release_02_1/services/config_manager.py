@@ -12,6 +12,7 @@
 from __future__ import annotations
 
 import configparser
+import logging
 import os
 import re
 import threading
@@ -30,6 +31,7 @@ from infra.filesystem import (
 from services.derived_config_files_service import DerivedConfigFilesService
 from services.config_constants import (
     CENTRAL_SAVE_NORMALIZE_OPTION_NAMES,
+    DEPRECATED_INPUT_EXCEL_DIR_OPTION_CANDIDATES,
     DEFAULT_UDS_FILENAME,
     CENTRAL_MANAGED_KEYS,
     CENTRAL_UART_UI_KEY_MAP,
@@ -56,6 +58,8 @@ from services.config_constants import (
     OPTION_IGNITION_CYCLE_WAIT_TIME,
     OPTION_LOG_LEVEL_MIN,
     OPTION_OUTPUT_DIR,
+    OPTION_SOA_DATATAB_OUTPUT_FILENAME,
+    OPTION_SOA_SETSERVER_OUTPUT_FILENAME,
     OPTION_SELECTED_SHEETS,
     OPTION_SRV_EXCEL,
     OPTION_UDS_ECU_QUALIFIER,
@@ -102,6 +106,9 @@ from services.config_constants import (
 )
 
 
+logger = logging.getLogger(__name__)
+
+
 def clean_duplicate_sections(config_path: str) -> List[str]:
     """
     清理配置文件中的重复节和重复选项，保留第一个出现的节和选项。
@@ -114,7 +121,7 @@ def clean_duplicate_sections(config_path: str) -> List[str]:
         with open(config_path, "r", encoding="utf-8") as config_file:
             lines = config_file.readlines()
     except Exception as error:
-        print(f"读取配置文件失败: {error}")
+        logger.warning("读取配置文件失败: %s", error, exc_info=True)
         return []
 
     seen_sections: set = set()
@@ -133,7 +140,7 @@ def clean_duplicate_sections(config_path: str) -> List[str]:
             first_section_found = True
 
             if section_name in seen_sections:
-                print(f"检测到重复节 [{section_name}]，跳过重复部分")
+                logger.warning("检测到重复节 [%s]，跳过重复部分", section_name)
                 in_duplicate_section = True
                 current_section = None
             else:
@@ -203,7 +210,7 @@ def clear_invalid_config_options(config: configparser.ConfigParser) -> None:
         ]
         for option_name in invalid_option_names:
             config.set(section, option_name, "")
-            print(f"已置空无效配置项 [{section}] {option_name}")
+            logger.info("已置空无效配置项 [%s] %s", section, option_name)
 
 
 class ConfigManager:
@@ -251,9 +258,19 @@ class ConfigManager:
         return cls(base_dir, config_path=None)
 
     def get_fixed_config_path(self) -> str:
+        """返回固定配置文件绝对路径。
+
+        参数：无。
+        返回：`FixedConfig.ini` 绝对路径字符串。
+        """
         return resolve_fixed_config_path(self.base_dir)
 
     def read_fixed_config(self) -> Dict[str, str]:
+        """读取固定配置字典。
+
+        参数：无。
+        返回：固定配置键值字典，键值均为字符串。
+        """
         return read_fixed_config(self.base_dir)
 
     def write_fixed_config(self, fixed_config: Dict[str, str]) -> None:
@@ -276,7 +293,10 @@ class ConfigManager:
         output_keys = [
             "output_filename", "cin_output_filename", "xml_output_filename",
             "didinfo_output_filename", "didconfig_output_filename",
-            "uart_output_filename", "uds_output_filename", "didinfo_variants",
+            "uart_output_filename", "uds_output_filename",
+            OPTION_SOA_SETSERVER_OUTPUT_FILENAME,
+            OPTION_SOA_DATATAB_OUTPUT_FILENAME,
+            "didinfo_variants",
         ]
         for option_name in output_keys:
             if fixed_config.get(option_name):
@@ -324,7 +344,7 @@ class ConfigManager:
                     uds_file.write("[UDS]\n")
                     uds_file.write(f"ECU_qualifier={uds_qualifier}\n")
             except Exception as error:
-                print(f"写入 uds.txt 失败 ({section}): {error}")
+                logger.warning("写入 uds.txt 失败 (%s): %s", section, error, exc_info=True)
 
     def resolve_output_subdir(
         self,
@@ -333,6 +353,16 @@ class ConfigManager:
         *,
         create_dir: bool = False,
     ) -> Optional[str]:
+        """解析输出目录下的指定子目录路径。
+
+        参数：
+            output_dir：配置中的输出目录。
+            subdir_name：子目录名（如 ``Configuration``）。
+            create_dir：为 True 时自动创建目录。
+
+        返回：
+            子目录绝对路径；无法解析时返回 ``None``。
+        """
         return resolve_named_subdir(
             self.base_dir,
             output_dir,
@@ -383,7 +413,7 @@ class ConfigManager:
 
     @staticmethod
     def has_relay_config(relay: Any) -> bool:
-        """判断单个继电器是否算已配置：须填写串口 port，或 relayID / id（前端继电器行主键）。
+        """判断单个继电器是否算已配置：须填写串口 port，或存在 relayID/id。
 
         仅含 relayType / 默认 coilStatuses（UI 渲染时自动补全）不算，否则用户未选串口
         或 ini 中残留骨架仍会触发生成 PowerRelayConfig.txt。
@@ -395,12 +425,21 @@ class ConfigManager:
             return True
         relay_id = relay.get("relayID")
         if relay_id is None:
+            # 兼容前端历史口径：保存态常使用 id 作为继电器行标识。
             relay_id = relay.get("id")
         if relay_id is not None and str(relay_id).strip() != "":
             return True
         return False
 
     def load_central_ui_json_fields(self, out: Dict[str, Any], section_data: Dict[str, Any]) -> None:
+        """将 CENTRAL 节中的 JSON 类配置加载到前端状态字典。
+
+        参数：
+            out：待写入的前端状态字典（就地修改）。
+            section_data：CENTRAL 节扁平键值字典。
+
+        返回：无。
+        """
         power = self.parse_json_value(section_data.get(OPTION_C_PWR, ""), {})
         if isinstance(power, dict) and (power.get("port") or "").strip():
             out[OPTION_C_PWR] = power
@@ -426,6 +465,11 @@ class ConfigManager:
         self.derived_config_files_service.write_central_config_files(config)
 
     def init_fixed_config_from_main_config(self) -> None:
+        """当固定配置缺失时，从主配置 PATHS 节初始化固定配置。
+
+        参数：无。
+        返回：无。仅在初始化条件满足时写入固定配置文件。
+        """
         if os.path.exists(self.get_fixed_config_path()) or not os.path.exists(self.main_config_read_path):
             return
         try:
@@ -435,7 +479,10 @@ class ConfigManager:
                 item_keys = [
                     "unified_mapping_excel", "mapping_sheets", "cin_mapping_sheet",
                     "output_filename", "cin_output_filename", "xml_output_filename",
-                    "didinfo_output_filename", "didconfig_output_filename", "didinfo_variants",
+                    "didinfo_output_filename", "didconfig_output_filename",
+                    OPTION_SOA_SETSERVER_OUTPUT_FILENAME,
+                    OPTION_SOA_DATATAB_OUTPUT_FILENAME,
+                    "didinfo_variants",
                     "mapping_excel", "cin_mapping_excel",
                 ]
                 for option_name in item_keys:
@@ -446,7 +493,7 @@ class ConfigManager:
             if fixed_config_values:
                 self.write_fixed_config(fixed_config_values)
         except Exception as error:
-            print(f"从主配置初始化固定配置失败: {error}")
+            logger.warning("从主配置初始化固定配置失败: %s", error, exc_info=True)
 
     def reload_config_internal(self) -> configparser.ConfigParser:
         """读入配置并做去重后写回，再解析返回 ConfigParser。"""
@@ -467,6 +514,15 @@ class ConfigManager:
 
     @staticmethod
     def ui_state_key(prefix: str, option_name: str) -> str:
+        """构造前端状态键名。
+
+        参数：
+            prefix：键名前缀（如 ``c`` / ``d``）。
+            option_name：原始字段名。
+
+        返回：
+            组合后的状态键名；无前缀时返回原字段名。
+        """
         return f"{prefix}_{option_name}" if prefix else option_name
 
     @classmethod
@@ -480,6 +536,18 @@ class ConfigManager:
         include_cin: bool = False,
         include_uds: bool = True,
     ) -> None:
+        """将标准域字段批量映射为前端状态键。
+
+        参数：
+            out：目标状态字典（就地修改）。
+            section_data：配置节键值字典。
+            prefix：状态键前缀。
+            include_didinfo：是否映射 DIDInfo 输入字段。
+            include_cin：是否映射 CIN 输入字段。
+            include_uds：是否映射 UDS qualifier 字段。
+
+        返回：无。
+        """
         out[cls.ui_state_key(prefix, "input")] = section_data.get(OPTION_INPUT_EXCEL, "")
         out[cls.ui_state_key(prefix, UI_FIELD_OUT_ROOT)] = section_data.get(OPTION_OUTPUT_DIR, "")
         out[cls.ui_state_key(prefix, UI_FIELD_LEVELS)] = section_data.get(OPTION_CASE_LEVELS, "ALL")
@@ -651,6 +719,15 @@ class ConfigManager:
 
     @classmethod
     def is_effectively_empty_value(cls, option: str, item_value: Any) -> bool:
+        """判断某配置值是否应视为空并写回空串。
+
+        参数：
+            option：配置项名。
+            item_value：配置项值。
+
+        返回：
+            应视为空返回 True，否则 False。
+        """
         if item_value in (None, "", [], {}):
             return True
         return option == OPTION_C_RLY and cls.is_relay_list_effectively_empty(item_value)
@@ -662,6 +739,16 @@ class ConfigManager:
         section_values: Dict[str, Any],
         managed_keys: List[str],
     ) -> None:
+        """对 CENTRAL 托管键执行缺失/空值清空策略。
+
+        参数：
+            config：目标配置对象。
+            section：节名（通常为 CENTRAL）。
+            section_values：本次提交的节数据。
+            managed_keys：需要托管清空的键列表。
+
+        返回：无。符合条件的键会被置空串。
+        """
         for managed_key in managed_keys:
             item_value = section_values.get(managed_key)
             if managed_key not in section_values or self.is_effectively_empty_value(managed_key, item_value):
@@ -673,6 +760,15 @@ class ConfigManager:
         section: str,
         section_values: Dict[str, Any],
     ) -> None:
+        """将节内键值统一写入配置（空值写空串）。
+
+        参数：
+            config：目标配置对象。
+            section：节名。
+            section_values：待写入键值字典。
+
+        返回：无。
+        """
         for option_name, option_value in section_values.items():
             normalized_option_name = str(option_name)
             if self.is_effectively_empty_value(normalized_option_name, option_value):
@@ -756,9 +852,17 @@ class ConfigManager:
                     if fixed_config_backup:
                         self.write_fixed_config(fixed_config_backup)
             except Exception as error:
-                print(f"从主配置读取固定配置时出错: {error}")
+                logger.warning("从主配置读取固定配置时出错: %s", error, exc_info=True)
 
         self.ensure_sections(config, list(FORMATTED_SAVE_SECTIONS_TO_ENSURE))
+
+        # 历史废弃键：统一移除，避免每次保存后在配置中回写空值占位。
+        for section_name in (SECTION_LR_REAR, SECTION_CENTRAL, SECTION_DTC):
+            if not config.has_section(section_name):
+                continue
+            for option_name in DEPRECATED_INPUT_EXCEL_DIR_OPTION_CANDIDATES:
+                if config.has_option(section_name, option_name):
+                    config.remove_option(section_name, option_name)
 
         for option_name in LR_REAR_SAVE_NORMALIZE_OPTION_NAMES:
             item_value = self.get_config_value_with_fallback(
@@ -888,14 +992,14 @@ class ConfigManager:
         try:
             self.write_uds_files(config, only_domains=uds_domains)
         except Exception as error:
-            print(f"根据配置生成 uds.txt 失败: {error}")
+            logger.warning("根据配置生成 uds.txt 失败: %s", error, exc_info=True)
         # 中央域：仅在显式中央域触发时，生成 PowerRelayConfig.txt、IgnitionCycle.txt、login.txt。
         # 通用保存（uds_domains=None）不触碰中央域派生文件，避免 LR_REAR/DTC 自动保存误生成 login.txt。
         try:
             if uds_domains is not None and SECTION_CENTRAL in uds_domains:
                 self.write_central_config_files(config)
         except Exception as error:
-            print(f"根据配置生成中央域配置文件失败: {error}")
+            logger.warning("根据配置生成中央域配置文件失败: %s", error, exc_info=True)
 
     def get_config_value_with_fallback(
         self,

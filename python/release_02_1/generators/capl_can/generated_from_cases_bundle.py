@@ -275,8 +275,8 @@ def build_master_can_lines(
     has_keyword_clib — 是否再 include CIN；cin_output_filename — CIN 输出文件名。返回：行列表，未写磁盘。
     """
     lines = [
-        "/*@!Encoding:936*/",
-        "/*@!Encoding:936*/",
+        "/*@!Encoding:65001*/",
+        "/*@!Encoding:65001*/",
         "includes",
         "{",
         '  #include "..\\..\\..\\Public\\TESTmode\\TestMoudleControl\\TestMoudleControl_Swc.cin"',

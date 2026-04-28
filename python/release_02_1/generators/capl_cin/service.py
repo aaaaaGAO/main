@@ -98,7 +98,7 @@ class CINGeneratorService:
         out_path = os.path.join(runtime[CIN_RUNTIME_KEY_OUTPUT_DIR], runtime[CIN_RUNTIME_KEY_OUTPUT_CIN_FILENAME])
         os.makedirs(os.path.dirname(out_path), exist_ok=True)
         with open(out_path, "wb") as output_binary_file:
-            output_binary_file.write(cin_content.encode("gb18030", errors="replace"))
+            output_binary_file.write(cin_content.encode("utf-8-sig"))
 
         self.log_error_records(error_records)
         if self.logger:

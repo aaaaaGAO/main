@@ -417,6 +417,18 @@
         });
     }
 
+    function toggleCaseSelection(containerId) {
+        var container = document.getElementById(containerId);
+        if (!container) return;
+        var sheetInputs = Array.from(container.querySelectorAll('input.sheet-checkbox'));
+        if (sheetInputs.length === 0) return;
+        var allChecked = sheetInputs.every(function (inp) { return inp.checked; });
+        var nextChecked = !allChecked;
+        sheetInputs.forEach(function (inp) { inp.checked = nextChecked; });
+        updateAllParentAndSelectAllState(containerId);
+        global.autoSaveConfig();
+    }
+
     async function parseFileStructure(key) {
         var path = selection[key];
         if (!path) {
@@ -1414,6 +1426,7 @@
     global.toggleTreeExpand = toggleTreeExpand;
     global.onParentCheckboxChange = onParentCheckboxChange;
     global.onSheetCheckboxChange = onSheetCheckboxChange;
+    global.toggleCaseSelection = toggleCaseSelection;
     global.parseFileStructure = parseFileStructure;
     global.closeParseFileModal = closeParseFileModal;
     global.handleRadioChange = handleRadioChange;

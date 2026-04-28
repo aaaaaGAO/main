@@ -17,6 +17,14 @@ class DIDInfoGeneratorService:
     """接管 DIDInfo 主编排流程的 service。"""
 
     def run_pipeline(self, domain: str | None = None):
+        """执行 DIDInfo（ResetDid）生成流程。
+
+        参数：
+            domain：可选生成域；用于按域加载输入配置与输出目录。
+
+        返回：
+            无。成功时写出 ResetDid 文件；输入缺失时按守卫逻辑跳过。
+        """
         logger_obj = None
         base_dir = didinfo_generator_runtime.resolve_base_dir()
         logger_obj, old_stdout, old_stderr = didinfo_generator_runtime.init_runtime(base_dir)

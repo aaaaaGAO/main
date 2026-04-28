@@ -28,7 +28,6 @@ from infra.filesystem import (
 )
 from services.config_manager import ConfigManager
 from services.config_constants import (
-    DEPRECATED_INPUT_EXCEL_DIR_OPTION_CANDIDATES,
     DEFAULT_DID_CONFIG_FILENAME,
     OPTION_CASE_LEVELS,
     OPTION_CASE_MODELS,
@@ -333,10 +332,6 @@ class ConfigService:
         can_input = preset_data.get(STATE_KEY_LR_CAN_INPUT)
         if can_input:
             val = input_excel_value_from_ui_path(can_input)
-            for sec in [SECTION_LR_REAR]:
-                if cfg.has_section(sec):
-                    for option_name in DEPRECATED_INPUT_EXCEL_DIR_OPTION_CANDIDATES:
-                        cfg.set(sec, option_name, "")
             cfg.set(SECTION_LR_REAR, OPTION_INPUT_EXCEL, val)
 
         # IO_MAPPING

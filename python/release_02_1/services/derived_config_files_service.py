@@ -45,6 +45,13 @@ class DerivedConfigFilesService:
     """中央域派生文件写入服务。"""
 
     def __init__(self, base_dir: str) -> None:
+        """初始化派生文件服务。
+
+        参数：
+            base_dir：项目根目录，用于解析输出相对路径。
+
+        返回：无。
+        """
         self.base_dir = os.path.abspath(base_dir)
 
     def resolve_output_subdir(
@@ -54,6 +61,16 @@ class DerivedConfigFilesService:
         *,
         create_dir: bool = False,
     ) -> Optional[str]:
+        """解析并返回输出目录下的指定子目录路径。
+
+        参数：
+            output_dir：配置中的输出目录（可相对/绝对）。
+            subdir_name：目标子目录名（如 ``Configuration``）。
+            create_dir：为 True 时在不存在时创建目录。
+
+        返回：
+            解析后的绝对路径；无法解析时返回 ``None``。
+        """
         return resolve_named_subdir(
             self.base_dir,
             output_dir,
@@ -62,6 +79,14 @@ class DerivedConfigFilesService:
         )
 
     def get_central_config_dir(self, config: configparser.ConfigParser) -> Optional[str]:
+        """获取中央域 ``Configuration`` 目录路径。
+
+        参数：
+            config：当前主配置对象。
+
+        返回：
+            中央域配置目录绝对路径；缺少 CENTRAL 节或输出目录时返回 ``None``。
+        """
         if not config.has_section(SECTION_CENTRAL):
             return None
         output_dir = (config.get(SECTION_CENTRAL, OPTION_OUTPUT_DIR, fallback="") or "").strip()
@@ -71,6 +96,14 @@ class DerivedConfigFilesService:
 
     @staticmethod
     def extract_port_number(port_text: str) -> str:
+        """从端口文本中提取端口号。
+
+        参数：
+            port_text：端口文本，如 ``COM3``、``3``、``ttyS3``。
+
+        返回：
+            纯数字端口号字符串；无法提取时返回原文本（去空白后）。
+        """
         if not port_text:
             return ""
         normalized_port = str(port_text).strip()
@@ -89,6 +122,17 @@ class DerivedConfigFilesService:
         option_name: str,
         default_value: Any,
     ) -> Any:
+        """读取并解析 JSON 选项。
+
+        参数：
+            config：主配置对象。
+            section：节名。
+            option_name：选项名。
+            default_value：缺失/空值/解析失败时返回的默认值。
+
+        返回：
+            解析后的对象；失败时返回 ``default_value``。
+        """
         if not config.has_option(section, option_name):
             return default_value
         raw = config.get(section, option_name, fallback="").strip()
@@ -101,6 +145,14 @@ class DerivedConfigFilesService:
 
     @staticmethod
     def has_relay_config(relay_config: Any) -> bool:
+        """判断单个继电器配置是否有效。
+
+        参数：
+            relay_config：继电器配置对象（通常为 dict）。
+
+        返回：
+            含有效 ``port`` 或 ``relayID/id`` 时为 True，否则为 False。
+        """
         if not isinstance(relay_config, dict):
             return False
         port = str(relay_config.get("port") or "").strip()
@@ -108,6 +160,7 @@ class DerivedConfigFilesService:
             return True
         relay_id = relay_config.get("relayID")
         if relay_id is None:
+            # 兼容前端历史保存结构（id 作为继电器行标识）。
             relay_id = relay_config.get("id")
         if relay_id is not None and str(relay_id).strip() != "":
             return True
@@ -121,6 +174,17 @@ class DerivedConfigFilesService:
         ig_config: Any,
         pw_config: Any,
     ) -> bool:
+        """判断是否需要生成 Power/Relay 相关派生文件。
+
+        参数：
+            power_config：电源配置。
+            relay_configs：继电器配置列表。
+            ig_config：IG 配置。
+            pw_config：PW 配置。
+
+        返回：
+            任一配置具备有效关键字段时返回 True，否则 False。
+        """
         if isinstance(power_config, dict) and str(power_config.get("port") or "").strip():
             return True
         if isinstance(relay_configs, list):
@@ -135,10 +199,26 @@ class DerivedConfigFilesService:
 
     @staticmethod
     def write_config_lines(file_obj: Any, lines: List[str]) -> None:
+        """按行写入文本内容。
+
+        参数：
+            file_obj：已打开的可写文件对象。
+            lines：要写入的行列表（不含行尾换行符）。
+
+        返回：无。
+        """
         for line in lines:
             file_obj.write(f"{line}\n")
 
     def write_power_block(self, file_obj: Any, power_config: Any) -> None:
+        """写入 Power 配置段。
+
+        参数：
+            file_obj：目标文件对象。
+            power_config：电源配置字典。
+
+        返回：无。
+        """
         power = power_config if (power_config and power_config.get("port")) else {}
         port_value = self.extract_port_number(power.get("port", "")) if power.get("port") else "0"
         lines: List[str] = ["[Power]//电源", f"port={port_value}//端口号"]
@@ -152,6 +232,14 @@ class DerivedConfigFilesService:
         self.write_config_lines(file_obj, lines)
 
     def write_relay_blocks(self, file_obj: Any, relay_configs: Any) -> None:
+        """写入继电器配置段（多组 Relay）。
+
+        参数：
+            file_obj：目标文件对象。
+            relay_configs：继电器配置列表。
+
+        返回：无。
+        """
         if not relay_configs:
             return
         for relay_index, relay in enumerate(relay_configs, 1):
@@ -180,6 +268,17 @@ class DerivedConfigFilesService:
         default_values: Dict[str, str],
         include_init_comment: bool = False,
     ) -> None:
+        """写入 IG/PW 设备配置段。
+
+        参数：
+            file_obj：目标文件对象。
+            title：段名（如 ``IG``、``PW``）。
+            config_data：设备配置字典。
+            default_values：缺省字段值映射。
+            include_init_comment：是否写入 initStatus 解释注释。
+
+        返回：无。
+        """
         payload_data = config_data if (config_data and config_data.get("equipmentType")) else {}
         lines = [
             f"[{title}]",
@@ -201,6 +300,14 @@ class DerivedConfigFilesService:
         self.write_config_lines(file_obj, lines)
 
     def write_central_config_files(self, config: configparser.ConfigParser) -> None:
+        """根据中央域配置生成/清理派生配置文件。
+
+        参数：
+            config：主配置对象，读取 ``[CENTRAL]`` 与 ``[IGNITION_CYCLE]``。
+
+        返回：无。内部按条件生成或删除
+            ``PowerRelayConfig.txt``、``IgnitionCycle.txt``、``login.txt``。
+        """
         config_dir = self.get_central_config_dir(config)
         if not config_dir:
             return

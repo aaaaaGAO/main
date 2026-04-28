@@ -43,8 +43,8 @@ from utils.sheet_filter import parse_selected_sheets
 
 from infra.filesystem.pathing import (
     RuntimePathResolver,
+    resolve_output_dir_relative_path,
     resolve_runtime_path,
-    resolve_target_subdir,
 )
 from services.filter_service import parse_shaixuan_config
 
@@ -60,6 +60,7 @@ class BlankLineFriendlyFormatter(logging.Formatter):
     """让 logger.info('') 写入真正空行；PROGRESS 只输出时间+消息。"""
 
     def format(self, record: logging.LogRecord) -> str:
+        """格式化日志并保留空行/进度日志语义。"""
         msg = record.getMessage()
         if msg == "":
             return ""
@@ -82,6 +83,7 @@ class SafeStreamHandler(logging.StreamHandler):
     """控制台编码异常时降级为 gbk replace 输出，避免日志写控制台失败。"""
 
     def emit(self, record: logging.LogRecord) -> None:
+        """安全写控制台日志。"""
         try:
             super().emit(record)
         except UnicodeEncodeError:
@@ -106,6 +108,7 @@ class TeeToLogger:
         self.is_logging_in_progress = False
 
     def write(self, text_chunk: str) -> int:
+        """写入文本并转发到 logger。"""
         if self.is_logging_in_progress:
             try:
                 if self.original:
@@ -149,6 +152,7 @@ class TeeToLogger:
         return len(text_chunk)
 
     def flush(self) -> None:
+        """刷新底层输出流。"""
         try:
             if self.original:
                 self.original.flush()
@@ -157,14 +161,17 @@ class TeeToLogger:
 
 
 def create_blank_line_friendly_formatter(format_string: str) -> logging.Formatter:
+    """创建空行友好的日志格式化器。"""
     return BlankLineFriendlyFormatter(format_string)
 
 
 def stream_has_isatty(stream_obj: Any) -> bool:
+    """判断流对象是否实现 isatty。"""
     return bool(hasattr(stream_obj, "isatty"))
 
 
 def stream_supports_tty(stream_obj: Any) -> bool:
+    """判断流对象是否为 TTY。"""
     if not stream_obj or not stream_has_isatty(stream_obj):
         return False
     try:
@@ -310,7 +317,13 @@ def load_runtime_config(
     selected_filter = parse_selected_sheets(selected_sheets_str)
 
     excel_path = resolve_runtime_path(base_dir, case_excel_file)
-    output_dir = resolve_target_subdir(base_dir, output_dir, "TESTmode")
+    output_dir = resolve_output_dir_relative_path(
+        base_dir,
+        output_dir,
+        ("TESTmode",),
+        anchor_level="self",
+        required=True,
+    )
     output_xml_path = os.path.join(output_dir, output_xml_file)
 
     return {
@@ -380,6 +393,7 @@ class XMLRuntimeAPI:
 
     @staticmethod
     def find_excel_files(input_path: str) -> list[str]:
+        """查找输入路径下的 Excel 文件列表。"""
         return runtime_io.XMLGenerationUtility.find_excel_files(input_path)
 
     @staticmethod
@@ -396,6 +410,7 @@ class XMLRuntimeAPI:
         selected_filter=None,
         workbook_cache=None,
     ) -> tuple:
+        """解析单个 Excel 为测试用例与统计结果。"""
         return runtime_io.XMLGenerationUtility.parse_testcases_from_excel(
             excel_path,
             allowed_levels=allowed_levels,
@@ -414,10 +429,12 @@ class XMLRuntimeAPI:
 
     @staticmethod
     def group_testcases_by_sheet_and_group(sheet_testcases_dict: dict) -> dict:
+        """按 sheet 与功能组二次分组测试用例。"""
         return runtime_io.XMLGenerationUtility.group_testcases_by_sheet_and_group(sheet_testcases_dict)
 
     @staticmethod
     def generate_xml_content(excel_files_dict: dict) -> str:
+        """根据分组后的数据生成 XML 文本。"""
         return runtime_io.XMLGenerationUtility.generate_xml_content(excel_files_dict, logger=_logger)
 
 
@@ -428,10 +445,12 @@ generate_xml_content = XMLRuntimeAPI.generate_xml_content
 
 
 def clear_run_logger() -> None:
+    """清理 XML 运行日志上下文。"""
     global _logger
     clear_run_logger_impl(_logger)
     _logger = None
 
 
 def get_progress_level() -> int:
+    """获取 XML 进度日志级别。"""
     return PROGRESS_LEVEL

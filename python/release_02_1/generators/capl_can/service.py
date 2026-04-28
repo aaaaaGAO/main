@@ -168,9 +168,9 @@ class CANGeneratorService(BaseGeneratorTask):
 
     @staticmethod
     def write_gbk_file(file_path: str, content: str) -> None:
-        """以 gbk、\\r\\n 写入 CAPL 文件。参数: path — 文件路径；content — 文本内容。无返回值。"""
+        """以 UTF-8 BOM、\\r\\n 写入 CAPL 文件。参数: path — 文件路径；content — 文本内容。无返回值。"""
         os.makedirs(os.path.dirname(file_path), exist_ok=True)
-        with open(file_path, "w", encoding="gbk", newline="\r\n", errors="replace") as file_obj:
+        with open(file_path, "w", encoding="utf-8-sig", newline="\r\n") as file_obj:
             file_obj.write(content)
 
     def run_pipeline(

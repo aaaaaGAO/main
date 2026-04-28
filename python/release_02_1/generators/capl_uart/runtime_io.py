@@ -33,8 +33,8 @@ from utils.logger import TeeToLogger
 from infra.filesystem.pathing import (
     RuntimePathResolver,
     resolve_configured_path,
+    resolve_output_dir_relative_path,
     resolve_runtime_path,
-    resolve_target_subdir,
 )
 
 # ---------- 模块级变量：解析表格日志，供 read_uart_excel_data 与 build_stdout_tee 使用 ----------
@@ -186,6 +186,16 @@ def get_uart_comm_value(
     option_name: str,
     default: str = "",
 ) -> str:
+    """读取 CENTRAL 节串口配置项并应用默认值。
+
+    参数：
+        config：配置对象。
+        option_name：`uart_comm_*` 选项名。
+        default：缺失或空值时返回的默认值。
+
+    返回：
+        配置值字符串；无值时返回 `default`。
+    """
     if not config.has_option(SECTION_CENTRAL, option_name):
         return default
     option_value = config.get(SECTION_CENTRAL, option_name, fallback="").strip()
@@ -275,7 +285,13 @@ def resolve_io_paths(config: configparser.ConfigParser, base_dir: str) -> tuple[
             else "./output"
         )
     input_excel = resolve_configured_path(base_dir, input_excel)
-    output_dir = resolve_target_subdir(base_dir, output_dir, "Configuration")
+    output_dir = resolve_output_dir_relative_path(
+        base_dir,
+        output_dir,
+        ("Configuration",),
+        anchor_level="self",
+        required=True,
+    )
     output_path = os.path.join(output_dir, output_file)
     return input_excel, output_file, output_path
 

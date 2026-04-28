@@ -19,7 +19,8 @@ from services.config_constants import (
     SECTION_LR_REAR,
 )
 from infra.filesystem.pathing import RuntimePathResolver
-from utils.path_utils import list_excel_files, resolve_runtime_path, resolve_target_subdir
+from infra.filesystem.pathing import resolve_output_dir_relative_path
+from utils.path_utils import list_excel_files, resolve_runtime_path
 
 
 class CANEntrypointSupport:
@@ -27,6 +28,15 @@ class CANEntrypointSupport:
 
     @staticmethod
     def parse_bool(raw, default: bool = False) -> bool:
+        """将配置值解析为布尔值。
+
+        参数：
+            raw：原始输入值。
+            default：无法识别时返回的默认布尔值。
+
+        返回：
+            解析后的布尔值。
+        """
         if raw is None:
             return default
         normalized_text = str(raw).strip().lower()
@@ -43,6 +53,17 @@ class CANEntrypointSupport:
         domain: str,
         output_dir: str,
     ) -> str:
+        """解析 UDS ECU qualifier。
+
+        参数：
+            gconfig：生成器配置对象。
+            base_dir：项目根目录。
+            domain：当前生成域。
+            output_dir：输出根目录配置值。
+
+        返回：
+            qualifier 字符串；未找到时返回空串。
+        """
         # 优先使用各域在当前主配置文件中配置的 uds_ecu_qualifier，
         # 这样即使多个域共用同一个 output_dir 也不会互相覆盖。
         cfg_val = gconfig.get(domain, OPTION_UDS_ECU_QUALIFIER, fallback="").strip()
@@ -69,6 +90,15 @@ class CANEntrypointSupport:
 
     @staticmethod
     def build_runtime_paths(gconfig: GeneratorConfig, domain: str = DEFAULT_DOMAIN_LR_REAR) -> dict:
+        """构建 CAN 运行时所需路径与参数集合。
+
+        参数：
+            gconfig：生成器配置对象。
+            domain：生成域，支持 LR_REAR/CENTRAL/DTC。
+
+        返回：
+            包含输入 Excel、输出路径、映射表、Clib 开关等信息的字典。
+        """
         base_dir = gconfig.base_dir
 
         if domain in (SECTION_CENTRAL, SECTION_DTC):
@@ -139,8 +169,20 @@ class CANEntrypointSupport:
             if sheet_name.strip()
         ]
 
-        testmode_dir = resolve_target_subdir(base_dir, output_dir, "TESTmode")
-        testcases_dir = resolve_target_subdir(testmode_dir, ".", "Testcases")
+        testmode_dir = resolve_output_dir_relative_path(
+            base_dir,
+            output_dir,
+            ("TESTmode",),
+            anchor_level="self",
+            required=True,
+        )
+        testcases_dir = resolve_output_dir_relative_path(
+            testmode_dir,
+            ".",
+            ("Testcases",),
+            anchor_level="self",
+            required=True,
+        )
         master_output_path = os.path.join(testmode_dir, output_filename)
 
         # 是否包含 .cin 由「是否选择了关键字集 Clib 配置表」决定，而非域类型
@@ -167,6 +209,14 @@ class CANEntrypointSupport:
 
     @staticmethod
     def load_clib_names_from_excel(excel_path: str) -> set[str]:
+        """从 Clib 配置表读取合法关键字名称集合。
+
+        参数：
+            excel_path：Clib Excel 路径。
+
+        返回：
+            小写名称集合；读取失败时返回空集合。
+        """
         names: set[str] = set()
         if not excel_path or not os.path.exists(excel_path):
             return names
@@ -204,6 +254,15 @@ class CANEntrypointSupport:
 
     @staticmethod
     def resolve_config_path(base_dir: str, config_path: str | None = None) -> str:
+        """解析主配置路径。
+
+        参数：
+            base_dir：项目根目录。
+            config_path：可选配置路径。
+
+        返回：
+            规范化后的配置文件路径。
+        """
         return RuntimePathResolver.resolve_config_path(base_dir, config_path)
 
     @staticmethod
@@ -211,6 +270,15 @@ class CANEntrypointSupport:
         base_dir: str,
         config_path: str | None = None,
     ) -> GeneratorConfig:
+        """加载 CAN 入口使用的 GeneratorConfig。
+
+        参数：
+            base_dir：项目根目录。
+            config_path：可选配置路径。
+
+        返回：
+            已 `load()` 的 `GeneratorConfig` 实例。
+        """
         resolved_config_path = CANEntrypointSupport.resolve_config_path(base_dir, config_path)
         return GeneratorConfig(base_dir, config_path=resolved_config_path).load()
 
@@ -221,6 +289,16 @@ class CANEntrypointSupport:
         *,
         domain: str = DEFAULT_DOMAIN_LR_REAR,
     ) -> str:
+        """解析当前域的 CIN 配置表路径。
+
+        参数：
+            gconfig：生成器配置对象。
+            base_dir：项目根目录。
+            domain：生成域。
+
+        返回：
+            CIN Excel 绝对路径；未配置时返回空串。
+        """
         if domain not in (SECTION_CENTRAL, SECTION_DTC, SECTION_LR_REAR):
             raise ValueError(
                 f"CAN 不支持 domain={domain!r}，请使用 {SECTION_LR_REAR!r}、{SECTION_CENTRAL!r} 或 {SECTION_DTC!r}"

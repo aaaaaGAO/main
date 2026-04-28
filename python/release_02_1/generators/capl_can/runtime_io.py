@@ -56,15 +56,32 @@ class CANRuntimeContextStore:
 
     @staticmethod
     def set_context(ctx: Optional[CANRuntimeContext]) -> None:
+        """设置当前运行上下文。
+
+        参数：
+            ctx：运行期上下文对象；传 `None` 表示清空。
+
+        返回：无。
+        """
         global _current_runtime_ctx
         _current_runtime_ctx = ctx
 
     @staticmethod
     def get_context() -> Optional[CANRuntimeContext]:
+        """获取当前运行上下文。
+
+        参数：无。
+        返回：当前上下文对象；未设置时为 `None`。
+        """
         return _current_runtime_ctx
 
     @staticmethod
     def reset() -> None:
+        """重置上下文存储。
+
+        参数：无。
+        返回：无。
+        """
         CANRuntimeContextStore.set_context(None)
 
 
@@ -73,21 +90,34 @@ class CANRuntimeIOUtility:
 
     @staticmethod
     def write_can_text(file_path: str, content: str) -> None:
+        """写入 `.can` 文本文件。
+
+        参数：
+            file_path：目标文件路径。
+            content：待写入文本内容。
+
+        返回：无。
+        """
         text = content.replace("\r\n", "\n").replace("\n", "\r\n")
         os.makedirs(os.path.dirname(file_path), exist_ok=True)
-        try:
-            with open(file_path, "wb") as binary_file:
-                binary_file.write(text.encode("gb18030", errors="replace"))
-        except Exception:
-            with open(file_path, "wb") as binary_file:
-                binary_file.write(text.encode("cp936", errors="replace"))
+        with open(file_path, "wb") as binary_file:
+            binary_file.write(text.encode("utf-8-sig"))
 
     @staticmethod
     def contains_chinese(text: str) -> bool:
+        """判断文本是否包含中文字符。"""
         return bool(re.search(r"[\u4e00-\u9fff]", text or ""))
 
     @staticmethod
     def to_pinyin_if_needed(text: str) -> str:
+        """必要时将中文转换为拼音。
+
+        参数：
+            text：原始文本。
+
+        返回：
+            可用于文件名的文本；无法转换时返回原文本。
+        """
         text_value = str(text or "").strip()
         if not text_value or not CANRuntimeIOUtility.contains_chinese(text_value):
             return text_value
@@ -100,6 +130,14 @@ class CANRuntimeIOUtility:
 
     @staticmethod
     def sanitize_filename_part(text: str) -> str:
+        """清理并标准化文件名片段。
+
+        参数：
+            text：原始名称片段。
+
+        返回：
+            只含安全字符的文件名片段。
+        """
         safe_text = CANRuntimeIOUtility.to_pinyin_if_needed(str(text or "").strip())
         safe_text = re.sub(r"[^\w\u4e00-\u9fff-]+", "_", safe_text)
         safe_text = re.sub(r"_+", "_", safe_text).strip("_")
@@ -107,10 +145,20 @@ class CANRuntimeIOUtility:
 
     @staticmethod
     def build_ungenerated_reason(stats: dict) -> str:
+        """构建未生成 `.can` 的原因说明字符串。"""
         return common_build_ungenerated_reason(stats, generated_label=".can")
 
     @staticmethod
     def load_keyword_specs(excel_path: str, sheet_names: list[str]) -> dict:
+        """读取关键字映射规格。
+
+        参数：
+            excel_path：关键字映射 Excel 路径。
+            sheet_names：要读取的 sheet 名列表。
+
+        返回：
+            关键字规格字典。
+        """
         return load_keyword_specs_from_excel(
             excel_path,
             sheet_names,
@@ -119,16 +167,26 @@ class CANRuntimeIOUtility:
 
     @staticmethod
     def validate_clib_name(clib_names_set: set[str], clib_name: str) -> bool:
+        """校验 Clib 名称是否在白名单集合中。"""
         return bool(clib_name) and clib_name.strip().lower() in clib_names_set
 
     @staticmethod
     def create_clib_validator(clib_names_set: Optional[set[str]]) -> Optional[Callable[[str], bool]]:
+        """创建 Clib 校验回调。
+
+        参数：
+            clib_names_set：可用 Clib 名称集合。
+
+        返回：
+            校验函数；集合为空时返回 `None`。
+        """
         if not clib_names_set:
             return None
         return partial(CANRuntimeIOUtility.validate_clib_name, clib_names_set)
 
     @staticmethod
     def sheet_log_ts() -> str:
+        """生成毫秒级日志时间戳字符串。"""
         now = datetime.now()
         return now.strftime("%Y-%m-%d %H:%M:%S") + f",{now.microsecond // 1000:03d}"
 
@@ -142,6 +200,18 @@ class CANRuntimeIOUtility:
         can_filename: str,
         global_log_path: Optional[str] = None,
     ) -> None:
+        """写入单 sheet 生成日志文件。
+
+        参数：
+            log_path：目标日志文件路径。
+            excel_name：Excel 文件名。
+            sheet_name：sheet 名称。
+            cases：当前 sheet 的用例对象列表。
+            can_filename：生成的 can 文件名。
+            global_log_path：可选全局日志路径，用于裁剪提取该 sheet 片段。
+
+        返回：无。
+        """
         lines: list[str] = []
         if global_log_path and os.path.isfile(global_log_path):
             try:
@@ -197,6 +267,7 @@ class CANRuntimeIOUtility:
 
     @staticmethod
     def setup_generator_logger(base_dir: str) -> GeneratorLogger:
+        """构建 CAN 生成器日志管理器。"""
         return GeneratorLogger(
             base_dir,
             "generate_can_from_excel.log",
@@ -210,6 +281,16 @@ class CANRuntimeIOUtility:
         *,
         domain: str = DEFAULT_DOMAIN_LR_REAR,
     ) -> Tuple[Any, Any]:
+        """加载 IO 与 ConfigEnum 映射上下文。
+
+        参数：
+            gconfig：生成器配置对象。
+            base_dir：项目根目录。
+            domain：生成域。
+
+        返回：
+            `(io_mapping, config_enum)` 元组；CENTRAL 域返回 `(None, None)`。
+        """
         if domain == SECTION_CENTRAL:
             return None, None
         mapping_ctx = MappingContext.from_config(
@@ -227,6 +308,16 @@ class CANRuntimeIOUtility:
         *,
         domain: str = DEFAULT_DOMAIN_LR_REAR,
     ) -> set:
+        """加载 Clib 名称集合上下文。
+
+        参数：
+            gconfig：生成器配置对象。
+            base_dir：项目根目录。
+            domain：生成域。
+
+        返回：
+            Clib 名称集合；无配置时为空集合。
+        """
         cin_excel_path = CANEntrypointSupport.resolve_cin_excel_path(
             gconfig, base_dir, domain=domain
         )
@@ -249,6 +340,22 @@ class CANRuntimeIOUtility:
         selected_filter: Optional[dict] = None,
         runtime_context: Optional[CANRuntimeContext] = None,
     ) -> Tuple[dict, dict]:
+        """读取并翻译 CAN 用例。
+
+        参数：
+            excel_path：输入 Excel 路径。
+            keyword_specs：关键字映射规格。
+            allowed_levels：允许的等级集合。
+            allowed_platforms：允许的平台集合。
+            allowed_models：允许的车型集合。
+            seen_case_ids：历史参数占位（当前不使用）。
+            clib_validator：可选 Clib 校验函数。
+            selected_filter：可选筛选条件。
+            runtime_context：可选运行上下文；为空时使用全局上下文。
+
+        返回：
+            `(sheet_rows_dict, stats)`，分别是转换后的行数据与统计信息。
+        """
         del seen_case_ids
         ctx = runtime_context or CANRuntimeContextStore.get_context()
         io_ctx = ctx.io_mapping_ctx if ctx else None

@@ -412,7 +412,7 @@ class StateConfigService:
         if not isinstance(relays, list) or len(relays) == 0:
             return False
         # 与 ConfigManager.load_central_ui_json_fields / has_relay_config 保持同一口径：
-        # 仅当存在有效 port 或 relayID/id 时，才视为“已配置”。
+        # 仅当存在有效 port 或 relayID 时，才视为“已配置”。
         # 避免仅有 relayType/默认 coilStatuses 骨架时被误判为已配置并回写残留。
         return any(ConfigManager.has_relay_config(relay) for relay in relays)
 

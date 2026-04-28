@@ -18,6 +18,8 @@ infra.filesystem：路径与文件系统相关能力（底层）
   解析配置目录下的目标子目录，支持“父目录”与“已直接指向子目录”两种写法。
 - resolve_target_subdir(base_dir: str, configured_dir: str, subdir_name: str) -> str
   解析目标子目录；找不到时抛出 RuntimeError，供生成器直接使用。
+- resolve_output_dir_relative_path(base_dir: str, configured_output_dir: str, relative_parts, anchor_level='self', create_dir=False, required=True) -> str
+  按统一 output_dir 规则拼接子路径（在 output_dir 下或其上一级下），并可校验/创建目录。
 """
 
 from infra.filesystem.pathing import (
@@ -38,6 +40,7 @@ from infra.filesystem.pathing import (
     resolve_configured_path,
     resolve_runtime_path,
     resolve_named_subdir,
+    resolve_output_dir_relative_path,
     resolve_target_subdir,
 )
 
@@ -59,6 +62,7 @@ __all__ = [
     "resolve_configured_path",
     "resolve_runtime_path",
     "resolve_named_subdir",
+    "resolve_output_dir_relative_path",
     "resolve_target_subdir",
 ]
 

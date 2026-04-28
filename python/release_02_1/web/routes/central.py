@@ -13,8 +13,9 @@
 
 from __future__ import annotations
 
-from flask import Blueprint, request
+from flask import Blueprint, jsonify, request
 
+from services.central_programmatic_route_service import soa_setserver_cin_result
 from services.task_orchestrator import TaskOrchestrator
 from .route_helpers import get_base_dir, jsonify_orchestrator_result
 
@@ -59,4 +60,38 @@ def generate_central():
         validate_before_run=validate_before_run,
     )
     return jsonify_orchestrator_result(result, success_separator=" / ", failure_message=None, failure_separator=" / ")
+
+
+@central_bp.route("/soa_setserver_cin", methods=["POST"])
+def soa_setserver_cin():
+    """
+    根据 ``Service_Interface`` 工作表生成 ``SOA_StartSetserver.cin``（主界面无独立按钮，由脚本/集成方 ``POST`` 调用）。
+
+    JSON 体：
+        excel_path — 可选；用户选择的接口表 Excel 绝对路径（须含 ``Service_Interface``）。
+            省略时按 ``domain`` 从主配置读取对应域 ``srv_excel``（服务通信矩阵）。
+        anchor_path — 锚点路径（文件或目录）；由此向上查找
+            ``Public\\TESTmode\\Bus\\SOA\\SOA_Onder``。
+        domain — 可选；``CENTRAL`` / ``LR_REAR`` / ``DTC``（默认 ``CENTRAL``），仅在不传
+            ``excel_path`` 时用于解析 ``srv_excel``。
+        base_dir — 可选；工程根，用于解析配置内相对路径，缺省与 ``/api/common`` 一致。
+
+    返回：
+        ``success``、``message``、``output_path``（生成文件绝对路径）。
+
+    说明：
+        业务与异常日志见 `central_programmatic_route_service.soa_setserver_cin_result`。
+    """
+    payload = request.get_json(silent=True) or {}
+    base_dir = (payload.get("base_dir") or "").strip() or current_base_dir()
+    domain_key = (payload.get("domain") or "CENTRAL").strip().upper()
+    excel_path = (payload.get("excel_path") or "").strip()
+    anchor_path = (payload.get("anchor_path") or "").strip()
+    body, status_code = soa_setserver_cin_result(
+        base_dir=base_dir,
+        excel_path=excel_path,
+        anchor_path=anchor_path,
+        domain_key=domain_key,
+    )
+    return jsonify(body), status_code
 

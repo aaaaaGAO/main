@@ -22,7 +22,9 @@ def run_generation(*, workbook_cache: dict[str, Any] | None = None) -> None:
     功能：调用 UARTGeneratorService.run_pipeline，内部完成配置解析、Excel 解析、
     文本拼装与写入（[UARTRS232]、[IVIToMCU]、[MCUToIVI] 等段）。
 
-    形参：无（配置与路径从当前主配置文件、固定配置文件及当前工作目录解析）。
+    参数：
+        workbook_cache：可选工作簿缓存字典；传入后可在同一生成流程中复用
+            已打开 workbook，降低重复 load 开销。
 
     返回：无。
     """

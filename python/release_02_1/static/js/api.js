@@ -62,6 +62,19 @@
             });
         },
 
+        /** 中央域：从 Service_Interface 生成 SOA_StartSetserver.cin */
+        soaSetserverCin: function (payload) {
+            return fetch('/api/central/soa_setserver_cin', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            }).then(function (res) {
+                return res.json().catch(function () { return {}; }).then(function (data) {
+                    return { ok: res.ok, status: res.status, data: data };
+                });
+            });
+        },
+
         generateDTC: function (payload) {
             return fetch('/api/generate_dtc', {
                 method: 'POST',

@@ -23,7 +23,7 @@ from services.config_constants import (
 )
 from infra.excel.header import find_header_row_and_col_indices
 from infra.excel.workbook import merged_cell_value
-from infra.filesystem import resolve_target_subdir
+from infra.filesystem import resolve_output_dir_relative_path
 from utils.excel_io import norm_str
 from utils.path_utils import resolve_runtime_path
 
@@ -34,6 +34,14 @@ class DIDConfigGeneratorService:
     """接管 DIDConfig 主编排流程的 service。"""
 
     def run_pipeline(self, domain: str | None = None):
+        """执行 DIDConfig 生成主流程。
+
+        参数：
+            domain：可选生成域；支持 `LR_REAR`、`DTC` 或默认 DID_CONFIG 路径。
+
+        返回：
+            无。执行成功时写出 DIDConfig 目标文件；配置缺失或解析失败时抛出异常。
+        """
         base_dir = didconfig_generator_runtime.resolve_base_dir()
         gconfig = didconfig_generator_runtime.load_runtime(base_dir)
         if gconfig is None:
@@ -169,21 +177,30 @@ class DIDConfigGeneratorService:
             excel_path = resolve_runtime_path(config_dir, excel_rel_path)
             raw_output_dir = resolve_runtime_path(config_dir, output_dir_rel)
 
-            # 自动寻找或创建 Configuration 文件夹（与 DIDInfo、UART 等模块一致）
+            # 统一 output_dir 子目录解析：在 output_dir 下寻找 Configuration，不自动创建。
             try:
-                output_dir = resolve_target_subdir(base_dir, raw_output_dir, "Configuration")
+                output_dir = resolve_output_dir_relative_path(
+                    base_dir,
+                    raw_output_dir,
+                    ("Configuration",),
+                    anchor_level="self",
+                    required=True,
+                )
             except Exception as error:
                 logger.error(f"无法定位输出目录: {error}")
                 return
             output_path = os.path.join(output_dir, output_name)
 
             if not os.path.exists(excel_path):
-                print(f"错误: 找不到 Excel 文件 {excel_path}")
+                msg = f"错误: 找不到 Excel 文件 {excel_path}"
+                print(msg)
+                logger.error(msg)
                 return
 
             try:
                 wb = ExcelService.open_workbook(excel_path, data_only=True, read_only=False)
             except Exception as error:
+                logger.error("无法读取 DIDConfig Excel 文件: %s", excel_path, exc_info=True)
                 raise ValueError(str(error))
 
             excel_name = os.path.basename(excel_path)
@@ -202,7 +219,12 @@ class DIDConfigGeneratorService:
                     max_scan_rows=30,
                 )
                 if header_row < 0 or missing:
-                    print(f"错误: Excel={excel_name} sheet='{sheet_name}' 缺少必需列: {', '.join(missing)}，跳过该 sheet。")
+                    msg = (
+                        f"错误: Excel={excel_name} sheet='{sheet_name}' "
+                        f"缺少必需列: {', '.join(missing)}，跳过该 sheet。"
+                    )
+                    print(msg)
+                    logger.warning(msg)
                     continue
 
                 parsed_rows: list[tuple[int, str, int, str]] = []
@@ -220,22 +242,47 @@ class DIDConfigGeneratorService:
 
                     shown_name = name_s if name_s else "<空>"
                     if not byte_s and not bit_s:
-                        print(f"错误: Excel={excel_name} sheet='{sheet_name}' 行 {row_index} Name='{shown_name}' Byte/Bit 均为空，跳过该行。")
+                        msg = (
+                            f"错误: Excel={excel_name} sheet='{sheet_name}' 行 {row_index} "
+                            f"Name='{shown_name}' Byte/Bit 均为空，跳过该行。"
+                        )
+                        print(msg)
+                        logger.warning(msg)
                         continue
                     if not byte_s:
-                        print(f"错误: Excel={excel_name} sheet='{sheet_name}' 行 {row_index} Name='{shown_name}' Byte 为空，跳过该行。")
+                        msg = (
+                            f"错误: Excel={excel_name} sheet='{sheet_name}' 行 {row_index} "
+                            f"Name='{shown_name}' Byte 为空，跳过该行。"
+                        )
+                        print(msg)
+                        logger.warning(msg)
                         continue
                     if not bit_s:
-                        print(f"错误: Excel={excel_name} sheet='{sheet_name}' 行 {row_index} Name='{shown_name}' Bit 为空，跳过该行。")
+                        msg = (
+                            f"错误: Excel={excel_name} sheet='{sheet_name}' 行 {row_index} "
+                            f"Name='{shown_name}' Bit 为空，跳过该行。"
+                        )
+                        print(msg)
+                        logger.warning(msg)
                         continue
                     if not name_s:
-                        print(f"错误: Excel={excel_name} sheet='{sheet_name}' 行 {row_index} Name 为空（Byte={byte_s}, Bit={bit_s}），跳过该行。")
+                        msg = (
+                            f"错误: Excel={excel_name} sheet='{sheet_name}' 行 {row_index} "
+                            f"Name 为空（Byte={byte_s}, Bit={bit_s}），跳过该行。"
+                        )
+                        print(msg)
+                        logger.warning(msg)
                         continue
 
                     try:
                         byte_int = int(str(byte_v).strip())
                     except Exception:
-                        print(f"错误: Excel={excel_name} sheet='{sheet_name}' 行 {row_index} Name='{shown_name}' Byte 无法解析为整数: '{byte_s}'，跳过该行。")
+                        msg = (
+                            f"错误: Excel={excel_name} sheet='{sheet_name}' 行 {row_index} "
+                            f"Name='{shown_name}' Byte 无法解析为整数: '{byte_s}'，跳过该行。"
+                        )
+                        print(msg)
+                        logger.warning(msg)
                         continue
 
                     parsed_rows.append((row_index, name_s, byte_int, bit_s))
@@ -274,7 +321,12 @@ class DIDConfigGeneratorService:
                             else:
                                 raise ValueError(f"Bit 格式不支持: '{bit_raw}'")
                         except Exception:
-                            print(f"错误: Excel={excel_name} sheet='{sheet_name}' 行 {excel_row} Name='{name}' Bit 无法解析: '{bit_raw}'，跳过该行。")
+                            msg = (
+                                f"错误: Excel={excel_name} sheet='{sheet_name}' 行 {excel_row} "
+                                f"Name='{name}' Bit 无法解析: '{bit_raw}'，跳过该行。"
+                            )
+                            print(msg)
+                            logger.warning(msg)
                             continue
 
                     output_content.append(f"Field_subDataName:{name};//字段名称")

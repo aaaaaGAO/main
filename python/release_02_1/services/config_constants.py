@@ -55,6 +55,8 @@ OPTION_DIDINFO_INPUTS = "didinfo_inputs"
 OPTION_DIDINFO_INPUT_EXCEL = "didinfo_input_excel"
 OPTION_CIN_INPUT_EXCEL = "cin_input_excel"
 OPTION_SRV_EXCEL = "srv_excel"
+OPTION_SOA_SETSERVER_OUTPUT_FILENAME = "soa_setserver_output_filename"
+OPTION_SOA_DATATAB_OUTPUT_FILENAME = "soa_datatab_output_filename"
 
 # ---------------------------------------------------------------------------
 # 需求第3条：界面「ResetDid」/ DIDInfo 源表 ↔ collectCurrentState 键 ↔ ini didinfo_inputs
@@ -182,6 +184,7 @@ DEFAULT_POWER_RELAY_CONFIG_FILENAME = "PowerRelayConfig.txt"
 DEFAULT_IGNITION_CYCLE_FILENAME = "IgnitionCycle.txt"
 DEFAULT_LOGIN_FILENAME = "login.txt"
 DEFAULT_DOMAIN_LR_REAR = SECTION_LR_REAR
+
 VALID_LOG_LEVELS: tuple[str, ...] = ("info", "warning", "error")
 
 # ---------------------------------------------------------------------------
@@ -478,6 +481,8 @@ PATHS_STABLE_OUTPUT_RELATED_OPTION_NAMES: tuple[str, ...] = (
     "didconfig_output_filename",
     "uart_output_filename",
     "uds_output_filename",
+    OPTION_SOA_SETSERVER_OUTPUT_FILENAME,
+    OPTION_SOA_DATATAB_OUTPUT_FILENAME,
     "didinfo_variants",
 )
 

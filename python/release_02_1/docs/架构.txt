@@ -99,6 +99,12 @@ project_root/
 │   │   ├── runtime_io.py           # DID 配置表解析、输出 DIDConfig.txt
 │   │   ├── service.py
 │   │   └── __init__.py
+│   ├── capl_soa/
+│   │   ├── entrypoint.py           # SOA 生成入口：run_generation（SOA Node）
+│   │   ├── soa_setserver_cin.py    # 生成 SOA_StartSetserver.cin
+│   │   ├── soa_datatab_cin.py      # 生成 SOA_DataTab.cin（Service_Deployment / Service_Interface）
+│   │   └── templates/
+│   │       └── Node.template       # SOA Node 渲染模板
 │   └── capl_uart/
 │       ├── entrypoint.py           # UART 生成入口：run_generation（配置 + Excel → Uart.txt）
 │       ├── runtime.py
@@ -155,7 +161,6 @@ project_root/
 ├── output/                         # 生成结果输出目录（由配置指定，可为子目录）
 ├── log/                            # 运行日志根目录（其下按时间戳 log_YYYYMMDD_HHMMSS 建子目录）
 │
-（主配置位于 config/：优先 `Configuration.ini` / `FixedConfig.ini`，支持历史 `Configuration.txt` / `FixedConfig.txt`，详见《必需文件说明.txt》）
 
 
 二、各目录/模块设计说明
@@ -175,8 +180,8 @@ project_root/
   - 职责：应用服务层，组合领域逻辑，供 Web 调用。把“配置读写”“任务编排”“弹窗与文件解析”“运行前校验”从 Web 中剥离，便于测试与复用。
   - config_manager：统一读写主配置文件、固定配置文件，保证格式一致、去重、同步。
   - config_service：对前端暴露的配置接口（路径、筛选项、预设、域配置），与 config_manager 配合。
-  - task_orchestrator：按域（左右后/中央/DTC）编排“先校验再依次执行 DIDConfig、DIDInfo、CIN、UART、CAN、XML”等任务；同一任务内复用 workbook 对象，降低重复解析开销，并在 finally 阶段统一关闭。
-  - task_service：单任务执行（CAN/XML/CIN/DIDInfo/DIDConfig/UART），调用对应 generators.*.entrypoint.run_generation / run_cli。
+  - task_orchestrator：按域（左右后/中央/DTC）编排“先校验再依次执行 DIDConfig、DIDInfo、CIN、UART、CAN、XML、SOA”等任务；同一任务内复用 workbook 对象，降低重复解析开销，并在 finally 阶段统一关闭。
+  - task_service：单任务执行（CAN/XML/CIN/DIDInfo/DIDConfig/UART/SOA），调用对应 generators.*.entrypoint.run_generation / run_cli。
   - gui_service：Tkinter 弹窗（文件/文件夹选择、另存为）、文件/文件夹结构解析（Excel sheet、CAN testcase、XML testgroup）。
   - filter_service：解析 config/filter_options.ini，提供等级/平台/车型等下拉数据（缺文件时返回空列表；仅支持此文件名，无 .txt 回退）。
   - run_validator：运行前校验输出目录可写、输入路径存在，避免执行到一半才报错。
@@ -190,7 +195,7 @@ project_root/
   - common/：通用小工具（用例 ID 清洗、Clib 名称清洗、生成汇总）+ 少量统一导出入口。
 
 【generators/】
-  - 职责：具体格式转换实现。每个子包（capl_can、capl_cin、capl_xml、capl_didinfo、capl_didconfig、capl_uart）只关心“自己这种输出格式”的编排与写出，读表、过滤、步骤解析等复用 core/infra。
+  - 职责：具体格式转换实现。每个子包（capl_can、capl_cin、capl_xml、capl_didinfo、capl_didconfig、capl_soa、capl_uart）只关心“自己这种输出格式”的编排与写出，读表、过滤、步骤解析等复用 core/infra。
   - 入口约定：各子包提供 entrypoint 模块，对外暴露 run_generation / run_cli（及别名），供 TaskService 与命令行（python -m generators.capl_can.entrypoint）调用；具体编排与实现仍在 runtime、runtime_io、service 中。
   - 域隔离约定：各 runtime 仅读取当前 domain 对应 section，缺失即报错；已移除 get_first 跨节兜底与 runtime 内对 [PATHS] 的跨域读取。
   - 结构收口约定：CAN/XML/UART 的 runtime_io 已完成“散函数命名收口 + Utility 统一导出”，外部调用保持稳定，内部实现更集中。

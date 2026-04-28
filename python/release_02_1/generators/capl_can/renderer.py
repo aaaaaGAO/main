@@ -14,6 +14,22 @@ from .models import CANTestCase
 class CANRenderUtility:
     """CAPL CAN 文本渲染辅助函数统一工具类入口。"""
 
+    # 与 Excel/业务表述一致：支持 ``SOA_CHECK(`` 与带空格的 ``SOA CHECK(``、``SOA CHECKREQ(`` 等形式；
+    # 前缀允许下划线（如 ``g_EM_SOAClient_Swc_SOA_CHECK(...)``），但仍禁止字母/数字直接黏连。
+    SOA_EXPECT_CHECK_OR_CHECKREQ_CALL_RE = re.compile(
+        r"(?<![A-Za-z0-9])(?:SOA_CHECK(?:REQ)?\s*\(|SOA\s+CHECK(?:REQ)?\s*\()",
+        re.IGNORECASE,
+    )
+    SOA_EXPECT_CHECK_ONLY_CALL_RE = re.compile(
+        r"(?<![A-Za-z0-9])(?:SOA_CHECK\s*\(|SOA\s+CHECK\s*\()",
+        re.IGNORECASE,
+    )
+    # ``SOA_REQ(`` 与 ``SOA REQ(``（中间为空格、无下划线）均视为有效。
+    SOA_REQ_TEST_STEP_CALL_RE = re.compile(
+        r"(?<![A-Za-z0-9])(?:SOA_REQ|SOA\s+REQ)\s*\(",
+        re.IGNORECASE,
+    )
+
     @staticmethod
     def split_capl_comment_parts(line: str) -> tuple[str, str]:
         """以首个 ``//`` 为界拆成代码与注释；无则注释为空串。参数：line — 单行 CAPL。返回：``(code, comment)``。"""
@@ -40,10 +56,7 @@ class CANRenderUtility:
         if "_Prepare" in line or "_PREPARE" in line:
             return False
         code_part, _ = CANRenderUtility.split_capl_comment_parts(line)
-        code_upper = code_part.upper()
-        if "SOA" not in code_upper:
-            return False
-        return "SOA_CHECK(" in code_upper or "CHECKREQ(" in code_upper
+        return CANRenderUtility.SOA_EXPECT_CHECK_OR_CHECKREQ_CALL_RE.search(code_part) is not None
 
     @staticmethod
     def is_soa_expect_check_only_line(line: str) -> bool:
@@ -51,10 +64,12 @@ class CANRenderUtility:
         if "_Prepare" in line or "_PREPARE" in line:
             return False
         code_part, _ = CANRenderUtility.split_capl_comment_parts(line)
-        code_upper = code_part.upper()
-        if "SOA" not in code_upper:
+        if CANRenderUtility.SOA_EXPECT_CHECK_ONLY_CALL_RE.search(code_part) is None:
             return False
-        return "SOA_CHECK(" in code_upper and "CHECKREQ(" not in code_upper
+        upper_flat = re.sub(r"\s+", " ", code_part.upper())
+        if "SOA_CHECKREQ" in code_part.upper() or "SOA CHECKREQ" in upper_flat:
+            return False
+        return True
 
     @staticmethod
     def has_traceback_token(line: str) -> bool:
@@ -79,12 +94,15 @@ class CANRenderUtility:
 
     @staticmethod
     def is_soa_req_test_step(line: str) -> bool:
-        """测试步骤行且代码部含 `SOA_REQ` 等。返回：bool。"""
+        """测试步骤行且代码部为独立 ``soa_req(`` 或 ``soa req(`` 调用（大小写不敏感）。
+
+        必须出现词边界的 ``SOA_REQ(`` 或中间为空格的 ``SOA REQ(``；``soa_reqabc(``、``abc_soa_req(`` 等不命中。
+        返回：bool。
+        """
         if not CANRenderUtility.is_test_step_line(line):
             return False
         code_part, _ = CANRenderUtility.split_capl_comment_parts(line)
-        code_upper = code_part.upper()
-        return "SOA_REQ(" in code_upper or "SOA REQ" in code_upper
+        return CANRenderUtility.SOA_REQ_TEST_STEP_CALL_RE.search(code_part) is not None
 
     @staticmethod
     def add_prepare_suffix_to_line(line: str) -> str:
@@ -128,7 +146,7 @@ class CANFileRenderer:
         """将同一 sheet 的若干用例拼成单文件 CAPL 文本（含头段 includes/variables 骨架）。参数：cases — 可迭代。返回：CRLF 结尾全文。"""
         case_list = list(cases or [])
         lines: list[str] = [
-            "/*@!Encoding: 936*/",
+            "/*@!Encoding:65001*/",
             "",
             "includes",
             "{",
@@ -260,11 +278,11 @@ class CANFileRenderer:
                 ):
                     prepare_line = CANRenderUtility.add_prepare_suffix_to_line(lines[line_index])
                     # 新增规则：
-                    # SOA_CHECK（不含 CHECKREQ）且该行出现 traceback* 时，
+                    # SOA_CHECK / CHECKREQ 且该行出现 traceback* 时，
                     # 优先前插到最近的前置 SOA REQ 测试步骤前；
                     # 若前面没有 SOA REQ，则前插到最近的前置 wait/sleep 测试步骤前。
                     if (
-                        CANRenderUtility.is_soa_expect_check_only_line(lines[line_index])
+                        CANRenderUtility.is_soa_expect_check_line(lines[line_index])
                         and CANRenderUtility.has_traceback_token(lines[line_index])
                     ):
                         nearest_soa_req_idx = None

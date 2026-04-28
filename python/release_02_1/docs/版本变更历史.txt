@@ -7,7 +7,7 @@
 ----------------------------------------
 版本 2.9
 ----------------------------------------
-日期：2026-02-09（或按实际发布日期填写）
+日期：2026-02-09
 
 1. 修复 exe 打包之后一直无法使用，以及前端页面很快就会用不了的问题；修复心跳检测。
 2. 在主日志下生成每一个表 sheet 对应的小 CAN 日志。
@@ -15,7 +15,7 @@
 ----------------------------------------
 版本 2.11
 ----------------------------------------
-日期：2026-02-11（或按实际发布日期填写）
+日期：2026-02-11
 
 1. 关键字不存在和写入错误判断更清晰。
 2. Web 上支持点火循环配置，并生成对应 txt 文件。
@@ -26,7 +26,7 @@
 ----------------------------------------
 版本 2.12
 ----------------------------------------
-日期：2026-02-12（或按实际发布日期填写）
+日期：2026-02-12
 
 1. 增加前端界面筛选 sheet 功能。
 
@@ -123,8 +123,19 @@
 版本 4.17
 ----------------------------------------
 日期：2026-04-17
-1.预期结果中同时出现soa check和traceback，找该用例中的soa req如果有soa req将加了prepare的移动到soa req前面，如果没有找前面的等待时间wait tc_sleep就放在等待时间的前面
+1.预期结果中同时出现 SOA check 与 traceback，在该用例中向前查找 SOA req（中间无下划线、业务表述为分词，代码侧兼容 SOA_CHECK / SOA REQ 等写法）；若存在则将带 _Prepare 的行放在对应 SOA req 前；若不存在则向前查找 wait/TC_Sleep 类等待并插在其前
 2.xml取消对功能模块的处理
 3.更改can文件的路径  #include "..\..\..\Public\TESTmode\TestMoudleControl\TestMoudleControl_Swc.can",#include "..\..\..\Public\ILNode\SecOc\CAN\LDCU.cin"
 4.cdcu即中央域部分，在首个testcase和最后一个testcase中分别加g_EM_SOAGen_Swc_SOA_CONNECT();g_EM_SOAGen_Swc_SOA_CLOSE();
-5.集成soa部分服务通信矩阵生成路径为用户选择路径+\ILNode\SOANode
+5.集成soa部分服务通信矩阵生成路径为用户选择路径上一级目录+\public\ILNode\SOANode
+
+版本 4.27
+日期：2026-04-27
+1.增加soa代码生成SOA_StartSetserver.cin，生成路径调整为用户选择路径下拼接的\TESTmode（与cin/xml路径规则一致）
+2.生成的can和cin文件写入改为 UTF-8 BOM（utf-8-sig）
+3.预期结果中同时出现 SOA checkreq 与 traceback，该用例中 SOA check / SOA checkreq / SOA req 的匹配与 4.17 中「SOA check + traceback」规则一致；SOA req 以业务上「中间无下划线、带空格（SOA REQ）」为表述准绳，并兼容下划线形式（SOA_REQ）解析
+4.增加soa代码生成SOA_DataTab.cin，生成位置在上一级目录下+Public\TESTmode\Bus\SOA\SOA_Onder下
+
+版本 4.28
+日期：2026-04-28
+1.文档口径同步（SOA 已落地）：更新 README、架构说明、必需文件说明、验收清单说明；将 SOA 从“规划中/不适用”统一为“已接入并可验收”，与当前代码实现保持一致。

@@ -28,6 +28,14 @@ class XMLGeneratorService:
 
     @staticmethod
     def build_ungenerated_reason(stats: dict) -> str:
+        """构建未生成 XML 的原因描述。
+
+        参数：
+            stats：解析统计信息字典。
+
+        返回：
+            人可读原因字符串。
+        """
         return build_ungenerated_reason(stats, generated_label="XML文件")
 
     def run_pipeline(
@@ -38,6 +46,17 @@ class XMLGeneratorService:
         domain: str = DEFAULT_DOMAIN_LR_REAR,
         workbook_cache: dict[str, object] | None = None,
     ):
+        """执行 XML 生成主流程。
+
+        参数：
+            config_path：可选配置文件路径。
+            base_dir：可选项目根目录。
+            domain：生成域，默认 `LR_REAR`。
+            workbook_cache：可选工作簿缓存，用于复用 Excel 句柄。
+
+        返回：
+            无。成功时写出 XML 文件并打印汇总。
+        """
         resolved_base_dir = xml_generator_runtime.resolve_base_dir(base_dir)
         runtime = xml_generator_runtime.load_runtime_config(config_path, resolved_base_dir, domain)
         excel_path = runtime[XML_RUNTIME_KEY_EXCEL_PATH]
@@ -54,7 +73,10 @@ class XMLGeneratorService:
             try:
                 excel_files = xml_generator_runtime.find_excel_files(excel_path)
                 if not excel_files:
-                    print(f"警告: 在路径 '{excel_path}' 中未找到任何 Excel 文件")
+                    warning_msg = f"警告: 在路径 '{excel_path}' 中未找到任何 Excel 文件"
+                    print(warning_msg)
+                    if logger:
+                        logger.warning(warning_msg)
                     return
                 if selected_filter is not None:
                     excel_files = [
@@ -64,13 +86,18 @@ class XMLGeneratorService:
                     ]
                     if not excel_files:
                         expected = ", ".join(sorted(selected_filter.keys()))
-                        print(
-                            f"警告: 勾选的 sheet 对应的 Excel 在路径中未找到，请确认所选 sheet 属于当前输入路径下的文件。"
+                        warning_msg = (
+                            "警告: 勾选的 sheet 对应的 Excel 在路径中未找到，请确认所选 sheet 属于当前输入路径下的文件。"
                             f" 当前输入路径: {excel_path}；勾选期望的文件名（任选其一需存在）: {expected}"
                         )
+                        print(warning_msg)
+                        if logger:
+                            logger.warning(warning_msg)
                         return
             except Exception as error:
                 print(f"错误: 无法查找 Excel 文件: {error}")
+                if logger:
+                    logger.error("无法查找 Excel 文件: %s", error, exc_info=True)
                 traceback.print_exc()
                 return
 
@@ -114,21 +141,31 @@ class XMLGeneratorService:
                         sheet_groups = xml_generator_runtime.group_testcases_by_sheet_and_group(sheet_testcases_dict)
                         excel_files_dict[excel_file] = sheet_groups
                     else:
-                        print(f"  警告: 文件 '{os.path.basename(excel_file)}' 中未找到任何测试用例")
+                        warning_msg = f"  警告: 文件 '{os.path.basename(excel_file)}' 中未找到任何测试用例"
+                        print(warning_msg)
+                        if logger:
+                            logger.warning(warning_msg)
                     try:
                         print("")
                     except Exception:
                         pass
             except Exception as error:
                 print(f"错误: 无法解析 Excel 文件: {error}")
+                if logger:
+                    logger.error("无法解析 Excel 文件: %s", error, exc_info=True)
                 traceback.print_exc()
                 return
 
             if not excel_files_dict:
-                print("警告: 未找到任何测试用例")
+                warning_msg = "警告: 未找到任何测试用例"
+                print(warning_msg)
+                if logger:
+                    logger.warning(warning_msg)
                 return
 
             print("\n生成 XML 文件...")
+            if logger:
+                logger.info("开始生成 XML 文件: %s", output_xml_path)
             try:
                 xml_content = xml_generator_runtime.generate_xml_content(excel_files_dict)
                 xml_content = xml_content.replace("\r\n", "\n").replace("\n", "\r\n")

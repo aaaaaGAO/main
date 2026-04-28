@@ -1,0 +1,23 @@
+name: naming-audit
+on:
+  push:
+    paths:
+      - "python/release_02_1/**/*.py"
+      - "python/release_02_1/tools/**"
+      - ".github/workflows/naming-audit.yml"
+  pull_request:
+    paths:
+      - "python/release_02_1/**/*.py"
+      - "python/release_02_1/tools/**"
+      - ".github/workflows/naming-audit.yml"
+
+jobs:
+  strict-naming:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Run naming audit (zero tolerance)
+        run: python python/release_02_1/tools/naming_audit_strict.py

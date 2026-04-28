@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """任务执行服务。
 
@@ -14,10 +14,20 @@ import traceback
 from dataclasses import dataclass
 from typing import Any, Dict, Optional
 
+from core.generator_logging import GeneratorLogger, LogSpecConfig
 from infra.filesystem import resolve_main_config_path
+from infra.filesystem.pathing import resolve_configured_path
+from generators.capl_soa.soa_setserver_cin import generate_setserver_cin_from_excel
+from generators.capl_soa.soa_datatab_cin import generate_datatab_cin_from_excel
 from services.config_constants import (
     DEFAULT_DOMAIN_LR_REAR,
     LABEL_RESETDID_VALUE_CONFIG_TABLE,
+    OPTION_SOA_DATATAB_OUTPUT_FILENAME,
+    OPTION_SOA_SETSERVER_OUTPUT_FILENAME,
+    OPTION_OUTPUT_DIR,
+    OPTION_SRV_EXCEL,
+    OPTION_SRV_EXCEL_CANDIDATES,
+    OPTION_UDS_ECU_QUALIFIER,
     SECTION_CENTRAL,
 )
 from generators.capl_can.entrypoint import run_generation as run_can_generation
@@ -27,8 +37,12 @@ from generators.capl_resetdid.entrypoint import run_generation as run_resetdid_g
 from generators.capl_uart.entrypoint import run_generation as run_uart_generation
 from generators.capl_xml.entrypoint import run_generation as run_xml_generation
 from generators.capl_soa.entrypoint import run_generation as run_soa_generation
+from utils.logger import PROGRESS_LEVEL, ExcludeSubstringsFilter
 
 logger = logging.getLogger(__name__)
+SOA_LOGGER_NAME = "generate_soa_startsetserver"
+SOA_LOG_BASENAME = "generate_soa_startsetserver.log"
+SOA_PARSE_LOG_BASENAME = "SOA_Service_Interface.log"
 
 
 @dataclass
@@ -361,7 +375,11 @@ class TaskService:
     def run_uart(self, *, workbook_cache: Dict[str, Any] | None = None) -> TaskResult:
         """执行 UART 生成任务。
 
-        Returns:
+        参数：
+            workbook_cache：可选工作簿缓存字典；用于同一流程内复用已打开 Excel，
+                减少 UART 读取矩阵时的重复 load。
+
+        返回：
             TaskResult: 执行结果。
         """
         started = self.log_task_start(step="uart", domain=SECTION_CENTRAL)
@@ -397,18 +415,109 @@ class TaskService:
             TaskResult: 执行结果。
         """
         started = self.log_task_start(step="soa", domain=domain)
+        workbook_cache: Dict[str, Any] = {}
+        soa_log_manager = GeneratorLogger(
+            self.base_dir,
+            logger_name=SOA_LOGGER_NAME,
+            log_specs=[
+                LogSpecConfig(
+                    subdir="parse",
+                    basename=SOA_PARSE_LOG_BASENAME,
+                    file_filters=(
+                        ExcludeSubstringsFilter(
+                            ">>> 开始执行",
+                            ">>> 任务完成！",
+                            "SOA 生成完成：",
+                            "已写入 ",
+                        ),
+                    ),
+                    progress_filters=(
+                        ExcludeSubstringsFilter(
+                            ">>> 开始执行",
+                            ">>> 任务完成！",
+                            "SOA 生成完成：",
+                            "已写入 ",
+                        ),
+                    ),
+                ),
+                ("gen", SOA_LOG_BASENAME),
+            ],
+            console=False,
+        )
+        soa_file_logger = soa_log_manager.setup()
+        soa_file_logger.log(PROGRESS_LEVEL, ">>> 开始执行 [%s] 域 SOA 生成任务...", domain)
         try:
-            run_soa_generation(
+            generator_config = run_soa_generation(
                 config_path=self.config_path,
                 base_dir=self.base_dir,
                 domain=domain,
+                workbook_cache=workbook_cache,
             )
+            cin_note = ""
+            try:
+                srv_value = ""
+                for option_name in (OPTION_SRV_EXCEL, *OPTION_SRV_EXCEL_CANDIDATES):
+                    srv_value = generator_config.get_from_section(
+                        domain,
+                        option_name,
+                        fallback="",
+                    ).strip()
+                    if srv_value:
+                        break
+                output_dir_raw = generator_config.get_from_section(
+                    domain,
+                    OPTION_OUTPUT_DIR,
+                    fallback="",
+                ).strip()
+                uds_ecu_qualifier = generator_config.get_from_section(
+                    domain,
+                    OPTION_UDS_ECU_QUALIFIER,
+                    fallback="",
+                ).strip()
+                setserver_output_filename = (
+                    generator_config.get_fixed(OPTION_SOA_SETSERVER_OUTPUT_FILENAME) or ""
+                ).strip()
+                datatab_output_filename = (
+                    generator_config.get_fixed(OPTION_SOA_DATATAB_OUTPUT_FILENAME) or ""
+                ).strip()
+                if srv_value and output_dir_raw:
+                    excel_abs = resolve_configured_path(generator_config.base_dir, srv_value)
+                    anchor_abs = resolve_configured_path(generator_config.base_dir, output_dir_raw)
+                    generate_setserver_cin_from_excel(
+                        excel_abs,
+                        anchor_abs,
+                        find_or_create_soa_onder=False,
+                        uds_ecu_qualifier=uds_ecu_qualifier,
+                        workbook_cache=workbook_cache,
+                        output_filename=setserver_output_filename,
+                    )
+                    generate_datatab_cin_from_excel(
+                        excel_abs,
+                        base_dir=generator_config.base_dir,
+                        configured_output_dir=output_dir_raw,
+                        workbook_cache=workbook_cache,
+                        output_filename=datatab_output_filename,
+                    )
+                    cin_note = "，SOA_StartSetserver 与 SOA_DataTab 生成完成"
+                elif not output_dir_raw and not srv_value:
+                    raise ValueError("SOA 生成缺少必填配置：output_dir 与 srv_excel 均未配置")
+                elif not output_dir_raw:
+                    raise ValueError("SOA 生成缺少必填配置：output_dir 未配置")
+                else:
+                    raise ValueError("SOA 生成缺少必填配置：srv_excel 未配置")
+            except Exception as cin_error:
+                soa_file_logger.exception(
+                    "SOA 扩展生成物未完成（SOA Node 已成功）: %s",
+                    cin_error,
+                )
+                raise
             self.log_task_done(
                 step="soa",
                 domain=domain,
                 elapsed_ms=(time.perf_counter() - started) * 1000.0,
             )
-            return TaskResult(success=True, message=f"{domain} SOA Node 生成完成")
+            soa_file_logger.log(PROGRESS_LEVEL, ">>> 任务完成！%s SOA Node 生成完成%s", domain, cin_note)
+            return TaskResult(success=True, message=f"{domain} SOA Node 生成完成{cin_note}")
         except Exception as error:
             traceback_text = traceback.format_exc()
             self.log_task_failed(
@@ -422,5 +531,11 @@ class TaskService:
                 message=f"{domain} SOA Node 生成失败: {error}",
                 detail=traceback_text,
             )
+        finally:
+            for workbook_obj in workbook_cache.values():
+                close_method = getattr(workbook_obj, "close", None)
+                if callable(close_method):
+                    close_method()
+            soa_log_manager.clear()
 
 

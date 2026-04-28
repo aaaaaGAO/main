@@ -30,6 +30,14 @@ CAN_SHEET_MAX_COL = 80
 
 @dataclass(slots=True)
 class RepoStats:
+    """CAN 用例读取统计信息。
+
+    参数：
+        各字段分别表示总用例数、按过滤条件被筛掉的数量及表头校验失败信息。
+
+    返回：
+        作为统计载体供仓储层汇总与上层展示使用。
+    """
     total_cases: int = 0
     filtered_by_level: int = 0
     filtered_by_platform: int = 0
@@ -44,6 +52,11 @@ class RepoStats:
             self.header_validation_details = []
 
     def to_dict(self) -> dict:
+        """导出统计信息字典。
+
+        参数：无。
+        返回：包含全部统计字段的 `dict`。
+        """
         return {
             "total_cases": self.total_cases,
             "filtered_by_level": self.filtered_by_level,
@@ -89,6 +102,15 @@ class CANExcelRepository:
         *,
         workbook_cache: dict[str, object] | None = None,
     ) -> tuple[dict[tuple[str, str], list[CANTestCase]], dict]:
+        """加载整个 Excel 的 CAN 用例。
+
+        参数：
+            excel_path：目标 Excel 路径。
+            workbook_cache：可选工作簿缓存，用于复用已打开 workbook。
+
+        返回：
+            `(sheet_cases_map, stats_dict)`，分别为按 sheet 分组的用例与统计信息。
+        """
         # 与 XML 生成脚本保持一致：使用 read_only=False，方便多次 iter_rows，
         # 并让 ExcelService 内部的 _dimensions 重置逻辑生效，避免只读到 A 列。
         normalized_excel_path = os.path.normcase(os.path.abspath(excel_path))
@@ -436,6 +458,14 @@ class CANExcelRepository:
         return cases
 
     def build_column_mapper(self, header_row: Iterable[object]) -> ColumnMapper | None:
+        """构建并校验列映射器。
+
+        参数：
+            header_row：表头行单元格值序列。
+
+        返回：
+            映射成功返回 `ColumnMapper`；否则返回 `None`。
+        """
         mapper = ColumnMapper(
             aliases={
                 # 与 XML 列识别保持一致：同时支持「用例ID」和「用例 ID」等写法，
@@ -466,6 +496,16 @@ class CANExcelRepository:
         return mapper if ok else None
 
     def collect_raw_steps(self, row: tuple, row_idx: int, mapper: ColumnMapper) -> list[CANRawStep]:
+        """从一行数据提取步骤与预期文本。
+
+        参数：
+            row：当前行值元组。
+            row_idx：Excel 行号。
+            mapper：列映射器。
+
+        返回：
+            `CANRawStep` 列表。
+        """
         items: list[CANRawStep] = []
         step_lines: list[str] = []
         expected_lines: list[str] = []
@@ -497,6 +537,16 @@ class CANExcelRepository:
 
     @staticmethod
     def row_value(row: tuple, mapper: ColumnMapper, field: str) -> str:
+        """按字段名读取并规范化单元格值。
+
+        参数：
+            row：当前行值元组。
+            mapper：列映射器。
+            field：逻辑字段名。
+
+        返回：
+            规范化字符串；字段不存在时为空串。
+        """
         if not mapper.has(field):
             return ""
         idx = mapper.get(field)
@@ -505,6 +555,14 @@ class CANExcelRepository:
         return norm_str(row[idx])
 
     def missing_header_details(self, header_row: Iterable[object]) -> list[str]:
+        """生成表头缺失明细。
+
+        参数：
+            header_row：表头行单元格值序列。
+
+        返回：
+            缺失列的人可读说明列表。
+        """
         mapper = ColumnMapper(
             aliases={
                 "case_id": ("用例ID", "用例id", "用例编号"),

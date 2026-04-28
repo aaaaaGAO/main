@@ -37,8 +37,7 @@ from utils.logger import (
 )
 from infra.filesystem.pathing import (
     RuntimePathResolver,
-    resolve_configured_path,
-    resolve_named_subdir,
+    resolve_output_dir_relative_path,
 )
 
 from .runtime_io import (
@@ -63,10 +62,26 @@ def resolve_base_dir() -> str:
 
 
 def split_csv_values(csv_text: str) -> list[str]:
+    """将逗号分隔文本拆分为非空项列表。
+
+    参数：
+        csv_text：逗号分隔字符串。
+
+    返回：
+        去空白后的字符串列表。
+    """
     return [item.strip() for item in (csv_text or "").split(",") if item.strip()]
 
 
 def iter_input_specs(raw: str) -> Iterable[tuple[str, list[str] | None]]:
+    """迭代解析 DIDInfo 输入规范。
+
+    参数：
+        raw：`inputs` 原始配置文本。
+
+    返回：
+        `(excel_path, sheets)` 迭代器；`sheets=None` 表示用默认 sheet。
+    """
     for path_text, sheet_text in split_input_lines(raw):
         if not sheet_text:
             yield (path_text, None)
@@ -134,12 +149,13 @@ def load_runtime_config(base_dir: str, domain: str | None = None) -> tuple:
         ).strip()
         if not output_dir_didinfo:
             output_dir_didinfo = gconfig.get_required_from_section(sec, OPTION_OUTPUT_DIR)
-        output_dir_abs = Path(resolve_configured_path(base_dir, output_dir_didinfo))
-        config_dir_path = resolve_named_subdir(base_dir, output_dir_didinfo, "Configuration")
-        if not config_dir_path:
-            raise RuntimeError(
-                f"错误：输出路径下不存在 Configuration 目录: {output_dir_abs / 'Configuration'}"
-            )
+        config_dir_path = resolve_output_dir_relative_path(
+            base_dir,
+            output_dir_didinfo,
+            ("Configuration",),
+            anchor_level="self",
+            required=True,
+        )
         output_path = Path(config_dir_path) / output_filename
         variant_raw = (
             (gconfig.get_fixed("didinfo_variants") or "").strip()
@@ -180,12 +196,13 @@ def load_runtime_config(base_dir: str, domain: str | None = None) -> tuple:
         raise RuntimeError(
             f"未配置 DIDInfo 输出目录：请在 [{SECTION_LR_REAR}] 配置 output_dir 或 output_dir_didinfo"
         )
-    output_dir_abs = Path(resolve_configured_path(base_dir, output_dir_didinfo))
-    config_dir_path = resolve_named_subdir(base_dir, output_dir_didinfo, "Configuration")
-    if not config_dir_path:
-        raise RuntimeError(
-            f"错误：输出路径下不存在 Configuration 目录: {output_dir_abs / 'Configuration'}"
-        )
+    config_dir_path = resolve_output_dir_relative_path(
+        base_dir,
+        output_dir_didinfo,
+        ("Configuration",),
+        anchor_level="self",
+        required=True,
+    )
     output_path = Path(config_dir_path) / output_filename
     variant_raw = (
         (gconfig.get_fixed("didinfo_variants") or "").strip()
@@ -212,6 +229,14 @@ def load_runtime_config(base_dir: str, domain: str | None = None) -> tuple:
 
 
 def strip_didinfo_tee_msg(msg: str) -> str:
+    """清洗 TeeToLogger 前缀噪声文本。
+
+    参数：
+        msg：原始日志消息。
+
+    返回：
+        去掉 didinfo/resetdid 前缀后的消息。
+    """
     msg = re.sub(r"^\[(?:didinfo|resetdid)\]\s*(?:ERROR|INFO)\s*", "", msg, flags=re.I)
     msg = re.sub(r"^\[(?:didinfo|resetdid)\]\s*(?:错误|警告)\s*:\s*", "", msg, flags=re.I)
     msg = re.sub(r"^\[(?:错误|警告|error|warn)\]\s*:?\s*", "", msg, flags=re.I)
@@ -219,7 +244,23 @@ def strip_didinfo_tee_msg(msg: str) -> str:
 
 
 class ExcelParseFriendlyFormatter(logging.Formatter):
+    """解析日志友好格式化器。
+
+    参数：
+        继承 `logging.Formatter` 的标准参数。
+
+    返回：
+        用于 DIDInfo 日志的格式化器实例。
+    """
     def format(self, record: logging.LogRecord) -> str:
+        """格式化日志记录。
+
+        参数：
+            record：日志记录对象。
+
+        返回：
+            格式化后的日志字符串。
+        """
         msg = record.getMessage()
         if record.levelno == PROGRESS_LEVEL:
             old_name = record.levelname
@@ -236,6 +277,14 @@ class ExcelParseFriendlyFormatter(logging.Formatter):
 
 
 def create_excel_parse_friendly_formatter(format_string: str) -> logging.Formatter:
+    """创建 DIDInfo 日志格式化器。
+
+    参数：
+        format_string：日志格式字符串。
+
+    返回：
+        `ExcelParseFriendlyFormatter` 实例。
+    """
     return ExcelParseFriendlyFormatter(format_string)
 
 
@@ -300,6 +349,13 @@ def init_runtime(base_dir: str) -> tuple:
 
 
 def clear_run_logger(logger_obj: Any) -> None:
+    """清理 DIDInfo 运行日志资源。
+
+    参数：
+        logger_obj：运行时 logger 对象。
+
+    返回：无。
+    """
     clear_run_logger_impl(logger_obj)
     global log_manager
     if log_manager is not None:
@@ -308,18 +364,30 @@ def clear_run_logger(logger_obj: Any) -> None:
 
 
 def get_progress_level() -> int:
+    """获取 DIDInfo 进度日志级别。"""
     return PROGRESS_LEVEL
 
 
 def pick_sheet_name(wb: Any, default_sheet: str | None) -> str:
+    """选择目标 sheet 名。
+
+    参数：
+        wb：工作簿对象。
+        default_sheet：优先 sheet。
+
+    返回：
+        实际选中的 sheet 名称。
+    """
     return runtime_io_pick_sheet_name(wb, default_sheet)
 
 
 def find_header_row_and_cols(ws: Any) -> tuple:
+    """查找 DIDInfo 表头行和列映射。"""
     return runtime_io_find_header_row_and_cols(ws)
 
 
 def find_variant_cols(ws: Any, header_row: int, variant_names: list[str]) -> dict[str, int]:
+    """查找车型列号映射。"""
     return runtime_io_find_variant_cols(ws, header_row, variant_names)
 
 
@@ -335,6 +403,19 @@ def generate_from_sheet(
     last_did: str | None = None,
     last_len: int | None = None,
 ) -> tuple:
+    """按车型从单个 sheet 生成 DIDInfo 片段。
+
+    参数：
+        ws：工作表对象。
+        excel_name：Excel 文件名。
+        variant_name：车型名。
+        variant_col：车型列号。
+        sheet_name：sheet 名称。
+        last_sheet_name/last_variant_name/last_did/last_len：跨调用头部去重状态。
+
+    返回：
+        生成结果元组，包含文本片段与更新后的去重状态。
+    """
     return runtime_io_generate_from_sheet(
         ws,
         excel_name=excel_name,
