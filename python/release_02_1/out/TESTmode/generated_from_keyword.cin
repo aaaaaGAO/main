@@ -1,0 +1,1292 @@
+﻿/*@!Encoding:65001*/
+includes
+{
+  
+}
+
+variables
+{
+  
+}
+
+export void g_HIL_Clib_Swc_Clib_Init()
+{
+  g_HIL_Bus_Swc_Set("VTS::VT7101_1_Out1::Active 0"); //测试步骤 Set J_KL30 OFF
+  g_HIL_Gen_Swc_Wait("2000 ms"); //测试步骤 Wait 2000 ms
+  g_HIL_Bus_Swc_Set("VTS::VT7101_1_Out1::Active 1"); //测试步骤 Set J_KL30 ON
+  g_HIL_Gen_Swc_Wait("1000 ms"); //测试步骤 Wait 1000 ms
+  g_HIL_Bus_Swc_Set("VTS::VT7101_1_Out1::Active 13"); //测试步骤 Set J_BAT 13
+  g_HIL_Bus_Swc_Set("SYS::IT6512D::CurrentSet 40"); //测试步骤 Set J_BAT_CURR_SV 40
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_Gen_Swc_Wait("500 ms"); //测试步骤 Wait 500 ms
+  g_HIL_UDS_Swc_Set_UDS("SA_L1"); //测试步骤 Set_UDS SA_L1
+  g_HIL_Gen_Swc_Wait("301 ms"); //测试步骤 Wait 301 ms
+  g_HIL_Gen_Swc_Wait("1000 ms"); //测试步骤 Wait 1000 ms
+  g_HIL_Bus_Swc_Disable_CAN("ICAN"); //测试步骤 Disable_CAN ICAN
+  g_HIL_Bus_Swc_Disable_CAN("ECAN"); //测试步骤 Disable_CAN ECAN
+  g_HIL_Bus_Swc_Disable_CAN("CCAN"); //测试步骤 Disable_CAN CCAN
+  g_HIL_Bus_Swc_Disable_CAN("BLCAN"); //测试步骤 Disable_CAN BLCAN
+  g_HIL_Bus_Swc_Disable_CAN("LLIN2"); //测试步骤 Disable_CAN LLIN2
+  g_HIL_Gen_Swc_Wait("2000 ms"); //测试步骤 Wait 2000 ms
+  g_HIL_Bus_Swc_Enable_CAN("ICAN"); //测试步骤 Enable_CAN ICAN
+  g_HIL_Bus_Swc_Enable_CAN("ECAN"); //测试步骤 Enable_CAN ECAN
+  g_HIL_Bus_Swc_Enable_CAN("CCAN"); //测试步骤 Enable_CAN CCAN
+  g_HIL_Bus_Swc_Enable_CAN("BLCAN"); //测试步骤 Enable_CAN BLCAN
+  g_HIL_Gen_Swc_Wait("2000 ms"); //测试步骤 Wait 2000 ms
+  g_HIL_XCP_Swc_Set_XCP("CalEn_FIN_BrkPedalStVD 1"); //测试步骤 Set_XCP CalEn_FIN_BrkPedalStVD 1
+  g_HIL_XCP_Swc_Set_XCP("CalVal_FIN_BrkPedalStVD 1"); //测试步骤 Set_XCP CalVal_FIN_BrkPedalStVD 1
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt4::I_RDCU_PsngrHandleSt 1"); //测试步骤 Set I_RDCU_BodySysSt4::I_RDCU_PsngrHandleSt 1
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt4::I_RDCU_RRHandleSt 1"); //测试步骤 Set I_RDCU_BodySysSt4::I_RDCU_RRHandleSt 1
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt4::I_RDCU_RFHandlePos 0"); //测试步骤 Set I_RDCU_BodySysSt4::I_RDCU_RFHandlePos 0
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt4::I_RDCU_RRHandlePos 0"); //测试步骤 Set I_RDCU_BodySysSt4::I_RDCU_RRHandlePos 0
+  g_HIL_Gen_Swc_Wait("301 ms"); //测试步骤 Wait 301 ms
+  g_HIL_UDS_Swc_Set_Config("PhysicalKeyTypeConfig 0x02"); //测试步骤 Step Set_Config PhysicalKeyTypeConfig BLEPhysicalKeyOnly//数字钥匙
+  // Step Set_Config PhysicalKeyTypeConfig open // 测试步骤DID Configuration 表中 name PhysicalKeyTypeConfig 的Values 未匹配: open
+  teststep("step","Step Set_Config PhysicalKeyTypeConfig open");
+  teststepfail("fail","DID Configuration 表中 name PhysicalKeyTypeConfig 的Values 未匹配: open");
+  g_HIL_UDS_Swc_Set_Config("PhysicalKeyTypeConfig 123"); //测试步骤 Step Set_Config PhysicalKeyTypeConfig 123//数字钥匙
+  // Step Set_Config abc 123 // 测试步骤DID Configuration 表中Name 未找到: abc
+  teststep("step","Step Set_Config abc 123");
+  teststepfail("fail","DID Configuration 表中Name 未找到: abc");
+  g_HIL_Bus_Swc_Set("VTS::VT2516_5_Ch4::PWMDC > 0.95 0"); //测试步骤 Step Set J_PO_LS_LDoorHandleLight_Duty OFF 0
+}
+
+export void g_HIL_Clib_Swc_Clib_Initial()
+{
+  g_HIL_Bus_Swc_Set("VTS::VT7101_1_Out1::Active 13"); //测试步骤 Set J_BAT 13
+  g_HIL_Bus_Swc_Set("VTS::VT7101_1_Out1::Active 1"); //测试步骤 Set J_KL30 ON
+  g_HIL_UDS_Swc_Set_UDS("SA_L1"); //测试步骤 Set_UDS SA_L1
+}
+
+export void g_HIL_Clib_Swc_Clib_BATOFF()
+{
+  g_HIL_Gen_Swc_Wait("2000 ms"); //测试步骤 Wait 2000 ms
+  g_HIL_Bus_Swc_Set("VTS::VT7101_1_Out1::Active 0"); //测试步骤 Set J_KL30 OFF
+  g_HIL_Gen_Swc_Wait("2000 ms"); //测试步骤 Wait 2000 ms
+}
+
+export void g_HIL_Clib_Swc_Clib_BATON()
+{
+  g_HIL_Gen_Swc_Wait("2000 ms"); //测试步骤 Wait 2000 ms
+  g_HIL_Bus_Swc_Set("VTS::VT7101_1_Out1::Active 1"); //测试步骤 Set J_KL30 ON
+  g_HIL_Gen_Swc_Wait("1000 ms"); //测试步骤 Wait 1000 ms
+}
+
+export void g_HIL_Clib_Swc_Clib_Reset()
+{
+  g_HIL_Gen_Swc_Wait("2000 ms"); //测试步骤 Wait 2000 ms
+  g_HIL_Bus_Swc_Set("VTS::VT7101_1_Out1::Active 0"); //测试步骤 Set J_KL30 OFF
+  g_HIL_Gen_Swc_Wait("2000 ms"); //测试步骤 Wait 2000 ms
+  g_HIL_Bus_Swc_Set("VTS::VT7101_1_Out1::Active 1"); //测试步骤 Set J_KL30 ON
+  g_HIL_Gen_Swc_Wait("500 ms"); //测试步骤 Wait 500 ms
+}
+
+export void g_HIL_Clib_Swc_Clib_OFF()
+{
+  g_HIL_Bus_Swc_Set("C_CDCU_DiagnosticSt::C_CDCU_DiagnosticSt 0"); //测试步骤 Set C_CDCU_DiagnosticSt::C_CDCU_DiagnosticSt 0
+  g_HIL_XCP_Swc_Set_XCP("CalEn_Vcu_MO_Motor_laeuft 1"); //测试步骤 Set_XCP CalEn_Vcu_MO_Motor_laeuft 1
+  g_HIL_XCP_Swc_Set_XCP("CalVal_Vcu_MO_Motor_laeuft 0"); //测试步骤 Set_XCP CalVal_Vcu_MO_Motor_laeuft 0
+  g_HIL_XCP_Swc_Set_XCP("CalEn_KeyValidSt 80"); //测试步骤 Set_XCP CalEn_KeyValidSt 80
+  g_HIL_XCP_Swc_Set_XCP("CalVal_KeyValidSt 1"); //测试步骤 Set_XCP CalVal_KeyValidSt 1
+  g_HIL_XCP_Swc_Set_XCP("CalEn_FIN_CurGearLev 1"); //测试步骤 Set_XCP CalEn_FIN_CurGearLev 1
+  g_HIL_XCP_Swc_Set_XCP("CalEn_FIN_GearLev 4"); //测试步骤 Set_XCP CalEn_FIN_GearLev 4
+  g_HIL_XCP_Swc_Set_XCP("CalVal_FIN_CurGearLev 4"); //测试步骤 Set_XCP CalVal_FIN_CurGearLev 4
+  g_HIL_XCP_Swc_Set_XCP("CalVal_FIN_GearLev 4"); //测试步骤 Set_XCP CalVal_FIN_GearLev 4
+  g_HIL_XCP_Swc_Set_XCP("CalC_GearLev_Valid 1"); //测试步骤 Set_XCP CalC_GearLev_Valid 1
+  g_HIL_XCP_Swc_Set_XCP("CalC_GearLev_Val 5"); //测试步骤 Set_XCP CalC_GearLev_Val 5
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch17::DigitalOutput 0"); //测试步骤 Set J_DI_BrakeSw1_HS NotPressed
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch22::DigitalOutput 0"); //测试步骤 Set J_DI_BrakeSw2_HS NotPressed
+  g_HIL_Gen_Swc_Wait("400 ms"); //测试步骤 Wait 400 ms
+  g_HIL_Bus_Swc_Condition_ReadConfig("DoorAjarSwType"); //测试步骤 Step Condition_ReadConfig DoorAjarSwType
+  g_HIL_Bus_Swc_Set("VTS::VT2848_3_Ch34::DigitalOutput 0x00 0;0x01 1"); //测试步骤 Step Set J_DI_FLDoorAjarSW_LS 0x00 close;0x01 open
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_Bus_Swc_Set("VTS::VT2848_3_Ch34::DigitalOutput 0x00 1;0x01 0"); //测试步骤 Step Set J_DI_FLDoorAjarSW_LS 0x00 open;0x01 close
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_Bus_Swc_Set("VTS::VT2848_3_Ch34::DigitalOutput 0x00 0;0x01 1"); //测试步骤 Step Set J_DI_FLDoorAjarSW_LS 0x00 close;0x01 open
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_PowerMode 0"); //测试步骤 Check I_LDCU_BodySysSt1::I_LDCU_PowerMode 0
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch23::DigitalOutput 0"); //测试步骤 Set J_DI_KL15_BackUp_HS INACTIVE
+}
+
+export void g_HIL_Clib_Swc_Clib_ForceOFF()
+{
+  g_HIL_XCP_Swc_Set_XCP("CalEn_KeyValidSt 80"); //测试步骤 Set_XCP CalEn_KeyValidSt 80
+  g_HIL_XCP_Swc_Set_XCP("CalVal_KeyValidSt 1"); //测试步骤 Set_XCP CalVal_KeyValidSt 1
+  g_HIL_XCP_Swc_Set_XCP("CalEn_FIN_CurGearLev 1"); //测试步骤 Set_XCP CalEn_FIN_CurGearLev 1
+  g_HIL_XCP_Swc_Set_XCP("CalEn_FIN_GearLev 1"); //测试步骤 Set_XCP CalEn_FIN_GearLev 1
+  g_HIL_XCP_Swc_Set_XCP("CalVal_FIN_CurGearLev 4"); //测试步骤 Set_XCP CalVal_FIN_CurGearLev 4
+  g_HIL_XCP_Swc_Set_XCP("CalVal_FIN_GearLev 4"); //测试步骤 Set_XCP CalVal_FIN_GearLev 4
+  g_HIL_Bus_Swc_Condition_ReadConfig("DoorAjarSwType"); //测试步骤 Step Condition_ReadConfig DoorAjarSwType
+  g_HIL_Bus_Swc_Set("VTS::VT2848_3_Ch34::DigitalOutput 0x00 0;0x01 1"); //测试步骤 Step Set J_DI_FLDoorAjarSW_LS 0x00 close;0x01 open
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_Bus_Swc_Set("VTS::VT2848_3_Ch34::DigitalOutput 0x00 1;0x01 0"); //测试步骤 Step Set J_DI_FLDoorAjarSW_LS 0x00 open;0x01 close
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_Bus_Swc_Set("VTS::VT2848_3_Ch34::DigitalOutput 0x00 0;0x01 1"); //测试步骤 Step Set J_DI_FLDoorAjarSW_LS 0x00 close;0x01 open
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch27::DigitalOutput 1"); //测试步骤 Set J_DI_SSBPin4SW_LS Pressed
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch32::DigitalOutput 1"); //测试步骤 Set J_DI_SSBPin6SW_LS Pressed
+  g_HIL_Gen_Swc_Wait("5500 ms"); //测试步骤 Wait 5500 ms
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch27::DigitalOutput 0"); //测试步骤 Set J_DI_SSBPin4SW_LS NotPressed
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch32::DigitalOutput 0"); //测试步骤 Set J_DI_SSBPin6SW_LS NotPressed
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_PowerMode 0"); //测试步骤 Check I_LDCU_BodySysSt1::I_LDCU_PowerMode 0
+}
+
+export void g_HIL_Clib_Swc_Clib_BrkLocalON()
+{
+  g_HIL_XCP_Swc_Set_XCP("CalEn_KeyValidSt 80"); //测试步骤 Set_XCP CalEn_KeyValidSt 80
+  g_HIL_XCP_Swc_Set_XCP("CalVal_KeyValidSt 1"); //测试步骤 Set_XCP CalVal_KeyValidSt 1
+  g_HIL_XCP_Swc_Set_XCP("CalEn_FIN_CurGearLev 1"); //测试步骤 Set_XCP CalEn_FIN_CurGearLev 1
+  g_HIL_XCP_Swc_Set_XCP("CalEn_FIN_GearLev 1"); //测试步骤 Set_XCP CalEn_FIN_GearLev 1
+  g_HIL_XCP_Swc_Set_XCP("CalVal_FIN_CurGearLev 4"); //测试步骤 Set_XCP CalVal_FIN_CurGearLev 4
+  g_HIL_XCP_Swc_Set_XCP("CalVal_FIN_GearLev 4"); //测试步骤 Set_XCP CalVal_FIN_GearLev 4
+  g_HIL_XCP_Swc_Set_XCP("CalC_GearLev_Valid 1"); //测试步骤 Set_XCP CalC_GearLev_Valid 1
+  g_HIL_XCP_Swc_Set_XCP("CalC_GearLev_Val 5"); //测试步骤 Set_XCP CalC_GearLev_Val 5
+  g_HIL_Bus_Swc_Condition_ReadConfig("DoorAjarSwType"); //测试步骤 Step Condition_ReadConfig DoorAjarSwType
+  g_HIL_Bus_Swc_Set("VTS::VT2848_3_Ch34::DigitalOutput 0x00 0;0x01 1"); //测试步骤 Step Set J_DI_FLDoorAjarSW_LS 0x00 close;0x01 open
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_Bus_Swc_Set("VTS::VT2848_3_Ch34::DigitalOutput 0x00 1;0x01 0"); //测试步骤 Step Set J_DI_FLDoorAjarSW_LS 0x00 open;0x01 close
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_Bus_Swc_Set("VTS::VT2848_3_Ch34::DigitalOutput 0x00 0;0x01 1"); //测试步骤 Step Set J_DI_FLDoorAjarSW_LS 0x00 close;0x01 open
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch27::DigitalOutput 0"); //测试步骤 Set J_DI_SSBPin4SW_LS NotPressed
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch32::DigitalOutput 0"); //测试步骤 Set J_DI_SSBPin6SW_LS NotPressed
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch17::DigitalOutput 0"); //测试步骤 Set J_DI_BrakeSw1_HS NotPressed
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch22::DigitalOutput 0"); //测试步骤 Set J_DI_BrakeSw2_HS NotPressed
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch27::DigitalOutput 1"); //测试步骤 Set J_DI_SSBPin4SW_LS Pressed
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch32::DigitalOutput 1"); //测试步骤 Set J_DI_SSBPin6SW_LS Pressed
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch22::DigitalOutput 1"); //测试步骤 Set J_DI_BrakeSw2_HS Pressed
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch17::DigitalOutput 1"); //测试步骤 Set J_DI_BrakeSw1_HS Pressed
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch27::DigitalOutput 0"); //测试步骤 Set J_DI_SSBPin4SW_LS NotPressed
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch32::DigitalOutput 0"); //测试步骤 Set J_DI_SSBPin6SW_LS NotPressed
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch17::DigitalOutput 0"); //测试步骤 Set J_DI_BrakeSw1_HS NotPressed
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch22::DigitalOutput 0"); //测试步骤 Set J_DI_BrakeSw2_HS NotPressed
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch23::DigitalOutput 1"); //测试步骤 Set J_DI_KL15_BackUp_HS Active
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_PowerMode 1"); //测试步骤 Check I_LDCU_BodySysSt1::I_LDCU_PowerMode 1
+}
+
+export void g_HIL_Clib_Swc_Clib_LocalON()
+{
+  g_HIL_XCP_Swc_Set_XCP("CalEn_KeyValidSt 80"); //测试步骤 Set_XCP CalEn_KeyValidSt 80
+  g_HIL_XCP_Swc_Set_XCP("CalVal_KeyValidSt 1"); //测试步骤 Set_XCP CalVal_KeyValidSt 1
+  g_HIL_XCP_Swc_Set_XCP("CalEn_FIN_CurGearLev 1"); //测试步骤 Set_XCP CalEn_FIN_CurGearLev 1
+  g_HIL_XCP_Swc_Set_XCP("CalEn_FIN_GearLev 1"); //测试步骤 Set_XCP CalEn_FIN_GearLev 1
+  g_HIL_XCP_Swc_Set_XCP("CalVal_FIN_CurGearLev 4"); //测试步骤 Set_XCP CalVal_FIN_CurGearLev 4
+  g_HIL_XCP_Swc_Set_XCP("CalVal_FIN_GearLev 4"); //测试步骤 Set_XCP CalVal_FIN_GearLev 4
+  g_HIL_XCP_Swc_Set_XCP("CalC_GearLev_Valid 1"); //测试步骤 Set_XCP CalC_GearLev_Valid 1
+  g_HIL_XCP_Swc_Set_XCP("CalC_GearLev_Val 5"); //测试步骤 Set_XCP CalC_GearLev_Val 5
+  g_HIL_Bus_Swc_Condition_ReadConfig("DoorAjarSwType"); //测试步骤 Step Condition_ReadConfig DoorAjarSwType
+  g_HIL_Bus_Swc_Set("VTS::VT2848_3_Ch34::DigitalOutput 0x00 0;0x01 1"); //测试步骤 Step Set J_DI_FLDoorAjarSW_LS 0x00 close;0x01 open
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_Bus_Swc_Set("VTS::VT2848_3_Ch34::DigitalOutput 0x00 1;0x01 0"); //测试步骤 Step Set J_DI_FLDoorAjarSW_LS 0x00 open;0x01 close
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_Bus_Swc_Set("VTS::VT2848_3_Ch34::DigitalOutput 0x00 0;0x01 1"); //测试步骤 Step Set J_DI_FLDoorAjarSW_LS 0x00 close;0x01 open
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch27::DigitalOutput 0"); //测试步骤 Set J_DI_SSBPin4SW_LS NotPressed
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch32::DigitalOutput 0"); //测试步骤 Set J_DI_SSBPin6SW_LS NotPressed
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch27::DigitalOutput 1"); //测试步骤 Set J_DI_SSBPin4SW_LS Pressed
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch32::DigitalOutput 1"); //测试步骤 Set J_DI_SSBPin6SW_LS Pressed
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch27::DigitalOutput 0"); //测试步骤 Set J_DI_SSBPin4SW_LS NotPressed
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch32::DigitalOutput 0"); //测试步骤 Set J_DI_SSBPin6SW_LS NotPressed
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch23::DigitalOutput 1"); //测试步骤 Set J_DI_KL15_BackUp_HS Active
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_PowerMode 1"); //测试步骤 Check I_LDCU_BodySysSt1::I_LDCU_PowerMode 1
+}
+
+export void g_HIL_Clib_Swc_Clib_RemoteON()
+{
+  g_HIL_Bus_Swc_Set("C_CDCU_DiagnosticSt::C_CDCU_DiagnosticSt 0"); //测试步骤 Set C_CDCU_DiagnosticSt::C_CDCU_DiagnosticSt 0
+  g_HIL_XCP_Swc_Set_XCP("CalEn_Vcu_MO_Motor_laeuft 1"); //测试步骤 Set_XCP CalEn_Vcu_MO_Motor_laeuft 1
+  g_HIL_XCP_Swc_Set_XCP("CalVal_Vcu_MO_Motor_laeuft 0"); //测试步骤 Set_XCP CalVal_Vcu_MO_Motor_laeuft 0
+  g_HIL_XCP_Swc_Set_XCP("CalEn_KeyValidSt 80"); //测试步骤 Set_XCP CalEn_KeyValidSt 80
+  g_HIL_XCP_Swc_Set_XCP("CalVal_KeyValidSt 1"); //测试步骤 Set_XCP CalVal_KeyValidSt 1
+  g_HIL_XCP_Swc_Set_XCP("CalEn_FIN_CurGearLev 1"); //测试步骤 Set_XCP CalEn_FIN_CurGearLev 1
+  g_HIL_XCP_Swc_Set_XCP("CalEn_FIN_GearLev 1"); //测试步骤 Set_XCP CalEn_FIN_GearLev 1
+  g_HIL_XCP_Swc_Set_XCP("CalVal_FIN_CurGearLev 4"); //测试步骤 Set_XCP CalVal_FIN_CurGearLev 4
+  g_HIL_XCP_Swc_Set_XCP("CalVal_FIN_GearLev 4"); //测试步骤 Set_XCP CalVal_FIN_GearLev 4
+  g_HIL_XCP_Swc_Set_XCP("CalC_GearLev_Valid 1"); //测试步骤 Set_XCP CalC_GearLev_Valid 1
+  g_HIL_XCP_Swc_Set_XCP("CalC_GearLev_Val 5"); //测试步骤 Set_XCP CalC_GearLev_Val 5
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch17::DigitalOutput 0"); //测试步骤 Set J_DI_BrakeSw1_HS NotPressed
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch22::DigitalOutput 0"); //测试步骤 Set J_DI_BrakeSw2_HS NotPressed
+  g_HIL_Gen_Swc_Wait("400 ms"); //测试步骤 Wait 400 ms
+  g_HIL_Bus_Swc_Condition_ReadConfig("DoorAjarSwType"); //测试步骤 Step Condition_ReadConfig DoorAjarSwType
+  g_HIL_Bus_Swc_Set("VTS::VT2848_3_Ch34::DigitalOutput 0x00 0;0x01 1"); //测试步骤 Step Set J_DI_FLDoorAjarSW_LS 0x00 close;0x01 open
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_Bus_Swc_Set("VTS::VT2848_3_Ch34::DigitalOutput 0x00 1;0x01 0"); //测试步骤 Step Set J_DI_FLDoorAjarSW_LS 0x00 open;0x01 close
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_Bus_Swc_Set("VTS::VT2848_3_Ch34::DigitalOutput 0x00 0;0x01 1"); //测试步骤 Step Set J_DI_FLDoorAjarSW_LS 0x00 close;0x01 open
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_PowerMode 0"); //测试步骤 Check I_LDCU_BodySysSt1::I_LDCU_PowerMode 0
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_UDS_Swc_Set_UDS("SA_L1"); //测试步骤 Set_UDS SA_L1
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_UDS_Swc_Set_UDS("31 01 C1 E3 02"); //测试步骤 Set_UDS 31 01 C1 E3 02
+  g_HIL_Gen_Swc_Wait("500 ms"); //测试步骤 Wait 500 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_PowerMode 2"); //测试步骤 Check I_LDCU_BodySysSt1::I_LDCU_PowerMode 2
+}
+
+export void g_HIL_Clib_Swc_Clib_Convenience()
+{
+  g_HIL_XCP_Swc_Set_XCP("CalEn_KeyValidSt 80"); //测试步骤 Set_XCP CalEn_KeyValidSt 80
+  g_HIL_XCP_Swc_Set_XCP("CalVal_KeyValidSt 1"); //测试步骤 Set_XCP CalVal_KeyValidSt 1
+  g_HIL_XCP_Swc_Set_XCP("CalEn_Vcu_MO_Motor_laeuft 1"); //测试步骤 Set_XCP CalEn_Vcu_MO_Motor_laeuft 1
+  g_HIL_XCP_Swc_Set_XCP("CalVal_Vcu_MO_Motor_laeuft 0"); //测试步骤 Set_XCP CalVal_Vcu_MO_Motor_laeuft 0
+  g_HIL_XCP_Swc_Set_XCP("CalEn_FIN_CurGearLev 1"); //测试步骤 Set_XCP CalEn_FIN_CurGearLev 1
+  g_HIL_XCP_Swc_Set_XCP("CalEn_FIN_GearLev 1"); //测试步骤 Set_XCP CalEn_FIN_GearLev 1
+  g_HIL_XCP_Swc_Set_XCP("CalVal_FIN_CurGearLev 4"); //测试步骤 Set_XCP CalVal_FIN_CurGearLev 4
+  g_HIL_XCP_Swc_Set_XCP("CalVal_FIN_GearLev 4"); //测试步骤 Set_XCP CalVal_FIN_GearLev 4
+  g_HIL_XCP_Swc_Set_XCP("CalC_GearLev_Valid 1"); //测试步骤 Set_XCP CalC_GearLev_Valid 1
+  g_HIL_XCP_Swc_Set_XCP("CalC_GearLev_Val 5"); //测试步骤 Set_XCP CalC_GearLev_Val 5
+  g_HIL_Bus_Swc_Condition_ReadConfig("DoorAjarSwType"); //测试步骤 Step Condition_ReadConfig DoorAjarSwType
+  g_HIL_Bus_Swc_Set("VTS::VT2848_3_Ch34::DigitalOutput 0x00 0;0x01 1"); //测试步骤 Step Set J_DI_FLDoorAjarSW_LS 0x00 close;0x01 open
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_Bus_Swc_Set("VTS::VT2848_3_Ch34::DigitalOutput 0x00 1;0x01 0"); //测试步骤 Step Set J_DI_FLDoorAjarSW_LS 0x00 open;0x01 close
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_Bus_Swc_Set("VTS::VT2848_3_Ch34::DigitalOutput 0x00 0;0x01 1"); //测试步骤 Step Set J_DI_FLDoorAjarSW_LS 0x00 close;0x01 open
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch27::DigitalOutput 0"); //测试步骤 Set J_DI_SSBPin4SW_LS NotPressed
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch32::DigitalOutput 0"); //测试步骤 Set J_DI_SSBPin6SW_LS NotPressed
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch27::DigitalOutput 1"); //测试步骤 Set J_DI_SSBPin4SW_LS Pressed
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch32::DigitalOutput 1"); //测试步骤 Set J_DI_SSBPin6SW_LS Pressed
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch27::DigitalOutput 0"); //测试步骤 Set J_DI_SSBPin4SW_LS NotPressed
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch32::DigitalOutput 0"); //测试步骤 Set J_DI_SSBPin6SW_LS NotPressed
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch27::DigitalOutput 1"); //测试步骤 Set J_DI_SSBPin4SW_LS Pressed
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch32::DigitalOutput 1"); //测试步骤 Set J_DI_SSBPin6SW_LS Pressed
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch23::DigitalOutput 1"); //测试步骤 Set J_DI_KL15_BackUp_HS Active
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_PowerMode 3"); //测试步骤 Check I_LDCU_BodySysSt1::I_LDCU_PowerMode 3
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch27::DigitalOutput 0"); //测试步骤 Set J_DI_SSBPin4SW_LS NotPressed
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch32::DigitalOutput 0"); //测试步骤 Set J_DI_SSBPin6SW_LS NotPressed
+}
+
+export void g_HIL_Clib_Swc_Clib_NormalOTA()
+{
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_UDS_Swc_Set_UDS("SA_L1"); //测试步骤 Set_UDS SA_L1
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_UDS_Swc_Set_UDS("31 01 C1 E0 01"); //测试步骤 Set_UDS 31 01 C1 E0 01
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_UDS_Swc_Check_UDS("71 01 C1 E0 00"); //测试步骤 Check_UDS 71 01 C1 E0 00
+  g_HIL_Bus_Swc_Set("VTS::VT2516_5_Ch4::PWMDC ？ 123"); //测试步骤 Step Set J_PO_LS_LDoorHandleLight_Duty Level11 123
+}
+
+export void g_HIL_Clib_Swc_Clib_SilentOTA()
+{
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_UDS_Swc_Set_UDS("SA_L1"); //测试步骤 Set_UDS SA_L1
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_UDS_Swc_Set_UDS("31 01 C1 E0 02"); //测试步骤 Set_UDS 31 01 C1 E0 02
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_UDS_Swc_Check_UDS("71 01 C1 E0 00"); //测试步骤 Check_UDS 71 01 C1 E0 00
+}
+
+export void g_HIL_Clib_Swc_Clib_NonOTA()
+{
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_UDS_Swc_Set_UDS("SA_L1"); //测试步骤 Set_UDS SA_L1
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_UDS_Swc_Set_UDS("31 01 C1 E5 00"); //测试步骤 Set_UDS 31 01 C1 E5 00
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_UDS_Swc_Check_UDS("71 01 C1 E5 00"); //测试步骤 Check_UDS 71 01 C1 E5 00
+  g_HIL_UDS_Swc_Set_UDS("31 01 C1 E0 00"); //测试步骤 Set_UDS 31 01 C1 E0 00
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_UDS_Swc_Check_UDS("71 01 C1 E0 00"); //测试步骤 Check_UDS 71 01 C1 E0 00
+}
+
+export void g_HIL_Clib_Swc_Clib_OTA_ECAN()
+{
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_UDS_Swc_Set_UDS("SA_L1"); //测试步骤 Set_UDS SA_L1
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_UDS_Swc_Set_UDS("31 01 C1 E0 01"); //测试步骤 Set_UDS 31 01 C1 E0 01
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_UDS_Swc_Check_UDS("71 01 C1 E0 00"); //测试步骤 Check_UDS 71 01 C1 E0 00
+  g_HIL_UDS_Swc_Set_UDS("31 01 C1 E5 01"); //测试步骤 Set_UDS 31 01 C1 E5 01
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+}
+
+export void g_HIL_Clib_Swc_Clib_RemoteOFF()
+{
+  g_HIL_Bus_Swc_Set("C_CDCU_DiagnosticSt::C_CDCU_DiagnosticSt 0"); //测试步骤 Set C_CDCU_DiagnosticSt::C_CDCU_DiagnosticSt 0
+  g_HIL_UDS_Swc_Set_UDS("SA_L1"); //测试步骤 Set_UDS SA_L1
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_UDS_Swc_Set_UDS("31 01 C1 E3 01"); //测试步骤 Set_UDS 31 01 C1 E3 01
+  g_HIL_Gen_Swc_Wait("500 ms"); //测试步骤 Wait 500 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_PowerMode 0"); //测试步骤 Check I_LDCU_BodySysSt1::I_LDCU_PowerMode 0
+}
+
+export void g_HIL_Clib_Swc_Clib_AllDoorClosed()
+{
+  g_HIL_Bus_Swc_Set("VTS::VT2848_3_Ch34::DigitalOutput 0"); //测试步骤 Set J_DI_FLDoorAjarSW_LS Close
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch31::DigitalOutput 0"); //测试步骤 Set J_DI_RLDoorAjarSW_LS Close
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0"); //测试步骤 Set I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_RRDoorAjarSt 0"); //测试步骤 Set I_RDCU_BodySysSt1::I_RDCU_RRDoorAjarSt 0
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_BonnetAjarSt 0"); //测试步骤 Set I_RDCU_BodySysSt1::I_RDCU_BonnetAjarSt 0
+  g_HIL_XCP_Swc_Set_XCP("CalEn_Debug_TrnkCurHallPos 1"); //测试步骤 Set_XCP CalEn_Debug_TrnkCurHallPos 1
+  g_HIL_XCP_Swc_Set_XCP("CalVal_Debug_TrnkCurHallPos 0"); //测试步骤 Set_XCP CalVal_Debug_TrnkCurHallPos 0//小于120
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch30::DigitalOutput 0"); //测试步骤 Set J_DI_RDoorlockPawlSw_LS INACTIVE
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch29::DigitalOutput 0"); //测试步骤 Set J_DI_RDoorlockSecondSw_LS INACTIVE//全锁
+  g_HIL_Bus_Swc_Set("VTS::VT2848_2_Ch35::DigitalOutput 0"); //测试步骤 Set J_DI_RDoorlockResetSw_LS INACTIVE
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+}
+
+export void g_HIL_Clib_Swc_Clib_FourDoorClosed()
+{
+  g_HIL_Bus_Swc_Set("VTS::VT2848_3_Ch34::DigitalOutput 0"); //测试步骤 Set J_DI_FLDoorAjarSW_LS Close
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch31::DigitalOutput 0"); //测试步骤 Set J_DI_RLDoorAjarSW_LS Close
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0"); //测试步骤 Set I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_RRDoorAjarSt 0"); //测试步骤 Set I_RDCU_BodySysSt1::I_RDCU_RRDoorAjarSt 0
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_BonnetAjarSt 0"); //测试步骤 Set I_RDCU_BodySysSt1::I_RDCU_BonnetAjarSt 0
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PLGSts 0"); //测试步骤 Set I_RDCU_BodySysSt1::I_RDCU_PLGSts 0
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+}
+
+export void g_HIL_Clib_Swc_Clib_Disarmed()
+{
+  g_HIL_Bus_Swc_Set("I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 0"); //测试步骤 Set I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 0
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_Bus_Swc_Set("I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 2"); //测试步骤 Set I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 2
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_Bus_Swc_Set("I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 0"); //测试步骤 Set I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 0
+  g_HIL_Gen_Swc_Wait("200 ms"); //测试步骤 Wait 200 ms
+}
+
+export void g_HIL_Clib_Swc_Clib_Prearmed()
+{
+  g_HIL_Bus_Swc_Set("VTS::VT2516_1_Ch4::DigitalOutput 1"); //测试步骤 Set J_AI_DrvSeatSBRSt Unoccupied
+  g_HIL_Bus_Swc_Set("I_CDCU_AssistSysSwSt::I_DrvSeatOccupancySt 0"); //测试步骤 Set I_CDCU_AssistSysSwSt::I_DrvSeatOccupancySt 0
+  g_HIL_Bus_Swc_Set("VTS::VT2848_3_Ch34::DigitalOutput 0"); //测试步骤 Set J_DI_FLDoorAjarSW_LS Close
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch31::DigitalOutput 0"); //测试步骤 Set J_DI_RLDoorAjarSW_LS Close
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0"); //测试步骤 Set I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_RRDoorAjarSt 0"); //测试步骤 Set I_RDCU_BodySysSt1::I_RDCU_RRDoorAjarSt 0
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_BonnetAjarSt 0"); //测试步骤 Set I_RDCU_BodySysSt1::I_RDCU_BonnetAjarSt 0
+  g_HIL_XCP_Swc_Set_XCP("CalEn_Debug_TrnkCurHallPos 1"); //测试步骤 Set_XCP CalEn_Debug_TrnkCurHallPos 1
+  g_HIL_XCP_Swc_Set_XCP("CalVal_Debug_TrnkCurHallPos 0"); //测试步骤 Set_XCP CalVal_Debug_TrnkCurHallPos 0//小于120
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch30::DigitalOutput 0"); //测试步骤 Set J_DI_RDoorlockPawlSw_LS INACTIVE
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch29::DigitalOutput 0"); //测试步骤 Set J_DI_RDoorlockSecondSw_LS INACTIVE//全锁
+  g_HIL_Bus_Swc_Set("VTS::VT2848_2_Ch35::DigitalOutput 0"); //测试步骤 Set J_DI_RDoorlockResetSw_LS INACTIVE
+  g_HIL_Gen_Swc_Wait("400 ms"); //测试步骤 Wait 400 ms
+  g_HIL_Bus_Swc_Set("I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 0"); //测试步骤 Set I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 0
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_Bus_Swc_Set("I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 2"); //测试步骤 Set I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 2
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_Bus_Swc_Set("I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 0"); //测试步骤 Set I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 0
+  g_HIL_Gen_Swc_Wait("1000 ms"); //测试步骤 Wait 1000 ms
+  g_HIL_Bus_Swc_Set("I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 1"); //测试步骤 Set I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 1
+  g_HIL_Gen_Swc_Wait("500 ms"); //测试步骤 Wait 500 ms
+  g_HIL_Bus_Swc_Set("I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 0"); //测试步骤 Set I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 0
+}
+
+export void g_HIL_Clib_Swc_Clib_Armed()
+{
+  g_HIL_Bus_Swc_Set("VTS::VT2516_1_Ch4::DigitalOutput 1"); //测试步骤 Set J_AI_DrvSeatSBRSt Unoccupied
+  g_HIL_Bus_Swc_Set("I_CDCU_AssistSysSwSt::I_DrvSeatOccupancySt 0"); //测试步骤 Set I_CDCU_AssistSysSwSt::I_DrvSeatOccupancySt 0
+  g_HIL_Bus_Swc_Set("VTS::VT2848_3_Ch34::DigitalOutput 0"); //测试步骤 Set J_DI_FLDoorAjarSW_LS Close
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch31::DigitalOutput 0"); //测试步骤 Set J_DI_RLDoorAjarSW_LS Close
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0"); //测试步骤 Set I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_RRDoorAjarSt 0"); //测试步骤 Set I_RDCU_BodySysSt1::I_RDCU_RRDoorAjarSt 0
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_BonnetAjarSt 0"); //测试步骤 Set I_RDCU_BodySysSt1::I_RDCU_BonnetAjarSt 0
+  g_HIL_XCP_Swc_Set_XCP("CalEn_Debug_TrnkCurHallPos 1"); //测试步骤 Set_XCP CalEn_Debug_TrnkCurHallPos 1
+  g_HIL_XCP_Swc_Set_XCP("CalVal_Debug_TrnkCurHallPos 0"); //测试步骤 Set_XCP CalVal_Debug_TrnkCurHallPos 0//小于120
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch30::DigitalOutput 0"); //测试步骤 Set J_DI_RDoorlockPawlSw_LS INACTIVE
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch29::DigitalOutput 0"); //测试步骤 Set J_DI_RDoorlockSecondSw_LS INACTIVE//全锁
+  g_HIL_Bus_Swc_Set("VTS::VT2848_2_Ch35::DigitalOutput 0"); //测试步骤 Set J_DI_RDoorlockResetSw_LS INACTIVE
+  g_HIL_Gen_Swc_Wait("400 ms"); //测试步骤 Wait 400 ms
+  g_HIL_Bus_Swc_Set("I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 0"); //测试步骤 Set I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 0
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_Bus_Swc_Set("I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 2"); //测试步骤 Set I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 2
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_Bus_Swc_Set("I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 0"); //测试步骤 Set I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 0
+  g_HIL_Gen_Swc_Wait("1000 ms"); //测试步骤 Wait 1000 ms
+  g_HIL_Bus_Swc_Set("I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 1"); //测试步骤 Set I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 1
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_Bus_Swc_Set("I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 0"); //测试步骤 Set I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 0
+  g_HIL_Gen_Swc_Wait("1300 ms"); //测试步骤 Wait 1300 ms
+}
+
+export void g_HIL_Clib_Swc_Clib_ASleep()
+{
+  g_HIL_Bus_Swc_Set("VTS::VT2516_1_Ch4::DigitalOutput 1"); //测试步骤 Set J_AI_DrvSeatSBRSt Unoccupied
+  g_HIL_Bus_Swc_Set("I_CDCU_AssistSysSwSt::I_DrvSeatOccupancySt 0"); //测试步骤 Set I_CDCU_AssistSysSwSt::I_DrvSeatOccupancySt 0
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch17::DigitalOutput 0"); //测试步骤 Set J_DI_BrakeSw1_HS NotPressed
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch22::DigitalOutput 0"); //测试步骤 Set J_DI_BrakeSw2_HS NotPressed
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch19::DigitalOutput 0"); //测试步骤 Set J_DI_TrunkOpenSw_LS INACTIVE
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch21::DigitalOutput 0"); //测试步骤 Set J_DI_EmergencyAlarmSw_LS INACTIVE
+  g_HIL_Bus_Swc_Set("VTS::VT2848_2_Ch47::DigitalOutput 0"); //测试步骤 Set J_DI_FLDoorReleaseSW_LS INACTIVE
+  g_HIL_Bus_Swc_Set("VTS::VT2848_3_Ch35::DigitalOutput 0"); //测试步骤 Set J_DI_FLOutHandle_LS NotPulled
+  g_HIL_Bus_Swc_Set("I_CDCU_PowerReq::I_CDCU_AMPWakePowerReq 0"); //测试步骤 Set I_CDCU_PowerReq::I_CDCU_AMPWakePowerReq 0
+  g_HIL_Bus_Swc_Set("I_CDCU_PowerReq::I_CDCU_ATLPowerReq 0"); //测试步骤 Set I_CDCU_PowerReq::I_CDCU_ATLPowerReq 0
+  g_HIL_Bus_Swc_Set("I_XPU_PowerReq::I_XPU_RSRRPowerReq 0"); //测试步骤 Set I_XPU_PowerReq::I_XPU_RSRRPowerReq 0
+  g_HIL_Bus_Swc_Set("I_TBOX_PowerReq::I_TBOX_USBPowerReq 0"); //测试步骤 Set I_TBOX_PowerReq::I_TBOX_USBPowerReq 0
+  g_HIL_Bus_Swc_Set("I_XPU_BodyCtrl::I_XPU_LDCU_CurMode 0"); //测试步骤 Set I_XPU_BodyCtrl::I_XPU_LDCU_CurMode 0
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch23::DigitalOutput 0"); //测试步骤 Set J_DI_KL15_BackUp_HS INACTIVE
+  g_HIL_Bus_Swc_Set("VTS::VT2848_3_Ch34::DigitalOutput 0"); //测试步骤 Set J_DI_FLDoorAjarSW_LS Close
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch31::DigitalOutput 0"); //测试步骤 Set J_DI_RLDoorAjarSW_LS Close
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0"); //测试步骤 Set I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_RRDoorAjarSt 0"); //测试步骤 Set I_RDCU_BodySysSt1::I_RDCU_RRDoorAjarSt 0
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_BonnetAjarSt 0"); //测试步骤 Set I_RDCU_BodySysSt1::I_RDCU_BonnetAjarSt 0
+  g_HIL_XCP_Swc_Set_XCP("CalEn_Debug_TrnkCurHallPos 1"); //测试步骤 Set_XCP CalEn_Debug_TrnkCurHallPos 1
+  g_HIL_XCP_Swc_Set_XCP("CalVal_Debug_TrnkCurHallPos 0"); //测试步骤 Set_XCP CalVal_Debug_TrnkCurHallPos 0//小于120
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch30::DigitalOutput 0"); //测试步骤 Set J_DI_RDoorlockPawlSw_LS INACTIVE
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch29::DigitalOutput 0"); //测试步骤 Set J_DI_RDoorlockSecondSw_LS INACTIVE//全锁
+  g_HIL_Bus_Swc_Set("VTS::VT2848_2_Ch35::DigitalOutput 0"); //测试步骤 Set J_DI_RDoorlockResetSw_LS INACTIVE
+  g_HIL_Bus_Swc_Set("C_CDCU_DiagnosticSt::C_CDCU_DiagnosticSt 0"); //测试步骤 Set C_CDCU_DiagnosticSt::C_CDCU_DiagnosticSt 0
+  g_HIL_Gen_Swc_Wait("1000 ms"); //测试步骤 Wait 1000 ms
+  g_HIL_Bus_Swc_Set("I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 0"); //测试步骤 Set I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 0
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_Bus_Swc_Set("I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 1"); //测试步骤 Set I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 1
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_Bus_Swc_Set("I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 0"); //测试步骤 Set I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 0
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_PowerMode 0"); //测试步骤 Check I_LDCU_BodySysSt1::I_LDCU_PowerMode 0
+  g_HIL_Gen_Swc_Wait("60000 ms"); //测试步骤 Wait 60000 ms
+  g_HIL_Bus_Swc_Disable_CAN("ICAN"); //测试步骤 Disable_CAN ICAN
+  g_HIL_Bus_Swc_Disable_CAN("ECAN"); //测试步骤 Disable_CAN ECAN
+  g_HIL_Bus_Swc_Disable_CAN("CCAN"); //测试步骤 Disable_CAN CCAN
+  g_HIL_Gen_Swc_Wait("2300 ms"); //测试步骤 Wait 2300 ms
+}
+
+export void g_HIL_Clib_Swc_Clib_Sleep()
+{
+  g_HIL_Bus_Swc_Set("VTS::VT2516_1_Ch4::DigitalOutput 1"); //测试步骤 Set J_AI_DrvSeatSBRSt Unoccupied
+  g_HIL_Bus_Swc_Set("I_CDCU_AssistSysSwSt::I_DrvSeatOccupancySt 0"); //测试步骤 Set I_CDCU_AssistSysSwSt::I_DrvSeatOccupancySt 0
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch17::DigitalOutput 0"); //测试步骤 Set J_DI_BrakeSw1_HS NotPressed
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch22::DigitalOutput 0"); //测试步骤 Set J_DI_BrakeSw2_HS NotPressed
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch19::DigitalOutput 0"); //测试步骤 Set J_DI_TrunkOpenSw_LS INACTIVE
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch21::DigitalOutput 0"); //测试步骤 Set J_DI_EmergencyAlarmSw_LS INACTIVE
+  g_HIL_Bus_Swc_Set("VTS::VT2848_2_Ch47::DigitalOutput 0"); //测试步骤 Set J_DI_FLDoorReleaseSW_LS INACTIVE
+  g_HIL_Bus_Swc_Set("VTS::VT2848_3_Ch35::DigitalOutput 0"); //测试步骤 Set J_DI_FLOutHandle_LS NotPulled
+  g_HIL_Bus_Swc_Set("I_CDCU_PowerReq::I_CDCU_AMPWakePowerReq 0"); //测试步骤 Set I_CDCU_PowerReq::I_CDCU_AMPWakePowerReq 0
+  g_HIL_Bus_Swc_Set("I_CDCU_PowerReq::I_CDCU_ATLPowerReq 0"); //测试步骤 Set I_CDCU_PowerReq::I_CDCU_ATLPowerReq 0
+  g_HIL_Bus_Swc_Set("I_XPU_PowerReq::I_XPU_RSRRPowerReq 0"); //测试步骤 Set I_XPU_PowerReq::I_XPU_RSRRPowerReq 0
+  g_HIL_Bus_Swc_Set("I_TBOX_PowerReq::I_TBOX_USBPowerReq 0"); //测试步骤 Set I_TBOX_PowerReq::I_TBOX_USBPowerReq 0
+  g_HIL_Bus_Swc_Set("I_XPU_BodyCtrl::I_XPU_LDCU_CurMode 0"); //测试步骤 Set I_XPU_BodyCtrl::I_XPU_LDCU_CurMode 0
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch23::DigitalOutput 0"); //测试步骤 Set J_DI_KL15_BackUp_HS INACTIVE
+  g_HIL_Bus_Swc_Set("VTS::VT2848_3_Ch34::DigitalOutput 0"); //测试步骤 Set J_DI_FLDoorAjarSW_LS Close
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch31::DigitalOutput 0"); //测试步骤 Set J_DI_RLDoorAjarSW_LS Close
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch31::DigitalOutput 0"); //测试步骤 Set J_DI_RLDoorAjarSW_LS Close
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0"); //测试步骤 Set I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_RRDoorAjarSt 0"); //测试步骤 Set I_RDCU_BodySysSt1::I_RDCU_RRDoorAjarSt 0
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_BonnetAjarSt 0"); //测试步骤 Set I_RDCU_BodySysSt1::I_RDCU_BonnetAjarSt 0
+  g_HIL_XCP_Swc_Set_XCP("CalEn_Debug_TrnkCurHallPos 1"); //测试步骤 Set_XCP CalEn_Debug_TrnkCurHallPos 1
+  g_HIL_XCP_Swc_Set_XCP("CalVal_Debug_TrnkCurHallPos 0"); //测试步骤 Set_XCP CalVal_Debug_TrnkCurHallPos 0//小于120
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch30::DigitalOutput 0"); //测试步骤 Set J_DI_RDoorlockPawlSw_LS INACTIVE
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch29::DigitalOutput 0"); //测试步骤 Set J_DI_RDoorlockSecondSw_LS INACTIVE//全锁
+  g_HIL_Bus_Swc_Set("VTS::VT2848_2_Ch35::DigitalOutput 0"); //测试步骤 Set J_DI_RDoorlockResetSw_LS INACTIVE
+  g_HIL_Bus_Swc_Set("C_CDCU_DiagnosticSt::C_CDCU_DiagnosticSt 0"); //测试步骤 Set C_CDCU_DiagnosticSt::C_CDCU_DiagnosticSt 0
+  g_HIL_Gen_Swc_Wait("1000 ms"); //测试步骤 Wait 1000 ms
+  g_HIL_Bus_Swc_Set("I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 0"); //测试步骤 Set I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 0
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_Bus_Swc_Set("I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 1"); //测试步骤 Set I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 1
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_Bus_Swc_Set("I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 0"); //测试步骤 Set I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 0
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_BodySysSt1::I_LDCU_PowerMode 0"); //测试步骤 Check I_LDCU_BodySysSt1::I_LDCU_PowerMode 0
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch18::DigitalOutput 0"); //测试步骤 Step Set J_DI_RDoorInnerSw_LS Inactive
+  g_HIL_Gen_Swc_Wait("301 ms"); //测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch19::DigitalOutput 0"); //测试步骤 Step Set J_DI_TrunkOpenSw_LS Inactive
+  g_HIL_Gen_Swc_Wait("301 ms"); //测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch20::DigitalOutput 0"); //测试步骤 Step Set J_DI_RLDoorReleaseSw_LS Inactive
+  g_HIL_Gen_Swc_Wait("301 ms"); //测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch21::DigitalOutput 0"); //测试步骤 Step Set J_DI_EmergencyAlarmSw_LS Inactive
+  g_HIL_Gen_Swc_Wait("301 ms"); //测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch25::DigitalOutput 1"); //测试步骤 Step Set J_DI_DrvSeatMassageSw_LS Inactive
+  g_HIL_Gen_Swc_Wait("301 ms"); //测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch26::DigitalOutput 0"); //测试步骤 Step Set J_DI_DrvTrunkOpenSw_LS Inactive
+  g_HIL_Gen_Swc_Wait("301 ms"); //测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch30::DigitalOutput 0"); //测试步骤 Step Set J_DI_RDoorlockPawlSw_LS Inactive
+  g_HIL_Gen_Swc_Wait("301 ms"); //测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Set("VTS::VT2848_2_Ch33::DigitalOutput 0"); //测试步骤 Step Set J_DI_RLDoorTCRSW_LS Inactive
+  g_HIL_Gen_Swc_Wait("301 ms"); //测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Set("VTS::VT2848_2_Ch35::DigitalOutput 0"); //测试步骤 Step Set J_DI_RDoorlockResetSw_LS Inactive
+  g_HIL_Gen_Swc_Wait("301 ms"); //测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Set("VTS::VT2848_3_Ch39::DigitalOutput 1"); //测试步骤 Step Set J_DI_RLTopLightSw_LS 1
+  g_HIL_Gen_Swc_Wait("301 ms"); //测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Set("VTS::VT2848_2_Ch44::DigitalOutput 0"); //测试步骤 Step Set J_DI_FLDoorTCRSW_LS Inactive
+  g_HIL_Gen_Swc_Wait("301 ms"); //测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Set("VTS::VT2516_2_Ch13::DigitalOutput 1"); //测试步骤 Step Set J_DI_FLTopLightSw_LS 1
+  g_HIL_Gen_Swc_Wait("301 ms"); //测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Set("VTS::VT2848_2_Ch47::DigitalOutput 0"); //测试步骤 Step Set J_DI_FLDoorReleaseSW_LS Inactive
+  g_HIL_Gen_Swc_Wait("301 ms"); //测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Set("VTS::VT2848_2_Ch48::DigitalOutput 0"); //测试步骤 Step Set J_DI_RLHandlePESw_LS Inactive
+  g_HIL_Gen_Swc_Wait("301 ms"); //测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Set("VTS::VT2848_3_Ch40::DigitalOutput 0"); //测试步骤 Step Set J_DI_FLHandlePESw_LS Inactive
+  g_HIL_Gen_Swc_Wait("301 ms"); //测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch31::DigitalOutput 0"); //测试步骤 Step Set J_DI_RLDoorAjarSW_LS Close
+  g_HIL_Gen_Swc_Wait("301 ms"); //测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Set("VTS::VT2848_3_Ch34::DigitalOutput 0"); //测试步骤 Step Set J_DI_FLDoorAjarSW_LS Close
+  g_HIL_Gen_Swc_Wait("301 ms"); //测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Set("VTS::VT2848_3_Ch33::DigitalOutput 0"); //测试步骤 Step Set J_DI_FLDoorlockSW_LS Lock
+  g_HIL_Gen_Swc_Wait("301 ms"); //测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Set("VTS::VT2848_2_Ch38::DigitalOutput 0"); //测试步骤 Step Set J_DI_DrvSeatMemoryPosSetSw_LS 1
+  g_HIL_Gen_Swc_Wait("301 ms"); //测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch24::DigitalOutput 0"); //测试步骤 Step Set J_DI_EmergencyPowerOffSw1_LS NotPressed
+  g_HIL_Gen_Swc_Wait("301 ms"); //测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Set("VTS::VT2516_2_Ch12::DigitalOutput 0"); //测试步骤 Step Set J_DI_EmergencyPowerOffSw2_LS NotPressed
+  g_HIL_Gen_Swc_Wait("301 ms"); //测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Set("VTS::VT2848_3_Ch35::DigitalOutput 0"); //测试步骤 Step Set J_DI_FLOutHandle_LS NotPulled
+  g_HIL_Gen_Swc_Wait("301 ms"); //测试步骤 Step Wait 301 ms
+  g_HIL_Bus_Swc_Set("VTS::VT2848_3_Ch36::DigitalOutput 0"); //测试步骤 Step Set J_DI_RLOutHandleSW_LS NotPulled
+  g_HIL_Gen_Swc_Wait("301 ms"); //测试步骤 Step Wait 301 ms
+  g_HIL_Gen_Swc_Wait("60000 ms"); //测试步骤 Wait 60000 ms
+  g_HIL_Bus_Swc_Disable_CAN("ICAN"); //测试步骤 Disable_CAN ICAN
+  g_HIL_Bus_Swc_Disable_CAN("ECAN"); //测试步骤 Disable_CAN ECAN
+  g_HIL_Bus_Swc_Disable_CAN("CCAN"); //测试步骤 Disable_CAN CCAN
+  g_HIL_Bus_Swc_Disable_CAN("BLCAN"); //测试步骤 Disable_CAN BLCAN
+  g_HIL_Gen_Swc_Wait("2300 ms"); //测试步骤 Wait 2300 ms
+  g_HIL_Gen_Swc_Wait("2000 ms"); //测试步骤 Wait 2000 ms
+  g_HIL_Gen_Swc_Wait("5000 ms"); //测试步骤 Wait 5000 ms
+}
+
+export void g_HIL_Clib_Swc_Clib_WakeUp()
+{
+  g_HIL_Bus_Swc_Enable_CAN("ICAN"); //测试步骤 Enable_CAN ICAN
+  g_HIL_Bus_Swc_Enable_CAN("ECAN"); //测试步骤 Enable_CAN ECAN
+  g_HIL_Bus_Swc_Enable_CAN("CCAN"); //测试步骤 Enable_CAN CCAN
+  g_HIL_Bus_Swc_Enable_CAN("LLIN1"); //测试步骤 Enable_CAN LLIN1
+  g_HIL_Bus_Swc_Enable_CAN("LLIN2"); //测试步骤 Enable_CAN LLIN2
+  g_HIL_Bus_Swc_Set("VTS::VT2848_3_Ch35::DigitalOutput 0"); //测试步骤 Set J_DI_FLOutHandle_LS notpulled
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_Bus_Swc_Set("VTS::VT2848_3_Ch35::DigitalOutput 1"); //测试步骤 Set J_DI_FLOutHandle_LS pulled
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_Bus_Swc_Set("VTS::VT2848_3_Ch35::DigitalOutput 0"); //测试步骤 Set J_DI_FLOutHandle_LS notpulled
+}
+
+export void g_HIL_Clib_Swc_Clib_Unlock()
+{
+  g_HIL_Bus_Swc_Set("I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 0"); //测试步骤 Set I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 0
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_Bus_Swc_Set("I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 4"); //测试步骤 Set I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 4
+  g_HIL_Gen_Swc_Wait("250 ms"); //测试步骤 Wait 250 ms
+  g_HIL_Bus_Swc_Set("I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 0"); //测试步骤 Set I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 0
+}
+
+export void g_HIL_Clib_Swc_Clib_Lock()
+{
+  g_HIL_Bus_Swc_Set("VTS::VT2516_1_Ch4::DigitalOutput 1"); //测试步骤 Set J_AI_DrvSeatSBRSt Unoccupied
+  g_HIL_Bus_Swc_Set("I_CDCU_AssistSysSwSt::I_DrvSeatOccupancySt 0"); //测试步骤 Set I_CDCU_AssistSysSwSt::I_DrvSeatOccupancySt 0
+  g_HIL_Bus_Swc_Set("VTS::VT2848_3_Ch34::DigitalOutput 0"); //测试步骤 Set J_DI_FLDoorAjarSW_LS Close
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch31::DigitalOutput 0"); //测试步骤 Set J_DI_RLDoorAjarSW_LS Close
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0"); //测试步骤 Set I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_RRDoorAjarSt 0"); //测试步骤 Set I_RDCU_BodySysSt1::I_RDCU_RRDoorAjarSt 0
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_BonnetAjarSt 0"); //测试步骤 Set I_RDCU_BodySysSt1::I_RDCU_BonnetAjarSt 0
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_XCP_Swc_Set_XCP("CalEn_Debug_TrnkCurHallPos 1"); //测试步骤 Set_XCP CalEn_Debug_TrnkCurHallPos 1
+  g_HIL_XCP_Swc_Set_XCP("CalVal_Debug_TrnkCurHallPos 0"); //测试步骤 Set_XCP CalVal_Debug_TrnkCurHallPos 0//小于120
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch30::DigitalOutput 0"); //测试步骤 Set J_DI_RDoorlockPawlSw_LS INACTIVE
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch29::DigitalOutput 0"); //测试步骤 Set J_DI_RDoorlockSecondSw_LS INACTIVE//全锁
+  g_HIL_Bus_Swc_Set("VTS::VT2848_2_Ch35::DigitalOutput 0"); //测试步骤 Set J_DI_RDoorlockResetSw_LS INACTIVE
+  g_HIL_Gen_Swc_Wait("1000 ms"); //测试步骤 Wait 1000 ms
+  g_HIL_Bus_Swc_Set("I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 0"); //测试步骤 Set I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 0
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_Bus_Swc_Set("I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 3"); //测试步骤 Set I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 3
+  g_HIL_Gen_Swc_Wait("250 ms"); //测试步骤 Wait 250 ms
+  g_HIL_Bus_Swc_Set("I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 0"); //测试步骤 Set I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 0
+}
+
+export void g_HIL_Clib_Swc_Clib_P()
+{
+  g_HIL_XCP_Swc_Set_XCP("CalEn_FIN_CurGearLev 1"); //测试步骤 Set_XCP CalEn_FIN_CurGearLev 1
+  g_HIL_XCP_Swc_Set_XCP("CalEn_FIN_GearLev 1"); //测试步骤 Set_XCP CalEn_FIN_GearLev 1
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_XCP_Swc_Set_XCP("CalVal_FIN_CurGearLev 4"); //测试步骤 Set_XCP CalVal_FIN_CurGearLev 4
+  g_HIL_XCP_Swc_Set_XCP("CalVal_FIN_GearLev 4"); //测试步骤 Set_XCP CalVal_FIN_GearLev 4
+  g_HIL_Gen_Swc_Wait("200 ms"); //测试步骤 Wait 200 ms
+  g_HIL_XCP_Swc_Set_XCP("CalC_GearLev_Valid 1"); //测试步骤 Set_XCP CalC_GearLev_Valid 1
+  g_HIL_XCP_Swc_Set_XCP("CalC_GearLev_Val 5"); //测试步骤 Set_XCP CalC_GearLev_Val 5
+}
+
+export void g_HIL_Clib_Swc_Clib_N()
+{
+  g_HIL_XCP_Swc_Set_XCP("CalEn_FIN_CurGearLev 1"); //测试步骤 Set_XCP CalEn_FIN_CurGearLev 1
+  g_HIL_XCP_Swc_Set_XCP("CalEn_FIN_GearLev 1"); //测试步骤 Set_XCP CalEn_FIN_GearLev 1
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_XCP_Swc_Set_XCP("CalVal_FIN_CurGearLev 2"); //测试步骤 Set_XCP CalVal_FIN_CurGearLev 2
+  g_HIL_XCP_Swc_Set_XCP("CalVal_FIN_GearLev 2"); //测试步骤 Set_XCP CalVal_FIN_GearLev 2
+  g_HIL_Gen_Swc_Wait("200 ms"); //测试步骤 Wait 200 ms
+  g_HIL_XCP_Swc_Set_XCP("CalC_GearLev_Valid 1"); //测试步骤 Set_XCP CalC_GearLev_Valid 1
+  g_HIL_XCP_Swc_Set_XCP("CalC_GearLev_Val 7"); //测试步骤 Set_XCP CalC_GearLev_Val 7
+}
+
+export void g_HIL_Clib_Swc_Clib_D()
+{
+  g_HIL_XCP_Swc_Set_XCP("CalEn_FIN_CurGearLev 1"); //测试步骤 Set_XCP CalEn_FIN_CurGearLev 1
+  g_HIL_XCP_Swc_Set_XCP("CalEn_FIN_GearLev 1"); //测试步骤 Set_XCP CalEn_FIN_GearLev 1
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_XCP_Swc_Set_XCP("CalVal_FIN_CurGearLev 1"); //测试步骤 Set_XCP CalVal_FIN_CurGearLev 1
+  g_HIL_XCP_Swc_Set_XCP("CalVal_FIN_GearLev 1"); //测试步骤 Set_XCP CalVal_FIN_GearLev 1
+  g_HIL_Gen_Swc_Wait("200 ms"); //测试步骤 Wait 200 ms
+  g_HIL_XCP_Swc_Set_XCP("CalC_GearLev_Valid 1"); //测试步骤 Set_XCP CalC_GearLev_Valid 1
+  g_HIL_XCP_Swc_Set_XCP("CalC_GearLev_Val 8"); //测试步骤 Set_XCP CalC_GearLev_Val 8
+}
+
+export void g_HIL_Clib_Swc_Clib_R()
+{
+  g_HIL_XCP_Swc_Set_XCP("CalEn_FIN_CurGearLev 1"); //测试步骤 Set_XCP CalEn_FIN_CurGearLev 1
+  g_HIL_XCP_Swc_Set_XCP("CalEn_FIN_GearLev 1"); //测试步骤 Set_XCP CalEn_FIN_GearLev 1
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_XCP_Swc_Set_XCP("CalVal_FIN_CurGearLev 3"); //测试步骤 Set_XCP CalVal_FIN_CurGearLev 3
+  g_HIL_XCP_Swc_Set_XCP("CalVal_FIN_GearLev 3"); //测试步骤 Set_XCP CalVal_FIN_GearLev 3
+  g_HIL_Gen_Swc_Wait("200 ms"); //测试步骤 Wait 200 ms
+  g_HIL_XCP_Swc_Set_XCP("CalC_GearLev_Valid 1"); //测试步骤 Set_XCP CalC_GearLev_Valid 1
+  g_HIL_XCP_Swc_Set_XCP("CalC_GearLev_Val 6"); //测试步骤 Set_XCP CalC_GearLev_Val 6
+}
+
+export void g_HIL_Clib_Swc_Clib_LDCU_CurrentGearLev_P()
+{
+  g_HIL_XCP_Swc_Set_XCP("CalEn_FIN_CurGearLev 1"); //测试步骤 Set_XCP CalEn_FIN_CurGearLev 1
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_XCP_Swc_Set_XCP("CalEn_FIN_GearLev 1"); //测试步骤 Set_XCP CalEn_FIN_GearLev 1
+  g_HIL_Gen_Swc_Wait("200 ms"); //测试步骤 Wait 200 ms
+  g_HIL_XCP_Swc_Set_XCP("CalVal_FIN_CurGearLev 4"); //测试步骤 Set_XCP CalVal_FIN_CurGearLev 4
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_XCP_Swc_Set_XCP("CalVal_FIN_GearLev 4"); //测试步骤 Set_XCP CalVal_FIN_GearLev 4
+  g_HIL_Gen_Swc_Wait("200 ms"); //测试步骤 Wait 200 ms
+}
+
+export void g_HIL_Clib_Swc_Clib_LDCU_CurrentGearLev_N()
+{
+  g_HIL_XCP_Swc_Set_XCP("TxBCM_bool_GearLevOvridSwt_C 1"); //测试步骤 Set_XCP TxBCM_bool_GearLevOvridSwt_C 1
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_XCP_Swc_Set_XCP("TxBCM_u8_GearLevOvridVal_C 2"); //测试步骤 Set_XCP TxBCM_u8_GearLevOvridVal_C 2
+  g_HIL_Gen_Swc_Wait("200 ms"); //测试步骤 Wait 200 ms
+  g_HIL_XCP_Swc_Set_XCP("TxCCAN_bool_ActGrOvridSwt_C 1"); //测试步骤 Set_XCP TxCCAN_bool_ActGrOvridSwt_C 1
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_XCP_Swc_Set_XCP("TxCCAN_st_ActGrOvridVal_C 2"); //测试步骤 Set_XCP TxCCAN_st_ActGrOvridVal_C 2
+  g_HIL_Gen_Swc_Wait("200 ms"); //测试步骤 Wait 200 ms
+}
+
+export void g_HIL_Clib_Swc_Clib_LDCU_CurrentGearLev_D()
+{
+  g_HIL_XCP_Swc_Set_XCP("TxBCM_bool_GearLevOvridSwt_C 1"); //测试步骤 Set_XCP TxBCM_bool_GearLevOvridSwt_C 1
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_XCP_Swc_Set_XCP("TxBCM_u8_GearLevOvridVal_C 1"); //测试步骤 Set_XCP TxBCM_u8_GearLevOvridVal_C 1
+  g_HIL_Gen_Swc_Wait("200 ms"); //测试步骤 Wait 200 ms
+  g_HIL_XCP_Swc_Set_XCP("TxCCAN_bool_ActGrOvridSwt_C 1"); //测试步骤 Set_XCP TxCCAN_bool_ActGrOvridSwt_C 1
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_XCP_Swc_Set_XCP("TxCCAN_st_ActGrOvridVal_C 1"); //测试步骤 Set_XCP TxCCAN_st_ActGrOvridVal_C 1
+  g_HIL_Gen_Swc_Wait("200 ms"); //测试步骤 Wait 200 ms
+}
+
+export void g_HIL_Clib_Swc_Clib_LDCU_CurrentGearLev_R()
+{
+  g_HIL_XCP_Swc_Set_XCP("TxBCM_bool_GearLevOvridSwt_C 1"); //测试步骤 Set_XCP TxBCM_bool_GearLevOvridSwt_C 1
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_XCP_Swc_Set_XCP("TxBCM_u8_GearLevOvridVal_C 3"); //测试步骤 Set_XCP TxBCM_u8_GearLevOvridVal_C 3
+  g_HIL_Gen_Swc_Wait("200 ms"); //测试步骤 Wait 200 ms
+  g_HIL_XCP_Swc_Set_XCP("TxCCAN_bool_ActGrOvridSwt_C 1"); //测试步骤 Set_XCP TxCCAN_bool_ActGrOvridSwt_C 1
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_XCP_Swc_Set_XCP("TxCCAN_st_ActGrOvridVal_C 3"); //测试步骤 Set_XCP TxCCAN_st_ActGrOvridVal_C 3
+  g_HIL_Gen_Swc_Wait("200 ms"); //测试步骤 Wait 200 ms
+}
+
+export void g_HIL_Clib_Swc_Clib_INTLGT_Gear_P()
+{
+  g_HIL_XCP_Swc_Set_XCP("CalC_INTLGT_Gear_En 1"); //测试步骤 Set_XCP CalC_INTLGT_Gear_En 1
+  g_HIL_Gen_Swc_Wait("200 ms"); //测试步骤 Wait 200 ms
+  g_HIL_XCP_Swc_Set_XCP("CalC_INTLGT_Gear_Val 4"); //测试步骤 Set_XCP CalC_INTLGT_Gear_Val 4
+  g_HIL_Gen_Swc_Wait("200 ms"); //测试步骤 Wait 200 ms
+}
+
+export void g_HIL_Clib_Swc_Clib_INTLGT_Gear_N()
+{
+  g_HIL_XCP_Swc_Set_XCP("CalC_INTLGT_Gear_En 1"); //测试步骤 Set_XCP CalC_INTLGT_Gear_En 1
+  g_HIL_Gen_Swc_Wait("200 ms"); //测试步骤 Wait 200 ms
+  g_HIL_XCP_Swc_Set_XCP("CalC_INTLGT_Gear_Val 2"); //测试步骤 Set_XCP CalC_INTLGT_Gear_Val 2
+  g_HIL_Gen_Swc_Wait("200 ms"); //测试步骤 Wait 200 ms
+}
+
+export void g_HIL_Clib_Swc_Clib_INTLGT_Gear_D()
+{
+  g_HIL_XCP_Swc_Set_XCP("CalC_INTLGT_Gear_En 1"); //测试步骤 Set_XCP CalC_INTLGT_Gear_En 1
+  g_HIL_Gen_Swc_Wait("200 ms"); //测试步骤 Wait 200 ms
+  g_HIL_XCP_Swc_Set_XCP("CalC_INTLGT_Gear_Val 1"); //测试步骤 Set_XCP CalC_INTLGT_Gear_Val 1
+  g_HIL_Gen_Swc_Wait("200 ms"); //测试步骤 Wait 200 ms
+}
+
+export void g_HIL_Clib_Swc_Clib_INTLGT_Gear_R()
+{
+  g_HIL_XCP_Swc_Set_XCP("CalC_INTLGT_Gear_En 1"); //测试步骤 Set_XCP CalC_INTLGT_Gear_En 1
+  g_HIL_Gen_Swc_Wait("200 ms"); //测试步骤 Wait 200 ms
+  g_HIL_XCP_Swc_Set_XCP("CalC_INTLGT_Gear_Val 3"); //测试步骤 Set_XCP CalC_INTLGT_Gear_Val 3
+  g_HIL_Gen_Swc_Wait("200 ms"); //测试步骤 Wait 200 ms
+}
+
+export void g_HIL_Clib_Swc_Clib_NotReady()
+{
+  g_HIL_XCP_Swc_Set_XCP("CalEn_FIN_EVSysReadySt 1"); //测试步骤 Set_XCP CalEn_FIN_EVSysReadySt 1
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_XCP_Swc_Set_XCP("CalVal_FIN_EVSysReadySt 0"); //测试步骤 Set_XCP CalVal_FIN_EVSysReadySt 0
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+}
+
+export void g_HIL_Clib_Swc_Clib_HV_ON()
+{
+  g_HIL_XCP_Swc_Set_XCP("CalEn_FIN_EVSysReadySt 1"); //测试步骤 Set_XCP CalEn_FIN_EVSysReadySt 1
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_XCP_Swc_Set_XCP("CalVal_FIN_EVSysReadySt 1"); //测试步骤 Set_XCP CalVal_FIN_EVSysReadySt 1
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_XCP_Swc_Check_XCP("Monr_FIN_EVSysReadySt 1"); //测试步骤 Check_XCP Monr_FIN_EVSysReadySt 1
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+}
+
+export void g_HIL_Clib_Swc_Clib_Ready()
+{
+  g_HIL_XCP_Swc_Set_XCP("CalEn_FIN_EVSysReadySt 1"); //测试步骤 Set_XCP CalEn_FIN_EVSysReadySt 1
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_XCP_Swc_Set_XCP("CalVal_FIN_EVSysReadySt 2"); //测试步骤 Set_XCP CalVal_FIN_EVSysReadySt 2
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_XCP_Swc_Check_XCP("Monr_FIN_EVSysReadySt 2"); //测试步骤 Check_XCP Monr_FIN_EVSysReadySt 2
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+}
+
+export void g_HIL_Clib_Swc_Clib_ChrgConnStDisp_0()
+{
+  g_HIL_XCP_Swc_Set_XCP("CalEn_FIN_ChrgConnStDisp 1"); //测试步骤 Set_XCP CalEn_FIN_ChrgConnStDisp 1
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_XCP_Swc_Set_XCP("CalVal_FIN_ChrgConnStDisp 0"); //测试步骤 Set_XCP CalVal_FIN_ChrgConnStDisp 0
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+}
+
+export void g_HIL_Clib_Swc_Clib_ChrgConnStDisp_1()
+{
+  g_HIL_XCP_Swc_Set_XCP("CalEn_FIN_ChrgConnStDisp 1"); //测试步骤 Set_XCP CalEn_FIN_ChrgConnStDisp 1
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_XCP_Swc_Set_XCP("CalVal_FIN_ChrgConnStDisp 1"); //测试步骤 Set_XCP CalVal_FIN_ChrgConnStDisp 1
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+}
+
+export void g_HIL_Clib_Swc_Clib_ChrgConnStDisp_2()
+{
+  g_HIL_XCP_Swc_Set_XCP("CalEn_FIN_ChrgConnStDisp 1"); //测试步骤 Set_XCP CalEn_FIN_ChrgConnStDisp 1
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_XCP_Swc_Set_XCP("CalVal_FIN_ChrgConnStDisp 2"); //测试步骤 Set_XCP CalVal_FIN_ChrgConnStDisp 2
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+}
+
+export void g_HIL_Clib_Swc_Clib_ChrgConnStDisp_3()
+{
+  g_HIL_XCP_Swc_Set_XCP("CalEn_FIN_ChrgConnStDisp 1"); //测试步骤 Set_XCP CalEn_FIN_ChrgConnStDisp 1
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_XCP_Swc_Set_XCP("CalVal_FIN_ChrgConnStDisp 3"); //测试步骤 Set_XCP CalVal_FIN_ChrgConnStDisp 3
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+}
+
+export void g_HIL_Clib_Swc_Clib_ChrgConnStDisp_4()
+{
+  g_HIL_XCP_Swc_Set_XCP("CalEn_FIN_ChrgConnStDisp 1"); //测试步骤 Set_XCP CalEn_FIN_ChrgConnStDisp 1
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_XCP_Swc_Set_XCP("CalVal_FIN_ChrgConnStDisp 4"); //测试步骤 Set_XCP CalVal_FIN_ChrgConnStDisp 4
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+}
+
+export void g_HIL_Clib_Swc_Clib_ChrgConnStDisp_5()
+{
+  g_HIL_XCP_Swc_Set_XCP("CalEn_FIN_ChrgConnStDisp 1"); //测试步骤 Set_XCP CalEn_FIN_ChrgConnStDisp 1
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_XCP_Swc_Set_XCP("CalVal_FIN_ChrgConnStDisp 5"); //测试步骤 Set_XCP CalVal_FIN_ChrgConnStDisp 5
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+}
+
+export void g_HIL_Clib_Swc_Clib_ChrgConnStDisp_6()
+{
+  g_HIL_XCP_Swc_Set_XCP("CalEn_FIN_ChrgConnStDisp 1"); //测试步骤 Set_XCP CalEn_FIN_ChrgConnStDisp 1
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_XCP_Swc_Set_XCP("CalVal_FIN_ChrgConnStDisp 6"); //测试步骤 Set_XCP CalVal_FIN_ChrgConnStDisp 6
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+}
+
+export void g_HIL_Clib_Swc_Clib_TrailerModeFlag_Inactive()
+{
+  g_HIL_XCP_Swc_Set_XCP("CalEn_FIN_TrailerMdFlag 1"); //测试步骤 Set_XCP CalEn_FIN_TrailerMdFlag 1
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_XCP_Swc_Set_XCP("CalVal_FIN_TrailerMdFlag 0"); //测试步骤 Set_XCP CalVal_FIN_TrailerMdFlag 0
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+}
+
+export void g_HIL_Clib_Swc_Clib_TrailerModeFlag_Active()
+{
+  g_HIL_XCP_Swc_Set_XCP("CalEn_FIN_TrailerMdFlag 1"); //测试步骤 Set_XCP CalEn_FIN_TrailerMdFlag 1
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_XCP_Swc_Set_XCP("CalVal_FIN_TrailerMdFlag 1"); //测试步骤 Set_XCP CalVal_FIN_TrailerMdFlag 1
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+}
+
+export void g_HIL_Clib_Swc_Clib_BatChrgStDisp_0_2()
+{
+  g_HIL_XCP_Swc_Set_XCP("CalEn_FIN_BatChrgStDisp 1"); //测试步骤 Set_XCP CalEn_FIN_BatChrgStDisp 1
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_XCP_Swc_Set_XCP("CalVal_FIN_BatChrgStDisp 0"); //测试步骤 Set_XCP CalVal_FIN_BatChrgStDisp 0
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_XCP_Swc_Set_XCP("CalVal_FIN_BatChrgStDisp 2"); //测试步骤 Set_XCP CalVal_FIN_BatChrgStDisp 2
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+}
+
+export void g_HIL_Clib_Swc_Clib_BatChrgStDisp_0()
+{
+  g_HIL_XCP_Swc_Set_XCP("CalEn_FIN_BatChrgStDisp 1"); //测试步骤 Set_XCP CalEn_FIN_BatChrgStDisp 1
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_XCP_Swc_Set_XCP("CalVal_FIN_BatChrgStDisp 0"); //测试步骤 Set_XCP CalVal_FIN_BatChrgStDisp 0
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+}
+
+export void g_HIL_Clib_Swc_Clib_Rescuemode()
+{
+  g_HIL_XCP_Swc_Set_XCP("CalEn_FIN_TrailerMdFlag 1"); //测试步骤 Set_XCP CalEn_FIN_TrailerMdFlag 1
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_XCP_Swc_Set_XCP("CalVal_FIN_TrailerMdFlag 1"); //测试步骤 Set_XCP CalVal_FIN_TrailerMdFlag 1
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+}
+
+export void g_HIL_Clib_Swc_Clib_NotRescuemode()
+{
+  g_HIL_XCP_Swc_Set_XCP("CalEn_FIN_TrailerMdFlag 1"); //测试步骤 Set_XCP CalEn_FIN_TrailerMdFlag 1
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_XCP_Swc_Set_XCP("CalVal_FIN_TrailerMdFlag 0"); //测试步骤 Set_XCP CalVal_FIN_TrailerMdFlag 0
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+}
+
+export void g_HIL_Clib_Swc_Clib_WinLockCtrlUnlockReq()
+{
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_Bus_Swc_Set("I_CDCU_LDCU_BodyCtrl::I_CDCU_WinLockCtrlReq 0"); //测试步骤 Set I_CDCU_LDCU_BodyCtrl::I_CDCU_WinLockCtrlReq 0
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_Bus_Swc_Set("I_CDCU_LDCU_BodyCtrl::I_CDCU_WinLockCtrlReq 2"); //测试步骤 Set I_CDCU_LDCU_BodyCtrl::I_CDCU_WinLockCtrlReq 2
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_Bus_Swc_Set("I_CDCU_LDCU_BodyCtrl::I_CDCU_WinLockCtrlReq 0"); //测试步骤 Set I_CDCU_LDCU_BodyCtrl::I_CDCU_WinLockCtrlReq 0
+}
+
+export void g_HIL_Clib_Swc_Clib_WinLockCtrlLockReq()
+{
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_Bus_Swc_Set("I_CDCU_LDCU_BodyCtrl::I_CDCU_WinLockCtrlReq 0"); //测试步骤 Set I_CDCU_LDCU_BodyCtrl::I_CDCU_WinLockCtrlReq 0
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_Bus_Swc_Set("I_CDCU_LDCU_BodyCtrl::I_CDCU_WinLockCtrlReq 1"); //测试步骤 Set I_CDCU_LDCU_BodyCtrl::I_CDCU_WinLockCtrlReq 1
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_Bus_Swc_Set("I_CDCU_LDCU_BodyCtrl::I_CDCU_WinLockCtrlReq 0"); //测试步骤 Set I_CDCU_LDCU_BodyCtrl::I_CDCU_WinLockCtrlReq 0
+}
+
+export void g_HIL_Clib_Swc_Clib_TrnkFullClosed()
+{
+  g_HIL_XCP_Swc_Set_XCP("CalEn_Debug_TrnkCurHallPos 1"); //测试步骤 Set_XCP CalEn_Debug_TrnkCurHallPos 1
+  g_HIL_XCP_Swc_Set_XCP("CalVal_Debug_TrnkCurHallPos 0"); //测试步骤 Set_XCP CalVal_Debug_TrnkCurHallPos 0//小于120
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch30::DigitalOutput 0"); //测试步骤 Set J_DI_RDoorlockPawlSw_LS INACTIVE
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch29::DigitalOutput 0"); //测试步骤 Set J_DI_RDoorlockSecondSw_LS INACTIVE//全锁
+  g_HIL_Bus_Swc_Set("VTS::VT2848_2_Ch35::DigitalOutput 0"); //测试步骤 Set J_DI_RDoorlockResetSw_LS INACTIVE
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+}
+
+export void g_HIL_Clib_Swc_Clib_TrnkFullOpened()
+{
+  g_HIL_XCP_Swc_Set_XCP("CalEn_Debug_TrnkCurHallPos 1"); //测试步骤 Set_XCP CalEn_Debug_TrnkCurHallPos 1
+  g_HIL_XCP_Swc_Set_XCP("CalVal_Debug_TrnkCurHallPos 2060"); //测试步骤 Set_XCP CalVal_Debug_TrnkCurHallPos 2060//以2260为基准学习后的最大行程
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch30::DigitalOutput 1"); //测试步骤 Set J_DI_RDoorlockPawlSw_LS ACTIVE
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch29::DigitalOutput 1"); //测试步骤 Set J_DI_RDoorlockSecondSw_LS ACTIVE//解锁
+  g_HIL_Bus_Swc_Set("VTS::VT2848_2_Ch35::DigitalOutput 0"); //测试步骤 Set J_DI_RDoorlockResetSw_LS INACTIVE
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+}
+
+export void g_HIL_Clib_Swc_Clib_TrnkOpened()
+{
+  g_HIL_XCP_Swc_Set_XCP("CalEn_Debug_TrnkCurHallPos 1"); //测试步骤 Set_XCP CalEn_Debug_TrnkCurHallPos 1
+  g_HIL_XCP_Swc_Set_XCP("CalVal_Debug_TrnkCurHallPos 202"); //测试步骤 Set_XCP CalVal_Debug_TrnkCurHallPos 202//200到记忆位置
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch30::DigitalOutput 1"); //测试步骤 Set J_DI_RDoorlockPawlSw_LS ACTIVE
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch29::DigitalOutput 1"); //测试步骤 Set J_DI_RDoorlockSecondSw_LS ACTIVE//解锁
+  g_HIL_Bus_Swc_Set("VTS::VT2848_2_Ch35::DigitalOutput 0"); //测试步骤 Set J_DI_RDoorlockResetSw_LS INACTIVE
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+}
+
+export void g_HIL_Clib_Swc_Clib_TrnkHalfClosed()
+{
+  g_HIL_XCP_Swc_Set_XCP("CalEn_Debug_TrnkCurHallPos 1"); //测试步骤 Set_XCP CalEn_Debug_TrnkCurHallPos 1
+  g_HIL_XCP_Swc_Set_XCP("CalVal_Debug_TrnkCurHallPos 0"); //测试步骤 Set_XCP CalVal_Debug_TrnkCurHallPos 0//小于120
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch30::DigitalOutput 1"); //测试步骤 Set J_DI_RDoorlockPawlSw_LS ACTIVE
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch29::DigitalOutput 0"); //测试步骤 Set J_DI_RDoorlockSecondSw_LS INACTIVE
+  g_HIL_Bus_Swc_Set("VTS::VT2848_2_Ch35::DigitalOutput 0"); //测试步骤 Set J_DI_RDoorlockResetSw_LS INACTIVE
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+}
+
+export void g_HIL_Clib_Swc_Clib_TrunkMaxPosLearned()
+{
+  g_HIL_Clib_Swc_Clib_Reset(); //测试步骤 Clib Reset
+  g_HIL_XCP_Swc_Set_XCP("CalC_TrnkLvrMtrStlTm_msec 3000"); //测试步骤 Set_XCP CalC_TrnkLvrMtrStlTm_msec 3000//堵转阈值
+  g_HIL_XCP_Swc_Set_XCP("CalC_TrnkHallSnsrLostDetTm_ms 4000"); //测试步骤 Set_XCP CalC_TrnkHallSnsrLostDetTm_ms 4000//hall故障阈值
+  g_HIL_XCP_Swc_Set_XCP("CalEn_Debug_TrnkCurHallPos 1"); //测试步骤 Set_XCP CalEn_Debug_TrnkCurHallPos 1
+  g_HIL_XCP_Swc_Set_XCP("CalVal_Debug_TrnkCurHallPos 2160"); //测试步骤 Set_XCP CalVal_Debug_TrnkCurHallPos 2160//大于2350
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch19::DigitalOutput 0"); //测试步骤 Set J_DI_TrunkOpenSw_LS INACTIVE
+  g_HIL_Gen_Swc_Wait("301 ms"); //测试步骤 Wait 301 ms
+  g_HIL_Clib_Swc_Clib_TrnkFullOpened(); //测试步骤 Clib TrnkFullOpened
+  g_HIL_Bus_Swc_Set("C_IPB_SpdInfoF::C_IPB_VehSpd 0"); //测试步骤 Set C_IPB_SpdInfoF::C_IPB_VehSpd 0
+  g_HIL_Bus_Swc_Set("C_IPB_SpdInfoF::C_IPB_VehSpdVD 1"); //测试步骤 Set C_IPB_SpdInfoF::C_IPB_VehSpdVD 1
+  g_HIL_Clib_Swc_Clib_Unlock(); //测试步骤 Clib Unlock
+  g_HIL_XCP_Swc_Set_XCP("CalEn_Debug_TrnkCurHallPos 1"); //测试步骤 Set_XCP CalEn_Debug_TrnkCurHallPos 1
+  g_HIL_XCP_Swc_Set_XCP("CalVal_Debug_TrnkCurHallPos 0"); //测试步骤 Set_XCP CalVal_Debug_TrnkCurHallPos 0
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch19::DigitalOutput 1"); //测试步骤 Set J_DI_TrunkOpenSw_LS ACTIVE//触发关门
+  g_HIL_Gen_Swc_Wait("150 ms"); //测试步骤 Wait 150 ms
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch19::DigitalOutput 0"); //测试步骤 Set J_DI_TrunkOpenSw_LS INACTIVE
+  g_HIL_Gen_Swc_Wait("150 ms"); //测试步骤 Wait 150 ms
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch30::DigitalOutput 0"); //测试步骤 Set J_DI_RDoorlockPawlSw_LS INACTIVE
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch29::DigitalOutput 0"); //测试步骤 Set J_DI_RDoorlockSecondSw_LS INACTIVE//全锁
+  g_HIL_Gen_Swc_Wait("3000 ms"); //测试步骤 Wait 3000 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_TgateSysSts::I_TgateInitSt 1"); //测试步骤 Check I_LDCU_TgateSysSts::I_TgateInitSt 1//ZeroPos Learned
+  g_HIL_Clib_Swc_Clib_TrnkOpened(); //测试步骤 Clib TrnkOpened
+  g_HIL_Gen_Swc_Wait("301 ms"); //测试步骤 Wait 301 ms
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch19::DigitalOutput 1"); //测试步骤 Set J_DI_TrunkOpenSw_LS ACTIVE//开尾门
+  g_HIL_Gen_Swc_Wait("150 ms"); //测试步骤 Wait 150 ms
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch19::DigitalOutput 0"); //测试步骤 Set J_DI_TrunkOpenSw_LS INACTIVE
+  g_HIL_Gen_Swc_Wait("150 ms"); //测试步骤 Wait 150 ms
+  g_HIL_XCP_Swc_Set_XCP("CalEn_Debug_TrnkCurHallPos 1"); //测试步骤 Set_XCP CalEn_Debug_TrnkCurHallPos 1
+  g_HIL_XCP_Swc_Set_XCP("CalVal_Debug_TrnkCurHallPos 2160"); //测试步骤 Set_XCP CalVal_Debug_TrnkCurHallPos 2160//2260正负80为可上止点学习区间
+  g_HIL_Gen_Swc_Wait("3000 ms"); //测试步骤 Wait 3000 ms//等待堵转
+  g_HIL_Bus_Swc_Check("I_LDCU_TgateSysSts::I_TgateInitSt 2"); //测试步骤 Check I_LDCU_TgateSysSts::I_TgateInitSt 2//MaxPos Learned
+}
+
+export void g_HIL_Clib_Swc_Clib_TrunkUninitialized()
+{
+  g_HIL_XCP_Swc_Set_XCP("CalEn_Debug_TrnkCurHallPos 1"); //测试步骤 Set_XCP CalEn_Debug_TrnkCurHallPos 1
+  g_HIL_XCP_Swc_Set_XCP("CalVal_Debug_TrnkCurHallPos 2352"); //测试步骤 Set_XCP CalVal_Debug_TrnkCurHallPos 2352//大于2350
+  g_HIL_Gen_Swc_Wait("301 ms"); //测试步骤 Wait 301 ms
+  g_HIL_Bus_Swc_Check("I_LDCU_TgateSysSts::I_TgateInitSt 0"); //测试步骤 Check I_LDCU_TgateSysSts::I_TgateInitSt 0//Uninitialized
+}
+
+export void g_HIL_Clib_Swc_Clib_CDCULock()
+{
+  g_HIL_Bus_Swc_Set("VTS::VT2848_3_Ch34::DigitalOutput 0"); //测试步骤 Set J_DI_FLDoorAjarSW_LS Close
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch31::DigitalOutput 0"); //测试步骤 Set J_DI_RLDoorAjarSW_LS Close
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0"); //测试步骤 Set I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_RRDoorAjarSt 0"); //测试步骤 Set I_RDCU_BodySysSt1::I_RDCU_RRDoorAjarSt 0
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_BonnetAjarSt 0"); //测试步骤 Set I_RDCU_BodySysSt1::I_RDCU_BonnetAjarSt 0
+  g_HIL_XCP_Swc_Set_XCP("CalEn_Debug_TrnkCurHallPos 1"); //测试步骤 Set_XCP CalEn_Debug_TrnkCurHallPos 1
+  g_HIL_XCP_Swc_Set_XCP("CalVal_Debug_TrnkCurHallPos 0"); //测试步骤 Set_XCP CalVal_Debug_TrnkCurHallPos 0//小于120
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch30::DigitalOutput 0"); //测试步骤 Set J_DI_RDoorlockPawlSw_LS INACTIVE
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch29::DigitalOutput 0"); //测试步骤 Set J_DI_RDoorlockSecondSw_LS INACTIVE//全锁
+  g_HIL_Bus_Swc_Set("VTS::VT2848_2_Ch35::DigitalOutput 0"); //测试步骤 Set J_DI_RDoorlockResetSw_LS INACTIVE
+  g_HIL_Gen_Swc_Wait("400 ms"); //测试步骤 Wait 400 ms
+  g_HIL_Bus_Swc_Set("VTS::VT2516_1_Ch4::DigitalOutput 1"); //测试步骤 Set J_AI_DrvSeatSBRSt Unoccupied
+  g_HIL_Bus_Swc_Set("I_CDCU_LDCU_BodyCtrl::I_CDCU_LDCU_CentralLockSw 0"); //测试步骤 Set I_CDCU_LDCU_BodyCtrl::I_CDCU_LDCU_CentralLockSw 0//No command
+  g_HIL_Gen_Swc_Wait("501 ms"); //测试步骤 Wait 501 ms//
+  g_HIL_Bus_Swc_Set("I_CDCU_LDCU_BodyCtrl::I_CDCU_LDCU_CentralLockSw 1"); //测试步骤 Set I_CDCU_LDCU_BodyCtrl::I_CDCU_LDCU_CentralLockSw 1//大屏闭锁0x1:Door lock
+  g_HIL_Gen_Swc_Wait("301 ms"); //测试步骤 Wait 301 ms//
+  g_HIL_Bus_Swc_Set("I_CDCU_LDCU_BodyCtrl::I_CDCU_LDCU_CentralLockSw 0"); //测试步骤 Set I_CDCU_LDCU_BodyCtrl::I_CDCU_LDCU_CentralLockSw 0//No command
+  g_HIL_Gen_Swc_Wait("301 ms"); //测试步骤 Wait 301 ms//
+}
+
+export void g_HIL_Clib_Swc_Clib_CDCUUnLock()
+{
+  g_HIL_Bus_Swc_Set("VTS::VT2848_3_Ch34::DigitalOutput 0"); //测试步骤 Set J_DI_FLDoorAjarSW_LS Close
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch31::DigitalOutput 0"); //测试步骤 Set J_DI_RLDoorAjarSW_LS Close
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0"); //测试步骤 Set I_RDCU_BodySysSt1::I_RDCU_PsngrDoorAjarSt 0
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_RRDoorAjarSt 0"); //测试步骤 Set I_RDCU_BodySysSt1::I_RDCU_RRDoorAjarSt 0
+  g_HIL_Bus_Swc_Set("I_RDCU_BodySysSt1::I_RDCU_BonnetAjarSt 0"); //测试步骤 Set I_RDCU_BodySysSt1::I_RDCU_BonnetAjarSt 0
+  g_HIL_XCP_Swc_Set_XCP("CalEn_Debug_TrnkCurHallPos 1"); //测试步骤 Set_XCP CalEn_Debug_TrnkCurHallPos 1
+  g_HIL_XCP_Swc_Set_XCP("CalVal_Debug_TrnkCurHallPos 0"); //测试步骤 Set_XCP CalVal_Debug_TrnkCurHallPos 0//小于120
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch30::DigitalOutput 0"); //测试步骤 Set J_DI_RDoorlockPawlSw_LS INACTIVE
+  g_HIL_Bus_Swc_Set("VTS::VT2848_4_Ch29::DigitalOutput 0"); //测试步骤 Set J_DI_RDoorlockSecondSw_LS INACTIVE//全锁
+  g_HIL_Bus_Swc_Set("VTS::VT2848_2_Ch35::DigitalOutput 0"); //测试步骤 Set J_DI_RDoorlockResetSw_LS INACTIVE
+  g_HIL_Gen_Swc_Wait("400 ms"); //测试步骤 Wait 400 ms
+  g_HIL_Bus_Swc_Set("VTS::VT2516_1_Ch4::DigitalOutput 1"); //测试步骤 Set J_AI_DrvSeatSBRSt Unoccupied
+  g_HIL_Bus_Swc_Set("I_CDCU_LDCU_BodyCtrl::I_CDCU_LDCU_CentralLockSw 0"); //测试步骤 Set I_CDCU_LDCU_BodyCtrl::I_CDCU_LDCU_CentralLockSw 0//No command
+  g_HIL_Gen_Swc_Wait("501 ms"); //测试步骤 Wait 501 ms//
+  g_HIL_Bus_Swc_Set("I_CDCU_LDCU_BodyCtrl::I_CDCU_LDCU_CentralLockSw 2"); //测试步骤 Set I_CDCU_LDCU_BodyCtrl::I_CDCU_LDCU_CentralLockSw 2//大屏解锁0x2:Door Unlock
+  g_HIL_Gen_Swc_Wait("301 ms"); //测试步骤 Wait 301 ms//
+  g_HIL_Bus_Swc_Set("I_CDCU_LDCU_BodyCtrl::I_CDCU_LDCU_CentralLockSw 0"); //测试步骤 Set I_CDCU_LDCU_BodyCtrl::I_CDCU_LDCU_CentralLockSw 0//No command
+  g_HIL_Gen_Swc_Wait("301 ms"); //测试步骤 Wait 301 ms//
+}
+
+export void g_HIL_Clib_Swc_Clib_Disable_NM()
+{
+  g_HIL_Bus_Swc_Disable_ID("I_CDCU_NM"); //测试步骤 Disable_ID I_CDCU_NM
+  g_HIL_Bus_Swc_Disable_ID("I_RDCU_NM"); //测试步骤 Disable_ID I_RDCU_NM
+  g_HIL_Bus_Swc_Disable_ID("E_OBC_DCDC_NM"); //测试步骤 Disable_ID E_OBC_DCDC_NM
+  g_HIL_Bus_Swc_Disable_ID("E_BMS_NM"); //测试步骤 Disable_ID E_BMS_NM
+}
+
+export void g_HIL_Clib_Swc_Clib_Enable_NM()
+{
+  g_HIL_Bus_Swc_Enable_ID("I_CDCU_NM"); //测试步骤 Enable_ID I_CDCU_NM
+  g_HIL_Bus_Swc_Enable_ID("I_RDCU_NM"); //测试步骤 Enable_ID I_RDCU_NM
+  g_HIL_Bus_Swc_Enable_ID("E_OBC_DCDC_NM"); //测试步骤 Enable_ID E_OBC_DCDC_NM
+  g_HIL_Bus_Swc_Enable_ID("E_BMS_NM"); //测试步骤 Enable_ID E_BMS_NM
+}
+
+export void g_HIL_Clib_Swc_Clib_Disable_All_CAN()
+{
+  g_HIL_Bus_Swc_Disable_CAN("ICAN"); //测试步骤 Disable_CAN ICAN
+  g_HIL_Bus_Swc_Disable_CAN("ECAN"); //测试步骤 Disable_CAN ECAN
+  g_HIL_Bus_Swc_Disable_CAN("CCAN"); //测试步骤 Disable_CAN CCAN
+}
+
+export void g_HIL_Clib_Swc_Clib_Enable_All_CAN()
+{
+  g_HIL_Bus_Swc_Enable_CAN("ICAN"); //测试步骤 Enable_CAN ICAN
+  g_HIL_Bus_Swc_Enable_CAN("ECAN"); //测试步骤 Enable_CAN ECAN
+  g_HIL_Bus_Swc_Enable_CAN("CCAN"); //测试步骤 Enable_CAN CCAN
+}
+
+export void g_HIL_Clib_Swc_Clib_AlcoholInterlock_Enable()
+{
+  g_HIL_UDS_Swc_Set_UDS("SA_L1"); //测试步骤 Set_UDS SA_L1
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_UDS_Swc_Set_UDS("2E 01 60 01"); //测试步骤 Set_UDS 2E 01 60 01
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_Bus_Swc_Set("AlcoLk_SysSt::AlcoLk_Blocking_MSB 0"); //测试步骤 Set AlcoLk_SysSt::AlcoLk_Blocking_MSB 0
+  g_HIL_Bus_Swc_Set("AlcoLk_SysSt::AlcoLk_Blocking_LSB 171"); //测试步骤 Set AlcoLk_SysSt::AlcoLk_Blocking_LSB 171
+  g_HIL_Gen_Swc_Wait("301 ms"); //测试步骤 Wait 301 ms
+}
+
+export void g_HIL_Clib_Swc_Clib_AlcoholInterlock_Disable()
+{
+  g_HIL_UDS_Swc_Set_UDS("SA_L1"); //测试步骤 Set_UDS SA_L1
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_UDS_Swc_Set_UDS("2E 01 60 00"); //测试步骤 Set_UDS 2E 01 60 00
+  g_HIL_Gen_Swc_Wait("300 ms"); //测试步骤 Wait 300 ms
+  g_HIL_Bus_Swc_Set("AlcoLk_SysSt::AlcoLk_Blocking_MSB 83"); //测试步骤 Set AlcoLk_SysSt::AlcoLk_Blocking_MSB 83
+  g_HIL_Bus_Swc_Set("AlcoLk_SysSt::AlcoLk_Blocking_LSB 172"); //测试步骤 Set AlcoLk_SysSt::AlcoLk_Blocking_LSB 172
+  g_HIL_Gen_Swc_Wait("301 ms"); //测试步骤 Wait 301 ms
+}
+
+export void g_HIL_Clib_Swc_Clib_TPMSUpdate_0()
+{
+  g_HIL_XCP_Swc_Set_XCP("CalEn_DtUpdateFL 1"); //测试步骤 Set_XCP CalEn_DtUpdateFL 1
+  g_HIL_XCP_Swc_Set_XCP("CalEn_DtUpdateFR 1"); //测试步骤 Set_XCP CalEn_DtUpdateFR 1
+  g_HIL_XCP_Swc_Set_XCP("CalEn_DtUpdateRL 1"); //测试步骤 Set_XCP CalEn_DtUpdateRL 1
+  g_HIL_XCP_Swc_Set_XCP("CalEn_DtUpdateRR 1"); //测试步骤 Set_XCP CalEn_DtUpdateRR 1
+  g_HIL_XCP_Swc_Set_XCP("CalVal_DtUpdateFL 0"); //测试步骤 Set_XCP CalVal_DtUpdateFL 0
+  g_HIL_XCP_Swc_Set_XCP("CalVal_DtUpdateFR 0"); //测试步骤 Set_XCP CalVal_DtUpdateFR 0
+  g_HIL_XCP_Swc_Set_XCP("CalVal_DtUpdateRL 0"); //测试步骤 Set_XCP CalVal_DtUpdateRL 0
+  g_HIL_XCP_Swc_Set_XCP("CalVal_DtUpdateRR 0"); //测试步骤 Set_XCP CalVal_DtUpdateRR 0
+  g_HIL_Gen_Swc_Wait("1000 ms"); //测试步骤 Wait 1000 ms
+}
+
+export void g_HIL_Clib_Swc_Clib_TPMSUpdate_1()
+{
+  g_HIL_XCP_Swc_Set_XCP("CalEn_DtUpdateFL 1"); //测试步骤 Set_XCP CalEn_DtUpdateFL 1
+  g_HIL_XCP_Swc_Set_XCP("CalEn_DtUpdateFR 1"); //测试步骤 Set_XCP CalEn_DtUpdateFR 1
+  g_HIL_XCP_Swc_Set_XCP("CalEn_DtUpdateRL 1"); //测试步骤 Set_XCP CalEn_DtUpdateRL 1
+  g_HIL_XCP_Swc_Set_XCP("CalEn_DtUpdateRR 1"); //测试步骤 Set_XCP CalEn_DtUpdateRR 1
+  g_HIL_XCP_Swc_Set_XCP("CalVal_DtUpdateFL 0"); //测试步骤 Set_XCP CalVal_DtUpdateFL 0
+  g_HIL_XCP_Swc_Set_XCP("CalVal_DtUpdateFR 0"); //测试步骤 Set_XCP CalVal_DtUpdateFR 0
+  g_HIL_XCP_Swc_Set_XCP("CalVal_DtUpdateRL 0"); //测试步骤 Set_XCP CalVal_DtUpdateRL 0
+  g_HIL_XCP_Swc_Set_XCP("CalVal_DtUpdateRR 0"); //测试步骤 Set_XCP CalVal_DtUpdateRR 0
+  g_HIL_Gen_Swc_Wait("1000 ms"); //测试步骤 Wait 1000 ms
+  g_HIL_XCP_Swc_Set_XCP("CalVal_DtUpdateFL 1"); //测试步骤 Set_XCP CalVal_DtUpdateFL 1
+  g_HIL_XCP_Swc_Set_XCP("CalVal_DtUpdateFR 1"); //测试步骤 Set_XCP CalVal_DtUpdateFR 1
+  g_HIL_XCP_Swc_Set_XCP("CalVal_DtUpdateRL 1"); //测试步骤 Set_XCP CalVal_DtUpdateRL 1
+  g_HIL_XCP_Swc_Set_XCP("CalVal_DtUpdateRR 1"); //测试步骤 Set_XCP CalVal_DtUpdateRR 1
+  g_HIL_Gen_Swc_Wait("1000 ms"); //测试步骤 Wait 1000 ms
+}
+
+export void g_HIL_Clib_Swc_Clib_TPMSUpdate_2()
+{
+  g_HIL_XCP_Swc_Set_XCP("CalEn_DtUpdateFL 1"); //测试步骤 Set_XCP CalEn_DtUpdateFL 1
+  g_HIL_XCP_Swc_Set_XCP("CalEn_DtUpdateFR 1"); //测试步骤 Set_XCP CalEn_DtUpdateFR 1
+  g_HIL_XCP_Swc_Set_XCP("CalEn_DtUpdateRL 1"); //测试步骤 Set_XCP CalEn_DtUpdateRL 1
+  g_HIL_XCP_Swc_Set_XCP("CalEn_DtUpdateRR 1"); //测试步骤 Set_XCP CalEn_DtUpdateRR 1
+  g_HIL_XCP_Swc_Set_XCP("CalVal_DtUpdateFL 1"); //测试步骤 Set_XCP CalVal_DtUpdateFL 1
+  g_HIL_XCP_Swc_Set_XCP("CalVal_DtUpdateFR 1"); //测试步骤 Set_XCP CalVal_DtUpdateFR 1
+  g_HIL_XCP_Swc_Set_XCP("CalVal_DtUpdateRL 1"); //测试步骤 Set_XCP CalVal_DtUpdateRL 1
+  g_HIL_XCP_Swc_Set_XCP("CalVal_DtUpdateRR 1"); //测试步骤 Set_XCP CalVal_DtUpdateRR 1
+  g_HIL_Gen_Swc_Wait("1000 ms"); //测试步骤 Wait 1000 ms
+  g_HIL_XCP_Swc_Set_XCP("CalVal_DtUpdateFL 2"); //测试步骤 Set_XCP CalVal_DtUpdateFL 2
+  g_HIL_XCP_Swc_Set_XCP("CalVal_DtUpdateFR 2"); //测试步骤 Set_XCP CalVal_DtUpdateFR 2
+  g_HIL_XCP_Swc_Set_XCP("CalVal_DtUpdateRL 2"); //测试步骤 Set_XCP CalVal_DtUpdateRL 2
+  g_HIL_XCP_Swc_Set_XCP("CalVal_DtUpdateRR 2"); //测试步骤 Set_XCP CalVal_DtUpdateRR 2
+  g_HIL_Gen_Swc_Wait("1000 ms"); //测试步骤 Wait 1000 ms
+}
+
+export void g_HIL_Clib_Swc_Clib_TPMSUpdate_5()
+{
+  g_HIL_XCP_Swc_Set_XCP("CalEn_DtUpdateFL 1"); //测试步骤 Set_XCP CalEn_DtUpdateFL 1
+  g_HIL_XCP_Swc_Set_XCP("CalEn_DtUpdateFR 1"); //测试步骤 Set_XCP CalEn_DtUpdateFR 1
+  g_HIL_XCP_Swc_Set_XCP("CalEn_DtUpdateRL 1"); //测试步骤 Set_XCP CalEn_DtUpdateRL 1
+  g_HIL_XCP_Swc_Set_XCP("CalEn_DtUpdateRR 1"); //测试步骤 Set_XCP CalEn_DtUpdateRR 1
+  g_HIL_XCP_Swc_Set_XCP("CalVal_DtUpdateFL 1"); //测试步骤 Set_XCP CalVal_DtUpdateFL 1
+  g_HIL_XCP_Swc_Set_XCP("CalVal_DtUpdateFR 1"); //测试步骤 Set_XCP CalVal_DtUpdateFR 1
+  g_HIL_XCP_Swc_Set_XCP("CalVal_DtUpdateRL 1"); //测试步骤 Set_XCP CalVal_DtUpdateRL 1
+  g_HIL_XCP_Swc_Set_XCP("CalVal_DtUpdateRR 1"); //测试步骤 Set_XCP CalVal_DtUpdateRR 1
+  g_HIL_Gen_Swc_Wait("1000 ms"); //测试步骤 Wait 1000 ms
+  g_HIL_XCP_Swc_Set_XCP("CalVal_DtUpdateFL 2"); //测试步骤 Set_XCP CalVal_DtUpdateFL 2
+  g_HIL_XCP_Swc_Set_XCP("CalVal_DtUpdateFR 2"); //测试步骤 Set_XCP CalVal_DtUpdateFR 2
+  g_HIL_XCP_Swc_Set_XCP("CalVal_DtUpdateRL 2"); //测试步骤 Set_XCP CalVal_DtUpdateRL 2
+  g_HIL_XCP_Swc_Set_XCP("CalVal_DtUpdateRR 2"); //测试步骤 Set_XCP CalVal_DtUpdateRR 2
+  g_HIL_Gen_Swc_Wait("1000 ms"); //测试步骤 Wait 1000 ms
+  g_HIL_XCP_Swc_Set_XCP("CalVal_DtUpdateFL 3"); //测试步骤 Set_XCP CalVal_DtUpdateFL 3
+  g_HIL_XCP_Swc_Set_XCP("CalVal_DtUpdateFR 3"); //测试步骤 Set_XCP CalVal_DtUpdateFR 3
+  g_HIL_XCP_Swc_Set_XCP("CalVal_DtUpdateRL 3"); //测试步骤 Set_XCP CalVal_DtUpdateRL 3
+  g_HIL_XCP_Swc_Set_XCP("CalVal_DtUpdateRR 3"); //测试步骤 Set_XCP CalVal_DtUpdateRR 3
+  g_HIL_Gen_Swc_Wait("1000 ms"); //测试步骤 Wait 1000 ms
+  g_HIL_XCP_Swc_Set_XCP("CalVal_DtUpdateFL 4"); //测试步骤 Set_XCP CalVal_DtUpdateFL 4
+  g_HIL_XCP_Swc_Set_XCP("CalVal_DtUpdateFR 4"); //测试步骤 Set_XCP CalVal_DtUpdateFR 4
+  g_HIL_XCP_Swc_Set_XCP("CalVal_DtUpdateRL 4"); //测试步骤 Set_XCP CalVal_DtUpdateRL 4
+  g_HIL_XCP_Swc_Set_XCP("CalVal_DtUpdateRR 4"); //测试步骤 Set_XCP CalVal_DtUpdateRR 4
+  g_HIL_Gen_Swc_Wait("1000 ms"); //测试步骤 Wait 1000 ms
+  g_HIL_XCP_Swc_Set_XCP("CalVal_DtUpdateFL 5"); //测试步骤 Set_XCP CalVal_DtUpdateFL 5
+  g_HIL_XCP_Swc_Set_XCP("CalVal_DtUpdateFR 5"); //测试步骤 Set_XCP CalVal_DtUpdateFR 5
+  g_HIL_XCP_Swc_Set_XCP("CalVal_DtUpdateRL 5"); //测试步骤 Set_XCP CalVal_DtUpdateRL 5
+  g_HIL_XCP_Swc_Set_XCP("CalVal_DtUpdateRR 5"); //测试步骤 Set_XCP CalVal_DtUpdateRR 5
+  g_HIL_Gen_Swc_Wait("1000 ms"); //测试步骤 Wait 1000 ms
+}
+
+export void g_HIL_Clib_Swc_Clib_TPMSUpdate_9()
+{
+  g_HIL_XCP_Swc_Set_XCP("CalEn_DtUpdateFL 1"); //测试步骤 Set_XCP CalEn_DtUpdateFL 1
+  g_HIL_XCP_Swc_Set_XCP("CalEn_DtUpdateFR 1"); //测试步骤 Set_XCP CalEn_DtUpdateFR 1
+  g_HIL_XCP_Swc_Set_XCP("CalEn_DtUpdateRL 1"); //测试步骤 Set_XCP CalEn_DtUpdateRL 1
+  g_HIL_XCP_Swc_Set_XCP("CalEn_DtUpdateRR 1"); //测试步骤 Set_XCP CalEn_DtUpdateRR 1
+  g_HIL_XCP_Swc_Set_XCP("CalVal_DtUpdateFL 1"); //测试步骤 Set_XCP CalVal_DtUpdateFL 1
+  g_HIL_XCP_Swc_Set_XCP("CalVal_DtUpdateFR 1"); //测试步骤 Set_XCP CalVal_DtUpdateFR 1
+  g_HIL_XCP_Swc_Set_XCP("CalVal_DtUpdateRL 1"); //测试步骤 Set_XCP CalVal_DtUpdateRL 1
+  g_HIL_XCP_Swc_Set_XCP("CalVal_DtUpdateRR 1"); //测试步骤 Set_XCP CalVal_DtUpdateRR 1
+  g_HIL_Gen_Swc_Wait("1000 ms"); //测试步骤 Wait 1000 ms
+  g_HIL_XCP_Swc_Set_XCP("CalVal_DtUpdateFL 2"); //测试步骤 Set_XCP CalVal_DtUpdateFL 2
+  g_HIL_XCP_Swc_Set_XCP("CalVal_DtUpdateFR 2"); //测试步骤 Set_XCP CalVal_DtUpdateFR 2
+  g_HIL_XCP_Swc_Set_XCP("CalVal_DtUpdateRL 2"); //测试步骤 Set_XCP CalVal_DtUpdateRL 2
+  g_HIL_XCP_Swc_Set_XCP("CalVal_DtUpdateRR 2"); //测试步骤 Set_XCP CalVal_DtUpdateRR 2
+  g_HIL_Gen_Swc_Wait("1000 ms"); //测试步骤 Wait 1000 ms
+  g_HIL_XCP_Swc_Set_XCP("CalVal_DtUpdateFL 3"); //测试步骤 Set_XCP CalVal_DtUpdateFL 3
+  g_HIL_XCP_Swc_Set_XCP("CalVal_DtUpdateFR 3"); //测试步骤 Set_XCP CalVal_DtUpdateFR 3
+  g_HIL_XCP_Swc_Set_XCP("CalVal_DtUpdateRL 3"); //测试步骤 Set_XCP CalVal_DtUpdateRL 3
+  g_HIL_XCP_Swc_Set_XCP("CalVal_DtUpdateRR 3"); //测试步骤 Set_XCP CalVal_DtUpdateRR 3
+  g_HIL_Gen_Swc_Wait("1000 ms"); //测试步骤 Wait 1000 ms
+  g_HIL_XCP_Swc_Set_XCP("CalVal_DtUpdateFL 4"); //测试步骤 Set_XCP CalVal_DtUpdateFL 4
+  g_HIL_XCP_Swc_Set_XCP("CalVal_DtUpdateFR 4"); //测试步骤 Set_XCP CalVal_DtUpdateFR 4
+  g_HIL_XCP_Swc_Set_XCP("CalVal_DtUpdateRL 4"); //测试步骤 Set_XCP CalVal_DtUpdateRL 4
+  g_HIL_XCP_Swc_Set_XCP("CalVal_DtUpdateRR 4"); //测试步骤 Set_XCP CalVal_DtUpdateRR 4
+  g_HIL_Gen_Swc_Wait("1000 ms"); //测试步骤 Wait 1000 ms
+  g_HIL_XCP_Swc_Set_XCP("CalVal_DtUpdateFL 5"); //测试步骤 Set_XCP CalVal_DtUpdateFL 5
+  g_HIL_XCP_Swc_Set_XCP("CalVal_DtUpdateFR 5"); //测试步骤 Set_XCP CalVal_DtUpdateFR 5
+  g_HIL_XCP_Swc_Set_XCP("CalVal_DtUpdateRL 5"); //测试步骤 Set_XCP CalVal_DtUpdateRL 5
+  g_HIL_XCP_Swc_Set_XCP("CalVal_DtUpdateRR 5"); //测试步骤 Set_XCP CalVal_DtUpdateRR 5
+  g_HIL_Gen_Swc_Wait("1000 ms"); //测试步骤 Wait 1000 ms
+  g_HIL_XCP_Swc_Set_XCP("CalVal_DtUpdateFL 6"); //测试步骤 Set_XCP CalVal_DtUpdateFL 6
+  g_HIL_XCP_Swc_Set_XCP("CalVal_DtUpdateFR 6"); //测试步骤 Set_XCP CalVal_DtUpdateFR 6
+  g_HIL_XCP_Swc_Set_XCP("CalVal_DtUpdateRL 6"); //测试步骤 Set_XCP CalVal_DtUpdateRL 6
+  g_HIL_XCP_Swc_Set_XCP("CalVal_DtUpdateRR 6"); //测试步骤 Set_XCP CalVal_DtUpdateRR 6
+  g_HIL_Gen_Swc_Wait("1000 ms"); //测试步骤 Wait 1000 ms
+  g_HIL_XCP_Swc_Set_XCP("CalVal_DtUpdateFL 7"); //测试步骤 Set_XCP CalVal_DtUpdateFL 7
+  g_HIL_XCP_Swc_Set_XCP("CalVal_DtUpdateFR 7"); //测试步骤 Set_XCP CalVal_DtUpdateFR 7
+  g_HIL_XCP_Swc_Set_XCP("CalVal_DtUpdateRL 7"); //测试步骤 Set_XCP CalVal_DtUpdateRL 7
+  g_HIL_XCP_Swc_Set_XCP("CalVal_DtUpdateRR 7"); //测试步骤 Set_XCP CalVal_DtUpdateRR 7
+  g_HIL_Gen_Swc_Wait("1000 ms"); //测试步骤 Wait 1000 ms
+  g_HIL_XCP_Swc_Set_XCP("CalVal_DtUpdateFL 8"); //测试步骤 Set_XCP CalVal_DtUpdateFL 8
+  g_HIL_XCP_Swc_Set_XCP("CalVal_DtUpdateFR 8"); //测试步骤 Set_XCP CalVal_DtUpdateFR 8
+  g_HIL_XCP_Swc_Set_XCP("CalVal_DtUpdateRL 8"); //测试步骤 Set_XCP CalVal_DtUpdateRL 8
+  g_HIL_XCP_Swc_Set_XCP("CalVal_DtUpdateRR 8"); //测试步骤 Set_XCP CalVal_DtUpdateRR 8
+  g_HIL_Gen_Swc_Wait("1000 ms"); //测试步骤 Wait 1000 ms
+  g_HIL_XCP_Swc_Set_XCP("CalVal_DtUpdateFL 9"); //测试步骤 Set_XCP CalVal_DtUpdateFL 9
+  g_HIL_XCP_Swc_Set_XCP("CalVal_DtUpdateFR 9"); //测试步骤 Set_XCP CalVal_DtUpdateFR 9
+  g_HIL_XCP_Swc_Set_XCP("CalVal_DtUpdateRL 9"); //测试步骤 Set_XCP CalVal_DtUpdateRL 9
+  g_HIL_XCP_Swc_Set_XCP("CalVal_DtUpdateRR 9"); //测试步骤 Set_XCP CalVal_DtUpdateRR 9
+  g_HIL_Gen_Swc_Wait("1000 ms"); //测试步骤 Wait 1000 ms
+}
+
+export void g_HIL_Clib_Swc_Clib_CICT_Setup()
+{
+  g_HIL_Bus_Swc_Set("VTS::VT7101_1_Out1::Active 14"); //测试步骤 Set J_BAT 14
+  g_HIL_Bus_Swc_Set("VTS::VT7101_1_Out1::Active 1"); //测试步骤 Set J_KL30 ON
+  g_HIL_Bus_Swc_Disable_CAN("ECAN"); //测试步骤 Disable_CAN ECAN
+}
+
+export void g_HIL_Clib_Swc_Clib_Run_Setup()
+{
+  g_HIL_Bus_Swc_Enable_CAN("ECAN"); //测试步骤 Enable_CAN ECAN
+}
+
+export void g_HIL_Clib_Swc_Clib_DisableRDCUMsg()
+{
+  g_HIL_Bus_Swc_Disable_ID("C_RDCU_APBSysSt"); //测试步骤 Disable_ID C_RDCU_APBSysSt
+  g_HIL_Bus_Swc_Disable_ID("C_RDCU_IPB_APB_ROPP"); //测试步骤 Disable_ID C_RDCU_IPB_APB_ROPP
+  g_HIL_Bus_Swc_Disable_ID("I_RDCU_BodySysSt1"); //测试步骤 Disable_ID I_RDCU_BodySysSt1
+  g_HIL_Bus_Swc_Disable_ID("I_RDCU_BodySysSt2"); //测试步骤 Disable_ID I_RDCU_BodySysSt2
+  g_HIL_Bus_Swc_Disable_ID("I_RDCU_BodySysSt3"); //测试步骤 Disable_ID I_RDCU_BodySysSt3
+  g_HIL_Bus_Swc_Disable_ID("I_RDCU_WinSt"); //测试步骤 Disable_ID I_RDCU_WinSt
+  g_HIL_Bus_Swc_Disable_ID("I_RDCU_BodySysSt4"); //测试步骤 Disable_ID I_RDCU_BodySysSt4
+  g_HIL_Bus_Swc_Disable_ID("I_RDCU_BodySysSt5"); //测试步骤 Disable_ID I_RDCU_BodySysSt5
+  g_HIL_Bus_Swc_Disable_ID("I_RDCU_BodySysSt6"); //测试步骤 Disable_ID I_RDCU_BodySysSt6
+  g_HIL_Bus_Swc_Disable_ID("I_RDCU_BodyCtrl2"); //测试步骤 Disable_ID I_RDCU_BodyCtrl2
+  g_HIL_Bus_Swc_Disable_ID("I_RDCU_SeatInfo"); //测试步骤 Disable_ID I_RDCU_SeatInfo
+  g_HIL_Bus_Swc_Disable_ID("I_RDCU_ACDisplayInfo1"); //测试步骤 Disable_ID I_RDCU_ACDisplayInfo1
+  g_HIL_Bus_Swc_Disable_ID("I_RDCU_ACDisplayInfo2"); //测试步骤 Disable_ID I_RDCU_ACDisplayInfo2
+  g_HIL_Bus_Swc_Disable_ID("I_RDCU_ThermalSys1"); //测试步骤 Disable_ID I_RDCU_ThermalSys1
+  g_HIL_Bus_Swc_Disable_ID("I_RDCU_ThermalSys2"); //测试步骤 Disable_ID I_RDCU_ThermalSys2
+  g_HIL_Bus_Swc_Disable_ID("I_RDCU_ThermalSysSenInfo2"); //测试步骤 Disable_ID I_RDCU_ThermalSysSenInfo2
+  g_HIL_Bus_Swc_Disable_ID("I_RDCU_LDCU_CalcResult1"); //测试步骤 Disable_ID I_RDCU_LDCU_CalcResult1
+  g_HIL_Bus_Swc_Disable_ID("I_RDCU_LDCU_CalcResult2"); //测试步骤 Disable_ID I_RDCU_LDCU_CalcResult2
+  g_HIL_Bus_Swc_Disable_ID("I_RDCU_PowerReq"); //测试步骤 Disable_ID I_RDCU_PowerReq
+  g_HIL_Bus_Swc_Disable_ID("I_RDCU_PowerSt"); //测试步骤 Disable_ID I_RDCU_PowerSt
+  g_HIL_Bus_Swc_Disable_ID("I_RDCU_NM"); //测试步骤 Disable_ID I_RDCU_NM
+  g_HIL_Bus_Swc_Disable_ID("I_RDCU_IPB_APB_ROPP"); //测试步骤 Disable_ID I_RDCU_IPB_APB_ROPP
+  g_HIL_Bus_Swc_Disable_ID("I_RDCU_ACDisplayInfo3"); //测试步骤 Disable_ID I_RDCU_ACDisplayInfo3
+}
+
+export void g_HIL_Clib_Swc_Clib_EnableRDCUMsg()
+{
+  g_HIL_Bus_Swc_Enable_ID("C_RDCU_APBSysSt"); //测试步骤 Enable_ID C_RDCU_APBSysSt
+  g_HIL_Bus_Swc_Enable_ID("C_RDCU_IPB_APB_ROPP"); //测试步骤 Enable_ID C_RDCU_IPB_APB_ROPP
+  g_HIL_Bus_Swc_Enable_ID("I_RDCU_BodySysSt1"); //测试步骤 Enable_ID I_RDCU_BodySysSt1
+  g_HIL_Bus_Swc_Enable_ID("I_RDCU_BodySysSt2"); //测试步骤 Enable_ID I_RDCU_BodySysSt2
+  g_HIL_Bus_Swc_Enable_ID("I_RDCU_BodySysSt3"); //测试步骤 Enable_ID I_RDCU_BodySysSt3
+  g_HIL_Bus_Swc_Enable_ID("I_RDCU_WinSt"); //测试步骤 Enable_ID I_RDCU_WinSt
+  g_HIL_Bus_Swc_Enable_ID("I_RDCU_BodySysSt4"); //测试步骤 Enable_ID I_RDCU_BodySysSt4
+  g_HIL_Bus_Swc_Enable_ID("I_RDCU_BodySysSt5"); //测试步骤 Enable_ID I_RDCU_BodySysSt5
+  g_HIL_Bus_Swc_Enable_ID("I_RDCU_BodySysSt6"); //测试步骤 Enable_ID I_RDCU_BodySysSt6
+  g_HIL_Bus_Swc_Enable_ID("I_RDCU_BodyCtrl2"); //测试步骤 Enable_ID I_RDCU_BodyCtrl2
+  g_HIL_Bus_Swc_Enable_ID("I_RDCU_SeatInfo"); //测试步骤 Enable_ID I_RDCU_SeatInfo
+  g_HIL_Bus_Swc_Enable_ID("I_RDCU_ACDisplayInfo1"); //测试步骤 Enable_ID I_RDCU_ACDisplayInfo1
+  g_HIL_Bus_Swc_Enable_ID("I_RDCU_ACDisplayInfo2"); //测试步骤 Enable_ID I_RDCU_ACDisplayInfo2
+  g_HIL_Bus_Swc_Enable_ID("I_RDCU_ThermalSys1"); //测试步骤 Enable_ID I_RDCU_ThermalSys1
+  g_HIL_Bus_Swc_Enable_ID("I_RDCU_ThermalSys2"); //测试步骤 Enable_ID I_RDCU_ThermalSys2
+  g_HIL_Bus_Swc_Enable_ID("I_RDCU_ThermalSysSenInfo2"); //测试步骤 Enable_ID I_RDCU_ThermalSysSenInfo2
+  g_HIL_Bus_Swc_Enable_ID("I_RDCU_LDCU_CalcResult1"); //测试步骤 Enable_ID I_RDCU_LDCU_CalcResult1
+  g_HIL_Bus_Swc_Enable_ID("I_RDCU_LDCU_CalcResult2"); //测试步骤 Enable_ID I_RDCU_LDCU_CalcResult2
+  g_HIL_Bus_Swc_Enable_ID("I_RDCU_PowerReq"); //测试步骤 Enable_ID I_RDCU_PowerReq
+  g_HIL_Bus_Swc_Enable_ID("I_RDCU_PowerSt"); //测试步骤 Enable_ID I_RDCU_PowerSt
+  g_HIL_Bus_Swc_Enable_ID("I_RDCU_NM"); //测试步骤 Enable_ID I_RDCU_NM
+  g_HIL_Bus_Swc_Enable_ID("I_RDCU_IPB_APB_ROPP"); //测试步骤 Enable_ID I_RDCU_IPB_APB_ROPP
+  g_HIL_Bus_Swc_Enable_ID("I_RDCU_ACDisplayInfo3"); //测试步骤 Enable_ID I_RDCU_ACDisplayInfo3
+}
+
+export void g_HIL_Clib_Swc_Clib_EPBTestSetup()
+{
+  g_HIL_Bus_Swc_Set("VTS::VT7101_1_Out1::Active 1"); //测试步骤 Set J_KL30 ON//打开右域的J_KL30
+  g_HIL_Bus_Swc_Set("C_XPU_IPB_ADASToqCtrl::C_XPU_AD_EPBReqVD 1"); //测试步骤 Set C_XPU_IPB_ADASToqCtrl::C_XPU_AD_EPBReqVD 1
+  g_HIL_Bus_Swc_Set("C_IPB_SpdInfo_E2E::C_IPB_FLWheelSpdVD_E2E 1"); //测试步骤 Set C_IPB_SpdInfo_E2E::C_IPB_FLWheelSpdVD_E2E 1
+  g_HIL_Bus_Swc_Set("C_IPB_SpdInfo_E2E::C_IPB_FRWheelSpdVD_E2E 1"); //测试步骤 Set C_IPB_SpdInfo_E2E::C_IPB_FRWheelSpdVD_E2E 1
+  g_HIL_Bus_Swc_Set("C_IPB_SpdInfo_E2E::C_IPB_RLWheelSpdVD_E2E 1"); //测试步骤 Set C_IPB_SpdInfo_E2E::C_IPB_RLWheelSpdVD_E2E 1
+  g_HIL_Bus_Swc_Set("C_IPB_SpdInfo_E2E::C_IPB_RRWheelSpdVD_E2E 1"); //测试步骤 Set C_IPB_SpdInfo_E2E::C_IPB_RRWheelSpdVD_E2E 1
+  g_HIL_Bus_Swc_Set("C_IPB_SpdInfo_E2E::C_IPB_VehSpdVD_E2E 1"); //测试步骤 Set C_IPB_SpdInfo_E2E::C_IPB_VehSpdVD_E2E 1
+}
+
+export void g_HIL_Clib_Swc_Clib_EPBTestCleanup()
+{
+  g_HIL_Bus_Swc_Set("VTS::VT7101_1_Out1::Active 0"); //测试步骤 Set J_KL30 OFF//关闭右域的J_KL30，让右域停发报文，以免影响其他测试
+  g_HIL_Clib_Swc_Clib_EnableRDCUMsg(); //测试步骤 Clib EnableRDCUMsg
+}
+
+export void g_HIL_Clib_Swc_Clib_Clean_DTC()
+{
+  g_HIL_UDS_Swc_Set_UDS("14 FF FF FF"); //测试步骤 Set_UDS 14 FF FF FF
+  g_HIL_Gen_Swc_Wait("5000 ms"); //测试步骤 Wait 5000 ms
+  g_HIL_Bus_Swc_Set("VTS::VT7101_1_Out1::Active 0"); //测试步骤 Set J_KL30 OFF
+  g_HIL_Gen_Swc_Wait("2000 ms"); //测试步骤 Wait 2000 ms
+  g_HIL_Bus_Swc_Set("VTS::VT7101_1_Out1::Active 1"); //测试步骤 Set J_KL30 ON
+  g_HIL_Gen_Swc_Wait("1000 ms"); //测试步骤 Wait 1000 ms
+}

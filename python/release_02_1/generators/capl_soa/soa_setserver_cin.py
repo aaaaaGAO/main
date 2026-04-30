@@ -24,8 +24,9 @@ from typing import Any
 from core.generator_config import GeneratorConfig
 from infra.config.config_access import read_fixed_config
 from infra.excel.header import ColumnMapper
-from infra.excel.workbook import ExcelService, merged_cell_value
+from infra.excel.workbook import merged_cell_value
 from infra.filesystem.pathing import resolve_configured_path, resolve_output_dir_relative_path
+from generators.capl_soa.soa_excel_utils import normalize_cell_text, open_workbook_cached
 from services.config_constants import (
     OPTION_SOA_SETSERVER_OUTPUT_FILENAME,
     OPTION_SRV_EXCEL,
@@ -35,7 +36,9 @@ from services.config_constants import (
     SECTION_LR_REAR,
 )
 from utils.logger import PROGRESS_LEVEL
-DEFAULT_SOA_SETSERVER_REL_PARTS: tuple[str, ...] = ("TESTmode",)
+# SOA_StartSetserver.cin 输出目录规则与 SOA_DataTab.cin 保持一致：
+# 以用户配置的 output_dir 的“上一级”为锚点拼接 Public/TESTmode/Bus/SOA/SOA_Onder。
+DEFAULT_SOA_SETSERVER_REL_PARTS: tuple[str, ...] = ("Public", "TESTmode", "Bus", "SOA", "SOA_Onder")
 SOA_LOGGER_NAME = "generate_soa_startsetserver"
 
 
@@ -46,6 +49,10 @@ METHOD_TUPLE_ID_MAX_EXCLUSIVE = 0x8000
 
 SERVICE_INTERFACE_SHEET = "Service_Interface"
 SERVICE_DEPLOYMENT_SHEET = "Service_Deployment"
+
+HEADER_SCAN_MAX_ROWS = 60
+DEFAULT_MAX_COLUMN_SCAN = 120
+DEFAULT_INTERFACE_COLUMN_SCAN = 80
 
 SERVICE_INTERFACE_COLUMN_ALIASES: dict[str, tuple[str, ...]] = {
     "service_name": (
@@ -113,23 +120,6 @@ DOMAIN_TO_SECTION: dict[str, str] = {
     "LR": SECTION_LR_REAR,
     "DTC": SECTION_DTC,
 }
-
-
-def normalize_cell_text(item_value: Any) -> str:
-    """标准化单元格文本。
-
-    功能：
-    - 将 Excel 单元格值统一转换为去首尾空白的字符串。
-
-    参数：
-    - item_value: 原始单元格值，允许任意类型或 None。
-
-    返回：
-    - str: 标准化后的文本；当输入为 None 时返回空字符串。
-    """
-    if item_value is None:
-        return ""
-    return str(item_value).strip()
 
 
 def parse_tuple_id_numeric(raw: Any) -> int | None:
@@ -278,8 +268,8 @@ def locate_service_interface_header(worksheet: Any) -> tuple[int, ColumnMapper]:
     返回：
     - tuple[int, ColumnMapper]: ``(表头行号, 列映射器)``。
     """
-    max_row_scan = min(worksheet.max_row or 60, 60)
-    max_column = worksheet.max_column or 80
+    max_row_scan = min(worksheet.max_row or HEADER_SCAN_MAX_ROWS, HEADER_SCAN_MAX_ROWS)
+    max_column = worksheet.max_column or DEFAULT_INTERFACE_COLUMN_SCAN
     required_fields = ("service_name", "tuple_id", "cycle_ms", "grammar", "message_type")
     for row_idx in range(1, max_row_scan + 1):
         header_row = build_header_row_values(worksheet, row_idx, max_column)
@@ -305,8 +295,8 @@ def locate_service_deployment_header(worksheet: Any) -> tuple[int, ColumnMapper]
     返回：
     - tuple[int, ColumnMapper]: ``(表头行号, 列映射器)``。
     """
-    max_row_scan = min(worksheet.max_row or 60, 60)
-    max_column = worksheet.max_column or 120
+    max_row_scan = min(worksheet.max_row or HEADER_SCAN_MAX_ROWS, HEADER_SCAN_MAX_ROWS)
+    max_column = worksheet.max_column or DEFAULT_MAX_COLUMN_SCAN
     required_fields = ("service_name", "server_ecu")
     for row_idx in range(1, max_row_scan + 1):
         header_row = build_header_row_values(worksheet, row_idx, max_column)
@@ -621,18 +611,18 @@ def render_cin_document(event_lines: list[str], method_lines: list[str]) -> str:
 
 
 def resolve_setserver_testmode_directory(anchor_path: str) -> str:
-    """按 output_dir 下级规则解析 SOA_StartSetserver 输出目录。
+    """按 output_dir 上一级规则解析 SOA_StartSetserver 输出目录。
 
     功能：
     - 将锚点视为 `output_dir`（文件则取其所在目录）；
-    - 在该目录下拼接 ``TESTmode``；
+    - 以 output_dir 的上一级为锚点拼接 ``Public/TESTmode/Bus/SOA/SOA_Onder``；
     - 目录不存在时抛错（严格模式）。
 
     参数：
     - anchor_path: 锚点路径，可为文件或目录。
 
     返回：
-    - str: 已存在的输出目录绝对路径（`output_dir/TESTmode`）。
+    - str: 已存在的输出目录绝对路径（`output_dir` 上一级 + `Public/TESTmode/Bus/SOA/SOA_Onder`）。
     """
     if not anchor_path or not str(anchor_path).strip():
         raise ValueError("anchor_path 为空")
@@ -644,7 +634,7 @@ def resolve_setserver_testmode_directory(anchor_path: str) -> str:
         output_dir,
         ".",
         DEFAULT_SOA_SETSERVER_REL_PARTS,
-        anchor_level="self",
+        anchor_level="parent",
         required=True,
     )
 
@@ -660,7 +650,7 @@ def resolve_setserver_output_directory_strict(anchor_path: str) -> str:
     - anchor_path: 锚点路径，可为文件或目录。
 
     返回：
-    - str: 已存在的输出目录绝对路径（`output_dir/TESTmode`）。
+    - str: 已存在的输出目录绝对路径（`output_dir` 上一级 + `Public/TESTmode/Bus/SOA/SOA_Onder`）。
     """
     return resolve_setserver_testmode_directory(anchor_path)
 
@@ -750,106 +740,103 @@ def detect_base_dir_for_fixed_config(anchor_path: str, excel_path: str) -> str:
     return fallback
 
 
-def generate_setserver_cin_from_excel(
-    excel_path: str,
-    anchor_path: str,
-    *,
-    find_or_create_soa_onder: bool = False,
-    uds_ecu_qualifier: str = "",
-    workbook_cache: dict[str, Any] | None = None,
-    output_filename: str | None = None,
-) -> str:
-    """生成并写出 ``SOA_StartSetserver.cin``。
+class SOASetServerCinGenerator:
+    """SOA_StartSetserver.cin 生成器（类收口版）。
 
-    功能：
-    - 读取 ``Service_Interface`` 工作表并定位表头；
-    - 生成 Event 与 Method 两段调用内容；
-    - 解析输出目录并写入目标 `.cin` 文件。
-
-    参数：
-    - excel_path: 服务通信矩阵 Excel 路径。
-    - anchor_path: 输出锚点路径（文件或目录均可）。
-    - find_or_create_soa_onder: 历史兼容参数，已固定为严格模式；
-      无论 True/False，目录缺失都会直接报错。
-    - uds_ecu_qualifier: 当前域选择的 ECU（如 LDCU/RDCU/CDCU），用于服务名级别过滤。
-    - workbook_cache: 可选工作簿缓存；传入时优先复用已打开 workbook，
-      并由调用方统一关闭。
-
-    返回：
-    - str: 最终写入的 ``SOA_StartSetserver.cin`` 绝对路径。
+    说明：
+    - 本类负责组织读取 Excel、过滤、渲染与落盘流程；
+    - 具体字段解析/过滤规则仍复用本模块既有函数，避免大范围行为改动；
+    - 统一由 `SOASetServerCinGenerator.generate()` 作为对外入口。
     """
-    absolute_excel = os.path.abspath(excel_path.strip())
-    if not os.path.isfile(absolute_excel):
-        raise FileNotFoundError(f"Excel 不存在: {absolute_excel}")
 
-    normalized_excel_path = os.path.normcase(absolute_excel)
-    should_close_workbook = workbook_cache is None
-    workbook = None
-    if workbook_cache is not None:
-        workbook = workbook_cache.get(normalized_excel_path)
-    if workbook is None:
-        workbook = ExcelService.open_workbook(normalized_excel_path, data_only=True, read_only=False)
-        if workbook_cache is not None:
-            workbook_cache[normalized_excel_path] = workbook
-    try:
-        if SERVICE_INTERFACE_SHEET not in workbook.sheetnames:
-            error_message = f"Excel 缺少工作表 «{SERVICE_INTERFACE_SHEET}»: {normalized_excel_path}"
-            logger.error(error_message)
-            raise ValueError(error_message)
-        service_server_map = build_service_name_to_server_ecus_map(workbook)
-        worksheet = workbook[SERVICE_INTERFACE_SHEET]
-        header_row_idx, column_mapper = locate_service_interface_header(worksheet)
-        event_call_lines = collect_setserver_call_lines(
-            worksheet,
-            header_row_idx,
-            column_mapper,
-            service_server_map=service_server_map,
-            uds_ecu_qualifier=uds_ecu_qualifier,
+    def __init__(self, *, anchor_path: str) -> None:
+        self._anchor_path = anchor_path
+
+    def generate(
+        self,
+        excel_path: str,
+        *,
+        find_or_create_soa_onder: bool = False,
+        uds_ecu_qualifier: str = "",
+        workbook_cache: dict[str, Any] | None = None,
+        output_filename: str | None = None,
+    ) -> str:
+        """生成并写出 ``SOA_StartSetserver.cin``。
+
+        参数：
+        - excel_path: 服务通信矩阵 Excel 路径。
+        - find_or_create_soa_onder: 历史兼容参数，已固定为严格模式（不创建目录）。
+        - uds_ecu_qualifier: 当前域选择的 ECU（如 LDCU/RDCU/CDCU），用于服务名级别过滤。
+        - workbook_cache: 可选工作簿缓存；传入时优先复用已打开 workbook，并由调用方统一关闭。
+        - output_filename: 可选输出文件名；不传则自动探测工程根读取 FixedConfig.ini。
+
+        返回：
+        - str: 最终写入的 ``SOA_StartSetserver.cin`` 绝对路径。
+        """
+        absolute_excel = os.path.abspath(excel_path.strip())
+        if not os.path.isfile(absolute_excel):
+            raise FileNotFoundError(f"Excel 不存在: {absolute_excel}")
+
+        cached = open_workbook_cached(absolute_excel, workbook_cache=workbook_cache)
+        workbook = cached.workbook
+        try:
+            if SERVICE_INTERFACE_SHEET not in workbook.sheetnames:
+                error_message = f"Excel 缺少工作表 «{SERVICE_INTERFACE_SHEET}»: {cached.normalized_excel_path}"
+                logger.error(error_message)
+                raise ValueError(error_message)
+            service_server_map = build_service_name_to_server_ecus_map(workbook)
+            worksheet = workbook[SERVICE_INTERFACE_SHEET]
+            header_row_idx, column_mapper = locate_service_interface_header(worksheet)
+            event_call_lines = collect_setserver_call_lines(
+                worksheet,
+                header_row_idx,
+                column_mapper,
+                service_server_map=service_server_map,
+                uds_ecu_qualifier=uds_ecu_qualifier,
+            )
+            method_call_lines = collect_setserver_method_lines(
+                worksheet,
+                header_row_idx,
+                column_mapper,
+                service_server_map=service_server_map,
+                uds_ecu_qualifier=uds_ecu_qualifier,
+            )
+        finally:
+            if cached.should_close:
+                workbook.close()
+
+        if not event_call_lines and not method_call_lines:
+            raise ValueError(
+                "未生成任何调用行：请确认 Service_Interface 存在可用数据（Event: 元组 ID > 0x8001 且周期非空；"
+                "Method: 元组 ID < 0x8000 且 Type=RR-Out；且负载语法可解析首字段）。"
+            )
+
+        cin_text = render_cin_document(event_call_lines, method_call_lines)
+        if find_or_create_soa_onder:
+            logger.warning(
+                "find_or_create_soa_onder=True 已废弃：SOA_StartSetserver 输出目录固定为严格模式，不再自动创建目录。"
+            )
+        output_directory = resolve_setserver_output_directory_strict(self._anchor_path)
+        resolved_output_filename = (output_filename or "").strip()
+        if not resolved_output_filename:
+            fixed_base_dir = detect_base_dir_for_fixed_config(self._anchor_path, cached.normalized_excel_path)
+            resolved_output_filename = resolve_setserver_filename(fixed_base_dir)
+        output_file_path = os.path.join(output_directory, resolved_output_filename)
+
+        with open(output_file_path, "w", encoding="utf-8-sig", newline="") as output_file:
+            output_file.write(cin_text)
+
+        logger.log(
+            PROGRESS_LEVEL,
+            "已写入 %s（Event=%s 条，Method=%s 条）",
+            output_file_path,
+            len(event_call_lines),
+            len(method_call_lines),
         )
-        method_call_lines = collect_setserver_method_lines(
-            worksheet,
-            header_row_idx,
-            column_mapper,
-            service_server_map=service_server_map,
-            uds_ecu_qualifier=uds_ecu_qualifier,
-        )
-    finally:
-        if should_close_workbook:
-            workbook.close()
-
-    if not event_call_lines and not method_call_lines:
-        raise ValueError(
-            "未生成任何调用行：请确认 Service_Interface 存在可用数据（Event: 元组 ID > 0x8001 且周期非空；"
-            "Method: 元组 ID < 0x8000 且 Type=RR-Out；且负载语法可解析首字段）。"
-        )
-
-    cin_text = render_cin_document(event_call_lines, method_call_lines)
-    if find_or_create_soa_onder:
-        logger.warning(
-            "find_or_create_soa_onder=True 已废弃：SOA_StartSetserver 输出目录固定为严格模式，不再自动创建目录。"
-        )
-    output_directory = resolve_setserver_output_directory_strict(anchor_path)
-    resolved_output_filename = (output_filename or "").strip()
-    if not resolved_output_filename:
-        fixed_base_dir = detect_base_dir_for_fixed_config(anchor_path, normalized_excel_path)
-        resolved_output_filename = resolve_setserver_filename(fixed_base_dir)
-    output_file_path = os.path.join(output_directory, resolved_output_filename)
-
-    with open(output_file_path, "w", encoding="utf-8-sig", newline="") as output_file:
-        output_file.write(cin_text)
-
-    logger.log(
-        PROGRESS_LEVEL,
-        "已写入 %s（Event=%s 条，Method=%s 条）",
-        output_file_path,
-        len(event_call_lines),
-        len(method_call_lines),
-    )
-    return output_file_path
-
+        return output_file_path
 
 __all__ = [
     "DOMAIN_TO_SECTION",
-    "generate_setserver_cin_from_excel",
+    "SOASetServerCinGenerator",
     "resolve_srv_excel_absolute_path",
 ]

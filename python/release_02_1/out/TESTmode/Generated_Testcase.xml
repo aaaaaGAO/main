@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<testmodule title="Test Module" version="1.0">
+	<description>Generated from .can test cases</description>
+	<testgroup title="python工具转译校验_V1.0">
+		<testgroup title="TC">
+			<capltestcase name="SYS_LDCU_light_001">	
+			</capltestcase>	
+			<capltestcase name="SYS_LDCU_light_002">	
+			</capltestcase>	
+			<capltestcase name="SYS_LDCU_light_002_1">	
+			</capltestcase>	
+			<capltestcase name="nihao">	
+			</capltestcase>	
+			<capltestcase name="SYS_LDCU_light_003">	
+			</capltestcase>	
+			<capltestcase name="SYS_LDCU_light_004">	
+			</capltestcase>	
+			<capltestcase name="SYS_LDCU_light_005">	
+			</capltestcase>	
+			<capltestcase name="SYS_LDCU_light_006">	
+			</capltestcase>	
+		</testgroup>
+	</testgroup>
+</testmodule>

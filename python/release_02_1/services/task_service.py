@@ -17,8 +17,8 @@ from typing import Any, Dict, Optional
 from core.generator_logging import GeneratorLogger, LogSpecConfig
 from infra.filesystem import resolve_main_config_path
 from infra.filesystem.pathing import resolve_configured_path
-from generators.capl_soa.soa_setserver_cin import generate_setserver_cin_from_excel
-from generators.capl_soa.soa_datatab_cin import generate_datatab_cin_from_excel
+from generators.capl_soa.soa_setserver_cin import SOASetServerCinGenerator
+from generators.capl_soa.soa_datatab_cin import SOADataTabCinGenerator
 from services.config_constants import (
     DEFAULT_DOMAIN_LR_REAR,
     LABEL_RESETDID_VALUE_CONFIG_TABLE,
@@ -483,18 +483,18 @@ class TaskService:
                 if srv_value and output_dir_raw:
                     excel_abs = resolve_configured_path(generator_config.base_dir, srv_value)
                     anchor_abs = resolve_configured_path(generator_config.base_dir, output_dir_raw)
-                    generate_setserver_cin_from_excel(
+                    SOASetServerCinGenerator(anchor_path=anchor_abs).generate(
                         excel_abs,
-                        anchor_abs,
                         find_or_create_soa_onder=False,
                         uds_ecu_qualifier=uds_ecu_qualifier,
                         workbook_cache=workbook_cache,
                         output_filename=setserver_output_filename,
                     )
-                    generate_datatab_cin_from_excel(
-                        excel_abs,
+                    SOADataTabCinGenerator(
                         base_dir=generator_config.base_dir,
                         configured_output_dir=output_dir_raw,
+                    ).generate(
+                        excel_abs,
                         workbook_cache=workbook_cache,
                         output_filename=datatab_output_filename,
                     )

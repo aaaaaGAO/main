@@ -269,7 +269,7 @@ def build_master_can_lines(
     cin_output_filename: str | None,
 ) -> list[str]:
     """
-    拼装 Master `.can` 文本行：Encoding、公共 include、可选 SecOC/关键字 Clib、各 `Testcases\*.can` 的 #include。
+    拼装 Master `.can` 文本行：Encoding、公共 include、可选 SecOC/关键字 Clib、各 `Testcases\\*.can` 的 #include。
 
     参数：generated_can_files — 子 `.can` 文件名列表；secoc_qualifier — SecOC 节点限定名，空则跳过；
     has_keyword_clib — 是否再 include CIN；cin_output_filename — CIN 输出文件名。返回：行列表，未写磁盘。

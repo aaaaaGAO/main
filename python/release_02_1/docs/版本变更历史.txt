@@ -134,8 +134,14 @@
 1.增加soa代码生成SOA_StartSetserver.cin，生成路径调整为用户选择路径下拼接的\TESTmode（与cin/xml路径规则一致）
 2.生成的can和cin文件写入改为 UTF-8 BOM（utf-8-sig）
 3.预期结果中同时出现 SOA checkreq 与 traceback，该用例中 SOA check / SOA checkreq / SOA req 的匹配与 4.17 中「SOA check + traceback」规则一致；SOA req 以业务上「中间无下划线、带空格（SOA REQ）」为表述准绳，并兼容下划线形式（SOA_REQ）解析
-4.增加soa代码生成SOA_DataTab.cin，生成位置在上一级目录下+Public\TESTmode\Bus\SOA\SOA_Onder下
+4.增加soa代码生成SOA_DataTab.cin，生成位置在用户选择路径的上一级目录下+Public\TESTmode\Bus\SOA\SOA_Onder下
 
 版本 4.28
 日期：2026-04-28
 1.文档口径同步（SOA 已落地）：更新 README、架构说明、必需文件说明、验收清单说明；将 SOA 从“规划中/不适用”统一为“已接入并可验收”，与当前代码实现保持一致。
+
+
+版本 4.29
+日期：2026-04-29
+1.SOA_StartSetserver.cin改为生成位置在用户选择路径的上一级目录下+Public\TESTmode\Bus\SOA\SOA_Onder下
+

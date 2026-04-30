@@ -12,14 +12,14 @@ import os
 from typing import Any
 
 from jinja2 import Environment, FileSystemLoader
-from infra.excel.workbook import ExcelService
 from infra.filesystem.pathing import (
     RuntimePathResolver,
     resolve_configured_path,
     resolve_output_dir_relative_path,
 )
 from core.generator_config import GeneratorConfig
-from generators.capl_soa.soa_setserver_cin import generate_setserver_cin_from_excel
+from generators.capl_soa.soa_setserver_cin import SOASetServerCinGenerator
+from generators.capl_soa.soa_excel_utils import is_client_marker, normalize_cell_text, open_workbook_cached
 from services.config_constants import (
     OPTION_OUTPUT_DIR,
     OPTION_SRV_EXCEL,
@@ -29,20 +29,6 @@ from utils.logger import PROGRESS_LEVEL
 
 SOA_LOGGER_NAME = "generate_soa_startsetserver"
 logger = logging.getLogger(SOA_LOGGER_NAME)
-
-
-def normalize_text(item_value: Any) -> str:
-    """将单元格值规范为去空白字符串。
-
-    参数：
-        item_value：任意原始值（可为 None）。
-
-    返回：
-        清理后的字符串；None 返回空串。
-    """
-    if item_value is None:
-        return ""
-    return str(item_value).strip()
 
 
 def resolve_base_and_config(base_dir: str | None, config_path: str | None) -> GeneratorConfig:
@@ -112,17 +98,10 @@ def read_variables_list_from_excel(
     返回：
         节点变量字典列表，供模板渲染生成 `.can` 文件。
     """
-    normalized_excel_path = os.path.normcase(os.path.abspath(excel_path))
-    should_close_workbook = workbook_cache is None
-    workbook = None
-    if workbook_cache is not None:
-        workbook = workbook_cache.get(normalized_excel_path)
-    if workbook is None:
-        workbook = ExcelService.open_workbook(normalized_excel_path, data_only=True, read_only=False)
-        if workbook_cache is not None:
-            workbook_cache[normalized_excel_path] = workbook
+    cached = open_workbook_cached(excel_path, workbook_cache=workbook_cache)
+    workbook = cached.workbook
     if "Service_Deployment" not in workbook.sheetnames:
-        error_message = f"服务通信矩阵缺少工作表 Service_Deployment: {normalized_excel_path}"
+        error_message = f"服务通信矩阵缺少工作表 Service_Deployment: {cached.normalized_excel_path}"
         logger.error(error_message)
         raise ValueError(error_message)
     sheet = workbook["Service_Deployment"]
@@ -139,13 +118,13 @@ def read_variables_list_from_excel(
     node_data: dict[str, dict[str, Any]] = {}
 
     for row in sheet.iter_rows(min_row=3, values_only=True):
-        provider_node = normalize_text(row[node_name_col]) if len(row) > node_name_col else ""
-        service_id = normalize_text(row[service_id_col]) if len(row) > service_id_col else ""
-        instance_id = normalize_text(row[instance_id_col]) if len(row) > instance_id_col else ""
-        major = normalize_text(row[major_col]) if len(row) > major_col else ""
-        minor = normalize_text(row[minor_col]) if len(row) > minor_col else ""
-        protocol = normalize_text(row[protocol_col]) if len(row) > protocol_col else ""
-        port = normalize_text(row[port_col]) if len(row) > port_col else ""
+        provider_node = normalize_cell_text(row[node_name_col]) if len(row) > node_name_col else ""
+        service_id = normalize_cell_text(row[service_id_col]) if len(row) > service_id_col else ""
+        instance_id = normalize_cell_text(row[instance_id_col]) if len(row) > instance_id_col else ""
+        major = normalize_cell_text(row[major_col]) if len(row) > major_col else ""
+        minor = normalize_cell_text(row[minor_col]) if len(row) > major_col else ""
+        protocol = normalize_cell_text(row[protocol_col]) if len(row) > protocol_col else ""
+        port = normalize_cell_text(row[port_col]) if len(row) > port_col else ""
 
         if not provider_node or not service_id:
             continue
@@ -169,8 +148,8 @@ def read_variables_list_from_excel(
         )
 
         for col_index in range(consumer_start_col, sheet.max_column):
-            consumer_node = normalize_text(sheet.cell(row=2, column=col_index + 1).value)
-            has_mark = len(row) > col_index and normalize_text(row[col_index]).lower() == "x"
+            consumer_node = normalize_cell_text(sheet.cell(row=2, column=col_index + 1).value)
+            has_mark = len(row) > col_index and is_client_marker(row[col_index])
             if not consumer_node or not has_mark:
                 continue
             if consumer_node not in node_data:
@@ -189,7 +168,7 @@ def read_variables_list_from_excel(
                 {"ServiceId": service_id, "InstanceId": instance_id, "Major": major, "Minor": minor}
             )
 
-    if should_close_workbook:
+    if cached.should_close:
         workbook.close()
     for node in node_data.values():
         node["ProvidedServiceListNum"] = str(len(node["ProvidedServiceList"]))
@@ -256,13 +235,13 @@ def run_setserver_cin_generation(excel_path: str, anchor_path: str) -> str:
     返回：
         已写入文件的绝对路径。
     """
-    return generate_setserver_cin_from_excel(excel_path, anchor_path)
+    return SOASetServerCinGenerator(anchor_path=anchor_path).generate(excel_path)
 
 
 class SOAGenerationUtility:
     """SOA 生成入口能力统一工具类。"""
 
-    normalize_text = staticmethod(normalize_text)
+    normalize_text = staticmethod(normalize_cell_text)
     resolve_base_and_config = staticmethod(resolve_base_and_config)
     load_paths = staticmethod(load_paths)
     read_variables_list_from_excel = staticmethod(read_variables_list_from_excel)
