@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import logging
 import time
+from typing import Any
 
 from flask import Blueprint, jsonify, request
 
@@ -24,7 +25,7 @@ from services.generation_route_service import (
     safe_execute_generation_from_payload_fetch,
 )
 from services.common_ui_route_service import CommonUiRouteService
-from .route_helpers import get_base_dir
+from .route_helpers import get_base_dir, jsonify_route_result
 
 common_bp = Blueprint("common", __name__)
 logger = logging.getLogger(__name__)
@@ -67,36 +68,37 @@ def api_heartbeat():
 
 
 @common_bp.route("/config/lr_rear", methods=["GET"])
+@jsonify_route_result
 def get_lr_rear_config():
     """读取并返回 `[LR_REAR]` 等与左右后域相关的 INI 片段，供页面初始化。
 
-    参数：无。返回：``(jsonify 体, HTTP 状态码)`` 由 `lr_rear_config_result` 决定。
+    参数：无。返回：``(dict, HTTP 状态码)`` 由 ``jsonify_route_result`` 转为 JSON 响应。
     """
-    body, status_code = common_ui_route_service().lr_rear_config_result()
-    return jsonify(body), status_code
+    return common_ui_route_service().lr_rear_config_result()
 
 
 @common_bp.route("/get_filter_options", methods=["GET"])
+@jsonify_route_result
 def get_filter_options():
     """读取 `config/filter_options.ini` 中等级/平台/车型等下拉项。
 
     参数：无。返回：``FilterService.parse_shaixuan_config`` 结构的 JSON 包装。
     """
-    body, status_code = common_ui_route_service().filter_options_result()
-    return jsonify(body), status_code
+    return common_ui_route_service().filter_options_result()
 
 
 @common_bp.route("/load_config", methods=["GET"])
+@jsonify_route_result
 def load_config():
     """加载主配置/固定配置并组合为前端所需的大块 state 结构。
 
     参数：无。返回：含 ``success`` / ``data`` 的 JSON 与状态码。
     """
-    body, status_code = common_ui_route_service().load_config_result()
-    return jsonify(body), status_code
+    return common_ui_route_service().load_config_result()
 
 
 @common_bp.route("/select_file", methods=["POST"])
+@jsonify_route_result
 def select_file():
     """在服务端线程中弹出 Tk 文件/文件夹选择对话框，返回所选绝对路径。
 
@@ -105,11 +107,11 @@ def select_file():
     返回：``success`` 与 ``path`` 等字段；失败时含错误信息。
     """
     payload = request.get_json(silent=True) or {}
-    body, status_code = common_ui_route_service().select_file_result(payload)
-    return jsonify(body), status_code
+    return common_ui_route_service().select_file_result(payload)
 
 
 @common_bp.route("/parse_file_structure", methods=["POST"])
+@jsonify_route_result
 def parse_file_structure():
     """解析指定 Excel/目录下列表/Sheet 等结构，供前端树形展示或校验。
 
@@ -118,38 +120,37 @@ def parse_file_structure():
     返回：``GuiService`` 结构解析结果 JSON 与状态码。
     """
     payload = request.get_json(silent=True) or {}
-    body, status_code = common_ui_route_service().parse_file_structure_result(payload)
-    return jsonify(body), status_code
+    return common_ui_route_service().parse_file_structure_result(payload)
 
 
-def execute_generation_route(options: GenerationRouteOptions):
+def execute_generation_route(options: GenerationRouteOptions) -> tuple[dict[str, Any], int]:
     """
     各域「一键生成」路由的公共实现：读当前 `request` 的 JSON，交给 `safe_execute_generation_from_payload_fetch`。
 
     参数：options — 含域标识、编排方法名、成功/失败提示文案等的 `GenerationRouteOptions`。
 
-    返回：``(Response, status_code)`` 元组，供直接 `return`。
+    返回：``(payload dict, status_code)``，由视图上的 ``jsonify_route_result`` 负责 ``jsonify``。
     """
-    response_payload, status_code = safe_execute_generation_from_payload_fetch(
+    return safe_execute_generation_from_payload_fetch(
         lambda: request.get_json(silent=True) or {},
         base_dir=current_base_dir(),
         options=options,
         route_logger=logger,
     )
-    return jsonify(response_payload), status_code
 
 
 @common_bp.route("/get_serial_ports", methods=["GET"])
+@jsonify_route_result
 def get_serial_ports():
     """枚举当前环境可用串口（供 UART/通信配置下拉）。
 
     参数：无。返回：``ports`` 列表等 JSON 与状态码。
     """
-    body, status_code = common_ui_route_service().serial_ports_result()
-    return jsonify(body), status_code
+    return common_ui_route_service().serial_ports_result()
 
 
 @common_bp.route("/auto_save_config", methods=["POST"])
+@jsonify_route_result
 def auto_save_config():
     """将多 Tab 合并 state 经 `StateConfigService` 写回主配置（可含仅 data 内对象）。
 
@@ -158,11 +159,11 @@ def auto_save_config():
     返回：``success`` / 错误信息及 HTTP 状态码。
     """
     payload = request.get_json(silent=True) or {}
-    body, status_code = common_ui_route_service().auto_save_config_result(payload)
-    return jsonify(body), status_code
+    return common_ui_route_service().auto_save_config_result(payload)
 
 
 @common_bp.route("/generate", methods=["POST"])
+@jsonify_route_result
 def generate():
     """左右后域一键生成：编排 CAN/XML/条件 DID·CIN·SOA 等（不含 UART 步，见 `TaskOrchestrator`）。
 
@@ -174,6 +175,7 @@ def generate():
 
 
 @common_bp.route("/generate_central", methods=["POST"])
+@jsonify_route_result
 def generate_central():
     """中央域一键生成：含条件 UART 矩阵与 SOA 等（与 `get_central_generation_flags` 一致）。
 
@@ -185,6 +187,7 @@ def generate_central():
 
 
 @common_bp.route("/generate_dtc", methods=["POST"])
+@jsonify_route_result
 def generate_dtc():
     """DTC 域一键生成：DID/IO/ConfigEnum 等路径经 `sync_dtc_domain_inputs` 已写入配置后编排。
 
@@ -196,6 +199,7 @@ def generate_dtc():
 
 
 @common_bp.route("/save_preset", methods=["POST"])
+@jsonify_route_result
 def save_preset():
     """将当前 state 另存为预设 JSON/路径（由 `CommonUiRouteService` 实现具体路径策略）。
 
@@ -204,17 +208,16 @@ def save_preset():
     返回：``success``、生成文件路径或错误信息。
     """
     payload = request.get_json(silent=True) or {}
-    body, status_code = common_ui_route_service().save_preset_result(payload)
-    return jsonify(body), status_code
+    return common_ui_route_service().save_preset_result(payload)
 
 
 @common_bp.route("/import_preset", methods=["POST"])
+@jsonify_route_result
 def import_preset():
     """从用户选择的预设文件读回 state，供页面填充。
 
-    参数：无（或按服务层约定由对话框完成路径选择）。返回：新 state 或错误 JSON。
+    参数：无（或按服务层约定由对话框完成路径选择）。    返回：新 state 或错误 JSON。
     """
-    body, status_code = common_ui_route_service().import_preset_result()
-    return jsonify(body), status_code
+    return common_ui_route_service().import_preset_result()
 
 

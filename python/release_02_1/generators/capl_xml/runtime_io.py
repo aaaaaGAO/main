@@ -40,11 +40,6 @@ XML_DESCRIPTION = "Generated from .can test cases"
 _GROUP_KEY_SEP = "\x1f"
 
 
-class XMLGenerationUtility:
-    """XML Excel 解析与内容生成功能封装。"""
-    pass
-
-
 def is_history_sheet_name(sheet_name: str) -> bool:
     """判断是否为历史/修订工作表。"""
     normalized_name = str(sheet_name).strip()
@@ -622,9 +617,29 @@ def generate_xml_content(
     return '\n'.join(lines)
 
 
-XMLGenerationUtility.is_history_sheet_name = staticmethod(is_history_sheet_name)
-XMLGenerationUtility.find_excel_files = staticmethod(find_excel_files)
-XMLGenerationUtility.parse_testcases_from_sheet = staticmethod(parse_testcases_from_sheet)
-XMLGenerationUtility.parse_testcases_from_excel = staticmethod(parse_testcases_from_excel)
-XMLGenerationUtility.group_testcases_by_sheet_and_group = staticmethod(group_testcases_by_sheet_and_group)
-XMLGenerationUtility.generate_xml_content = staticmethod(generate_xml_content)
+class XMLGenerationUtility:
+    """XML Excel 解析与内容生成功能封装。"""
+
+    @staticmethod
+    def is_history_sheet_name(*args: Any, **kwargs: Any) -> Any:
+        return is_history_sheet_name(*args, **kwargs)
+
+    @staticmethod
+    def find_excel_files(*args: Any, **kwargs: Any) -> Any:
+        return find_excel_files(*args, **kwargs)
+
+    @staticmethod
+    def parse_testcases_from_sheet(*args: Any, **kwargs: Any) -> Any:
+        return parse_testcases_from_sheet(*args, **kwargs)
+
+    @staticmethod
+    def parse_testcases_from_excel(*args: Any, **kwargs: Any) -> Any:
+        return parse_testcases_from_excel(*args, **kwargs)
+
+    @staticmethod
+    def group_testcases_by_sheet_and_group(*args: Any, **kwargs: Any) -> Any:
+        return group_testcases_by_sheet_and_group(*args, **kwargs)
+
+    @staticmethod
+    def generate_xml_content(*args: Any, **kwargs: Any) -> Any:
+        return generate_xml_content(*args, **kwargs)

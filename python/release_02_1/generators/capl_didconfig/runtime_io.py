@@ -10,7 +10,7 @@ DIDConfig 运行期 IO 与编排用 API（去脚本化）。
 from __future__ import annotations
 
 import os
-from typing import Optional
+from typing import Any, Optional
 
 from core.generator_config import GeneratorConfig
 from core.generator_logging import GeneratorLogger, LogSpecConfig
@@ -76,8 +76,22 @@ def get_progress_level() -> int:
 class DIDConfigRuntimeIOUtility:
     """DIDConfig 运行期 IO 与编排接口统一工具类。"""
 
-    resolve_base_dir = staticmethod(resolve_base_dir)
-    load_runtime = staticmethod(load_runtime)
-    setup_generator_logger = staticmethod(setup_generator_logger)
-    init_logging = staticmethod(init_logging)
-    get_progress_level = staticmethod(get_progress_level)
+    @staticmethod
+    def resolve_base_dir(*args: Any, **kwargs: Any) -> Any:
+        return resolve_base_dir(*args, **kwargs)
+
+    @staticmethod
+    def load_runtime(*args: Any, **kwargs: Any) -> Any:
+        return load_runtime(*args, **kwargs)
+
+    @staticmethod
+    def setup_generator_logger(*args: Any, **kwargs: Any) -> Any:
+        return setup_generator_logger(*args, **kwargs)
+
+    @staticmethod
+    def init_logging(*args: Any, **kwargs: Any) -> Any:
+        return init_logging(*args, **kwargs)
+
+    @staticmethod
+    def get_progress_level(*args: Any, **kwargs: Any) -> Any:
+        return get_progress_level(*args, **kwargs)

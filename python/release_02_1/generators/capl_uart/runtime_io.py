@@ -12,6 +12,7 @@ import logging
 import os
 import re
 import sys
+from typing import Any
 
 from core.generator_logging import GeneratorLogger
 from infra.config import read_fixed_config
@@ -50,16 +51,6 @@ _UART_REQUIRED_COLS_DISPLAY = {
     "length": "Length (Bits)",
     "value_type": "Value Type",
 }
-
-
-class UARTExcelParser:
-    """UART Excel 读取与解析工具。"""
-    pass
-
-
-class UARTGenerationUtility:
-    """UART 运行期路径、配置与内容生成工具。"""
-    pass
 
 
 def normalize_header_text(cell_value: str | None) -> str:
@@ -517,17 +508,61 @@ def write_text_safe(output_path: str, content: str) -> None:
     file_io.write_text_safe(output_path, content, encoding="utf-8", fallback_encoding="gb18030")
 
 
-UARTExcelParser.normalize_header_text = staticmethod(normalize_header_text)
-UARTExcelParser.read_uart_excel_data = staticmethod(read_uart_excel_data)
+class UARTExcelParser:
+    """UART Excel 读取与解析工具。"""
 
-UARTGenerationUtility.flush_std_streams = staticmethod(flush_std_streams)
-UARTGenerationUtility.resolve_runtime_paths = staticmethod(resolve_runtime_paths)
-UARTGenerationUtility.setup_logging = staticmethod(setup_logging)
-UARTGenerationUtility.get_parse_logger = staticmethod(get_parse_logger)
-UARTGenerationUtility.build_stdout_tee = staticmethod(build_stdout_tee)
-UARTGenerationUtility.load_config_with_repair = staticmethod(load_config_with_repair)
-UARTGenerationUtility.read_uart_rs232_config = staticmethod(read_uart_rs232_config)
-UARTGenerationUtility.read_frame_type_value = staticmethod(read_frame_type_value)
-UARTGenerationUtility.resolve_io_paths = staticmethod(resolve_io_paths)
-UARTGenerationUtility.generate_uart_content = staticmethod(generate_uart_content)
-UARTGenerationUtility.write_text_safe = staticmethod(write_text_safe)
+    @staticmethod
+    def normalize_header_text(*args: Any, **kwargs: Any) -> Any:
+        return normalize_header_text(*args, **kwargs)
+
+    @staticmethod
+    def read_uart_excel_data(*args: Any, **kwargs: Any) -> Any:
+        return read_uart_excel_data(*args, **kwargs)
+
+
+class UARTGenerationUtility:
+    """UART 运行期路径、配置与内容生成工具。"""
+
+    @staticmethod
+    def flush_std_streams(*args: Any, **kwargs: Any) -> Any:
+        return flush_std_streams(*args, **kwargs)
+
+    @staticmethod
+    def resolve_runtime_paths(*args: Any, **kwargs: Any) -> Any:
+        return resolve_runtime_paths(*args, **kwargs)
+
+    @staticmethod
+    def setup_logging(*args: Any, **kwargs: Any) -> Any:
+        return setup_logging(*args, **kwargs)
+
+    @staticmethod
+    def get_parse_logger(*args: Any, **kwargs: Any) -> Any:
+        return get_parse_logger(*args, **kwargs)
+
+    @staticmethod
+    def build_stdout_tee(*args: Any, **kwargs: Any) -> Any:
+        return build_stdout_tee(*args, **kwargs)
+
+    @staticmethod
+    def load_config_with_repair(*args: Any, **kwargs: Any) -> Any:
+        return load_config_with_repair(*args, **kwargs)
+
+    @staticmethod
+    def read_uart_rs232_config(*args: Any, **kwargs: Any) -> Any:
+        return read_uart_rs232_config(*args, **kwargs)
+
+    @staticmethod
+    def read_frame_type_value(*args: Any, **kwargs: Any) -> Any:
+        return read_frame_type_value(*args, **kwargs)
+
+    @staticmethod
+    def resolve_io_paths(*args: Any, **kwargs: Any) -> Any:
+        return resolve_io_paths(*args, **kwargs)
+
+    @staticmethod
+    def generate_uart_content(*args: Any, **kwargs: Any) -> Any:
+        return generate_uart_content(*args, **kwargs)
+
+    @staticmethod
+    def write_text_safe(*args: Any, **kwargs: Any) -> Any:
+        return write_text_safe(*args, **kwargs)

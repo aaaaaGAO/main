@@ -432,17 +432,58 @@ def generate_from_sheet(
 class DIDInfoRuntimeUtility:
     """DIDInfo 运行期统一工具类入口。"""
 
-    resolve_base_dir = staticmethod(resolve_base_dir)
-    split_csv_values = staticmethod(split_csv_values)
-    iter_input_specs = staticmethod(iter_input_specs)
-    get_case_insensitive_path = staticmethod(get_case_insensitive_path)
-    load_runtime_config = staticmethod(load_runtime_config)
-    strip_didinfo_tee_msg = staticmethod(strip_didinfo_tee_msg)
-    create_excel_parse_friendly_formatter = staticmethod(create_excel_parse_friendly_formatter)
-    init_runtime = staticmethod(init_runtime)
-    clear_run_logger = staticmethod(clear_run_logger)
-    get_progress_level = staticmethod(get_progress_level)
-    pick_sheet_name = staticmethod(pick_sheet_name)
-    find_header_row_and_cols = staticmethod(find_header_row_and_cols)
-    find_variant_cols = staticmethod(find_variant_cols)
-    generate_from_sheet = staticmethod(generate_from_sheet)
+    @staticmethod
+    def resolve_base_dir(*args: Any, **kwargs: Any) -> Any:
+        return resolve_base_dir(*args, **kwargs)
+
+    @staticmethod
+    def split_csv_values(*args: Any, **kwargs: Any) -> Any:
+        return split_csv_values(*args, **kwargs)
+
+    @staticmethod
+    def iter_input_specs(*args: Any, **kwargs: Any) -> Any:
+        return iter_input_specs(*args, **kwargs)
+
+    @staticmethod
+    def get_case_insensitive_path(*args: Any, **kwargs: Any) -> Any:
+        return get_case_insensitive_path(*args, **kwargs)
+
+    @staticmethod
+    def load_runtime_config(*args: Any, **kwargs: Any) -> Any:
+        return load_runtime_config(*args, **kwargs)
+
+    @staticmethod
+    def strip_didinfo_tee_msg(*args: Any, **kwargs: Any) -> Any:
+        return strip_didinfo_tee_msg(*args, **kwargs)
+
+    @staticmethod
+    def create_excel_parse_friendly_formatter(*args: Any, **kwargs: Any) -> Any:
+        return create_excel_parse_friendly_formatter(*args, **kwargs)
+
+    @staticmethod
+    def init_runtime(*args: Any, **kwargs: Any) -> Any:
+        return init_runtime(*args, **kwargs)
+
+    @staticmethod
+    def clear_run_logger(*args: Any, **kwargs: Any) -> Any:
+        return clear_run_logger(*args, **kwargs)
+
+    @staticmethod
+    def get_progress_level(*args: Any, **kwargs: Any) -> Any:
+        return get_progress_level(*args, **kwargs)
+
+    @staticmethod
+    def pick_sheet_name(*args: Any, **kwargs: Any) -> Any:
+        return pick_sheet_name(*args, **kwargs)
+
+    @staticmethod
+    def find_header_row_and_cols(*args: Any, **kwargs: Any) -> Any:
+        return find_header_row_and_cols(*args, **kwargs)
+
+    @staticmethod
+    def find_variant_cols(*args: Any, **kwargs: Any) -> Any:
+        return find_variant_cols(*args, **kwargs)
+
+    @staticmethod
+    def generate_from_sheet(*args: Any, **kwargs: Any) -> Any:
+        return generate_from_sheet(*args, **kwargs)

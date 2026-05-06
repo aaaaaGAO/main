@@ -379,13 +379,33 @@ def get_quiet_skip() -> bool:
 class XMLRuntimeUtility:
     """XML 运行期配置/日志辅助统一工具类入口。"""
 
-    create_blank_line_friendly_formatter = staticmethod(create_blank_line_friendly_formatter)
-    stream_has_isatty = staticmethod(stream_has_isatty)
-    stream_supports_tty = staticmethod(stream_supports_tty)
-    resolve_base_dir = staticmethod(resolve_base_dir)
-    load_runtime_config = staticmethod(load_runtime_config)
-    init_runtime_logging = staticmethod(init_runtime_logging)
-    get_quiet_skip = staticmethod(get_quiet_skip)
+    @staticmethod
+    def create_blank_line_friendly_formatter(*args: Any, **kwargs: Any) -> Any:
+        return create_blank_line_friendly_formatter(*args, **kwargs)
+
+    @staticmethod
+    def stream_has_isatty(*args: Any, **kwargs: Any) -> Any:
+        return stream_has_isatty(*args, **kwargs)
+
+    @staticmethod
+    def stream_supports_tty(*args: Any, **kwargs: Any) -> Any:
+        return stream_supports_tty(*args, **kwargs)
+
+    @staticmethod
+    def resolve_base_dir(*args: Any, **kwargs: Any) -> Any:
+        return resolve_base_dir(*args, **kwargs)
+
+    @staticmethod
+    def load_runtime_config(*args: Any, **kwargs: Any) -> Any:
+        return load_runtime_config(*args, **kwargs)
+
+    @staticmethod
+    def init_runtime_logging(*args: Any, **kwargs: Any) -> Any:
+        return init_runtime_logging(*args, **kwargs)
+
+    @staticmethod
+    def get_quiet_skip(*args: Any, **kwargs: Any) -> Any:
+        return get_quiet_skip(*args, **kwargs)
 
 
 class XMLRuntimeAPI:

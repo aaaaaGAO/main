@@ -10,6 +10,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from services.http_api_constants import api_error_dict
+
 
 def merge_ui_state_from_data_only(payload: dict[str, Any]) -> dict[str, Any]:
     """仅接受 ``data`` 键内对象，用于自动保存、导出预设等（不接受整包作 state）。
@@ -44,7 +46,4 @@ def client_error_body(message: str, *, detail: str | None = None) -> dict[str, A
 
     返回：含 ``success: False`` 与 ``message`` 的 dict，若 `detail` 非空则含 ``detail`` 键。
     """
-    body: dict[str, Any] = {"success": False, "message": message}
-    if detail:
-        body["detail"] = detail
-    return body
+    return api_error_dict(message, detail=detail)

@@ -28,22 +28,18 @@ from infra.filesystem import (
 )
 from services.config_manager import ConfigManager
 from services.config_constants import (
-    DEFAULT_DID_CONFIG_FILENAME,
     OPTION_CASE_LEVELS,
     OPTION_CASE_MODELS,
     OPTION_CASE_PLATFORMS,
     OPTION_CASE_TARGET_VERSIONS,
     OPTION_CIN_INPUT_EXCEL,
+    OPTION_DIDCONFIG_INPUT_EXCEL,
     OPTION_DIDINFO_INPUTS,
     OPTION_INPUT_EXCEL,
-    OPTION_INPUTS,
+    OPTION_IO_INPUTS,
     OPTION_LOG_LEVEL_MIN,
     OPTION_OUTPUT_DIR,
-    OPTION_OUTPUT_FILENAME,
     OPTION_SELECTED_SHEETS,
-    SECTION_CONFIG_ENUM,
-    SECTION_DID_CONFIG,
-    SECTION_IOMAPPING,
     SECTION_LR_REAR,
     SECTION_PATHS,
     STATE_KEY_LR_CAN_INPUT,
@@ -282,10 +278,7 @@ class ConfigService:
     def update_lr_rear_and_related(self, cfg: configparser.ConfigParser, preset_data: Dict[str, Any]) -> None:
         """
         按照原 app.py /api/save_preset 中的逻辑，更新：
-        - [LR_REAR]   : case_levels/平台/车型/input_excel/output_dir/didinfo/cin/selected_sheets/log_level_min
-        - [IOMAPPING] : inputs
-        - [DID_CONFIG]: input_excel/output_dir/output_filename
-        - [CONFIG_ENUM]: inputs
+        - [LR_REAR]   : case_levels/平台/车型/input_excel/io_inputs/didconfig_input_excel/output_dir/didinfo/cin/selected_sheets/log_level_min
 
         注意：
         - 不负责 CENTRAL/DTC/FILTER 等部分，保持与原函数分段一致，以便分阶段迁移。
@@ -295,9 +288,6 @@ class ConfigService:
             cfg,
             (
                 SECTION_LR_REAR,
-                SECTION_IOMAPPING,
-                SECTION_DID_CONFIG,
-                SECTION_CONFIG_ENUM,
             ),
         )
 
@@ -334,25 +324,13 @@ class ConfigService:
             val = input_excel_value_from_ui_path(can_input)
             cfg.set(SECTION_LR_REAR, OPTION_INPUT_EXCEL, val)
 
-        # IO_MAPPING
+        # IO_MAPPING：写入 [LR_REAR].io_inputs
         io_val = io_inputs_value_from_ui_single_path(preset_data.get(STATE_KEY_LR_IO_EXCEL))
-        if io_val:
-            cfg.set(SECTION_IOMAPPING, OPTION_INPUTS, io_val)
+        cfg.set(SECTION_LR_REAR, OPTION_IO_INPUTS, io_val if io_val else "")
 
-        # DID_CONFIG + CONFIG_ENUM
+        # DID_CONFIG：写入 [LR_REAR].didconfig_input_excel
         didconfig_path = str(preset_data.get(STATE_KEY_LR_DIDCONFIG_EXCEL, "") or "").strip()
-        if didconfig_path:
-            cfg.set(SECTION_DID_CONFIG, OPTION_INPUT_EXCEL, didconfig_path)
-            if out_root:
-                cfg.set(SECTION_DID_CONFIG, OPTION_OUTPUT_DIR, out_root)
-            if not cfg.has_option(SECTION_DID_CONFIG, OPTION_OUTPUT_FILENAME):
-                cfg.set(SECTION_DID_CONFIG, OPTION_OUTPUT_FILENAME, DEFAULT_DID_CONFIG_FILENAME)
-
-            cfg.set(
-                SECTION_CONFIG_ENUM,
-                OPTION_INPUTS,
-                didinfo_inputs_value_from_ui_single_path(didconfig_path),
-            )
+        cfg.set(SECTION_LR_REAR, OPTION_DIDCONFIG_INPUT_EXCEL, didconfig_path)
 
         # ResetDid_Value 配置表（didinfo_inputs）
         did_val = didinfo_inputs_value_from_ui_single_path(preset_data.get(STATE_KEY_LR_DIDINFO_EXCEL, ""))

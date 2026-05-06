@@ -33,6 +33,7 @@ from flask import Flask, jsonify, render_template, request
 from werkzeug.exceptions import HTTPException
 
 from infra.filesystem import get_base_dir
+from services.http_api_constants import HttpStatus, api_error_dict
 from web import create_app
 
 # 工具显示名（Web 右上角 + build_exe 打包时的 EXE 文件名，只改此处即可）
@@ -102,7 +103,10 @@ def index():
 
 def handle_500(error_obj):
     """统一处理 HTTP 500：将异常信息返回为 JSON。参数 error_obj: 触发的异常对象。"""
-    return jsonify(success=False, message=str(error_obj) if error_obj else "Internal Server Error"), 500
+    body = api_error_dict(
+        str(error_obj) if error_obj else "Internal Server Error",
+    )
+    return jsonify(body), HttpStatus.INTERNAL_SERVER_ERROR
 
 
 def handle_exception(error_obj):
@@ -130,7 +134,7 @@ def make_app() -> Flask:
 
     # 3. 根路由与全局错误处理
     app.add_url_rule("/", view_func=index)
-    app.register_error_handler(500, handle_500)
+    app.register_error_handler(HttpStatus.INTERNAL_SERVER_ERROR, handle_500)
     app.register_error_handler(Exception, handle_exception)
 
     return app

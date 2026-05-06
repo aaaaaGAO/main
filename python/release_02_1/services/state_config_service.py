@@ -74,11 +74,10 @@ from services.config_constants import (
     OPTION_C_PWR,
     OPTION_C_RLY,
     OPTION_CIN_INPUT_EXCEL,
+    OPTION_DIDCONFIG_INPUT_EXCEL,
     OPTION_DIDINFO_INPUTS,
     OPTION_INPUT_EXCEL,
-    OPTION_INPUTS,
-    OPTION_IGNITION_CYCLE_CURRENT,
-    OPTION_IGNITION_CYCLE_WAIT_TIME,
+    OPTION_IO_INPUTS,
     OPTION_IGN_CURRENT,
     OPTION_IGN_WAITTIME,
     OPTION_LOGIN_PASSWORD,
@@ -91,16 +90,12 @@ from services.config_constants import (
     OPTION_UART_EXCEL,
     SECTION_CENTRAL,
     SECTION_DTC,
-    SECTION_DTC_CONFIG_ENUM,
-    SECTION_DTC_IOMAPPING,
-    SECTION_IGNITION_CYCLE,
     SECTION_LR_REAR,
     UART_COMM_CFG_KEYS,
     UART_COMM_KEY_MAP,
     cin_input_excel_value_from_ui_path,
     input_excel_value_from_ui_path,
     didinfo_inputs_value_from_ui_single_path,
-    io_inputs_value_from_ui_single_path,
 )
 from services.config_manager import ConfigManager
 from services.config_service import ConfigPaths, ConfigService
@@ -258,8 +253,8 @@ class StateConfigService:
             return ",".join(str(item) for item in item_value) if item_value else "ALL"
         return str(item_value).strip()
 
-    @classmethod
-    def build_lr_preset_from_state(cls, state: Dict[str, Any]) -> Dict[str, Any]:
+    @staticmethod
+    def build_lr_preset_from_state(state: Dict[str, Any]) -> Dict[str, Any]:
         """
         从当前 LR 区 state 构造传给 `ConfigService.update_lr_rear_and_related` 的扁平 dict 预设。
 
@@ -267,20 +262,21 @@ class StateConfigService:
 
         返回：各键为字符串的预设，缺省为 ``ALL`` / ``info`` 等约定默认值已填。
         """
+        state_value_to_text = StateConfigService.state_value_to_text
         return {
-            STATE_KEY_LR_CAN_INPUT: cls.state_value_to_text(state.get(STATE_KEY_LR_CAN_INPUT)),
-            STATE_KEY_LR_OUT_ROOT: cls.state_value_to_text(state.get(STATE_KEY_LR_OUT_ROOT)),
-            STATE_KEY_LR_LEVELS: cls.state_value_to_text(state.get(STATE_KEY_LR_LEVELS)) or "ALL",
-            STATE_KEY_LR_PLATFORMS: cls.state_value_to_text(state.get(STATE_KEY_LR_PLATFORMS)),
-            STATE_KEY_LR_MODELS: cls.state_value_to_text(state.get(STATE_KEY_LR_MODELS)),
-            STATE_KEY_LR_TARGET_VERSIONS: cls.state_value_to_text(state.get(STATE_KEY_LR_TARGET_VERSIONS)),
-            STATE_KEY_LR_SELECTED_SHEETS: cls.state_value_to_text(state.get(STATE_KEY_LR_SELECTED_SHEETS)),
-            STATE_KEY_LR_LOG_LEVEL: cls.state_value_to_text(state.get(STATE_KEY_LR_LOG_LEVEL)) or "info",
-            STATE_KEY_LR_DIDINFO_EXCEL: cls.state_value_to_text(state.get(STATE_KEY_LR_DIDINFO_EXCEL)),
-            STATE_KEY_LR_CIN_EXCEL: cls.state_value_to_text(state.get(STATE_KEY_LR_CIN_EXCEL)),
-            STATE_KEY_LR_SRV_EXCEL: cls.state_value_to_text(state.get(STATE_KEY_LR_SRV_EXCEL)),
-            STATE_KEY_LR_IO_EXCEL: cls.state_value_to_text(state.get(STATE_KEY_LR_IO_EXCEL)),
-            STATE_KEY_LR_DIDCONFIG_EXCEL: cls.state_value_to_text(state.get(STATE_KEY_LR_DIDCONFIG_EXCEL)),
+            STATE_KEY_LR_CAN_INPUT: state_value_to_text(state.get(STATE_KEY_LR_CAN_INPUT)),
+            STATE_KEY_LR_OUT_ROOT: state_value_to_text(state.get(STATE_KEY_LR_OUT_ROOT)),
+            STATE_KEY_LR_LEVELS: state_value_to_text(state.get(STATE_KEY_LR_LEVELS)) or "ALL",
+            STATE_KEY_LR_PLATFORMS: state_value_to_text(state.get(STATE_KEY_LR_PLATFORMS)),
+            STATE_KEY_LR_MODELS: state_value_to_text(state.get(STATE_KEY_LR_MODELS)),
+            STATE_KEY_LR_TARGET_VERSIONS: state_value_to_text(state.get(STATE_KEY_LR_TARGET_VERSIONS)),
+            STATE_KEY_LR_SELECTED_SHEETS: state_value_to_text(state.get(STATE_KEY_LR_SELECTED_SHEETS)),
+            STATE_KEY_LR_LOG_LEVEL: state_value_to_text(state.get(STATE_KEY_LR_LOG_LEVEL)) or "info",
+            STATE_KEY_LR_DIDINFO_EXCEL: state_value_to_text(state.get(STATE_KEY_LR_DIDINFO_EXCEL)),
+            STATE_KEY_LR_CIN_EXCEL: state_value_to_text(state.get(STATE_KEY_LR_CIN_EXCEL)),
+            STATE_KEY_LR_SRV_EXCEL: state_value_to_text(state.get(STATE_KEY_LR_SRV_EXCEL)),
+            STATE_KEY_LR_IO_EXCEL: state_value_to_text(state.get(STATE_KEY_LR_IO_EXCEL)),
+            STATE_KEY_LR_DIDCONFIG_EXCEL: state_value_to_text(state.get(STATE_KEY_LR_DIDCONFIG_EXCEL)),
         }
 
     @staticmethod
@@ -302,9 +298,8 @@ class StateConfigService:
         if cfg.has_section(section):
             cfg.set(section, option, "")
 
-    @classmethod
+    @staticmethod
     def set_text_option(
-        cls,
         cfg: configparser.ConfigParser,
         section: str,
         option: str,
@@ -327,7 +322,7 @@ class StateConfigService:
             item_value = str(raw_value).strip()
             cfg.set(section, option, item_value.lower() if lowercase else item_value)
         elif raw_value == "" and remove_on_empty:
-            cls.clear_option_if_present(cfg, section, option)
+            StateConfigService.clear_option_if_present(cfg, section, option)
 
     @staticmethod
     def apply_filter_option_state(
@@ -349,9 +344,8 @@ class StateConfigService:
             normalized = ",".join(item_value) if isinstance(item_value, list) else str(item_value)
             cfg.set(section, option_name, normalized.strip() if isinstance(normalized, str) else normalized)
 
-    @classmethod
+    @staticmethod
     def apply_standard_domain_state(
-        cls,
         cfg: configparser.ConfigParser,
         state: Dict[str, Any],
         binding: StandardDomainUiBinding,
@@ -363,9 +357,9 @@ class StateConfigService:
         `DTC_DOMAIN_UI_BINDING`。返回：无。
         """
         section = binding.section
-        cls.ensure_sections(cfg, (section,))
+        StateConfigService.ensure_sections(cfg, (section,))
 
-        cls.set_text_option(
+        StateConfigService.set_text_option(
             cfg,
             section,
             OPTION_INPUT_EXCEL,
@@ -373,25 +367,25 @@ class StateConfigService:
             remove_on_empty=True,
         )
         if state.get(binding.input_key) == "" and binding.clear_selected_sheets_with_input:
-            cls.clear_option_if_present(cfg, section, OPTION_SELECTED_SHEETS)
+            StateConfigService.clear_option_if_present(cfg, section, OPTION_SELECTED_SHEETS)
 
-        cls.set_text_option(cfg, section, OPTION_OUTPUT_DIR, state.get(binding.out_root_key))
-        cls.apply_filter_option_state(cfg, section, state, binding.filter_pairs)
-        cls.set_text_option(
+        StateConfigService.set_text_option(cfg, section, OPTION_OUTPUT_DIR, state.get(binding.out_root_key))
+        StateConfigService.apply_filter_option_state(cfg, section, state, binding.filter_pairs)
+        StateConfigService.set_text_option(
             cfg,
             section,
             OPTION_SELECTED_SHEETS,
             state.get(binding.selected_sheets_key),
             remove_on_empty=True,
         )
-        cls.set_text_option(
+        StateConfigService.set_text_option(
             cfg,
             section,
             OPTION_LOG_LEVEL_MIN,
             state.get(binding.log_level_key),
             lowercase=True,
         )
-        cls.set_text_option(cfg, section, OPTION_UDS_ECU_QUALIFIER, state.get(binding.uds_key))
+        StateConfigService.set_text_option(cfg, section, OPTION_UDS_ECU_QUALIFIER, state.get(binding.uds_key))
 
     @staticmethod
     def is_configured_c_pwr(payload_data: Any) -> bool:
@@ -412,8 +406,8 @@ class StateConfigService:
         if not isinstance(relays, list) or len(relays) == 0:
             return False
         # 与 ConfigManager.load_central_ui_json_fields / has_relay_config 保持同一口径：
-        # 仅当存在有效 port 或 relayID 时，才视为“已配置”。
-        # 避免仅有 relayType/默认 coilStatuses 骨架时被误判为已配置并回写残留。
+        # 与生成端保持一致：只要存在可落盘的业务字段（port / relayID /
+        # relayType / coilStatuses），就视为“已配置”。
         return any(ConfigManager.has_relay_config(relay) for relay in relays)
 
     @staticmethod
@@ -425,9 +419,8 @@ class StateConfigService:
         """
         return isinstance(payload_data, dict) and bool(payload_data.get("equipmentType") or payload_data.get("channelNumber"))
 
-    @classmethod
+    @staticmethod
     def set_json_option_or_remove(
-        cls,
         cfg: configparser.ConfigParser,
         section: str,
         option: str,
@@ -447,13 +440,12 @@ class StateConfigService:
             if is_configured(raw_value):
                 cfg.set(section, option, json.dumps(raw_value, ensure_ascii=False))
             else:
-                cls.clear_option_if_present(cfg, section, option)
+                StateConfigService.clear_option_if_present(cfg, section, option)
         except Exception:
             pass
 
-    @classmethod
+    @staticmethod
     def remove_mapped_options_on_empty_state(
-        cls,
         cfg: configparser.ConfigParser,
         state: Dict[str, Any],
         empty_option_map: dict[str, list[tuple[str, str]]],
@@ -467,11 +459,10 @@ class StateConfigService:
             if state.get(state_key) != "":
                 continue
             for section_name, option_name in targets:
-                cls.clear_option_if_present(cfg, section_name, option_name)
+                StateConfigService.clear_option_if_present(cfg, section_name, option_name)
 
-    @classmethod
+    @staticmethod
     def sync_uart_comm_options(
-        cls,
         cfg: configparser.ConfigParser,
         uart_comm: Optional[Dict[str, Any]],
     ) -> None:
@@ -494,16 +485,15 @@ class StateConfigService:
             return
 
         for cfg_key in UART_COMM_CFG_KEYS:
-            cls.clear_option_if_present(cfg, SECTION_CENTRAL, cfg_key)
+            StateConfigService.clear_option_if_present(cfg, SECTION_CENTRAL, cfg_key)
 
-    @classmethod
+    @staticmethod
     def sync_ignition_cycle_options(
-        cls,
         cfg: configparser.ConfigParser,
         state: Dict[str, Any],
     ) -> None:
         """
-        将点火等待时间/电流等写入 `[CENTRAL]` 与 `[IGNITION_CYCLE]` 对应项（成对、可清空）。
+        将点火等待时间/电流等写入 `[CENTRAL]` 对应项（成对、可清空）。
 
         参数：cfg — 配置；state — 含 `STATE_KEY_CENTRAL_IGN_*` 的 state。返回：无。
         """
@@ -514,55 +504,36 @@ class StateConfigService:
 
         ign_waittime = str(state.get(STATE_KEY_CENTRAL_IGN_WAIT_TIME) or "").strip()
         ign_current = str(state.get(STATE_KEY_CENTRAL_IGN_CURRENT) or "").strip()
-        has_any_value = bool(ign_waittime or ign_current)
-        if has_any_value:
-            cls.ensure_sections(cfg, (SECTION_IGNITION_CYCLE,))
-
         if has_wait_time:
-            cls.set_text_option(
+            StateConfigService.set_text_option(
                 cfg,
                 SECTION_CENTRAL,
                 OPTION_IGN_WAITTIME,
                 ign_waittime,
                 remove_on_empty=True,
             )
-            cls.set_text_option(
-                cfg,
-                SECTION_IGNITION_CYCLE,
-                OPTION_IGNITION_CYCLE_WAIT_TIME,
-                ign_waittime,
-                remove_on_empty=True,
-            )
 
         if has_current:
-            cls.set_text_option(
+            StateConfigService.set_text_option(
                 cfg,
                 SECTION_CENTRAL,
                 OPTION_IGN_CURRENT,
                 ign_current,
                 remove_on_empty=True,
             )
-            cls.set_text_option(
-                cfg,
-                SECTION_IGNITION_CYCLE,
-                OPTION_IGNITION_CYCLE_CURRENT,
-                ign_current,
-                remove_on_empty=True,
-            )
 
-    @classmethod
+    @staticmethod
     def sync_dtc_domain_inputs(
-        cls,
         cfg: configparser.ConfigParser,
         state: Dict[str, Any],
     ) -> None:
         """
-        在标准域写回之后，补全 DTC 特有条目：DIDInfo/CIN/IO 映射/ConfigEnum 等节的路径与表。
+        在标准域写回之后，补全 DTC 特有条目：DIDInfo/CIN/IO 映射/DID_Config 路径与表。
 
         参数：cfg — 配置；state — 含 `STATE_KEY_DTC_*`。返回：无。
         """
         dtc_didinfo_excel = state.get(STATE_KEY_DTC_DIDINFO_EXCEL)
-        cls.set_text_option(
+        StateConfigService.set_text_option(
             cfg,
             SECTION_DTC,
             OPTION_DIDINFO_INPUTS,
@@ -571,7 +542,7 @@ class StateConfigService:
         )
 
         dtc_cin_excel = state.get(STATE_KEY_DTC_CIN_EXCEL)
-        cls.set_text_option(
+        StateConfigService.set_text_option(
             cfg,
             SECTION_DTC,
             OPTION_CIN_INPUT_EXCEL,
@@ -580,7 +551,6 @@ class StateConfigService:
         )
 
         if STATE_KEY_DTC_IO_EXCEL in state or STATE_KEY_DTC_IO_SELECTED_SHEETS in state:
-            cls.ensure_sections(cfg, (SECTION_DTC_IOMAPPING,))
             io_excel_path = input_excel_value_from_ui_path(state.get(STATE_KEY_DTC_IO_EXCEL))
             io_selected_sheets = str(state.get(STATE_KEY_DTC_IO_SELECTED_SHEETS) or "").strip()
             io_inputs_value = (
@@ -588,22 +558,21 @@ class StateConfigService:
                 if io_excel_path
                 else ""
             )
-            cls.set_text_option(
+            StateConfigService.set_text_option(
                 cfg,
-                SECTION_DTC_IOMAPPING,
-                OPTION_INPUTS,
+                SECTION_DTC,
+                OPTION_IO_INPUTS,
                 io_inputs_value,
                 remove_on_empty=True,
             )
 
         if STATE_KEY_DTC_DIDCONFIG_EXCEL in state:
-            cls.ensure_sections(cfg, (SECTION_DTC_CONFIG_ENUM,))
             dtc_didconfig_excel = state.get(STATE_KEY_DTC_DIDCONFIG_EXCEL)
-            cls.set_text_option(
+            StateConfigService.set_text_option(
                 cfg,
-                SECTION_DTC_CONFIG_ENUM,
-                OPTION_INPUTS,
-                io_inputs_value_from_ui_single_path(dtc_didconfig_excel) if dtc_didconfig_excel else "",
+                SECTION_DTC,
+                OPTION_DIDCONFIG_INPUT_EXCEL,
+                str(dtc_didconfig_excel or "").strip(),
                 remove_on_empty=True,
             )
 
@@ -630,9 +599,6 @@ class StateConfigService:
                 SECTION_LR_REAR,
                 SECTION_CENTRAL,
                 SECTION_DTC,
-                SECTION_DTC_IOMAPPING,
-                SECTION_DTC_CONFIG_ENUM,
-                SECTION_IGNITION_CYCLE,
             ),
         )
         if not skip_lr_rear and self.has_any_lr_state(state):

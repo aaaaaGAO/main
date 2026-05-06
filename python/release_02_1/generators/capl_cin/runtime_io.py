@@ -369,15 +369,50 @@ def read_clib_steps_entry(excel_path: str, clib_sheet: Optional[str] = None) -> 
 class CINRuntimeIOUtility:
     """CIN 运行期 IO/步骤解析统一工具类入口。"""
 
-    create_progress_formatter = staticmethod(create_progress_formatter)
-    load_keyword_specs = staticmethod(load_keyword_specs)
-    read_clib_steps = staticmethod(read_clib_steps)
-    is_numeric_value = staticmethod(is_numeric_value)
-    apply_default_param_parsing = staticmethod(apply_default_param_parsing)
-    parse_step_line_cin = staticmethod(parse_step_line_cin)
-    render_step_lines = staticmethod(render_step_lines)
-    generate_content = staticmethod(generate_content)
-    reset_runtime_state = staticmethod(reset_runtime_state)
-    setup_generator_logger = staticmethod(setup_generator_logger)
-    load_mapping_context = staticmethod(load_mapping_context)
-    read_clib_steps_entry = staticmethod(read_clib_steps_entry)
+    @staticmethod
+    def create_progress_formatter(*args: Any, **kwargs: Any) -> Any:
+        return create_progress_formatter(*args, **kwargs)
+
+    @staticmethod
+    def load_keyword_specs(*args: Any, **kwargs: Any) -> Any:
+        return load_keyword_specs(*args, **kwargs)
+
+    @staticmethod
+    def read_clib_steps(*args: Any, **kwargs: Any) -> Any:
+        return read_clib_steps(*args, **kwargs)
+
+    @staticmethod
+    def is_numeric_value(*args: Any, **kwargs: Any) -> Any:
+        return is_numeric_value(*args, **kwargs)
+
+    @staticmethod
+    def apply_default_param_parsing(*args: Any, **kwargs: Any) -> Any:
+        return apply_default_param_parsing(*args, **kwargs)
+
+    @staticmethod
+    def parse_step_line_cin(*args: Any, **kwargs: Any) -> Any:
+        return parse_step_line_cin(*args, **kwargs)
+
+    @staticmethod
+    def render_step_lines(*args: Any, **kwargs: Any) -> Any:
+        return render_step_lines(*args, **kwargs)
+
+    @staticmethod
+    def generate_content(*args: Any, **kwargs: Any) -> Any:
+        return generate_content(*args, **kwargs)
+
+    @staticmethod
+    def reset_runtime_state(*args: Any, **kwargs: Any) -> Any:
+        return reset_runtime_state(*args, **kwargs)
+
+    @staticmethod
+    def setup_generator_logger(*args: Any, **kwargs: Any) -> Any:
+        return setup_generator_logger(*args, **kwargs)
+
+    @staticmethod
+    def load_mapping_context(*args: Any, **kwargs: Any) -> Any:
+        return load_mapping_context(*args, **kwargs)
+
+    @staticmethod
+    def read_clib_steps_entry(*args: Any, **kwargs: Any) -> Any:
+        return read_clib_steps_entry(*args, **kwargs)

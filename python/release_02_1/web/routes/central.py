@@ -13,11 +13,11 @@
 
 from __future__ import annotations
 
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, request
 
 from services.central_programmatic_route_service import soa_setserver_cin_result
 from services.task_orchestrator import TaskOrchestrator
-from .route_helpers import get_base_dir, jsonify_orchestrator_result
+from .route_helpers import get_base_dir, jsonify_orchestrator_result, jsonify_route_result
 
 central_bp = Blueprint("central", __name__)
 
@@ -34,6 +34,8 @@ def current_base_dir() -> str:
 def generate_central():
     """
     中央域生成：``TaskOrchestrator.run_central_bundle``，顺序与编排器实现一致（如 UART 条件、CAN、XML、SOA）。
+
+    返回形态为 Flask ``Response``（经 ``jsonify_orchestrator_result``），非 ``tuple[dict,int]``，故不使用 ``@jsonify_route_result``。
 
     参数：JSON 体，键均可选：
         base_dir — 工程根，缺省为当前 `BASE_DIR`。
@@ -63,6 +65,7 @@ def generate_central():
 
 
 @central_bp.route("/soa_setserver_cin", methods=["POST"])
+@jsonify_route_result
 def soa_setserver_cin():
     """
     根据 ``Service_Interface`` 工作表生成 ``SOA_StartSetserver.cin``（主界面无独立按钮，由脚本/集成方 ``POST`` 调用）。
@@ -87,11 +90,10 @@ def soa_setserver_cin():
     domain_key = (payload.get("domain") or "CENTRAL").strip().upper()
     excel_path = (payload.get("excel_path") or "").strip()
     anchor_path = (payload.get("anchor_path") or "").strip()
-    body, status_code = soa_setserver_cin_result(
+    return soa_setserver_cin_result(
         base_dir=base_dir,
         excel_path=excel_path,
         anchor_path=anchor_path,
         domain_key=domain_key,
     )
-    return jsonify(body), status_code
 

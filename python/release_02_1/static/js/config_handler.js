@@ -30,8 +30,8 @@
     var relayConfigs = [];
     var relayCounter = 1;
     var relayCoilModes = {};
-    /** UI 已隐藏的继电器字段：写入主配置/API 前剥离（与 PowerRelayConfig.txt 不再输出的项一致） */
-    var RELAY_KEYS_STRIPPED_FOR_SAVE = ['dataBits', 'stopBits', 'kHANDSHAKE_DISABLED', 'parity', 'relayID'];
+    /** UI 已隐藏的继电器字段：写入主配置/API 前剥离（保留 relayID，便于后端判断与后续扩展） */
+    var RELAY_KEYS_STRIPPED_FOR_SAVE = ['dataBits', 'stopBits', 'kHANDSHAKE_DISABLED', 'parity'];
 
     function relayFromPersisted(r) {
         var o = {};

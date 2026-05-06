@@ -4,7 +4,7 @@
 configuration.xlsx 枚举翻译（供 CAN/CIN 生成器复用）
 
 功能概览：
-  1. 从主配置文件的 [CONFIG_ENUM] 段读取 Inputs，解析 configuration.xlsx 路径及 Sheet 列表。
+  1. 从主配置文件的 [LR_REAR]/[DTC] 段读取 didconfig_input_excel，解析 configuration.xlsx 路径及 Sheet 列表。
   2. 打开 configuration.xlsx，按 Name / Values 列构建「Name -> 枚举文本->数值」映射（不做 Name->Path 替换）。
   3. 专用于关键字 Set_Config：对步骤参数 [name, value...] 做枚举翻译（value 文本 -> Values 中左侧数值），name 不替换。
   4. 纯数值、含表达式符号 '><=()' 的 value 不翻译，直接透传；与 IOMAPPING 一致：只要配置了 Inputs 就启用（不检查 Enabled）。
@@ -15,13 +15,13 @@ from __future__ import annotations
 import os
 import re
 from dataclasses import dataclass
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 from infra.excel.workbook import ExcelService
 
 from services.config_constants import (
     DEFAULT_DOMAIN_LR_REAR,
-    OPTION_INPUTS_CANDIDATES,
+    OPTION_DIDCONFIG_INPUT_EXCEL_CANDIDATES,
     get_config_enum_section_candidates,
 )
 from utils.excel_io import split_input_lines
@@ -194,13 +194,13 @@ class ConfigEnumContext:
 
 
 def get_config_enum_inputs_text(config, domain: str) -> str:
-    """从配置中按域读取 CONFIG_ENUM 的 Inputs 文本。参数: config — 配置对象；domain — 域（如 LR_REAR，支持全局 CONFIG_ENUM）。返回: Inputs 字符串。"""
+    """从配置中按域读取 DID_Config Excel 路径文本。参数: config — 配置对象；domain — 域。返回: 输入配置字符串。"""
     section_candidates = get_config_enum_section_candidates(domain)
     for section in section_candidates:
         if not config.has_section(section):
             continue
         inputs_text = ""
-        for option_name in OPTION_INPUTS_CANDIDATES:
+        for option_name in OPTION_DIDCONFIG_INPUT_EXCEL_CANDIDATES:
             inputs_text = config.get(section, option_name, fallback="")
             if inputs_text:
                 break
@@ -216,7 +216,7 @@ def load_config_enum_from_config(
     config_path: Optional[str] = None,
     domain: str = DEFAULT_DOMAIN_LR_REAR,
 ) -> Optional[ConfigEnumContext]:
-    """从主配置文件的 [CONFIG_ENUM] 段加载 configuration.xlsx，构建 Name->Values 枚举上下文。
+    """从主配置文件的域内 didconfig_input_excel 加载 configuration.xlsx，构建 Name->Values 枚举上下文。
     参数: config — 配置对象；base_dir — 工程根目录；config_path — 配置文件路径；domain — 域。
     返回: ConfigEnumContext 或 None（未配置 Inputs 时）。
     """
@@ -317,13 +317,33 @@ def load_config_enum_from_config(
 class ConfigEnumUtility:
     """Configuration 枚举翻译统一工具类入口。"""
 
-    find_colon = staticmethod(find_colon)
-    normalize_enum_name_key = staticmethod(normalize_enum_name_key)
-    is_numeric_value = staticmethod(is_numeric_value)
-    has_expression_chars = staticmethod(has_expression_chars)
-    parse_values_cell = staticmethod(parse_values_cell)
-    get_config_enum_inputs_text = staticmethod(get_config_enum_inputs_text)
-    load_config_enum_from_config = staticmethod(load_config_enum_from_config)
+    @staticmethod
+    def find_colon(*args: Any, **kwargs: Any) -> Any:
+        return find_colon(*args, **kwargs)
+
+    @staticmethod
+    def normalize_enum_name_key(*args: Any, **kwargs: Any) -> Any:
+        return normalize_enum_name_key(*args, **kwargs)
+
+    @staticmethod
+    def is_numeric_value(*args: Any, **kwargs: Any) -> Any:
+        return is_numeric_value(*args, **kwargs)
+
+    @staticmethod
+    def has_expression_chars(*args: Any, **kwargs: Any) -> Any:
+        return has_expression_chars(*args, **kwargs)
+
+    @staticmethod
+    def parse_values_cell(*args: Any, **kwargs: Any) -> Any:
+        return parse_values_cell(*args, **kwargs)
+
+    @staticmethod
+    def get_config_enum_inputs_text(*args: Any, **kwargs: Any) -> Any:
+        return get_config_enum_inputs_text(*args, **kwargs)
+
+    @staticmethod
+    def load_config_enum_from_config(*args: Any, **kwargs: Any) -> Any:
+        return load_config_enum_from_config(*args, **kwargs)
 
 
 __all__ = [

@@ -9,6 +9,8 @@ DIDConfig 生成入口模块。
 
 from __future__ import annotations
 
+from typing import Any
+
 from .service import DIDConfigGeneratorService
 
 
@@ -17,7 +19,7 @@ def run_generation_workflow(domain: str | None = None):
 
     功能：创建 DIDConfigGeneratorService 并执行 run_pipeline，内部完成所有步骤。
 
-    形参：domain — 为 ``DTC`` 时从 ``[DTC_CONFIG_ENUM]`` / ``[DTC]`` 读取路径；未传则读 ``[DID_CONFIG]``（左右后域等）。
+    形参：domain — 为 ``DTC`` 时从 ``[DTC]`` 读取路径；未传则读 ``[LR_REAR]``。
 
     返回：Service 内部可能返回输出路径等；本入口不向外返回该值。
     """
@@ -40,8 +42,13 @@ def run_generation(domain: str | None = None):
 class DIDConfigEntrypointWorkflowUtility:
     """DIDConfig 入口编排统一工具类。"""
 
-    run_generation_workflow = staticmethod(run_generation_workflow)
-    run_generation = staticmethod(run_generation)
+    @staticmethod
+    def run_generation_workflow(*args: Any, **kwargs: Any) -> Any:
+        return run_generation_workflow(*args, **kwargs)
+
+    @staticmethod
+    def run_generation(*args: Any, **kwargs: Any) -> Any:
+        return run_generation(*args, **kwargs)
 
 
 if __name__ == "__main__":

@@ -15,11 +15,12 @@
 
 from __future__ import annotations
 
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, request
 
 from services.config_service import ConfigService
+from services.http_api_constants import HttpStatus, api_error, api_success
 from services.task_orchestrator import TaskOrchestrator
-from .route_helpers import get_base_dir, jsonify_orchestrator_result
+from .route_helpers import get_base_dir, jsonify_orchestrator_result, jsonify_route_result
 
 lr_rear_bp = Blueprint("lr_rear", __name__)
 
@@ -62,6 +63,7 @@ def generate_can():
 
 
 @lr_rear_bp.route("/config", methods=["POST"])
+@jsonify_route_result
 def save_lr_rear_config():
     """
     将前端采集的 **LR 第一页** 字段经 `ConfigService.build_lr_rear_section_data` 清洗后，写入
@@ -72,10 +74,10 @@ def save_lr_rear_config():
     ``log_level``、``can_input``、``didinfo_excel``、``cin_excel`` 等；仅**出现且可映射**的项写入，空请求体
     或无可映射字段时 400。
 
-    返回：200 为 ``{"success": true, "message": "LR_REAR 配置已保存"}``；400/错误见响应 ``message``。
+    返回：200 为 API 成功体与 ``HttpStatus.OK``；400 为 ``HttpStatus.BAD_REQUEST`` 与错误 ``message``（由 ``jsonify_route_result`` 统一 ``jsonify``）。
     """
     if not request.is_json:
-        return jsonify({"success": False, "message": "需要 JSON 请求体"}), 400
+        return api_error("需要 JSON 请求体", status=HttpStatus.BAD_REQUEST)
 
     payload = request.get_json() or {}
     base_dir = payload.get("base_dir") or current_base_dir()
@@ -84,9 +86,9 @@ def save_lr_rear_config():
     lr_data = svc.build_lr_rear_section_data(payload)
 
     if not lr_data:
-        return jsonify({"success": False, "message": "未提供任何可写入的 LR_REAR 字段"}), 400
+        return api_error("未提供任何可写入的 LR_REAR 字段", status=HttpStatus.BAD_REQUEST)
 
     svc.save_lr_rear(lr_data)
-    return jsonify({"success": True, "message": "LR_REAR 配置已保存"})
+    return api_success("LR_REAR 配置已保存")
 
 

@@ -166,15 +166,14 @@ class CaseFilter:
 
     _IPDT_NUMBER_RE = re.compile(r"IPDT\s*(\d+)", re.IGNORECASE)
 
-    @classmethod
-    def extract_ipdt_number(cls, option: str) -> Optional[int]:
+    @staticmethod
+    def extract_ipdt_number(option: str) -> Optional[int]:
         """从选项字符串中提取 IPDT 编号（如 CEA2.x_IPDT4.0 -> 4，CEA2.x_VP1.1(IPDT1.0) -> 1）。"""
-        match = cls._IPDT_NUMBER_RE.search(option)
+        match = CaseFilter._IPDT_NUMBER_RE.search(option)
         return int(match.group(1)) if match else None
 
-    @classmethod
+    @staticmethod
     def parse_target_versions(
-        cls,
         selected_text: Optional[str],
         all_options: Optional[List[str]] = None,
     ) -> Optional[Set[str]]:
@@ -202,7 +201,7 @@ class CaseFilter:
         # 含 IPDT 的选项：取选中项中的最大 IPDT 编号 N，将 all_options 中所有 IPDT 编号 <= N 的项加入 allowed
         max_ipdt: Optional[int] = None
         for selected_option in selected:
-            ipdt_number = cls.extract_ipdt_number(selected_option)
+            ipdt_number = CaseFilter.extract_ipdt_number(selected_option)
             if ipdt_number is not None:
                 max_ipdt = ipdt_number if max_ipdt is None else max(max_ipdt, ipdt_number)
         if max_ipdt is not None and all_opts:
@@ -210,7 +209,7 @@ class CaseFilter:
                 option_text = available_option.strip()
                 if not option_text or option_text in allowed:
                     continue
-                candidate_ipdt_number = cls.extract_ipdt_number(option_text)
+                candidate_ipdt_number = CaseFilter.extract_ipdt_number(option_text)
                 if candidate_ipdt_number is not None and candidate_ipdt_number <= max_ipdt:
                     allowed.add(option_text)
         return allowed if allowed else None

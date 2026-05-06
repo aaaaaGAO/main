@@ -34,7 +34,9 @@ def run_generation(*, workbook_cache: dict[str, Any] | None = None) -> None:
 class UARTEntrypointWorkflowUtility:
     """UART 入口编排统一工具类。"""
 
-    run_generation = staticmethod(run_generation)
+    @staticmethod
+    def run_generation(*args: Any, **kwargs: Any) -> Any:
+        return run_generation(*args, **kwargs)
 
 
 if __name__ == "__main__":

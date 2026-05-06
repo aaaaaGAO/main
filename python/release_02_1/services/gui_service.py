@@ -21,6 +21,7 @@ from typing import Any, Dict, List, Literal, Optional
 
 from infra.excel.workbook import ExcelService
 from infra.filesystem import resolve_runtime_path
+from services.http_api_constants import api_error_dict, api_success_dict
 
 tk = None  # type: ignore[assignment]
 filedialog = None  # type: ignore[assignment]
@@ -229,42 +230,39 @@ class GuiService:
         except Exception as error:
             return {"type": "xml", "error": str(error)}
 
-    @classmethod
-    def parse_file_structure_single(cls, file_path: str) -> Dict[str, Any]:
+    @staticmethod
+    def parse_file_structure_single(file_path: str) -> Dict[str, Any]:
         """解析单个文件的结构（Excel 的 sheet / CAN 的 testcase / XML 的 testgroup）。
         参数：file_path — 文件路径。
         返回：按类型返回 type + sheets|testcases|testgroups 或 error。
         """
         path_lower = file_path.lower()
         if path_lower.endswith((".xlsx", ".xlsm")):
-            return cls.parse_excel_sheets(file_path)
+            return GuiService.parse_excel_sheets(file_path)
         if path_lower.endswith(".can"):
-            return cls.parse_can_testcases(file_path)
+            return GuiService.parse_can_testcases(file_path)
         if path_lower.endswith(".xml"):
-            return cls.parse_xml_structure(file_path)
+            return GuiService.parse_xml_structure(file_path)
         return {"type": "unknown", "error": "不支持的文件格式，仅支持 Excel(.xlsx/.xlsm)、CAN(.can)、XML(.xml)"}
 
-    @classmethod
-    def parse_file_structure(cls, file_path: str, base_dir: str | None = None) -> Dict[str, Any]:
+    @staticmethod
+    def parse_file_structure(file_path: str, base_dir: str | None = None) -> Dict[str, Any]:
         """解析文件或文件夹下的 Excel/CAN/XML 结构（sheet、testcase、testgroup 等）。
         参数：path — 文件或文件夹路径；文件夹时遍历其下 Excel/CAN/XML。
              base_dir — 项目根目录；当 path 为相对路径时用于拼接解析。
-        返回：{"success": True, "data": [...]} 或 {"success": False, "message": str}。
+        返回：与 `api_success_dict`/`api_error_dict` 一致的结构（success + data | message）。
         """
         if not file_path or not file_path.strip():
-            return {"success": False, "message": "未提供路径"}
+            return api_error_dict("未提供路径")
         raw_path = file_path.strip()
         resolved_path = resolve_runtime_path(base_dir, raw_path)
         if not os.path.exists(resolved_path):
-            return {
-                "success": False,
-                "message": f"路径不存在: {raw_path}（解析后: {resolved_path}）",
-            }
+            return api_error_dict(f"路径不存在: {raw_path}（解析后: {resolved_path}）")
 
         results: List[Dict[str, Any]] = []
         try:
             if os.path.isfile(resolved_path):
-                item = cls.parse_file_structure_single(resolved_path)
+                item = GuiService.parse_file_structure_single(resolved_path)
                 item["filename"] = os.path.basename(resolved_path)
                 results.append(item)
             else:
@@ -275,10 +273,10 @@ class GuiService:
                         file_path = os.path.join(root_dir, filename)
                         file_name_lower = filename.lower()
                         if file_name_lower.endswith((".xlsx", ".xlsm", ".can", ".xml")):
-                            item = cls.parse_file_structure_single(file_path)
+                            item = GuiService.parse_file_structure_single(file_path)
                             item["filename"] = filename
                             item["relpath"] = os.path.relpath(file_path, resolved_path)
                             results.append(item)
-            return {"success": True, "data": results}
+            return api_success_dict(data=results)
         except Exception as error:
-            return {"success": False, "message": str(error)}
+            return api_error_dict(str(error))

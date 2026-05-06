@@ -33,6 +33,8 @@ def find_header_row_and_cols(ws: Any) -> Tuple[int, dict]:
                     col_map[column_value] = column_index
             return row_index, col_map
     raise RuntimeError("Header row not found (missing required columns).")
+
+
 def norm_variant(variant_text: str) -> str:
     """标准化车型名称用于匹配。
 
@@ -372,15 +374,50 @@ def generate_from_sheet(
 class DIDInfoRuntimeIOUtility:
     """DIDInfo 单表解析/生成统一工具类入口。"""
 
-    find_header_row_and_cols = staticmethod(find_header_row_and_cols)
-    norm_variant = staticmethod(norm_variant)
-    find_variant_cols = staticmethod(find_variant_cols)
-    pick_sheet_name = staticmethod(pick_sheet_name)
-    merged_cell_value = staticmethod(merged_cell_value)
-    parse_int_or_range = staticmethod(parse_int_or_range)
-    parse_bit = staticmethod(parse_bit)
-    normalize_did = staticmethod(normalize_did)
-    normalize_field_data = staticmethod(normalize_field_data)
-    compute_positions_and_length = staticmethod(compute_positions_and_length)
-    flush_did_header = staticmethod(flush_did_header)
-    generate_from_sheet = staticmethod(generate_from_sheet)
+    @staticmethod
+    def find_header_row_and_cols(*args: Any, **kwargs: Any) -> Any:
+        return find_header_row_and_cols(*args, **kwargs)
+
+    @staticmethod
+    def norm_variant(*args: Any, **kwargs: Any) -> Any:
+        return norm_variant(*args, **kwargs)
+
+    @staticmethod
+    def find_variant_cols(*args: Any, **kwargs: Any) -> Any:
+        return find_variant_cols(*args, **kwargs)
+
+    @staticmethod
+    def pick_sheet_name(*args: Any, **kwargs: Any) -> Any:
+        return pick_sheet_name(*args, **kwargs)
+
+    @staticmethod
+    def merged_cell_value(*args: Any, **kwargs: Any) -> Any:
+        return merged_cell_value(*args, **kwargs)
+
+    @staticmethod
+    def parse_int_or_range(*args: Any, **kwargs: Any) -> Any:
+        return parse_int_or_range(*args, **kwargs)
+
+    @staticmethod
+    def parse_bit(*args: Any, **kwargs: Any) -> Any:
+        return parse_bit(*args, **kwargs)
+
+    @staticmethod
+    def normalize_did(*args: Any, **kwargs: Any) -> Any:
+        return normalize_did(*args, **kwargs)
+
+    @staticmethod
+    def normalize_field_data(*args: Any, **kwargs: Any) -> Any:
+        return normalize_field_data(*args, **kwargs)
+
+    @staticmethod
+    def compute_positions_and_length(*args: Any, **kwargs: Any) -> Any:
+        return compute_positions_and_length(*args, **kwargs)
+
+    @staticmethod
+    def flush_did_header(*args: Any, **kwargs: Any) -> Any:
+        return flush_did_header(*args, **kwargs)
+
+    @staticmethod
+    def generate_from_sheet(*args: Any, **kwargs: Any) -> Any:
+        return generate_from_sheet(*args, **kwargs)

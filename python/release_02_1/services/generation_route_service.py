@@ -11,11 +11,13 @@
   取 flags 的方法名、编排器上的 bundle 方法名、成功/失败展示模板。
 
 `safe_execute_generation_from_payload_fetch` 将 Flask ``request.get_json`` 的惰性读取与
-异常兜底收拢，避免每个路由重复 try/except。
+异常兜底收拢：`invoke_generation_route_from_payload_fetch` 执行业务，`guard_plain_service_route_tuple`
+与 `CommonUiRouteService` 侧的 `guard_service_route_tuple` 对齐，不在路由层手写 try/except。
 """
 
 from __future__ import annotations
 
+import functools
 import inspect
 import logging
 import time
@@ -23,7 +25,9 @@ from dataclasses import dataclass
 from typing import Any, Callable
 
 from services.config_constants import SECTION_CENTRAL, SECTION_DTC, SECTION_LR_REAR
+from services.http_api_constants import HttpStatus, api_error, api_success
 from services.request_payload_utils import merge_generation_state_from_payload
+from services.service_route_result_decorator import guard_plain_service_route_tuple
 from services.state_config_service import StateConfigService
 from services.task_orchestrator import TaskOrchestrator
 
@@ -111,8 +115,8 @@ class GenerationRouteService:
             payload — 原始 JSON dict，可含 ``data``、``validate_before_run`` 等键。
             options — 域与绑定方法名，见 `GenerationRouteOptions` 字段说明。
 
-        返回：成功为 ``({"success": True, "message": ...}, 200)``，摘要由
-        `TaskOrchestrator.build_result_message` 生成；失败为 ``(success: False, message, detail), 500``。
+        返回：成功为 ``api_success`` 与 ``HttpStatus.OK``；失败为 ``api_error``（``detail`` 走标准键）与 ``HttpStatus.INTERNAL_SERVER_ERROR``。摘要由
+        `TaskOrchestrator.build_result_message` 生成。
         """
         started = time.perf_counter()
         state = merge_generation_state_from_payload(payload)
@@ -201,7 +205,11 @@ class GenerationRouteService:
                 if options.failure_message is not None
                 else options.failure_separator.join(result.messages)
             )
-            return {"success": False, "message": message, "detail": result.detail}, 500
+            return api_error(
+                message,
+                detail=result.detail or None,
+                status=HttpStatus.INTERNAL_SERVER_ERROR,
+            )
 
         message = self.task_orchestrator.build_result_message(
             result,
@@ -210,7 +218,7 @@ class GenerationRouteService:
             prefix=options.success_prefix,
             separator=options.success_separator,
         )
-        return {"success": True, "message": message}, 200
+        return api_success(message)
 
 
 def generation_route_options_lr_rear() -> GenerationRouteOptions:
@@ -251,6 +259,48 @@ def generation_route_options_central() -> GenerationRouteOptions:
     )
 
 
+def log_generation_route_fetch_failure(
+    route_logger: logging.Logger,
+    options: GenerationRouteOptions,
+    route_error: Exception,
+) -> None:
+    """在「一键生成」惰性取 payload 的失败路径打点 ``logger.exception``（占位符与子句外行为与历史一致）。
+
+    参数：
+        route_logger — 通常为蓝图模块上的 ``logger``。
+        options — 当前路由域名与 ``route_name``，用于拼装日志占位符。
+        route_error — 捕获到的任意异常。
+
+    返回：无。
+    """
+    route_logger.exception(
+        "[route.%s] event=error domain=%s",
+        options.route_name,
+        options.domain,
+    )
+
+
+def invoke_generation_route_from_payload_fetch(
+    fetch_payload: Callable[[], dict[str, Any]],
+    *,
+    base_dir: str,
+    options: GenerationRouteOptions,
+) -> tuple[dict[str, Any], int]:
+    """执行一次惰性 ``fetch_payload`` → 构造服务 → ``execute_from_payload``（不向调用方捕获异常）。
+
+    参数：
+        fetch_payload — 无参回调，通常为 ``lambda: request.get_json(silent=True) or {}``。
+        base_dir — 工程根。
+        options — 域与编排绑定。
+
+    返回：与 ``GenerationRouteService.execute_from_payload`` 相同 ``(dict, status)``；
+        任一环节抛出的异常由调用方外层装饰器兜底。
+    """
+    payload = fetch_payload()
+    service = GenerationRouteService.from_base_dir(base_dir)
+    return service.execute_from_payload(payload, options=options)
+
+
 def generation_route_options_dtc() -> GenerationRouteOptions:
     """
     DTC 域：`get_dtc_generation_flags` + `run_dtc_bundle`，不覆盖 `[LR_REAR]`。
@@ -279,7 +329,8 @@ def safe_execute_generation_from_payload_fetch(
 ) -> tuple[dict[str, Any], int]:
     """
     从惰性回调取得 JSON（通常 ``lambda: request.get_json(silent=True) or {}``），再执行
-    `GenerationRouteService.execute_from_payload`；**任意**异常打栈并统一 500。
+    `GenerationRouteService.execute_from_payload`；**任意**异常先打栈再统一返回
+    ``client_error_body`` 风格 + HTTP 500（与 ``guard_plain_service_route_tuple`` 对齐）。
 
     参数：
         fetch_payload — 无参可调用，返回本次请求的 payload dict（勿在注册路由前提前读 body）。
@@ -287,16 +338,21 @@ def safe_execute_generation_from_payload_fetch(
         options — 域与编排绑定，见同模块工厂函数。
         route_logger — 一般为蓝图 ``logger``，用于 ``exception`` 级日志。
 
-    返回：与 `execute_from_payload` 相同；异常时为 ``{"success": False, "message": str(error)}, 500``。
+    返回：与 `execute_from_payload` 相同；异常时为错误体字典 + HTTP 500（与同模块其它 guard 语义一致）。
     """
-    try:
-        payload = fetch_payload()
-        service = GenerationRouteService.from_base_dir(base_dir)
-        return service.execute_from_payload(payload, options=options)
-    except Exception as error:
-        route_logger.exception(
-            "[route.%s] event=error domain=%s",
-            options.route_name,
-            options.domain,
-        )
-        return {"success": False, "message": str(error)}, 500
+    guarded = guard_plain_service_route_tuple(
+        http_status_on_error=HttpStatus.INTERNAL_SERVER_ERROR,
+        before_error_response=functools.partial(
+            log_generation_route_fetch_failure,
+            route_logger,
+            options,
+        ),
+    )(
+        functools.partial(
+            invoke_generation_route_from_payload_fetch,
+            fetch_payload,
+            base_dir=base_dir,
+            options=options,
+        ),
+    )
+    return guarded()

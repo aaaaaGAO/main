@@ -886,8 +886,8 @@
     }
 
     function showRelayConfig() {
-        loadSerialPortsForRelay();
         renderRelayList();
+        loadSerialPortsForRelay();
         var modal = document.getElementById('relayConfigModal');
         if (modal) modal.style.display = 'flex';
     }
@@ -903,8 +903,15 @@
             var portSelects = document.querySelectorAll('.relay-port-select');
             if (data.success && data.ports) {
                 portSelects.forEach(function (select) {
-                    var currentValue = select.value;
+                    var relayId = parseInt(select.getAttribute('data-relay-id'), 10);
+                    var relay = relayConfigs.find(function (item) { return item.id === relayId; });
+                    var currentValue = relay && relay.port ? String(relay.port) : '';
                     select.innerHTML = '';
+                    var emptyOption = document.createElement('option');
+                    emptyOption.value = '';
+                    emptyOption.textContent = '';
+                    emptyOption.selected = !currentValue;
+                    select.appendChild(emptyOption);
                     data.ports.forEach(function (port) {
                         var option = document.createElement('option');
                         option.value = port.port;
@@ -912,6 +919,13 @@
                         if (port.port === currentValue) option.selected = true;
                         select.appendChild(option);
                     });
+                    if (currentValue && !data.ports.some(function (port) { return port.port === currentValue; })) {
+                        var missingOption = document.createElement('option');
+                        missingOption.value = currentValue;
+                        missingOption.textContent = currentValue;
+                        missingOption.selected = true;
+                        select.appendChild(missingOption);
+                    }
                 });
             }
         } catch (e) { console.error('获取串口列表失败:', e); }

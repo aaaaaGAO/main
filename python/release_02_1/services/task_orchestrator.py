@@ -26,7 +26,7 @@ from services.config_constants import (
     SECTION_PATHS,
     UART_COMM_CFG_KEYS,
 )
-from services.run_validator import validate_for_domain
+from services.run_validator import RunValidator
 from services.task_service import TaskService, TaskResult
 from core.log_run_context import reset_run_context, set_run_domain
 
@@ -262,7 +262,7 @@ class TaskOrchestrator:
         results: Dict[str, TaskResult] = {}
 
         if validate_before_run:
-            is_valid, errors = validate_for_domain(
+            is_valid, errors = RunValidator.validate_for_domain(
                 config_section,
                 self.task_service_instance.base_dir,
                 self.task_service_instance.config_path,

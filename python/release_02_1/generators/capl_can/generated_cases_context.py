@@ -145,5 +145,10 @@ def build_generated_cases_run_context(
 class GeneratedCasesContextUtility:
     """CAN 用例上下文构建统一工具类入口。"""
 
-    can_domain_filter_raw = staticmethod(can_domain_filter_raw)
-    build_generated_cases_run_context = staticmethod(build_generated_cases_run_context)
+    @staticmethod
+    def can_domain_filter_raw(*args: Any, **kwargs: Any) -> Any:
+        return can_domain_filter_raw(*args, **kwargs)
+
+    @staticmethod
+    def build_generated_cases_run_context(*args: Any, **kwargs: Any) -> Any:
+        return build_generated_cases_run_context(*args, **kwargs)

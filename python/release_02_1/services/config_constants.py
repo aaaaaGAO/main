@@ -24,12 +24,6 @@ from __future__ import annotations
 SECTION_LR_REAR = "LR_REAR"
 SECTION_CENTRAL = "CENTRAL"
 SECTION_DTC = "DTC"
-SECTION_IOMAPPING = "IOMAPPING"
-SECTION_DID_CONFIG = "DID_CONFIG"
-SECTION_CONFIG_ENUM = "CONFIG_ENUM"
-SECTION_DTC_IOMAPPING = "DTC_IOMAPPING"
-SECTION_DTC_CONFIG_ENUM = "DTC_CONFIG_ENUM"
-SECTION_IGNITION_CYCLE = "IgnitionCycle"
 SECTION_PATHS = "PATHS"
 SECTION_PATH = "PATH"
 SECTION_FILTER = "FILTER"
@@ -41,6 +35,8 @@ SECTION_FILTER = "FILTER"
 
 OPTION_INPUTS = "inputs"
 OPTION_INPUT_EXCEL = "input_excel"
+OPTION_IO_INPUTS = "io_inputs"
+OPTION_DIDCONFIG_INPUT_EXCEL = "didconfig_input_excel"
 OPTION_OUTPUT_DIR = "output_dir"
 OPTION_OUTPUT_FILENAME = "output_filename"
 OPTION_SELECTED_SHEETS = "selected_sheets"
@@ -105,14 +101,14 @@ LABEL_CIN_MISSING_LR = "关键字配置表(cin_excel)"
 LABEL_CIN_MISSING_DTC = "关键字配置表(d_cin_excel)"
 
 # ---------------------------------------------------------------------------
-# 需求第3条：DID_Config 表 ↔ state ↔ [DID_CONFIG].input_excel / [CONFIG_ENUM|DTC_CONFIG_ENUM].inputs
+# 需求第3条：DID_Config 表 ↔ state ↔ 域内 didconfig_input_excel / 历史独立节
 # ---------------------------------------------------------------------------
 UI_FIELD_DIDCONFIG_EXCEL = "didconfig_excel"
 STATE_KEY_LR_DIDCONFIG_EXCEL = UI_FIELD_DIDCONFIG_EXCEL
 STATE_KEY_DTC_DIDCONFIG_EXCEL = "d_didconfig_excel"
 
 LABEL_DIDCONFIG_PATH_CHECK = "DID_Config 配置表"
-LABEL_DIDCONFIG_MISSING_LR = "DID_Config 配置表([CONFIG_ENUM].inputs 或 [DID_CONFIG].input_excel)"
+LABEL_DIDCONFIG_MISSING_LR = "DID_Config 配置表([LR_REAR].didconfig_input_excel)"
 LABEL_DTC_DIDCONFIG_PATH_CHECK = "DTC DID_Config 配置表"
 
 # ---------------------------------------------------------------------------
@@ -199,12 +195,12 @@ VALID_LOG_LEVELS: tuple[str, ...] = ("info", "warning", "error")
 #   STATE_KEY_LR_LEVELS/STATE_KEY_LR_PLATFORMS/STATE_KEY_LR_MODELS/STATE_KEY_LR_TARGET_VERSIONS/STATE_KEY_LR_SELECTED_SHEETS/STATE_KEY_LR_LOG_LEVEL —→ 同节过滤与日志
 #   STATE_KEY_LR_DIDINFO_EXCEL —→ [LR_REAR] didinfo_inputs 等 —→ 界面「ResetDid」/ DIDInfo 产物
 #   STATE_KEY_LR_CIN_EXCEL —→ [LR_REAR] cin_input_excel 等 —→ CIN / Clib
-#   STATE_KEY_LR_IO_EXCEL —→ [IOMAPPING] inputs —→ IO 映射
-#   STATE_KEY_LR_DIDCONFIG_EXCEL —→ [CONFIG_ENUM].inputs（首段）与 [DID_CONFIG] 兜底 —→ DID_Config
+#   STATE_KEY_LR_IO_EXCEL —→ [LR_REAR] io_inputs —→ IO 映射
+#   STATE_KEY_LR_DIDCONFIG_EXCEL —→ [LR_REAR] didconfig_input_excel —→ DID_Config
 #   uds_ecu_qualifier —→ [LR_REAR] uds_ecu_qualifier —→ UDS.txt
 #
 # CENTRAL：c_* 键 —→ [CENTRAL] 等（含 c_uart / uart_comm_* —→ UART 仅中央域）
-# DTC：d_* 键 —→ [DTC] / [DTC_CONFIG_ENUM] / [DTC_IOMAPPING] 等
+# DTC：d_* 键 —→ [DTC]（含 io_inputs / didconfig_input_excel）等
 # ---------------------------------------------------------------------------
 # 新增 state 键时：先定义常量，再把键加入对应 *_STATE_KEYS。
 
@@ -325,6 +321,13 @@ UART_COMM_CFG_KEYS: tuple[str, ...] = (
     "uart_comm_frameTypeIs8676",
 )
 
+# 中央域前端当前仍保留的 UART 字段（其余历史字段仅供读取兼容，不再写回主配置）。
+ACTIVE_UART_COMM_CFG_KEYS: tuple[str, ...] = (
+    "uart_comm_port",
+    "uart_comm_baudrate",
+    "uart_comm_frameTypeIs8676",
+)
+
 UART_COMM_KEY_MAP: dict[str, str] = {
     "port": "uart_comm_port",
     "baudrate": "uart_comm_baudrate",
@@ -410,6 +413,20 @@ CENTRAL_MANAGED_KEYS: frozenset[str] = frozenset(
 
 OPTION_INPUTS_CANDIDATES: tuple[str, str] = ("Inputs", OPTION_INPUTS)
 OPTION_INPUT_EXCEL_CANDIDATES: tuple[str, str] = ("Input_Excel", OPTION_INPUT_EXCEL)
+OPTION_IO_INPUTS_CANDIDATES: tuple[str, str, str] = (
+    OPTION_IO_INPUTS,
+    "Io_Inputs",
+    OPTION_INPUTS,
+)
+OPTION_DIDCONFIG_INPUT_EXCEL_CANDIDATES: tuple[str, ...] = (
+    OPTION_DIDCONFIG_INPUT_EXCEL,
+    "Didconfig_Input_Excel",
+    "DidConfig_Input_Excel",
+    "Input_Excel",
+    OPTION_INPUT_EXCEL,
+    "Inputs",
+    OPTION_INPUTS,
+)
 DEPRECATED_INPUT_EXCEL_DIR_OPTION_CANDIDATES: tuple[str, str] = ("Input_Excel_Dir", "input_excel_dir")
 OPTION_OUTPUT_DIR_CANDIDATES: tuple[str, str] = ("Output_Dir", OPTION_OUTPUT_DIR)
 OPTION_OUTPUT_FILENAME_CANDIDATES: tuple[str, str] = ("Output_FileName", OPTION_OUTPUT_FILENAME)
@@ -493,6 +510,8 @@ PATHS_MERGED_PRESERVE_OPTION_NAMES: tuple[str, ...] = (
 
 LR_REAR_SAVE_NORMALIZE_OPTION_NAMES: tuple[str, ...] = (
     OPTION_INPUT_EXCEL,
+    OPTION_IO_INPUTS,
+    OPTION_DIDCONFIG_INPUT_EXCEL,
     OPTION_SRV_EXCEL,
     OPTION_OUTPUT_DIR,
     *FILTER_OPTION_KEYS,
@@ -507,11 +526,8 @@ CENTRAL_SAVE_NORMALIZE_OPTION_NAMES: tuple[str, ...] = (
     OPTION_INPUT_EXCEL,
     OPTION_SRV_EXCEL,
     OPTION_UART_EXCEL,
-    OPTION_SRV_EXCEL,
-    "pwr_excel",
-    "rly_excel",
     OPTION_SELECTED_SHEETS,
-    *UART_COMM_CFG_KEYS,
+    *ACTIVE_UART_COMM_CFG_KEYS,
     OPTION_IGN_WAITTIME,
     OPTION_IGN_CURRENT,
     OPTION_C_PWR,
@@ -528,6 +544,8 @@ CENTRAL_SAVE_NORMALIZE_OPTION_NAMES: tuple[str, ...] = (
 
 DTC_SAVE_NORMALIZE_OPTION_NAMES: tuple[str, ...] = (
     OPTION_INPUT_EXCEL,
+    OPTION_IO_INPUTS,
+    OPTION_DIDCONFIG_INPUT_EXCEL,
     OPTION_SRV_EXCEL,
     OPTION_SELECTED_SHEETS,
     OPTION_OUTPUT_DIR,
@@ -540,29 +558,161 @@ DTC_SAVE_NORMALIZE_OPTION_NAMES: tuple[str, ...] = (
 
 FORMATTED_SAVE_SECTIONS_TO_ENSURE: tuple[str, ...] = (
     SECTION_LR_REAR,
-    SECTION_IOMAPPING,
-    SECTION_DID_CONFIG,
-    SECTION_CONFIG_ENUM,
     SECTION_CENTRAL,
-    SECTION_IGNITION_CYCLE,
     SECTION_DTC,
-    SECTION_DTC_IOMAPPING,
-    SECTION_DTC_CONFIG_ENUM,
 )
+
+# 仅做“写回布局”阶段时，主配置真正参与排版的 section 顺序。
+FORMATTED_SAVE_SECTION_ORDER: tuple[str, ...] = (
+    SECTION_LR_REAR,
+    SECTION_CENTRAL,
+    SECTION_DTC,
+)
+
+# 中央域已从前端移除的历史键：保存主配置时不再写回，避免继续污染布局。
+CENTRAL_LAYOUT_REMOVED_OPTION_NAMES: tuple[str, ...] = (
+    "pwr_excel",
+    "rly_excel",
+    "uart_comm_dataBits",
+    "uart_comm_stopBits",
+    "uart_comm_kHANDSHAKE_DISABLED",
+    "uart_comm_parity",
+)
+
+# Configuration.ini 第一阶段布局分组（仅控制写回顺序与注释块，不改变真实 section 结构）。
+FORMATTED_SECTION_GROUPS: dict[str, tuple[tuple[str, tuple[str, ...]], ...]] = {
+    SECTION_LR_REAR: (
+        (
+            "input",
+            (
+                OPTION_INPUT_EXCEL,
+                OPTION_IO_INPUTS,
+                OPTION_DIDCONFIG_INPUT_EXCEL,
+                OPTION_SRV_EXCEL,
+                OPTION_DIDINFO_INPUTS,
+                OPTION_CIN_INPUT_EXCEL,
+            ),
+        ),
+        (
+            "filter",
+            (
+                OPTION_CASE_LEVELS,
+                OPTION_CASE_PLATFORMS,
+                OPTION_CASE_MODELS,
+                OPTION_CASE_TARGET_VERSIONS,
+                OPTION_SELECTED_SHEETS,
+                OPTION_LOG_LEVEL_MIN,
+                OPTION_UDS_ECU_QUALIFIER,
+            ),
+        ),
+        (
+            "output",
+            (
+                OPTION_OUTPUT_DIR,
+            ),
+        ),
+    ),
+    SECTION_CENTRAL: (
+        (
+            "input",
+            (
+                OPTION_INPUT_EXCEL,
+                OPTION_SRV_EXCEL,
+                OPTION_UART_EXCEL,
+            ),
+        ),
+        (
+            "uart",
+            ACTIVE_UART_COMM_CFG_KEYS,
+        ),
+        (
+            "bench_devices",
+            (
+                OPTION_C_PWR,
+                OPTION_C_RLY,
+                OPTION_C_IG,
+                OPTION_C_PW,
+            ),
+        ),
+        (
+            "ignition_cycle",
+            (
+                OPTION_IGN_WAITTIME,
+                OPTION_IGN_CURRENT,
+            ),
+        ),
+        (
+            "login",
+            (
+                OPTION_LOGIN_USERNAME,
+                OPTION_LOGIN_PASSWORD,
+            ),
+        ),
+        (
+            "filter",
+            (
+                OPTION_CASE_LEVELS,
+                OPTION_CASE_PLATFORMS,
+                OPTION_CASE_MODELS,
+                OPTION_CASE_TARGET_VERSIONS,
+                OPTION_SELECTED_SHEETS,
+                OPTION_LOG_LEVEL_MIN,
+                OPTION_UDS_ECU_QUALIFIER,
+            ),
+        ),
+        (
+            "output",
+            (
+                OPTION_OUTPUT_DIR,
+            ),
+        ),
+    ),
+    SECTION_DTC: (
+        (
+            "input",
+            (
+                OPTION_INPUT_EXCEL,
+                OPTION_IO_INPUTS,
+                OPTION_DIDCONFIG_INPUT_EXCEL,
+                OPTION_SRV_EXCEL,
+                OPTION_DIDINFO_INPUTS,
+                OPTION_CIN_INPUT_EXCEL,
+            ),
+        ),
+        (
+            "filter",
+            (
+                OPTION_CASE_LEVELS,
+                OPTION_CASE_PLATFORMS,
+                OPTION_CASE_MODELS,
+                OPTION_CASE_TARGET_VERSIONS,
+                OPTION_SELECTED_SHEETS,
+                OPTION_LOG_LEVEL_MIN,
+                OPTION_UDS_ECU_QUALIFIER,
+            ),
+        ),
+        (
+            "output",
+            (
+                OPTION_OUTPUT_DIR,
+            ),
+        ),
+    ),
+}
 
 
 def get_io_mapping_section_candidates(domain: str | None) -> tuple[str, ...]:
     """按域返回 IOMAPPING 配置节候选。"""
-    if domain and domain != SECTION_LR_REAR:
-        return (f"{domain}_IOMAPPING",)
-    return (SECTION_IOMAPPING,)
+    if domain == SECTION_DTC:
+        return (SECTION_DTC,)
+    return (SECTION_LR_REAR,)
 
 
 def get_config_enum_section_candidates(domain: str | None) -> tuple[str, ...]:
     """按域返回 CONFIG_ENUM 配置节候选。"""
-    if domain and domain != SECTION_LR_REAR:
-        return (f"{domain}_CONFIG_ENUM",)
-    return (SECTION_CONFIG_ENUM,)
+    if domain == SECTION_DTC:
+        return (SECTION_DTC,)
+    return (SECTION_LR_REAR,)
 
 
 def get_domain_filter_candidates(domain: str | None, option_name: str) -> tuple[tuple[str, str], ...]:
@@ -580,11 +730,8 @@ def get_domain_filter_candidates(domain: str | None, option_name: str) -> tuple[
 # 新增“前端传空需要删除”的键时，在这里补映射，避免在业务逻辑里写 remove_option 字面量。
 LR_EMPTY_STATE_OPTION_MAP: dict[str, tuple[tuple[str, str], ...]] = {
     STATE_KEY_LR_CAN_INPUT: ((SECTION_LR_REAR, OPTION_INPUT_EXCEL),),
-    STATE_KEY_LR_IO_EXCEL: ((SECTION_IOMAPPING, OPTION_INPUTS),),
-    STATE_KEY_LR_DIDCONFIG_EXCEL: (
-        (SECTION_DID_CONFIG, OPTION_INPUT_EXCEL),
-        (SECTION_CONFIG_ENUM, OPTION_INPUTS),
-    ),
+    STATE_KEY_LR_IO_EXCEL: ((SECTION_LR_REAR, OPTION_IO_INPUTS),),
+    STATE_KEY_LR_DIDCONFIG_EXCEL: ((SECTION_LR_REAR, OPTION_DIDCONFIG_INPUT_EXCEL),),
     STATE_KEY_LR_DIDINFO_EXCEL: ((SECTION_LR_REAR, OPTION_DIDINFO_INPUTS),),
     STATE_KEY_LR_CIN_EXCEL: ((SECTION_LR_REAR, OPTION_CIN_INPUT_EXCEL),),
 }

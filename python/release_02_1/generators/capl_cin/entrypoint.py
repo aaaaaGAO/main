@@ -12,6 +12,7 @@ from __future__ import annotations
 import importlib
 import importlib.util
 import os
+from typing import Any
 
 from core.run_context import tee_stdout_stderr, restore_stdout_stderr, clear_run_logger
 from services.config_constants import (
@@ -100,8 +101,13 @@ def run_generation(domain: str = DEFAULT_DOMAIN_LR_REAR):
 class CINEntrypointWorkflowUtility:
     """CIN 入口编排统一工具类。"""
 
-    run_generation_workflow = staticmethod(run_generation_workflow)
-    run_generation = staticmethod(run_generation)
+    @staticmethod
+    def run_generation_workflow(*args: Any, **kwargs: Any) -> Any:
+        return run_generation_workflow(*args, **kwargs)
+
+    @staticmethod
+    def run_generation(*args: Any, **kwargs: Any) -> Any:
+        return run_generation(*args, **kwargs)
 
 
 if __name__ == "__main__":

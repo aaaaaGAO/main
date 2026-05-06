@@ -23,25 +23,42 @@ class FilterService:
     """筛选项服务：解析 config/filter_options.ini，为前端提供等级/平台/车型等下拉选项。"""
 
     @staticmethod
-    def lines_from_ini_value(raw: str) -> List[str]:
-        """将 ini 中某选项的多行文本拆成去空行后的字符串列表（筛选项用）。
+    def parse_filter_option_value(*, option_name: str, raw: str) -> List[str]:
+        """解析筛选项字符串，兼容英文逗号与中文逗号，非法分隔符时报错。
 
         参数：
-            raw — 配置中读出的原始字符串，可为空；按换行切分，忽略仅空白行。
+            option_name — 当前配置项名（用于错误信息定位）。
+            raw — 配置中读出的原始字符串，可为空；支持单行或多行，元素间用 `,` / `，` 分隔。
 
-        返回：非空行的列表；raw 为空或仅空白时返回 []。
+        返回：去空白后的非空项列表；raw 为空或仅空白时返回 []。
         """
         if not raw:
             return []
-        out: List[str] = []
-        for line in raw.splitlines():
-            stripped = line.strip()
-            if stripped:
-                out.append(stripped)
-        return out
 
-    @classmethod
-    def parse_shaixuan_config(cls, base_dir: str) -> Dict[str, List[str]]:
+        normalized = raw.strip()
+        illegal_delimiters = ["。", "/", ";", "|", "\\"]
+        for illegal in illegal_delimiters:
+            if illegal in normalized:
+                raise ValueError(
+                    f"[FILTER_OPTIONS].{option_name} 包含非法分隔符 '{illegal}'；"
+                    "请使用英文逗号(,)或中文逗号(，)分隔。"
+                )
+
+        # 兼容历史多行：先按行切分，再对每行按中英文逗号继续切分。
+        parsed_items: List[str] = []
+        for line in normalized.splitlines():
+            segment = line.strip()
+            if not segment:
+                continue
+            segment = segment.replace("，", ",")
+            for token in segment.split(","):
+                item = token.strip()
+                if item:
+                    parsed_items.append(item)
+        return parsed_items
+
+    @staticmethod
+    def parse_shaixuan_config(base_dir: str) -> Dict[str, List[str]]:
         """解析 base_dir 下 config/filter_options.ini，返回等级/平台/车型/Target Version/UDS_ECU_qualifier 等筛选项字典。
         参数：base_dir — 工程根目录。
         返回：{"levels", "platforms", "models", "target_versions", "uds_ecu_qualifier"}；文件不存在时返回空列表。
@@ -60,7 +77,10 @@ class FilterService:
                 return filters
             for dict_key, option_name in _FILTER_OPTION_KEYS:
                 raw = cp.get(FILTER_OPTIONS_SECTION, option_name, fallback="").strip()
-                filters[dict_key] = cls.lines_from_ini_value(raw)
+                filters[dict_key] = FilterService.parse_filter_option_value(
+                    option_name=option_name,
+                    raw=raw,
+                )
         except Exception as error:
             print(f"读取 filter_options.ini 出现异常: {error}")
 

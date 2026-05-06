@@ -48,9 +48,8 @@ class StepErrorDetailBuilder:
             value_val = (tmp.split(",", 1)[0].strip() if "," in tmp else tmp.strip())
         return name_val, value_val
 
-    @classmethod
+    @staticmethod
     def build_detail(
-        cls,
         error_type: str,
         reason: str,
         original_line: str,
@@ -64,7 +63,7 @@ class StepErrorDetailBuilder:
         original_line = (original_line or "").strip()
 
         if error_type == "iomapping":
-            name_tok, value_tok = cls.parse_io_name_value_from_line(original_line)
+            name_tok, value_tok = StepErrorDetailBuilder.parse_io_name_value_from_line(original_line)
             if reason.startswith("Name 未找到"):
                 return f"IO_mapping 表中Name 未找到: {name_tok or reason.split(':', 1)[-1].strip()}"
             if "Name 找不到" in reason:
@@ -72,7 +71,7 @@ class StepErrorDetailBuilder:
             if reason.startswith("Path 为空"):
                 return f"IO_mapping 表中{reason}"
             if reason.startswith("Values 为空"):
-                name_val, value_val = cls.parse_name_value_from_reason(reason)
+                name_val, value_val = StepErrorDetailBuilder.parse_name_value_from_reason(reason)
                 name_show = name_tok or name_val
                 value_show = value_val or value_tok
                 if name_show and value_show:
@@ -91,7 +90,7 @@ class StepErrorDetailBuilder:
         if error_type == "config_enum":
             line_lower = original_line.lower()
             table_prefix = "DID Configuration 表中" if ("set_cf" in line_lower or "set_config" in line_lower) else "Configuration 表中"
-            name_val, value_val = cls.parse_name_value_from_reason(reason)
+            name_val, value_val = StepErrorDetailBuilder.parse_name_value_from_reason(reason)
             if reason.startswith("Name 未找到"):
                 return f"{table_prefix}{reason}"
             if reason.startswith("Values 为空"):

@@ -104,8 +104,13 @@ def run_generation(
 class CANEntrypointWorkflowUtility:
     """CAN 入口编排统一工具类。"""
 
-    run_generation_workflow = staticmethod(run_generation_workflow)
-    run_generation = staticmethod(run_generation)
+    @staticmethod
+    def run_generation_workflow(*args: Any, **kwargs: Any) -> Any:
+        return run_generation_workflow(*args, **kwargs)
+
+    @staticmethod
+    def run_generation(*args: Any, **kwargs: Any) -> Any:
+        return run_generation(*args, **kwargs)
 
 
 if __name__ == "__main__":

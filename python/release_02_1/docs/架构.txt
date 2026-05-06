@@ -23,6 +23,7 @@ project_root/
 │       ├── lr_rear.py              # 左右后域 API：生成 CAN、保存 LR_REAR 配置
 │       ├── central.py              # 中央域 API：生成 CAN+XML
 │       ├── dtc.py                  # DTC 域 API：生成 CAN+XML
+│       ├── route_helpers.py        # get_base_dir、jsonify_orchestrator_result、jsonify_route_result（服务层 tuple→jsonify）
 │       └── __init__.py             # 蓝图导出
 │
 ├── services/                       # 【应用服务层】组合领域逻辑，供 Web 调用
@@ -32,6 +33,7 @@ project_root/
 │   ├── task_orchestrator.py        # 一键生成任务编排：按域（LR_REAR/中央/DTC）调用各生成器入口；请求级 workbook_cache 复用并在任务结束统一关闭
 │   ├── task_service.py             # 单任务启动：CAN/XML/CIN/DIDInfo/DIDConfig/UART 分别调用 generators.*.entrypoint.run_generation/run_cli
 │   ├── filter_service.py          # 解析 config/filter_options.ini，提供等级/平台/车型/UDS_ECU 下拉选项
+│   ├── service_route_result_decorator.py # CommonUi：`guard_service_route_tuple`；一键生成与 `central_programmatic` 生成段：`guard_plain_service_route_tuple`（惰性/functools.partial 组合）
 │   ├── run_validator.py            # 运行前校验：输出目录可写、输入路径存在、域必填项
 │   └── __init__.py
 │

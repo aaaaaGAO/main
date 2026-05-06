@@ -327,14 +327,46 @@ def write_master_can_aggregate_file(
 class GeneratedCasesBundleUtility:
     """用例生成批处理逻辑统一工具类入口。"""
 
-    translate_sheet_cases_in_place = staticmethod(translate_sheet_cases_in_place)
-    build_sorted_sheet_events = staticmethod(build_sorted_sheet_events)
-    process_excel_for_generated_case_cans = staticmethod(process_excel_for_generated_case_cans)
-    log_sheet_events = staticmethod(log_sheet_events)
-    log_no_can_generated_summary = staticmethod(log_no_can_generated_summary)
-    log_excel_generation_summaries = staticmethod(log_excel_generation_summaries)
-    per_sheet_can_filename = staticmethod(per_sheet_can_filename)
-    per_sheet_log_basename = staticmethod(per_sheet_log_basename)
-    build_master_can_lines = staticmethod(build_master_can_lines)
-    remove_stale_master_can_siblings = staticmethod(remove_stale_master_can_siblings)
-    write_master_can_aggregate_file = staticmethod(write_master_can_aggregate_file)
+    @staticmethod
+    def translate_sheet_cases_in_place(*args: Any, **kwargs: Any) -> Any:
+        return translate_sheet_cases_in_place(*args, **kwargs)
+
+    @staticmethod
+    def build_sorted_sheet_events(*args: Any, **kwargs: Any) -> Any:
+        return build_sorted_sheet_events(*args, **kwargs)
+
+    @staticmethod
+    def process_excel_for_generated_case_cans(*args: Any, **kwargs: Any) -> Any:
+        return process_excel_for_generated_case_cans(*args, **kwargs)
+
+    @staticmethod
+    def log_sheet_events(*args: Any, **kwargs: Any) -> Any:
+        return log_sheet_events(*args, **kwargs)
+
+    @staticmethod
+    def log_no_can_generated_summary(*args: Any, **kwargs: Any) -> Any:
+        return log_no_can_generated_summary(*args, **kwargs)
+
+    @staticmethod
+    def log_excel_generation_summaries(*args: Any, **kwargs: Any) -> Any:
+        return log_excel_generation_summaries(*args, **kwargs)
+
+    @staticmethod
+    def per_sheet_can_filename(*args: Any, **kwargs: Any) -> Any:
+        return per_sheet_can_filename(*args, **kwargs)
+
+    @staticmethod
+    def per_sheet_log_basename(*args: Any, **kwargs: Any) -> Any:
+        return per_sheet_log_basename(*args, **kwargs)
+
+    @staticmethod
+    def build_master_can_lines(*args: Any, **kwargs: Any) -> Any:
+        return build_master_can_lines(*args, **kwargs)
+
+    @staticmethod
+    def remove_stale_master_can_siblings(*args: Any, **kwargs: Any) -> Any:
+        return remove_stale_master_can_siblings(*args, **kwargs)
+
+    @staticmethod
+    def write_master_can_aggregate_file(*args: Any, **kwargs: Any) -> Any:
+        return write_master_can_aggregate_file(*args, **kwargs)

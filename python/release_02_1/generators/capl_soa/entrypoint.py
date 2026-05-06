@@ -241,13 +241,33 @@ def run_setserver_cin_generation(excel_path: str, anchor_path: str) -> str:
 class SOAGenerationUtility:
     """SOA 生成入口能力统一工具类。"""
 
-    normalize_text = staticmethod(normalize_cell_text)
-    resolve_base_and_config = staticmethod(resolve_base_and_config)
-    load_paths = staticmethod(load_paths)
-    read_variables_list_from_excel = staticmethod(read_variables_list_from_excel)
-    render_nodes_to_files = staticmethod(render_nodes_to_files)
-    run_generation = staticmethod(run_generation)
-    run_setserver_cin_generation = staticmethod(run_setserver_cin_generation)
+    @staticmethod
+    def normalize_text(*args: Any, **kwargs: Any) -> Any:
+        return normalize_cell_text(*args, **kwargs)
+
+    @staticmethod
+    def resolve_base_and_config(*args: Any, **kwargs: Any) -> Any:
+        return resolve_base_and_config(*args, **kwargs)
+
+    @staticmethod
+    def load_paths(*args: Any, **kwargs: Any) -> Any:
+        return load_paths(*args, **kwargs)
+
+    @staticmethod
+    def read_variables_list_from_excel(*args: Any, **kwargs: Any) -> Any:
+        return read_variables_list_from_excel(*args, **kwargs)
+
+    @staticmethod
+    def render_nodes_to_files(*args: Any, **kwargs: Any) -> Any:
+        return render_nodes_to_files(*args, **kwargs)
+
+    @staticmethod
+    def run_generation(*args: Any, **kwargs: Any) -> Any:
+        return run_generation(*args, **kwargs)
+
+    @staticmethod
+    def run_setserver_cin_generation(*args: Any, **kwargs: Any) -> Any:
+        return run_setserver_cin_generation(*args, **kwargs)
 
 
 def run_cli(

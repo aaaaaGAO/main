@@ -10,15 +10,11 @@ import sys
 from infra.excel.workbook import ExcelService
 from services.config_constants import (
     DEFAULT_DID_CONFIG_FILENAME,
-    OPTION_INPUT_EXCEL_CANDIDATES,
-    OPTION_INPUTS,
+    OPTION_DIDCONFIG_INPUT_EXCEL,
     OPTION_OUTPUT_DIR,
     OPTION_OUTPUT_DIR_CANDIDATES,
     OPTION_OUTPUT_FILENAME_CANDIDATES,
-    SECTION_CONFIG_ENUM,
-    SECTION_DID_CONFIG,
     SECTION_DTC,
-    SECTION_DTC_CONFIG_ENUM,
     SECTION_LR_REAR,
 )
 from infra.excel.header import find_header_row_and_col_indices
@@ -56,16 +52,11 @@ class DIDConfigGeneratorService:
             output_name = DEFAULT_DID_CONFIG_FILENAME
 
             if domain == SECTION_DTC:
-                if not cfg.has_section(SECTION_DTC_CONFIG_ENUM):
-                    msg = f"未配置 DID_Config 配置节 [{SECTION_DTC_CONFIG_ENUM}]"
-                    print(f"错误: {msg}")
-                    logger.error(msg)
-                    raise ValueError(msg)
-                inputs_raw = (cfg.get(SECTION_DTC_CONFIG_ENUM, OPTION_INPUTS, fallback="") or "").strip()
-                excel_rel_path = inputs_raw.replace(";", "|").split("|")[0].strip()
+                if cfg.has_section(SECTION_DTC):
+                    excel_rel_path = (cfg.get(SECTION_DTC, OPTION_DIDCONFIG_INPUT_EXCEL, fallback="") or "").strip()
                 if not excel_rel_path:
                     msg = (
-                        "未配置 DID_Config 配置表：未在 [DTC_CONFIG_ENUM] inputs 中找到有效的 Excel 路径"
+                        "未配置 DID_Config 配置表：未在 [DTC].didconfig_input_excel 中找到有效的 Excel 路径"
                     )
                     print(f"错误: {msg}")
                     logger.error(msg)
@@ -95,19 +86,12 @@ class DIDConfigGeneratorService:
                         DEFAULT_DID_CONFIG_FILENAME,
                     )
                 )
-            elif domain == SECTION_LR_REAR:
-                excel_rel_path = ""
-                if cfg.has_section(SECTION_CONFIG_ENUM):
-                    inputs_raw = (cfg.get(SECTION_CONFIG_ENUM, OPTION_INPUTS, fallback="") or "").strip()
-                    excel_rel_path = inputs_raw.replace(";", "|").split("|")[0].strip()
-                if not excel_rel_path and cfg.has_section(SECTION_DID_CONFIG):
-                    for option_name in OPTION_INPUT_EXCEL_CANDIDATES:
-                        excel_rel_path = cfg.get(SECTION_DID_CONFIG, option_name, fallback=None) or ""
-                        if excel_rel_path:
-                            break
+            else:
+                if cfg.has_section(SECTION_LR_REAR):
+                    excel_rel_path = (cfg.get(SECTION_LR_REAR, OPTION_DIDCONFIG_INPUT_EXCEL, fallback="") or "").strip()
                 if not excel_rel_path:
                     msg = (
-                        "未配置 DID_Config 配置表：请在 [CONFIG_ENUM].inputs 或 [DID_CONFIG].input_excel 配置有效的 Excel 路径"
+                        "未配置 DID_Config 配置表：请在 [LR_REAR].didconfig_input_excel 配置有效的 Excel 路径"
                     )
                     print(f"错误: {msg}")
                     logger.error(msg)
@@ -127,51 +111,6 @@ class DIDConfigGeneratorService:
                     logger.error(msg)
                     raise ValueError(msg)
                 output_name = gconfig.get_fixed("didconfig_output_filename") or DEFAULT_DID_CONFIG_FILENAME
-                if cfg.has_section(SECTION_DID_CONFIG):
-                    for option_name in OPTION_OUTPUT_FILENAME_CANDIDATES:
-                        output_filename_value = cfg.get(SECTION_DID_CONFIG, option_name, fallback=None)
-                        if output_filename_value:
-                            output_name = output_filename_value
-                            break
-            else:
-                if not cfg.has_section(SECTION_DID_CONFIG):
-                    msg = f"未配置 DID_Config 配置节 [{SECTION_DID_CONFIG}]"
-                    print(f"错误: {msg}")
-                    logger.error(msg)
-                    # 抛异常，交由 TaskService 决定是“跳过”还是失败，避免前端误认为已生成
-                    raise ValueError(msg)
-
-                for option_name in OPTION_INPUT_EXCEL_CANDIDATES:
-                    excel_rel_path = cfg.get(SECTION_DID_CONFIG, option_name, fallback=None) or ""
-                    if excel_rel_path:
-                        break
-                if not excel_rel_path:
-                    msg = f"未配置 DID_Config 配置表：配置文件中未找到 {SECTION_DID_CONFIG}.input_excel 或 {SECTION_DID_CONFIG}.Input_Excel"
-                    print(f"错误: {msg}")
-                    logger.error(msg)
-                    # 抛异常以便上层按“未配置时跳过”处理，而不是静默 return
-                    raise ValueError(msg)
-
-                output_name = (
-                    gconfig.get_fixed("didconfig_output_filename")
-                    or next(
-                        (
-                            item_value
-                            for option_name in OPTION_OUTPUT_FILENAME_CANDIDATES
-                            if (item_value := cfg.get(SECTION_DID_CONFIG, option_name, fallback=None))
-                        ),
-                        DEFAULT_DID_CONFIG_FILENAME,
-                    )
-                )
-                for option_name in OPTION_OUTPUT_DIR_CANDIDATES:
-                    output_dir_rel = cfg.get(SECTION_DID_CONFIG, option_name, fallback=None) or ""
-                    if output_dir_rel:
-                        break
-                if not output_dir_rel:
-                    msg = f"配置文件中未找到 {SECTION_DID_CONFIG}.output_dir 或 {SECTION_DID_CONFIG}.Output_Dir"
-                    print(f"错误: {msg}")
-                    logger.error(msg)
-                    raise ValueError(msg)
 
             config_dir = gconfig.config_dir
             excel_path = resolve_runtime_path(config_dir, excel_rel_path)

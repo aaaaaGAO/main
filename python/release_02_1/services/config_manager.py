@@ -30,7 +30,9 @@ from infra.filesystem import (
 )
 from services.derived_config_files_service import DerivedConfigFilesService
 from services.config_constants import (
+    ACTIVE_UART_COMM_CFG_KEYS,
     CENTRAL_SAVE_NORMALIZE_OPTION_NAMES,
+    CENTRAL_LAYOUT_REMOVED_OPTION_NAMES,
     DEPRECATED_INPUT_EXCEL_DIR_OPTION_CANDIDATES,
     DEFAULT_UDS_FILENAME,
     CENTRAL_MANAGED_KEYS,
@@ -39,6 +41,8 @@ from services.config_constants import (
     DTC_SAVE_NORMALIZE_OPTION_NAMES,
     FILTER_OPTION_KEYS,
     FORMATTED_SAVE_SECTIONS_TO_ENSURE,
+    FORMATTED_SAVE_SECTION_ORDER,
+    FORMATTED_SECTION_GROUPS,
     LR_REAR_SAVE_NORMALIZE_OPTION_NAMES,
     OPTION_CASE_LEVELS,
     OPTION_CASE_MODELS,
@@ -49,13 +53,12 @@ from services.config_constants import (
     OPTION_C_PWR,
     OPTION_C_RLY,
     OPTION_CIN_INPUT_EXCEL,
+    OPTION_DIDCONFIG_INPUT_EXCEL,
     OPTION_DIDINFO_INPUTS,
     OPTION_IGN_CURRENT,
     OPTION_IGN_WAITTIME,
     OPTION_INPUT_EXCEL,
-    OPTION_INPUTS,
-    OPTION_IGNITION_CYCLE_CURRENT,
-    OPTION_IGNITION_CYCLE_WAIT_TIME,
+    OPTION_IO_INPUTS,
     OPTION_LOG_LEVEL_MIN,
     OPTION_OUTPUT_DIR,
     OPTION_SOA_DATATAB_OUTPUT_FILENAME,
@@ -68,13 +71,7 @@ from services.config_constants import (
     OPTION_LOGIN_USERNAME,
     PATHS_MERGED_PRESERVE_OPTION_NAMES,
     SECTION_CENTRAL,
-    SECTION_CONFIG_ENUM,
-    SECTION_DID_CONFIG,
     SECTION_DTC,
-    SECTION_DTC_CONFIG_ENUM,
-    SECTION_DTC_IOMAPPING,
-    SECTION_IGNITION_CYCLE,
-    SECTION_IOMAPPING,
     SECTION_LR_REAR,
     SECTION_PATHS,
     UDS_DOMAIN_SECTIONS,
@@ -180,9 +177,6 @@ def clean_duplicate_sections(config_path: str) -> List[str]:
                         and current_section not in _key_sections
                         and invalid_short_token_re.match(stripped)
                     ):
-                        continue
-                    # DTC_CONFIG_ENUM 节只允许标准 key = value 行，其他裸字符串一律丢弃
-                    if current_section == SECTION_DTC_CONFIG_ENUM and "=" not in stripped:
                         continue
                     if (stripped.startswith(",") or stripped.endswith(",")) and "=" not in stripped:
                         continue
@@ -413,10 +407,10 @@ class ConfigManager:
 
     @staticmethod
     def has_relay_config(relay: Any) -> bool:
-        """判断单个继电器是否算已配置：须填写串口 port，或存在 relayID/id。
+        """判断单个继电器是否算已配置。
 
-        仅含 relayType / 默认 coilStatuses（UI 渲染时自动补全）不算，否则用户未选串口
-        或 ini 中残留骨架仍会触发生成 PowerRelayConfig.txt。
+        与 `write_relay_blocks()` 保持一致：只要继电器行中存在可落盘的业务字段
+        （如 port / relayID / relayType / coilStatuses），就视为已配置。
         """
         if not isinstance(relay, dict):
             return False
@@ -424,10 +418,13 @@ class ConfigManager:
         if port:
             return True
         relay_id = relay.get("relayID")
-        if relay_id is None:
-            # 兼容前端历史口径：保存态常使用 id 作为继电器行标识。
-            relay_id = relay.get("id")
         if relay_id is not None and str(relay_id).strip() != "":
+            return True
+        relay_type = str(relay.get("relayType") or "").strip()
+        if relay_type:
+            return True
+        coil_statuses = relay.get("coilStatuses")
+        if isinstance(coil_statuses, list) and len(coil_statuses) > 0:
             return True
         return False
 
@@ -525,9 +522,8 @@ class ConfigManager:
         """
         return f"{prefix}_{option_name}" if prefix else option_name
 
-    @classmethod
+    @staticmethod
     def load_standard_domain_ui_fields(
-        cls,
         out: Dict[str, Any],
         section_data: Dict[str, Any],
         *,
@@ -548,24 +544,24 @@ class ConfigManager:
 
         返回：无。
         """
-        out[cls.ui_state_key(prefix, "input")] = section_data.get(OPTION_INPUT_EXCEL, "")
-        out[cls.ui_state_key(prefix, UI_FIELD_OUT_ROOT)] = section_data.get(OPTION_OUTPUT_DIR, "")
-        out[cls.ui_state_key(prefix, UI_FIELD_LEVELS)] = section_data.get(OPTION_CASE_LEVELS, "ALL")
-        out[cls.ui_state_key(prefix, UI_FIELD_PLATFORMS)] = section_data.get(OPTION_CASE_PLATFORMS, "")
-        out[cls.ui_state_key(prefix, UI_FIELD_MODELS)] = section_data.get(OPTION_CASE_MODELS, "")
-        out[cls.ui_state_key(prefix, UI_FIELD_TARGET_VERSIONS)] = section_data.get(OPTION_CASE_TARGET_VERSIONS, "")
-        out[cls.ui_state_key(prefix, UI_FIELD_SELECTED_SHEETS)] = section_data.get(OPTION_SELECTED_SHEETS, "")
-        out[cls.ui_state_key(prefix, UI_FIELD_LOG_LEVEL)] = section_data.get(OPTION_LOG_LEVEL_MIN, "info")
+        out[ConfigManager.ui_state_key(prefix, "input")] = section_data.get(OPTION_INPUT_EXCEL, "")
+        out[ConfigManager.ui_state_key(prefix, UI_FIELD_OUT_ROOT)] = section_data.get(OPTION_OUTPUT_DIR, "")
+        out[ConfigManager.ui_state_key(prefix, UI_FIELD_LEVELS)] = section_data.get(OPTION_CASE_LEVELS, "ALL")
+        out[ConfigManager.ui_state_key(prefix, UI_FIELD_PLATFORMS)] = section_data.get(OPTION_CASE_PLATFORMS, "")
+        out[ConfigManager.ui_state_key(prefix, UI_FIELD_MODELS)] = section_data.get(OPTION_CASE_MODELS, "")
+        out[ConfigManager.ui_state_key(prefix, UI_FIELD_TARGET_VERSIONS)] = section_data.get(OPTION_CASE_TARGET_VERSIONS, "")
+        out[ConfigManager.ui_state_key(prefix, UI_FIELD_SELECTED_SHEETS)] = section_data.get(OPTION_SELECTED_SHEETS, "")
+        out[ConfigManager.ui_state_key(prefix, UI_FIELD_LOG_LEVEL)] = section_data.get(OPTION_LOG_LEVEL_MIN, "info")
         if include_uds:
-            out[cls.ui_state_key(prefix, OPTION_UDS_ECU_QUALIFIER)] = section_data.get(
+            out[ConfigManager.ui_state_key(prefix, OPTION_UDS_ECU_QUALIFIER)] = section_data.get(
                 OPTION_UDS_ECU_QUALIFIER,
                 "",
             )
         if include_didinfo:
             didinfo_raw = section_data.get(OPTION_DIDINFO_INPUTS, "")
-            out[cls.ui_state_key(prefix, UI_FIELD_DIDINFO_EXCEL)] = didinfo_raw.split(" | ")[0] if didinfo_raw else ""
+            out[ConfigManager.ui_state_key(prefix, UI_FIELD_DIDINFO_EXCEL)] = didinfo_raw.split(" | ")[0] if didinfo_raw else ""
         if include_cin:
-            out[cls.ui_state_key(prefix, UI_FIELD_CIN_EXCEL)] = section_data.get(OPTION_CIN_INPUT_EXCEL, "")
+            out[ConfigManager.ui_state_key(prefix, UI_FIELD_CIN_EXCEL)] = section_data.get(OPTION_CIN_INPUT_EXCEL, "")
 
     def load_ui_data(self) -> Dict[str, Any]:
         """加载主配置并平铺为前端 collectCurrentState 所需字段格式。
@@ -578,7 +574,7 @@ class ConfigManager:
         # 1. LR_REAR -> 左右后域基础配置
         if config.has_section(SECTION_LR_REAR):
             lr_section = dict(config.items(SECTION_LR_REAR))
-            self.load_standard_domain_ui_fields(
+            ConfigManager.load_standard_domain_ui_fields(
                 out,
                 lr_section,
                 prefix="",
@@ -588,30 +584,25 @@ class ConfigManager:
             out[UI_FIELD_CAN_INPUT] = out.pop("input")
             out[UI_FIELD_SRV_EXCEL] = lr_section.get(OPTION_SRV_EXCEL, "")
 
-        # 2. IOMAPPING / DID_CONFIG
-        if config.has_section(SECTION_IOMAPPING):
-            io_mapping_inputs = config.get(SECTION_IOMAPPING, OPTION_INPUTS, fallback="")
-            out[UI_FIELD_IO_EXCEL] = (
-                io_mapping_inputs.split(" | ")[0] if io_mapping_inputs else ""
-            )
-        if config.has_section(SECTION_DID_CONFIG):
-            out[STATE_KEY_LR_DIDCONFIG_EXCEL] = config.get(SECTION_DID_CONFIG, OPTION_INPUT_EXCEL, fallback="")
+        # 2. LR_REAR 并入项：io_inputs / didconfig_input_excel
+        lr_io_inputs = ""
+        lr_didconfig_excel = ""
+        if config.has_section(SECTION_LR_REAR):
+            lr_section = dict(config.items(SECTION_LR_REAR))
+            lr_io_inputs = (lr_section.get(OPTION_IO_INPUTS, "") or "").strip()
+            lr_didconfig_excel = (lr_section.get(OPTION_DIDCONFIG_INPUT_EXCEL, "") or "").strip()
+        if lr_io_inputs:
+            out[UI_FIELD_IO_EXCEL] = lr_io_inputs.split(" | ")[0].strip()
+        if lr_didconfig_excel:
+            out[STATE_KEY_LR_DIDCONFIG_EXCEL] = lr_didconfig_excel
 
         # 3. CENTRAL -> c_* 字段
         if config.has_section(SECTION_CENTRAL):
             central_section = dict(config.items(SECTION_CENTRAL))
-            self.load_standard_domain_ui_fields(out, central_section, prefix="c")
+            ConfigManager.load_standard_domain_ui_fields(out, central_section, prefix="c")
             # 点火循环：仅当有非空值时才返回，避免未配置时前端显示“已配置”或写入默认值
             ign_waittime = (central_section.get(OPTION_IGN_WAITTIME, "") or "").strip()
             ign_current = (central_section.get(OPTION_IGN_CURRENT, "") or "").strip()
-            if not ign_waittime and config.has_section(SECTION_IGNITION_CYCLE):
-                ign_waittime = (
-                    config.get(SECTION_IGNITION_CYCLE, OPTION_IGNITION_CYCLE_WAIT_TIME, fallback="") or ""
-                ).strip()
-            if not ign_current and config.has_section(SECTION_IGNITION_CYCLE):
-                ign_current = (
-                    config.get(SECTION_IGNITION_CYCLE, OPTION_IGNITION_CYCLE_CURRENT, fallback="") or ""
-                ).strip()
             if ign_waittime or ign_current:
                 out[STATE_KEY_CENTRAL_IGN_WAIT_TIME] = ign_waittime
                 out[STATE_KEY_CENTRAL_IGN_CURRENT] = ign_current
@@ -632,7 +623,7 @@ class ConfigManager:
         # 4. DTC -> d_* 字段
         if config.has_section(SECTION_DTC):
             dtc_section = dict(config.items(SECTION_DTC))
-            self.load_standard_domain_ui_fields(
+            ConfigManager.load_standard_domain_ui_fields(
                 out,
                 dtc_section,
                 prefix="d",
@@ -640,26 +631,19 @@ class ConfigManager:
                 include_cin=True,
             )
             out[STATE_KEY_DTC_SRV_EXCEL] = dtc_section.get(OPTION_SRV_EXCEL, "")
-        if config.has_section(SECTION_DTC_IOMAPPING):
-            dtc_io_mapping_inputs = (
-                config.get(SECTION_DTC_IOMAPPING, OPTION_INPUTS, fallback="") or ""
-            ).strip()
+            dtc_io_mapping_inputs = (dtc_section.get(OPTION_IO_INPUTS, "") or "").strip()
             if dtc_io_mapping_inputs and "|" in dtc_io_mapping_inputs:
                 path_part, sheets_part = dtc_io_mapping_inputs.split("|", 1)
                 out[STATE_KEY_DTC_IO_EXCEL] = path_part.strip()
                 sheets_str = (sheets_part or "").strip()
-                # 若为 * 或空串，表示全选，前端用空串表示“全选/不做过滤”
                 out[STATE_KEY_DTC_IO_SELECTED_SHEETS] = "" if sheets_str in ("", "*") else sheets_str
             else:
                 out[STATE_KEY_DTC_IO_EXCEL] = dtc_io_mapping_inputs
                 out[STATE_KEY_DTC_IO_SELECTED_SHEETS] = ""
-        if config.has_section(SECTION_DTC_CONFIG_ENUM):
-            did_config_inputs = config.get(
-                SECTION_DTC_CONFIG_ENUM, OPTION_INPUTS, fallback=""
-            )
-            out[STATE_KEY_DTC_DIDCONFIG_EXCEL] = (
-                did_config_inputs.split(" | ")[0] if did_config_inputs else ""
-            )
+
+            dtc_didconfig_excel = (dtc_section.get(OPTION_DIDCONFIG_INPUT_EXCEL, "") or "").strip()
+            if dtc_didconfig_excel:
+                out[STATE_KEY_DTC_DIDCONFIG_EXCEL] = dtc_didconfig_excel
 
         return out
 
@@ -694,7 +678,7 @@ class ConfigManager:
 
     @staticmethod
     def is_relay_list_effectively_empty(relay_list_value: Any) -> bool:
-        """判断继电器列表是否为“有效空”：空列表，或所有项均未构成有效继电器配置（与 _has_relay_config 对齐，含 id/relayID）。"""
+        """判断继电器列表是否为“有效空”：空列表，或所有项均未构成有效继电器配置（与 `has_relay_config` 对齐）。"""
         if relay_list_value is None or relay_list_value == "" or relay_list_value == [] or relay_list_value == {}:
             return True
         # 前端可能传回已解析的 list 或 JSON 字符串
@@ -717,8 +701,8 @@ class ConfigManager:
                 return False
         return True
 
-    @classmethod
-    def is_effectively_empty_value(cls, option: str, item_value: Any) -> bool:
+    @staticmethod
+    def is_effectively_empty_value(option: str, item_value: Any) -> bool:
         """判断某配置值是否应视为空并写回空串。
 
         参数：
@@ -730,7 +714,7 @@ class ConfigManager:
         """
         if item_value in (None, "", [], {}):
             return True
-        return option == OPTION_C_RLY and cls.is_relay_list_effectively_empty(item_value)
+        return option == OPTION_C_RLY and ConfigManager.is_relay_list_effectively_empty(item_value)
 
     def remove_central_managed_options(
         self,
@@ -863,6 +847,10 @@ class ConfigManager:
             for option_name in DEPRECATED_INPUT_EXCEL_DIR_OPTION_CANDIDATES:
                 if config.has_option(section_name, option_name):
                     config.remove_option(section_name, option_name)
+        if config.has_section(SECTION_CENTRAL):
+            for option_name in CENTRAL_LAYOUT_REMOVED_OPTION_NAMES:
+                if config.has_option(SECTION_CENTRAL, option_name):
+                    config.remove_option(SECTION_CENTRAL, option_name)
 
         for option_name in LR_REAR_SAVE_NORMALIZE_OPTION_NAMES:
             item_value = self.get_config_value_with_fallback(
@@ -875,32 +863,6 @@ class ConfigManager:
                 item_value = normalized_value if normalized_value in VALID_LOG_LEVELS else ""
             config.set(SECTION_LR_REAR, option_name, item_value)
 
-        if config.has_section(SECTION_IOMAPPING):
-            for option_name in config.options(SECTION_IOMAPPING):
-                if option_name.lower() != "enabled":
-                    config.set(
-                        SECTION_IOMAPPING,
-                        option_name,
-                        config.get(SECTION_IOMAPPING, option_name, fallback="") or "",
-                    )
-
-        if config.has_section(SECTION_DID_CONFIG):
-            for option_name in config.options(SECTION_DID_CONFIG):
-                config.set(
-                    SECTION_DID_CONFIG,
-                    option_name,
-                    config.get(SECTION_DID_CONFIG, option_name, fallback="") or "",
-                )
-
-        if config.has_section(SECTION_CONFIG_ENUM):
-            for option_name in config.options(SECTION_CONFIG_ENUM):
-                if option_name.lower() != "enabled":
-                    config.set(
-                        SECTION_CONFIG_ENUM,
-                        option_name,
-                        config.get(SECTION_CONFIG_ENUM, option_name, fallback="") or "",
-                    )
-
         for option_name in CENTRAL_SAVE_NORMALIZE_OPTION_NAMES:
             item_value = self.get_config_value_with_fallback(
                 config,
@@ -911,35 +873,6 @@ class ConfigManager:
                 normalized_value = item_value.strip().lower() if item_value else ""
                 item_value = normalized_value if normalized_value in VALID_LOG_LEVELS else ""
             config.set(SECTION_CENTRAL, option_name, item_value)
-
-        ignition_wait_time = ""
-        if config.has_section(SECTION_IGNITION_CYCLE):
-            ignition_wait_time = (
-                config.get(SECTION_IGNITION_CYCLE, OPTION_IGNITION_CYCLE_WAIT_TIME, fallback="")
-                or config.get(SECTION_IGNITION_CYCLE, OPTION_IGN_WAITTIME, fallback="")
-                or ""
-            ).strip()
-        if not ignition_wait_time:
-            ignition_wait_time = self.get_config_value_with_fallback(
-                config,
-                SECTION_CENTRAL,
-                OPTION_IGN_WAITTIME,
-            ).strip()
-        ignition_current = ""
-        if config.has_section(SECTION_IGNITION_CYCLE):
-            ignition_current = (
-                config.get(SECTION_IGNITION_CYCLE, OPTION_IGNITION_CYCLE_CURRENT, fallback="")
-                or config.get(SECTION_IGNITION_CYCLE, OPTION_IGN_CURRENT, fallback="")
-                or ""
-            ).strip()
-        if not ignition_current:
-            ignition_current = self.get_config_value_with_fallback(
-                config,
-                SECTION_CENTRAL,
-                OPTION_IGN_CURRENT,
-            ).strip()
-        config.set(SECTION_IGNITION_CYCLE, OPTION_IGNITION_CYCLE_WAIT_TIME, ignition_wait_time)
-        config.set(SECTION_IGNITION_CYCLE, OPTION_IGNITION_CYCLE_CURRENT, ignition_current)
 
         for option_name in DTC_SAVE_NORMALIZE_OPTION_NAMES:
             item_value = self.get_config_value_with_fallback(
@@ -952,27 +885,8 @@ class ConfigManager:
                 item_value = normalized_value if normalized_value in VALID_LOG_LEVELS else ""
             config.set(SECTION_DTC, option_name, item_value)
 
-        if config.has_section(SECTION_DTC_IOMAPPING):
-            for option_name in config.options(SECTION_DTC_IOMAPPING):
-                if option_name.lower() != "enabled":
-                    config.set(
-                        SECTION_DTC_IOMAPPING,
-                        option_name,
-                        config.get(SECTION_DTC_IOMAPPING, option_name, fallback="") or "",
-                    )
-
-        config.set(
-            SECTION_DTC_CONFIG_ENUM,
-            OPTION_INPUTS,
-            self.get_config_value_with_fallback(
-                config,
-                SECTION_DTC_CONFIG_ENUM,
-                OPTION_INPUTS,
-            ),
-        )
-
         with open(output_config_path, "w", encoding="utf-8") as config_file:
-            config.write(config_file, space_around_delimiters=True)
+            config_file.write(self.build_formatted_config_text(config))
 
         if fixed_config_backup:
             current_fixed = {}
@@ -1011,6 +925,94 @@ class ConfigManager:
         if config.has_option(section_name, option_name):
             return config.get(section_name, option_name, fallback="") or ""
         return ""
+
+    @staticmethod
+    def format_config_option_line(option_name: str, option_value: str) -> str:
+        """将 `option = value` 统一格式化为单行 INI 文本。"""
+        return f"{option_name} = {option_value}"
+
+    def append_plain_section_lines(
+        self,
+        lines: List[str],
+        config: configparser.ConfigParser,
+        section_name: str,
+    ) -> None:
+        """按 ConfigParser 当前顺序输出普通 section（不插入分组注释块）。"""
+        if not config.has_section(section_name):
+            return
+        lines.append(f"[{section_name}]")
+        for option_name in config.options(section_name):
+            lines.append(
+                self.format_config_option_line(
+                    option_name,
+                    config.get(section_name, option_name, fallback="") or "",
+                )
+            )
+        lines.append("")
+
+    def append_grouped_section_lines(
+        self,
+        lines: List[str],
+        config: configparser.ConfigParser,
+        section_name: str,
+    ) -> None:
+        """按预定义分组输出主 Tab section，并插入 `# [[group]]` 注释块。"""
+        if not config.has_section(section_name):
+            return
+
+        section_groups = FORMATTED_SECTION_GROUPS.get(section_name, ())
+        emitted_options: set[str] = set()
+        lines.append(f"[{section_name}]")
+        lines.append("")
+        for group_label, option_names in section_groups:
+            lines.append(f"# [[{group_label}]]")
+            for option_name in option_names:
+                emitted_options.add(option_name.lower())
+                lines.append(
+                    self.format_config_option_line(
+                        option_name,
+                        config.get(section_name, option_name, fallback="") or "",
+                    )
+                )
+            lines.append("")
+
+        remaining_option_names = [
+            option_name
+            for option_name in config.options(section_name)
+            if option_name.lower() not in emitted_options
+        ]
+        if remaining_option_names:
+            lines.append("# [[misc]]")
+            for option_name in remaining_option_names:
+                lines.append(
+                    self.format_config_option_line(
+                        option_name,
+                        config.get(section_name, option_name, fallback="") or "",
+                    )
+                )
+            lines.append("")
+
+    def build_formatted_config_text(self, config: configparser.ConfigParser) -> str:
+        """构建带分组注释块的 `Configuration.ini` 文本。"""
+        lines: List[str] = []
+        emitted_sections: set[str] = set()
+        grouped_sections = set(FORMATTED_SECTION_GROUPS.keys())
+
+        for section_name in FORMATTED_SAVE_SECTION_ORDER:
+            if not config.has_section(section_name):
+                continue
+            if section_name in grouped_sections:
+                self.append_grouped_section_lines(lines, config, section_name)
+            else:
+                self.append_plain_section_lines(lines, config, section_name)
+            emitted_sections.add(section_name)
+
+        for section_name in config.sections():
+            if section_name in emitted_sections:
+                continue
+            self.append_plain_section_lines(lines, config, section_name)
+
+        return "\n".join(lines).rstrip() + "\n"
 
     def save_formatted_config(
         self,

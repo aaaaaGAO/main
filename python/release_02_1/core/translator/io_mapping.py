@@ -4,14 +4,14 @@
 IO Mapping 解析与替换（供 CAN/CIN 生成器复用）
 
 功能概览：
-  1. 从当前主配置文件的 [IOMAPPING] 段读取 Inputs，解析「Excel 路径 | Sheet 列表」。
+  1. 从当前主配置文件的 [LR_REAR]/[DTC] 段读取 io_inputs，解析「Excel 路径 | Sheet 列表」。
   2. 打开一个或多个 IO_mapping Excel，支持指定 sheet 或全部 sheet（*）。
   3. 表头定位 Name/Path/Values；Name/Path/Values 均使用当前行单元格原始值，不做向下填充（不受合并单元格影响）。
   4. 将 Name -> Path 做替换；将 Values 中的「翻译前(右侧)」->「翻译后(左侧)」做枚举翻译（大小写不敏感）。
   5. 支持 J_DI*LS 特殊规则：二值枚举取反、分组分号、多参数透传等。
 
 执行顺序（load_io_mapping_from_config 一次调用的步骤）：
-  ① 读 config 的 [IOMAPPING].Inputs，解析为 (excel_path, sheets) 列表。
+  ① 读 config 的域内 io_inputs，解析为 (excel_path, sheets) 列表。
   ② 初始化日志（IO_Mapping.log），确定配置目录用于解析相对路径。
   ③ 对每个 Excel：校验路径与格式、打开工作簿；对每个 Sheet 定位表头（Name/Path/Values）。
   ④ 逐行读取 Name/Path/Values，填充 name_to_path、name_to_values；同表内冲突仅告警、保留首次。
@@ -28,11 +28,11 @@ IO Mapping 解析与替换（供 CAN/CIN 生成器复用）
   - ⑧ 主加载入口：load_io_mapping_from_config。
 
 配置建议（主配置文件 `Configuration.ini`）：
-  [IOMAPPING]
-  Inputs =
-    input/xxx.xlsx | *
-    input/yyy.xlsx | Sheet1,Sheet2
-  注：不再检查 Enabled；只要配置了 Inputs 即启用。
+  [LR_REAR]
+  io_inputs = input/xxx.xlsx | *
+
+  [DTC]
+  io_inputs = input/yyy.xlsx | Sheet1,Sheet2
 """
 
 from __future__ import annotations
@@ -43,7 +43,7 @@ import os
 import re
 import unicodedata
 from dataclasses import dataclass
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 from infra.excel.workbook import ExcelService
 
@@ -51,7 +51,7 @@ from core.caseid_log_dedup import DedupOnceFilter
 from core.log_run_context import ensure_run_log_dirs
 from services.config_constants import (
     DEFAULT_DOMAIN_LR_REAR,
-    OPTION_INPUTS_CANDIDATES,
+    OPTION_IO_INPUTS_CANDIDATES,
     get_io_mapping_section_candidates,
 )
 from utils.excel_io import split_input_lines
@@ -624,13 +624,13 @@ class IOMappingContext:
 
 
 def get_io_mapping_inputs_text(config, domain: str) -> str:
-    """从配置中按域读取 [IOMAPPING] 的 Inputs 文本。参数: config — 配置对象；domain — 域（LR_REAR 支持全局 IOMAPPING）。返回: Inputs 字符串。"""
+    """从配置中按域读取 io_inputs 文本。参数: config — 配置对象；domain — 域。返回: Inputs 字符串。"""
     section_candidates = get_io_mapping_section_candidates(domain)
     for section in section_candidates:
         if not config.has_section(section):
             continue
         inputs_text = ""
-        for option_name in OPTION_INPUTS_CANDIDATES:
+        for option_name in OPTION_IO_INPUTS_CANDIDATES:
             inputs_text = config.get(section, option_name, fallback="")
             if inputs_text:
                 break
@@ -646,7 +646,7 @@ def load_io_mapping_from_config(
     domain: str = DEFAULT_DOMAIN_LR_REAR,
 ) -> Optional[IOMappingContext]:
     """
-    从 config 的 [IOMAPPING] 段加载 IO mapping；未配置 Inputs 则返回 None。
+    从 config 的域内 io_inputs 加载 IO mapping；未配置 Inputs 则返回 None。
     形参：
       config - 传入 ConfigParser 对象（已读入当前主配置文件）。
       base_dir - 传入工程根目录，用于日志与相对路径；可选。
@@ -895,16 +895,51 @@ def load_io_mapping_from_config(
 class IOMappingUtility:
     """IO Mapping 相关功能统一工具类入口（统一工具类入口）。"""
 
-    setup_logging = staticmethod(setup_logging)
-    emit_log_message = staticmethod(emit_log_message)
-    normalize_header_text = staticmethod(normalize_header_text)
-    find_header_row_and_indices = staticmethod(find_header_row_and_indices)
-    find_colon = staticmethod(find_colon)
-    is_numeric_value = staticmethod(is_numeric_value)
-    normalize_name_key = staticmethod(normalize_name_key)
-    normalize_enum_key = staticmethod(normalize_enum_key)
-    has_expression_chars = staticmethod(has_expression_chars)
-    parse_values_cell = staticmethod(parse_values_cell)
-    get_io_mapping_inputs_text = staticmethod(get_io_mapping_inputs_text)
-    load_io_mapping_from_config = staticmethod(load_io_mapping_from_config)
+    @staticmethod
+    def setup_logging(*args: Any, **kwargs: Any) -> Any:
+        return setup_logging(*args, **kwargs)
+
+    @staticmethod
+    def emit_log_message(*args: Any, **kwargs: Any) -> Any:
+        return emit_log_message(*args, **kwargs)
+
+    @staticmethod
+    def normalize_header_text(*args: Any, **kwargs: Any) -> Any:
+        return normalize_header_text(*args, **kwargs)
+
+    @staticmethod
+    def find_header_row_and_indices(*args: Any, **kwargs: Any) -> Any:
+        return find_header_row_and_indices(*args, **kwargs)
+
+    @staticmethod
+    def find_colon(*args: Any, **kwargs: Any) -> Any:
+        return find_colon(*args, **kwargs)
+
+    @staticmethod
+    def is_numeric_value(*args: Any, **kwargs: Any) -> Any:
+        return is_numeric_value(*args, **kwargs)
+
+    @staticmethod
+    def normalize_name_key(*args: Any, **kwargs: Any) -> Any:
+        return normalize_name_key(*args, **kwargs)
+
+    @staticmethod
+    def normalize_enum_key(*args: Any, **kwargs: Any) -> Any:
+        return normalize_enum_key(*args, **kwargs)
+
+    @staticmethod
+    def has_expression_chars(*args: Any, **kwargs: Any) -> Any:
+        return has_expression_chars(*args, **kwargs)
+
+    @staticmethod
+    def parse_values_cell(*args: Any, **kwargs: Any) -> Any:
+        return parse_values_cell(*args, **kwargs)
+
+    @staticmethod
+    def get_io_mapping_inputs_text(*args: Any, **kwargs: Any) -> Any:
+        return get_io_mapping_inputs_text(*args, **kwargs)
+
+    @staticmethod
+    def load_io_mapping_from_config(*args: Any, **kwargs: Any) -> Any:
+        return load_io_mapping_from_config(*args, **kwargs)
 

@@ -3,7 +3,7 @@
 """
 中央域派生配置文件生成服务。
 
-职责：根据 Configuration.ini 中 [CENTRAL]/[IgnitionCycle] 的值，
+职责：根据 Configuration.ini 中 [CENTRAL] 的值，
 生成或清理 output_dir/Configuration 下的派生文件：
 - PowerRelayConfig.txt
 - IgnitionCycle.txt
@@ -32,7 +32,6 @@ from services.config_constants import (
     OPTION_LOGIN_USERNAME,
     OPTION_OUTPUT_DIR,
     SECTION_CENTRAL,
-    SECTION_IGNITION_CYCLE,
 )
 from services.config_constants import (
     DEFAULT_IGNITION_CYCLE_FILENAME,
@@ -151,7 +150,7 @@ class DerivedConfigFilesService:
             relay_config：继电器配置对象（通常为 dict）。
 
         返回：
-            含有效 ``port`` 或 ``relayID/id`` 时为 True，否则为 False。
+            含有效 ``port``、``relayID``、``relayType`` 或 ``coilStatuses`` 时为 True，否则为 False。
         """
         if not isinstance(relay_config, dict):
             return False
@@ -159,16 +158,18 @@ class DerivedConfigFilesService:
         if port:
             return True
         relay_id = relay_config.get("relayID")
-        if relay_id is None:
-            # 兼容前端历史保存结构（id 作为继电器行标识）。
-            relay_id = relay_config.get("id")
         if relay_id is not None and str(relay_id).strip() != "":
+            return True
+        relay_type = str(relay_config.get("relayType") or "").strip()
+        if relay_type:
+            return True
+        coil_statuses = relay_config.get("coilStatuses")
+        if isinstance(coil_statuses, list) and len(coil_statuses) > 0:
             return True
         return False
 
-    @classmethod
+    @staticmethod
     def has_power_relay_config(
-        cls,
         power_config: Any,
         relay_configs: Any,
         ig_config: Any,
@@ -189,7 +190,7 @@ class DerivedConfigFilesService:
             return True
         if isinstance(relay_configs, list):
             for relay in relay_configs:
-                if cls.has_relay_config(relay):
+                if DerivedConfigFilesService.has_relay_config(relay):
                     return True
         if isinstance(ig_config, dict) and str(ig_config.get("equipmentType") or "").strip():
             return True
@@ -321,18 +322,8 @@ class DerivedConfigFilesService:
         ig_config = self.parse_json_config_option(config, SECTION_CENTRAL, OPTION_C_IG, {})
         pw_config = self.parse_json_config_option(config, SECTION_CENTRAL, OPTION_C_PW, {})
 
-        ignition_wait_time = ""
-        ignition_current = ""
-        if config.has_section(SECTION_IGNITION_CYCLE):
-            ignition_wait_time = (
-                config.get(SECTION_IGNITION_CYCLE, OPTION_IGNITION_CYCLE_WAIT_TIME, fallback="") or ""
-            ).strip()
-            ignition_current = (
-                config.get(SECTION_IGNITION_CYCLE, OPTION_IGNITION_CYCLE_CURRENT, fallback="") or ""
-            ).strip()
-        if (not ignition_wait_time and not ignition_current) and config.has_section(SECTION_CENTRAL):
-            ignition_wait_time = (config.get(SECTION_CENTRAL, OPTION_IGN_WAITTIME, fallback="") or "").strip()
-            ignition_current = (config.get(SECTION_CENTRAL, OPTION_IGN_CURRENT, fallback="") or "").strip()
+        ignition_wait_time = (config.get(SECTION_CENTRAL, OPTION_IGN_WAITTIME, fallback="") or "").strip()
+        ignition_current = (config.get(SECTION_CENTRAL, OPTION_IGN_CURRENT, fallback="") or "").strip()
 
         power_config_path = os.path.join(config_dir, DEFAULT_POWER_RELAY_CONFIG_FILENAME)
         if not self.has_power_relay_config(power_config, relay_configs, ig_config, pw_config):

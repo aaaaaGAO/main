@@ -26,27 +26,22 @@ from services.config_constants import (
     LABEL_DTC_DIDINFO_INPUT_TABLE,
     LABEL_RESETDID_VALUE_CONFIG_TABLE,
     OPTION_CIN_INPUT_EXCEL,
+    OPTION_DIDCONFIG_INPUT_EXCEL,
     OPTION_DIDINFO_INPUTS,
     OPTION_INPUT_EXCEL,
-    OPTION_INPUT_EXCEL_CANDIDATES,
-    OPTION_INPUTS,
+    OPTION_IO_INPUTS,
     OPTION_OUTPUT_DIR,
     OPTION_SRV_EXCEL,
     OPTION_SRV_EXCEL_CANDIDATES,
     OPTION_UART_EXCEL,
     OPTION_XML_INPUT_EXCEL,
     SECTION_CENTRAL,
-    SECTION_CONFIG_ENUM,
-    SECTION_DID_CONFIG,
     SECTION_DTC,
-    SECTION_DTC_CONFIG_ENUM,
-    SECTION_DTC_IOMAPPING,
-    SECTION_IOMAPPING,
 )
 
 
 class RunValidator:
-    """各域在真正生成前对必填项、文件存在与输出可写等做检查；`validate_for_domain` 为入口。"""
+    """各域在真正生成前对必填项、文件存在与输出可写等做检查；入口为 ``RunValidator.validate_for_domain``。"""
 
     DOMAIN_DISPLAY_NAMES = {
         DEFAULT_DOMAIN_LR_REAR: "左右后域",
@@ -54,13 +49,13 @@ class RunValidator:
         SECTION_DTC: "DTC域",
     }
 
-    @classmethod
-    def domain_display_name(cls, domain: str) -> str:
+    @staticmethod
+    def domain_display_name(domain: str) -> str:
         """将节名/域常量映射为展示用中文名。参数：domain。返回：中文或原串。"""
-        return cls.DOMAIN_DISPLAY_NAMES.get(domain, domain)
+        return RunValidator.DOMAIN_DISPLAY_NAMES.get(domain, domain)
 
-    @classmethod
-    def extract_first_path(cls, raw_value: str) -> str:
+    @staticmethod
+    def extract_first_path(raw_value: str) -> str:
         """
         从「path|sheet」或分号复合串中取**第一段**作为物理路径。参数：raw_value — 配置里读出的原串。返回：路径文本。
         """
@@ -69,9 +64,8 @@ class RunValidator:
             return ""
         return text.replace(";", "|").split("|")[0].strip()
 
-    @classmethod
+    @staticmethod
     def append_required_file_issue(
-        cls,
         errors: List[str],
         *,
         domain: str,
@@ -81,7 +75,7 @@ class RunValidator:
         """
         向 `errors` 列表追加人可读缺项/文件不存在信息（不返回新列表）。参数见形参；返回：无。
         """
-        domain_name = cls.domain_display_name(domain)
+        domain_name = RunValidator.domain_display_name(domain)
         if missing_labels:
             errors.append(
                 f"【{domain_name}】必要输入文件未选择：{'、'.join(missing_labels)}。请先补齐后再运行。"
@@ -158,9 +152,8 @@ class RunValidator:
             return True, ""
         return False, f"{label} 不存在：{target_path}"
 
-    @classmethod
+    @staticmethod
     def validate_for_domain(
-        cls,
         domain: str,
         base_dir: str,
         config_path: str,
@@ -185,7 +178,7 @@ class RunValidator:
 
         section = dict(config.items(domain))
         output_dir_raw = section.get(OPTION_OUTPUT_DIR, "").strip()
-        output_dir = cls.resolve_config_path(output_dir_raw, base_dir) if output_dir_raw else ""
+        output_dir = RunValidator.resolve_config_path(output_dir_raw, base_dir) if output_dir_raw else ""
         missing_required_labels: List[str] = []
         not_found_required_pairs: List[Tuple[str, str]] = []
 
@@ -193,7 +186,7 @@ class RunValidator:
         if not output_dir:
             errors.append(f"[{domain}] 未配置 {OPTION_OUTPUT_DIR}（输出路径）。")
         else:
-            is_valid, validation_message = cls.check_output_dir_writable(output_dir)
+            is_valid, validation_message = RunValidator.check_output_dir_writable(output_dir)
             if not is_valid:
                 errors.append(validation_message)
 
@@ -203,15 +196,15 @@ class RunValidator:
         if require_input_excel and not input_excel_raw:
             missing_required_labels.append("主输入表(input_excel)")
         if input_excel_raw:
-            input_path = cls.resolve_config_path(input_excel_raw, base_dir)
-            is_valid, validation_message = cls.check_path_exists(input_path, f"[{domain}] 输入用例路径")
+            input_path = RunValidator.resolve_config_path(input_excel_raw, base_dir)
+            is_valid, validation_message = RunValidator.check_path_exists(input_path, f"[{domain}] 输入用例路径")
             if not is_valid:
                 if require_input_excel:
                     not_found_required_pairs.append(("主输入表(input_excel)", input_path))
                 else:
                     errors.append(validation_message)
             else:
-                is_valid, validation_message = cls.check_path_kind(
+                is_valid, validation_message = RunValidator.check_path_kind(
                     input_path,
                     expect="either",
                     label=f"[{domain}] 输入用例路径",
@@ -227,47 +220,36 @@ class RunValidator:
                     missing_required_labels.append(LABEL_CIN_MISSING_LR)
 
             if run_did:
-                did_excel_raw = ""
-                if config.has_section(SECTION_CONFIG_ENUM):
-                    enum_inputs = (config.get(SECTION_CONFIG_ENUM, OPTION_INPUTS, fallback="") or "").strip()
-                    if enum_inputs:
-                        did_excel_raw = cls.extract_first_path(enum_inputs)
-                if not did_excel_raw and config.has_section(SECTION_DID_CONFIG):
-                    for option_name in OPTION_INPUT_EXCEL_CANDIDATES:
-                        did_excel_raw = (config.get(SECTION_DID_CONFIG, option_name, fallback="") or "").strip()
-                        if did_excel_raw:
-                            break
+                did_excel_raw = section.get(OPTION_DIDCONFIG_INPUT_EXCEL, "").strip()
                 if not did_excel_raw:
                     missing_required_labels.append(LABEL_DIDCONFIG_MISSING_LR)
                 else:
-                    resolved_path = cls.resolve_config_path(did_excel_raw, base_dir)
-                    is_valid, validation_message = cls.check_path_exists(resolved_path, LABEL_DIDCONFIG_PATH_CHECK)
+                    resolved_path = RunValidator.resolve_config_path(did_excel_raw, base_dir)
+                    is_valid, validation_message = RunValidator.check_path_exists(resolved_path, LABEL_DIDCONFIG_PATH_CHECK)
                     if not is_valid:
                         errors.append(validation_message)
-            if config.has_section(SECTION_IOMAPPING):
-                io_inputs = (config.get(SECTION_IOMAPPING, OPTION_INPUTS, fallback="") or "").strip()
-                if io_inputs:
-                    # 可能为多个路径用 | 或 ; 分隔，取第一个
-                    first_input_path = io_inputs.replace(";", "|").split("|")[0].strip()
-                    if first_input_path:
-                        resolved_path = cls.resolve_config_path(first_input_path, base_dir)
-                        is_valid, validation_message = cls.check_path_exists(resolved_path, "IO_Mapping 配置表")
-                        if not is_valid:
-                            errors.append(validation_message)
+            io_inputs = section.get(OPTION_IO_INPUTS, "").strip()
+            if io_inputs:
+                first_input_path = io_inputs.replace(";", "|").split("|")[0].strip()
+                if first_input_path:
+                    resolved_path = RunValidator.resolve_config_path(first_input_path, base_dir)
+                    is_valid, validation_message = RunValidator.check_path_exists(resolved_path, "IO_Mapping 配置表")
+                    if not is_valid:
+                        errors.append(validation_message)
             didinfo_raw = section.get(OPTION_DIDINFO_INPUTS, "").strip()
             if didinfo_raw:
                 first_didinfo_path = didinfo_raw.split("|")[0].strip() if "|" in didinfo_raw else didinfo_raw
                 if first_didinfo_path:
-                    resolved_path = cls.resolve_config_path(first_didinfo_path, base_dir)
-                    is_valid, validation_message = cls.check_path_exists(
+                    resolved_path = RunValidator.resolve_config_path(first_didinfo_path, base_dir)
+                    is_valid, validation_message = RunValidator.check_path_exists(
                         resolved_path, LABEL_RESETDID_VALUE_CONFIG_TABLE
                     )
                     if not is_valid:
                         errors.append(validation_message)
             cin_excel = section.get(OPTION_CIN_INPUT_EXCEL, "").strip()
             if cin_excel:
-                resolved_path = cls.resolve_config_path(cin_excel, base_dir)
-                is_valid, validation_message = cls.check_path_exists(resolved_path, LABEL_CIN_CLIB_PATH_CHECK)
+                resolved_path = RunValidator.resolve_config_path(cin_excel, base_dir)
+                is_valid, validation_message = RunValidator.check_path_exists(resolved_path, LABEL_CIN_CLIB_PATH_CHECK)
                 if not is_valid:
                     if run_cin:
                         not_found_required_pairs.append((LABEL_CIN_MISSING_LR, resolved_path))
@@ -281,8 +263,8 @@ class RunValidator:
             if run_soa and not srv_excel_raw:
                 missing_required_labels.append("服务通信矩阵(srv_excel)")
             if srv_excel_raw:
-                resolved_path = cls.resolve_config_path(srv_excel_raw, base_dir)
-                is_valid, validation_message = cls.check_path_exists(resolved_path, "[LR_REAR] 服务通信矩阵")
+                resolved_path = RunValidator.resolve_config_path(srv_excel_raw, base_dir)
+                is_valid, validation_message = RunValidator.check_path_exists(resolved_path, "[LR_REAR] 服务通信矩阵")
                 if not is_valid:
                     if run_soa:
                         not_found_required_pairs.append(("服务通信矩阵(srv_excel)", resolved_path))
@@ -293,12 +275,12 @@ class RunValidator:
         if domain == SECTION_CENTRAL:
             uart_excel_raw = section.get(OPTION_UART_EXCEL, "").strip()
             if uart_excel_raw:
-                resolved_path = cls.resolve_config_path(uart_excel_raw, base_dir)
-                is_valid, validation_message = cls.check_path_exists(resolved_path, "[CENTRAL] UART 通信矩阵 Excel")
+                resolved_path = RunValidator.resolve_config_path(uart_excel_raw, base_dir)
+                is_valid, validation_message = RunValidator.check_path_exists(resolved_path, "[CENTRAL] UART 通信矩阵 Excel")
                 if not is_valid:
                     errors.append(validation_message)
                 else:
-                    is_valid, validation_message = cls.check_path_kind(
+                    is_valid, validation_message = RunValidator.check_path_kind(
                         resolved_path,
                         expect="file",
                         label="[CENTRAL] UART 通信矩阵 Excel",
@@ -311,15 +293,15 @@ class RunValidator:
             if not xml_input_raw:
                 xml_input_raw = section.get(OPTION_INPUT_EXCEL, "").strip()
             if run_xml and xml_input_raw:
-                resolved_path = cls.resolve_config_path(xml_input_raw, base_dir)
-                is_valid, validation_message = cls.check_path_exists(resolved_path, "[CENTRAL] XML 输入 Excel")
+                resolved_path = RunValidator.resolve_config_path(xml_input_raw, base_dir)
+                is_valid, validation_message = RunValidator.check_path_exists(resolved_path, "[CENTRAL] XML 输入 Excel")
                 if not is_valid:
                     if run_xml:
                         not_found_required_pairs.append(("XML输入表(xml_input_excel)", resolved_path))
                     else:
                         errors.append(validation_message)
                 else:
-                    is_valid, validation_message = cls.check_path_kind(
+                    is_valid, validation_message = RunValidator.check_path_kind(
                         resolved_path,
                         expect="either",
                         label="[CENTRAL] XML 输入 Excel",
@@ -335,15 +317,15 @@ class RunValidator:
             if run_soa and not srv_excel_raw:
                 missing_required_labels.append("服务通信矩阵(srv_excel)")
             if srv_excel_raw:
-                resolved_path = cls.resolve_config_path(srv_excel_raw, base_dir)
-                is_valid, validation_message = cls.check_path_exists(resolved_path, "[CENTRAL] 服务通信矩阵")
+                resolved_path = RunValidator.resolve_config_path(srv_excel_raw, base_dir)
+                is_valid, validation_message = RunValidator.check_path_exists(resolved_path, "[CENTRAL] 服务通信矩阵")
                 if not is_valid:
                     if run_soa:
                         not_found_required_pairs.append(("服务通信矩阵(srv_excel)", resolved_path))
                     else:
                         errors.append(validation_message)
                 else:
-                    is_valid, validation_message = cls.check_path_kind(
+                    is_valid, validation_message = RunValidator.check_path_kind(
                         resolved_path,
                         expect="file",
                         label="[CENTRAL] 服务通信矩阵",
@@ -358,41 +340,39 @@ class RunValidator:
                 if not cin_required:
                     missing_required_labels.append(LABEL_CIN_MISSING_DTC)
 
-            if config.has_section(SECTION_DTC_IOMAPPING):
-                io_inputs = (config.get(SECTION_DTC_IOMAPPING, OPTION_INPUTS, fallback="") or "").strip()
-                if io_inputs:
-                    first_input_path = io_inputs.replace(";", "|").split("|")[0].strip()
-                    if first_input_path:
-                        resolved_path = cls.resolve_config_path(first_input_path, base_dir)
-                        is_valid, validation_message = cls.check_path_exists(resolved_path, "DTC IO_Mapping 配置表")
-                        if not is_valid:
-                            errors.append(validation_message)
-            if config.has_section(SECTION_DTC_CONFIG_ENUM):
-                did_config_inputs = (config.get(SECTION_DTC_CONFIG_ENUM, OPTION_INPUTS, fallback="") or "").strip()
-                if did_config_inputs:
-                    first_input_path = did_config_inputs.replace(";", "|").split("|")[0].strip()
-                    if first_input_path:
-                        resolved_path = cls.resolve_config_path(first_input_path, base_dir)
-                        is_valid, validation_message = cls.check_path_exists(
-                            resolved_path, LABEL_DTC_DIDCONFIG_PATH_CHECK
-                        )
-                        if not is_valid:
-                            errors.append(validation_message)
+            io_inputs = section.get(OPTION_IO_INPUTS, "").strip()
+            if io_inputs:
+                first_input_path = io_inputs.replace(";", "|").split("|")[0].strip()
+                if first_input_path:
+                    resolved_path = RunValidator.resolve_config_path(first_input_path, base_dir)
+                    is_valid, validation_message = RunValidator.check_path_exists(resolved_path, "DTC IO_Mapping 配置表")
+                    if not is_valid:
+                        errors.append(validation_message)
+            did_config_inputs = section.get(OPTION_DIDCONFIG_INPUT_EXCEL, "").strip()
+            if did_config_inputs:
+                first_input_path = did_config_inputs.replace(";", "|").split("|")[0].strip()
+                if first_input_path:
+                    resolved_path = RunValidator.resolve_config_path(first_input_path, base_dir)
+                    is_valid, validation_message = RunValidator.check_path_exists(
+                        resolved_path, LABEL_DTC_DIDCONFIG_PATH_CHECK
+                    )
+                    if not is_valid:
+                        errors.append(validation_message)
 
             didinfo_raw = section.get(OPTION_DIDINFO_INPUTS, "").strip()
             if didinfo_raw:
-                first_didinfo_path = cls.extract_first_path(didinfo_raw)
+                first_didinfo_path = RunValidator.extract_first_path(didinfo_raw)
                 if first_didinfo_path:
-                    resolved_path = cls.resolve_config_path(first_didinfo_path, base_dir)
-                    is_valid, validation_message = cls.check_path_exists(
+                    resolved_path = RunValidator.resolve_config_path(first_didinfo_path, base_dir)
+                    is_valid, validation_message = RunValidator.check_path_exists(
                         resolved_path, LABEL_DTC_DIDINFO_INPUT_TABLE
                     )
                     if not is_valid:
                         errors.append(validation_message)
             cin_excel = section.get(OPTION_CIN_INPUT_EXCEL, "").strip()
             if cin_excel:
-                resolved_path = cls.resolve_config_path(cin_excel, base_dir)
-                is_valid, validation_message = cls.check_path_exists(
+                resolved_path = RunValidator.resolve_config_path(cin_excel, base_dir)
+                is_valid, validation_message = RunValidator.check_path_exists(
                     resolved_path, LABEL_DTC_CIN_CLIB_PATH_CHECK
                 )
                 if not is_valid:
@@ -408,8 +388,8 @@ class RunValidator:
             if run_soa and not srv_excel_raw:
                 missing_required_labels.append("服务通信矩阵(srv_excel)")
             if srv_excel_raw:
-                resolved_path = cls.resolve_config_path(srv_excel_raw, base_dir)
-                is_valid, validation_message = cls.check_path_exists(
+                resolved_path = RunValidator.resolve_config_path(srv_excel_raw, base_dir)
+                is_valid, validation_message = RunValidator.check_path_exists(
                     resolved_path, "[DTC] 服务通信矩阵"
                 )
                 if not is_valid:
@@ -418,7 +398,7 @@ class RunValidator:
                     else:
                         errors.append(validation_message)
 
-        cls.append_required_file_issue(
+        RunValidator.append_required_file_issue(
             errors,
             domain=domain,
             missing_labels=missing_required_labels,
@@ -428,5 +408,3 @@ class RunValidator:
         return (len(errors) == 0, errors)
 
 
-# Backward-compatible module-level alias
-validate_for_domain = RunValidator.validate_for_domain
