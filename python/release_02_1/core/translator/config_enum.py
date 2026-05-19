@@ -21,7 +21,7 @@ from infra.excel.workbook import ExcelService
 
 from services.config_constants import (
     DEFAULT_DOMAIN_LR_REAR,
-    OPTION_DIDCONFIG_INPUT_EXCEL_CANDIDATES,
+    OPTION_DIDCONFIG_INPUT_EXCEL,
     get_config_enum_section_candidates,
 )
 from utils.excel_io import split_input_lines
@@ -35,6 +35,11 @@ _RE_NUMERIC = re.compile(r"^\s*[-+]?\d+(?:\.\d+)?\s*$")
 _RE_ENGLISH_PHRASE = re.compile(r"^[A-Za-z]+(?:\s+[A-Za-z]+)*$")
 _EXPR_CHARS = set("><=()")
 _COLON_CHARS = (":", "\uFF1A")
+STRICT_DIDCONFIG_OPTION_CANDIDATES: tuple[str, ...] = (
+    OPTION_DIDCONFIG_INPUT_EXCEL,
+    "Didconfig_Input_Excel",
+    "DidConfig_Input_Excel",
+)
 
 
 def find_colon(text: str, start: int) -> int:
@@ -200,7 +205,7 @@ def get_config_enum_inputs_text(config, domain: str) -> str:
         if not config.has_section(section):
             continue
         inputs_text = ""
-        for option_name in OPTION_DIDCONFIG_INPUT_EXCEL_CANDIDATES:
+        for option_name in STRICT_DIDCONFIG_OPTION_CANDIDATES:
             inputs_text = config.get(section, option_name, fallback="")
             if inputs_text:
                 break
@@ -314,41 +319,8 @@ def load_config_enum_from_config(
     return ConfigEnumContext(name_to_values=name_to_values)
 
 
-class ConfigEnumUtility:
-    """Configuration 枚举翻译统一工具类入口。"""
-
-    @staticmethod
-    def find_colon(*args: Any, **kwargs: Any) -> Any:
-        return find_colon(*args, **kwargs)
-
-    @staticmethod
-    def normalize_enum_name_key(*args: Any, **kwargs: Any) -> Any:
-        return normalize_enum_name_key(*args, **kwargs)
-
-    @staticmethod
-    def is_numeric_value(*args: Any, **kwargs: Any) -> Any:
-        return is_numeric_value(*args, **kwargs)
-
-    @staticmethod
-    def has_expression_chars(*args: Any, **kwargs: Any) -> Any:
-        return has_expression_chars(*args, **kwargs)
-
-    @staticmethod
-    def parse_values_cell(*args: Any, **kwargs: Any) -> Any:
-        return parse_values_cell(*args, **kwargs)
-
-    @staticmethod
-    def get_config_enum_inputs_text(*args: Any, **kwargs: Any) -> Any:
-        return get_config_enum_inputs_text(*args, **kwargs)
-
-    @staticmethod
-    def load_config_enum_from_config(*args: Any, **kwargs: Any) -> Any:
-        return load_config_enum_from_config(*args, **kwargs)
-
-
 __all__ = [
     "load_config_enum_from_config",
-    "ConfigEnumUtility",
     "ConfigEnumContext",
     "ConfigEnumParseError",
 ]

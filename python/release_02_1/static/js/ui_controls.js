@@ -636,7 +636,7 @@
             d_io_excel: selection.d_io_excel || '',
             d_io_selected_sheets: (global.getDtcIoSelectedSheets ? global.getDtcIoSelectedSheets() : ''),
             d_didconfig_excel: selection.d_didconfig_excel || '',
-            d_didinfo_excel: selection.d_didinfo_excel || '',
+            d_resetdid_excel: selection.d_resetdid_excel || '',
             d_cin_excel: selection.d_cin_excel || '',
             d_srv_excel: selection.d_srv_excel || '',
             d_out_root: outPath,

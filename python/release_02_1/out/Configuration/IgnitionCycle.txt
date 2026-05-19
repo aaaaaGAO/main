@@ -1,3 +1,0 @@
-[IgnitionCycle]
-waitTime=7
-current=-0.5

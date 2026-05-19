@@ -16,7 +16,7 @@ from __future__ import annotations
 from flask import Blueprint, request
 
 from services.central_programmatic_route_service import soa_setserver_cin_result
-from services.task_orchestrator import TaskOrchestrator
+from services.programmatic_domain_route_service import ProgrammaticDomainRouteService
 from .route_helpers import get_base_dir, jsonify_orchestrator_result, jsonify_route_result
 
 central_bp = Blueprint("central", __name__)
@@ -46,20 +46,9 @@ def generate_central():
     返回：`jsonify_orchestrator_result` 统一成功 JSON（200）或失败（500 及 ``detail``）。
     """
     payload = request.get_json(silent=True) or {}
-    base_dir = payload.get("base_dir") or current_base_dir()
-    run_can = payload.get("run_can", True)
-    run_xml = payload.get("run_xml", True)
-    run_uart = bool(payload.get("run_uart", False))
-    run_soa = bool(payload.get("run_soa", False))
-    validate_before_run = payload.get("validate_before_run", True)
-
-    orch = TaskOrchestrator.from_base_dir(base_dir)
-    result = orch.run_central_bundle(
-        run_can=run_can,
-        run_xml=run_xml,
-        run_uart=run_uart,
-        run_soa=run_soa,
-        validate_before_run=validate_before_run,
+    result = ProgrammaticDomainRouteService.run_central_programmatic_bundle(
+        payload,
+        fallback_base_dir=current_base_dir(),
     )
     return jsonify_orchestrator_result(result, success_separator=" / ", failure_message=None, failure_separator=" / ")
 

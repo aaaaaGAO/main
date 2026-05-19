@@ -3,7 +3,7 @@
 """
 Common 蓝图：跨 Tab 的通用 HTTP API（前缀 `/api`）。
 
-提供：健康/心跳、加载配置与筛选项、Tk 文件选择、文件结构解析、串口列表、
+提供：心跳、加载配置与筛选项、Tk 文件选择、文件结构解析、串口列表、
 自动保存、LR/中央/DTC 一键生成、预设保存/导入。具体业务在 `CommonUiRouteService`、
 `GenerationRouteService` 中实现；本文件只注册 `Blueprint` 与薄封装，符合「路由仅分发」
 约定（见 `docs/架构.txt`）。
@@ -12,11 +12,11 @@ Common 蓝图：跨 Tab 的通用 HTTP API（前缀 `/api`）。
 from __future__ import annotations
 
 import logging
-import time
 from typing import Any
 
 from flask import Blueprint, jsonify, request
 
+from services.http_api_constants import RESPONSE_KEY_STATUS, api_success
 from services.generation_route_service import (
     GenerationRouteOptions,
     generation_route_options_central,
@@ -49,32 +49,17 @@ def common_ui_route_service() -> CommonUiRouteService:
     return CommonUiRouteService(current_base_dir())
 
 
-@common_bp.route("/healthz", methods=["GET"])
-def healthz():
-    """健康检查：供负载/探针使用。
-
-    参数：无。返回：HTTP 200，JSON 体含 ``status: ok`` 与服务器时间戳 ``ts``。
-    """
-    return jsonify({"status": "ok", "ts": time.time()})
-
-
 @common_bp.route("/heartbeat", methods=["POST"])
 def api_heartbeat():
     """前端定时心跳，供 `app.py` 中无活动监控等逻辑使用。
 
-    参数：无（请求体可空）。返回：HTTP 200，``{"status": "alive"}``。
+    参数：无（请求体可空）。
+
+    返回：HTTP 200；JSON 与 `http_api_constants` 约定一致，含 ``success: true`` 与
+    ``status: "alive"``（键名见 ``RESPONSE_KEY_*``），便于与业务 API 统一审计。
     """
-    return jsonify({"status": "alive"})
-
-
-@common_bp.route("/config/lr_rear", methods=["GET"])
-@jsonify_route_result
-def get_lr_rear_config():
-    """读取并返回 `[LR_REAR]` 等与左右后域相关的 INI 片段，供页面初始化。
-
-    参数：无。返回：``(dict, HTTP 状态码)`` 由 ``jsonify_route_result`` 转为 JSON 响应。
-    """
-    return common_ui_route_service().lr_rear_config_result()
+    body, status_code = api_success(extra={RESPONSE_KEY_STATUS: "alive"})
+    return jsonify(body), status_code
 
 
 @common_bp.route("/get_filter_options", methods=["GET"])

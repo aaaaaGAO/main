@@ -23,11 +23,11 @@ from services.config_constants import (
     LABEL_DIDCONFIG_PATH_CHECK,
     LABEL_DTC_CIN_CLIB_PATH_CHECK,
     LABEL_DTC_DIDCONFIG_PATH_CHECK,
-    LABEL_DTC_DIDINFO_INPUT_TABLE,
+    LABEL_DTC_RESETDID_INPUT_TABLE,
     LABEL_RESETDID_VALUE_CONFIG_TABLE,
     OPTION_CIN_INPUT_EXCEL,
     OPTION_DIDCONFIG_INPUT_EXCEL,
-    OPTION_DIDINFO_INPUTS,
+    OPTION_RESETDID_INPUTS,
     OPTION_INPUT_EXCEL,
     OPTION_IO_INPUTS,
     OPTION_OUTPUT_DIR,
@@ -236,11 +236,11 @@ class RunValidator:
                     is_valid, validation_message = RunValidator.check_path_exists(resolved_path, "IO_Mapping 配置表")
                     if not is_valid:
                         errors.append(validation_message)
-            didinfo_raw = section.get(OPTION_DIDINFO_INPUTS, "").strip()
-            if didinfo_raw:
-                first_didinfo_path = didinfo_raw.split("|")[0].strip() if "|" in didinfo_raw else didinfo_raw
-                if first_didinfo_path:
-                    resolved_path = RunValidator.resolve_config_path(first_didinfo_path, base_dir)
+            resetdid_raw = section.get(OPTION_RESETDID_INPUTS, "").strip()
+            if resetdid_raw:
+                first_resetdid_path = resetdid_raw.split("|")[0].strip() if "|" in resetdid_raw else resetdid_raw
+                if first_resetdid_path:
+                    resolved_path = RunValidator.resolve_config_path(first_resetdid_path, base_dir)
                     is_valid, validation_message = RunValidator.check_path_exists(
                         resolved_path, LABEL_RESETDID_VALUE_CONFIG_TABLE
                     )
@@ -359,13 +359,13 @@ class RunValidator:
                     if not is_valid:
                         errors.append(validation_message)
 
-            didinfo_raw = section.get(OPTION_DIDINFO_INPUTS, "").strip()
-            if didinfo_raw:
-                first_didinfo_path = RunValidator.extract_first_path(didinfo_raw)
-                if first_didinfo_path:
-                    resolved_path = RunValidator.resolve_config_path(first_didinfo_path, base_dir)
+            resetdid_raw = section.get(OPTION_RESETDID_INPUTS, "").strip()
+            if resetdid_raw:
+                first_resetdid_path = RunValidator.extract_first_path(resetdid_raw)
+                if first_resetdid_path:
+                    resolved_path = RunValidator.resolve_config_path(first_resetdid_path, base_dir)
                     is_valid, validation_message = RunValidator.check_path_exists(
-                        resolved_path, LABEL_DTC_DIDINFO_INPUT_TABLE
+                        resolved_path, LABEL_DTC_RESETDID_INPUT_TABLE
                     )
                     if not is_valid:
                         errors.append(validation_message)

@@ -1,0 +1,937 @@
+/*@!Encoding: 936*/
+
+includes
+{
+}
+
+variables
+{
+}
+
+testcase SYS_CDCU_chechuang_0001()
+{
+  TestDescription("车窗全关 Local on");
+  teststep("warning","原始用例id为SYS-CDCU-车窗-0001");
+  g_CAN_Bus_Swc_AllCANDataDefaultAllCh(); // 测试步骤 TC_CANTest SET AllCANDataDefaultAllCh
+  g_EM_Equipment_Swc_TC_PW("OFF"); // 测试步骤 TC_PW OFF
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("2"); // 测试步骤 TC_Sleep 2
+  g_EM_Equipment_Swc_TC_PW("ON"); // 测试步骤 TC_PW ON
+  g_EM_Equipment_Swc_TC_IG("ON"); // 测试步骤 TC_IG ON
+  gTC_CANTest_SOA_Set8001Delay("0"); // 测试步骤 TC_CANTest SOA Set8001Delay 0
+  g_EM_SOAClient_Swc_SOA_StopSubPeriod(); // 测试步骤 TC_CANTest SOA StopSubPeriod//停止所有订阅
+  gTC_CANTest_SOA_SetSever("FLWinPosCmdRespStruct.RespCode:1"); // 测试步骤 TC_CANTest SOA SetServer FLWinPosCmdRespStruct.RespCode:1
+  gTC_CANTest_SOA_SetSever("FRWinPosCmdRespStruct.RespCode:1"); // 测试步骤 TC_CANTest SOA SetServer FRWinPosCmdRespStruct.RespCode:1
+  gTC_CANTest_SOA_SetSever("RLWinPosCmdRespStruct.RespCode:1"); // 测试步骤 TC_CANTest SOA SetServer RLWinPosCmdRespStruct.RespCode:1
+  gTC_CANTest_SOA_SetSever("RRWinPosCmdRespStruct.RespCode:1"); // 测试步骤 TC_CANTest SOA SetServer RRWinPosCmdRespStruct.RespCode:1
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt1.I_LDCU_PowerMode 1"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt1.I_LDCU_PowerMode 1
+  g_CAN_Bus_Swc_Set("C_LDCU_SysSt.C_LDCU_EVSysReadySt 0"); // 测试步骤 TC_CANTest SET C_LDCU_SysSt.C_LDCU_EVSysReadySt 0
+  g_EM_SOAClient_Swc_SOA_SubPeriod("Veh_WindowService_ErrGrp 1"); // 测试步骤 TC_CANTest SOA SubPeriod Veh_WindowService_ErrGrp 1
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq_Prepare("FLWinPosCmdStruct.FLWinPos 0&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 0&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 0&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 0&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq FLWinPosCmdStruct.FLWinPos 0&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 0&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 0&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 0&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+  g_EM_SOAClient_Swc_SOA_REQ("Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:1&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:1&ServiceExecuteFeedbackFlag:2 //Auto Up
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq("FLWinPosCmdStruct.FLWinPos 0&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 0&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 0&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 0&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq FLWinPosCmdStruct.FLWinPos 0&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 0&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 0&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 0&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+}
+
+testcase SYS_CDCU_chechuang_0002()
+{
+  TestDescription("车窗全关（远控） Local on");
+  teststep("warning","原始用例id为SYS-CDCU-车窗-0002");
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_WindowService_ErrStruct.OpeNRC 1 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 1 traceback8
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_WindowService_ErrStruct.OpeErrInfo[0-1]:0x9 traceback3"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeErrInfo[0-1]:0x9 traceback3
+  g_EM_SOAClient_Swc_SOA_REQ("Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:1&ServiceExecuteFeedbackFlag:2&UserID:0x01010001"); // 测试步骤 TC_CANTest SOA REQ Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:1&ServiceExecuteFeedbackFlag:2&UserID:0x01010001 //Auto Up
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_WindowService_ErrStruct.OpeNRC 1 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 1 traceback8
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_WindowService_ErrStruct.OpeErrInfo[0-1]:0x9 traceback3"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeErrInfo[0-1]:0x9 traceback3
+}
+
+testcase SYS_CDCU_chechuang_0003()
+{
+  TestDescription("车窗全关（蓝牙控） Local on");
+  teststep("warning","原始用例id为SYS-CDCU-车窗-0003");
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq_Prepare("FLWinPosCmdStruct.FLWinPos 0&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 0&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 0&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 0&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq FLWinPosCmdStruct.FLWinPos 0&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 0&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 0&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 0&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_WindowService_ErrStruct.OpeErrInfo[2-3]:0x00C8 traceback5"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeErrInfo[2-3]:0x00C8 traceback5
+  g_EM_SOAClient_Swc_SOA_REQ("Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:1&ServiceExecuteFeedbackFlag:2&UserID:0x01000002"); // 测试步骤 TC_CANTest SOA REQ Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:1&ServiceExecuteFeedbackFlag:2&UserID:0x01000002 //Auto Up
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq("FLWinPosCmdStruct.FLWinPos 0&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 0&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 0&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 0&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq FLWinPosCmdStruct.FLWinPos 0&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 0&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 0&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 0&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_WindowService_ErrStruct.OpeErrInfo[2-3]:0x00C8 traceback5"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeErrInfo[2-3]:0x00C8 traceback5
+}
+
+testcase SYS_CDCU_chechuang_0004()
+{
+  TestDescription("其他原因车窗全关（蓝牙控） Local on");
+  teststep("warning","原始用例id为SYS-CDCU-车窗-0004");
+  gTC_CANTest_SOA_Set8001Delay("20"); // 测试步骤 TC_CANTest SOA Set8001Delay 20
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_CtrlAllWinUpDownRespStruct.RespCode 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.RespCode 0
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_WindowService_ErrStruct.OpeErrInfo[2-3]:0x01F4 traceback18"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeErrInfo[2-3]:0x01F4 traceback18
+  g_EM_SOAClient_Swc_SOA_REQ("Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:1&ServiceExecuteFeedbackFlag:2&UserID:0x01000002"); // 测试步骤 TC_CANTest SOA REQ Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:1&ServiceExecuteFeedbackFlag:2&UserID:0x01000002 //Auto Up
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_CtrlAllWinUpDownRespStruct.RespCode 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.RespCode 0
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("16"); // 测试步骤 TC_Sleep 16
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_WindowService_ErrStruct.OpeErrInfo[2-3]:0x01F4 traceback18"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeErrInfo[2-3]:0x01F4 traceback18
+}
+
+testcase SYS_CDCU_chechuang_0005()
+{
+  TestDescription("其他原因车窗全关（蓝牙控） Local on");
+  teststep("warning","原始用例id为SYS-CDCU-车窗-0005");
+  gTC_CANTest_SOA_SetSever("LeftSideWindowService_ErrStruct.OpeNRC:1"); // 测试步骤 TC_CANTest SOA SetServer LeftSideWindowService_ErrStruct.OpeNRC:1
+  gTC_CANTest_SOA_Set8001Delay("0"); // 测试步骤 TC_CANTest SOA Set8001Delay 0
+  gTC_CANTest_SOA_SetSever("RightSideWindowService_ErrStruct.OpeNRC:1"); // 测试步骤 TC_CANTest SOA SetServer RightSideWindowService_ErrStruct.OpeNRC:1
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_CtrlAllWinUpDownRespStruct.RespCode 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.RespCode 0
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_WindowService_ErrStruct.OpeErrInfo[2-3]:0x01F4 traceback18"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeErrInfo[2-3]:0x01F4 traceback18
+  g_EM_SOAClient_Swc_SOA_REQ("Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:1&ServiceExecuteFeedbackFlag:2&UserID:0x01000002"); // 测试步骤 TC_CANTest SOA REQ Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:1&ServiceExecuteFeedbackFlag:2&UserID:0x01000002 //Auto Up
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_CtrlAllWinUpDownRespStruct.RespCode 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.RespCode 0
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("16"); // 测试步骤 TC_Sleep 16
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_WindowService_ErrStruct.OpeErrInfo[2-3]:0x01F4 traceback18"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeErrInfo[2-3]:0x01F4 traceback18
+}
+
+testcase SYS_CDCU_chechuang_0006()
+{
+  TestDescription("其他原因车窗全关（蓝牙控） Local on");
+  teststep("warning","原始用例id为SYS-CDCU-车窗-0006");
+  gTC_CANTest_SOA_SetSever("LeftSideWindowService_ErrStruct.OpeNRC:0"); // 测试步骤 TC_CANTest SOA SetServer LeftSideWindowService_ErrStruct.OpeNRC:0
+  gTC_CANTest_SOA_SetSever("RightSideWindowService_ErrStruct.OpeNRC:0"); // 测试步骤 TC_CANTest SOA SetServer RightSideWindowService_ErrStruct.OpeNRC:0
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_CtrlAllWinUpDownRespStruct.RespCode 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.RespCode 0
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_WindowService_ErrStruct.OpeErrInfo[2-3]:0x01A4 traceback18"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeErrInfo[2-3]:0x01A4 traceback18//ReqTimeOut触发的是底层回复，底层的超时都是01A4
+  g_EM_SOAClient_Swc_SOA_REQ("Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:1&ReqTimeOut:20&ServiceExecuteFeedbackFlag:2&UserID:0x01000002"); // 测试步骤 TC_CANTest SOA REQ Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:1&ReqTimeOut:20&ServiceExecuteFeedbackFlag:2&UserID:0x01000002 //Auto Up
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_CtrlAllWinUpDownRespStruct.RespCode 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.RespCode 0
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("16"); // 测试步骤 TC_Sleep 16
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_WindowService_ErrStruct.OpeErrInfo[2-3]:0x01A4 traceback18"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeErrInfo[2-3]:0x01A4 traceback18//ReqTimeOut触发的是底层回复，底层的超时都是01A4
+}
+
+testcase SYS_CDCU_chechuang_0007()
+{
+  TestDescription("车窗全关(左前窗失效) Local on");
+  teststep("warning","原始用例id为SYS-CDCU-车窗-0007");
+  gTC_CANTest_SOA_SetSever("FLWinPosCmdRespStruct.RespCode:2"); // 测试步骤 TC_CANTest SOA SetServer FLWinPosCmdRespStruct.RespCode:2
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq_Prepare("FLWinPosCmdStruct.FLWinPos 0&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 0&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 0&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 0&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq FLWinPosCmdStruct.FLWinPos 0&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 0&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 0&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 0&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+  g_EM_SOAClient_Swc_SOA_REQ("Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:1&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:1&ServiceExecuteFeedbackFlag:2 //Auto Up
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq("FLWinPosCmdStruct.FLWinPos 0&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 0&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 0&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 0&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq FLWinPosCmdStruct.FLWinPos 0&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 0&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 0&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 0&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+}
+
+testcase SYS_CDCU_chechuang_0008()
+{
+  TestDescription("车窗全关(右前窗失效) Local on");
+  teststep("warning","原始用例id为SYS-CDCU-车窗-0008");
+  gTC_CANTest_SOA_SetSever("FLWinPosCmdRespStruct.RespCode:1"); // 测试步骤 TC_CANTest SOA SetServer FLWinPosCmdRespStruct.RespCode:1
+  gTC_CANTest_SOA_SetSever("FRWinPosCmdRespStruct.RespCode:2"); // 测试步骤 TC_CANTest SOA SetServer FRWinPosCmdRespStruct.RespCode:2
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq_Prepare("FLWinPosCmdStruct.FLWinPos 0&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 0&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 0&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 0&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq FLWinPosCmdStruct.FLWinPos 0&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 0&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 0&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 0&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+  g_EM_SOAClient_Swc_SOA_REQ("Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:1&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:1&ServiceExecuteFeedbackFlag:2 //Auto Up
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq("FLWinPosCmdStruct.FLWinPos 0&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 0&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 0&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 0&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq FLWinPosCmdStruct.FLWinPos 0&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 0&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 0&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 0&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+}
+
+testcase SYS_CDCU_chechuang_0009()
+{
+  TestDescription("车窗全关(左后窗失效) Local on");
+  teststep("warning","原始用例id为SYS-CDCU-车窗-0009");
+  gTC_CANTest_SOA_SetSever("FRWinPosCmdRespStruct.RespCode:1"); // 测试步骤 TC_CANTest SOA SetServer FRWinPosCmdRespStruct.RespCode:1
+  gTC_CANTest_SOA_SetSever("RLWinPosCmdRespStruct.RespCode:2"); // 测试步骤 TC_CANTest SOA SetServer RLWinPosCmdRespStruct.RespCode:2
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq_Prepare("FLWinPosCmdStruct.FLWinPos 0&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 0&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 0&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 0&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq FLWinPosCmdStruct.FLWinPos 0&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 0&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 0&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 0&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+  g_EM_SOAClient_Swc_SOA_REQ("Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:1&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:1&ServiceExecuteFeedbackFlag:2 //Auto Up
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq("FLWinPosCmdStruct.FLWinPos 0&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 0&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 0&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 0&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq FLWinPosCmdStruct.FLWinPos 0&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 0&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 0&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 0&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+}
+
+testcase SYS_CDCU_chechuang_0010()
+{
+  TestDescription("车窗全关(右后窗失效) Local on");
+  teststep("warning","原始用例id为SYS-CDCU-车窗-0010");
+  gTC_CANTest_SOA_SetSever("RLWinPosCmdRespStruct.RespCode:1"); // 测试步骤 TC_CANTest SOA SetServer RLWinPosCmdRespStruct.RespCode:1
+  gTC_CANTest_SOA_SetSever("RRWinPosCmdRespStruct.RespCode:2"); // 测试步骤 TC_CANTest SOA SetServer RRWinPosCmdRespStruct.RespCode:2
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq_Prepare("FLWinPosCmdStruct.FLWinPos 0&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 0&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 0&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 0&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq FLWinPosCmdStruct.FLWinPos 0&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 0&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 0&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 0&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+  g_EM_SOAClient_Swc_SOA_REQ("Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:1&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:1&ServiceExecuteFeedbackFlag:2 //Auto Up
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq("FLWinPosCmdStruct.FLWinPos 0&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 0&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 0&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 0&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq FLWinPosCmdStruct.FLWinPos 0&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 0&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 0&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 0&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+}
+
+testcase SYS_CDCU_chechuang_0011()
+{
+  TestDescription("车窗全开 Local on");
+  teststep("warning","原始用例id为SYS-CDCU-车窗-0011");
+  gTC_CANTest_SOA_SetSever("RRWinPosCmdRespStruct.RespCode:1"); // 测试步骤 TC_CANTest SOA SetServer RRWinPosCmdRespStruct.RespCode:1
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq_Prepare("FLWinPosCmdStruct.FLWinPos 100&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 100&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 100&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 100&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq FLWinPosCmdStruct.FLWinPos 100&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 100&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 100&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 100&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+  g_EM_SOAClient_Swc_SOA_REQ("Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:2&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:2&ServiceExecuteFeedbackFlag:2 //Auto Down
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq("FLWinPosCmdStruct.FLWinPos 100&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 100&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 100&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 100&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq FLWinPosCmdStruct.FLWinPos 100&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 100&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 100&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 100&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+}
+
+testcase SYS_CDCU_chechuang_0012()
+{
+  TestDescription("车窗全开(远控) Local on");
+  teststep("warning","原始用例id为SYS-CDCU-车窗-0012");
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_WindowService_ErrStruct.OpeNRC 1 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 1 traceback8
+  g_EM_SOAClient_Swc_SOA_REQ("Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:2&ServiceExecuteFeedbackFlag:2&UserID:0x01010001"); // 测试步骤 TC_CANTest SOA REQ Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:2&ServiceExecuteFeedbackFlag:2&UserID:0x01010001 //Auto Down
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_WindowService_ErrStruct.OpeNRC 1 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 1 traceback8
+}
+
+testcase SYS_CDCU_chechuang_0013()
+{
+  TestDescription("车窗全开(蓝牙控) Local on");
+  teststep("warning","原始用例id为SYS-CDCU-车窗-0013");
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq_Prepare("FLWinPosCmdStruct.FLWinPos 100&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 100&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 100&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 100&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq FLWinPosCmdStruct.FLWinPos 100&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 100&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 100&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 100&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_WindowService_ErrStruct.OpeErrInfo[2-3]:0x00C8 traceback5"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeErrInfo[2-3]:0x00C8 traceback5
+  g_EM_SOAClient_Swc_SOA_REQ("Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:2&ServiceExecuteFeedbackFlag:2&UserID:0x01000002"); // 测试步骤 TC_CANTest SOA REQ Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:2&ServiceExecuteFeedbackFlag:2&UserID:0x01000002 //Auto Down
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq("FLWinPosCmdStruct.FLWinPos 100&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 100&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 100&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 100&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq FLWinPosCmdStruct.FLWinPos 100&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 100&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 100&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 100&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_WindowService_ErrStruct.OpeErrInfo[2-3]:0x00C8 traceback5"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeErrInfo[2-3]:0x00C8 traceback5
+}
+
+testcase SYS_CDCU_chechuang_0014()
+{
+  TestDescription("车窗全开(左前窗失效) Local on");
+  teststep("warning","原始用例id为SYS-CDCU-车窗-0014");
+  gTC_CANTest_SOA_SetSever("FLWinPosCmdRespStruct.RespCode:2"); // 测试步骤 TC_CANTest SOA SetServer FLWinPosCmdRespStruct.RespCode:2
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq_Prepare("FLWinPosCmdStruct.FLWinPos 100&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 100&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 100&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 100&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq FLWinPosCmdStruct.FLWinPos 100&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 100&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 100&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 100&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+  g_EM_SOAClient_Swc_SOA_REQ("Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:2&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:2&ServiceExecuteFeedbackFlag:2 //Auto Down
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq("FLWinPosCmdStruct.FLWinPos 100&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 100&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 100&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 100&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq FLWinPosCmdStruct.FLWinPos 100&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 100&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 100&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 100&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+}
+
+testcase SYS_CDCU_chechuang_0015()
+{
+  TestDescription("车窗全开(右前窗失效) Local on");
+  teststep("warning","原始用例id为SYS-CDCU-车窗-0015");
+  gTC_CANTest_SOA_SetSever("FLWinPosCmdRespStruct.RespCode:1"); // 测试步骤 TC_CANTest SOA SetServer FLWinPosCmdRespStruct.RespCode:1
+  gTC_CANTest_SOA_SetSever("FRWinPosCmdRespStruct.RespCode:2"); // 测试步骤 TC_CANTest SOA SetServer FRWinPosCmdRespStruct.RespCode:2
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq_Prepare("FLWinPosCmdStruct.FLWinPos 100&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 100&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 100&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 100&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq FLWinPosCmdStruct.FLWinPos 100&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 100&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 100&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 100&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+  g_EM_SOAClient_Swc_SOA_REQ("Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:2&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:2&ServiceExecuteFeedbackFlag:2 //Auto Down
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq("FLWinPosCmdStruct.FLWinPos 100&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 100&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 100&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 100&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq FLWinPosCmdStruct.FLWinPos 100&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 100&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 100&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 100&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+}
+
+testcase SYS_CDCU_chechuang_0016()
+{
+  TestDescription("车窗全开(左后窗失效) Local on");
+  teststep("warning","原始用例id为SYS-CDCU-车窗-0016");
+  gTC_CANTest_SOA_SetSever("FRWinPosCmdRespStruct.RespCode:1"); // 测试步骤 TC_CANTest SOA SetServer FRWinPosCmdRespStruct.RespCode:1
+  gTC_CANTest_SOA_SetSever("RLWinPosCmdRespStruct.RespCode:2"); // 测试步骤 TC_CANTest SOA SetServer RLWinPosCmdRespStruct.RespCode:2
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq_Prepare("FLWinPosCmdStruct.FLWinPos 100&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 100&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 100&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 100&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq FLWinPosCmdStruct.FLWinPos 100&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 100&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 100&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 100&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+  g_EM_SOAClient_Swc_SOA_REQ("Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:2&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:2&ServiceExecuteFeedbackFlag:2 //Auto Down
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq("FLWinPosCmdStruct.FLWinPos 100&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 100&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 100&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 100&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq FLWinPosCmdStruct.FLWinPos 100&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 100&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 100&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 100&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+}
+
+testcase SYS_CDCU_chechuang_0017()
+{
+  TestDescription("车窗全开(右后窗失效) Local on");
+  teststep("warning","原始用例id为SYS-CDCU-车窗-0017");
+  gTC_CANTest_SOA_SetSever("RLWinPosCmdRespStruct.RespCode:1"); // 测试步骤 TC_CANTest SOA SetServer RLWinPosCmdRespStruct.RespCode:1
+  gTC_CANTest_SOA_SetSever("RRWinPosCmdRespStruct.RespCode:2"); // 测试步骤 TC_CANTest SOA SetServer RRWinPosCmdRespStruct.RespCode:2
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq_Prepare("FLWinPosCmdStruct.FLWinPos 100&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 100&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 100&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 100&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq FLWinPosCmdStruct.FLWinPos 100&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 100&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 100&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 100&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+  g_EM_SOAClient_Swc_SOA_REQ("Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:2&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:2&ServiceExecuteFeedbackFlag:2 //Auto Down
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq("FLWinPosCmdStruct.FLWinPos 100&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 100&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 100&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 100&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq FLWinPosCmdStruct.FLWinPos 100&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 100&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 100&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 100&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+}
+
+testcase SYS_CDCU_chechuang_0018()
+{
+  TestDescription("一键通风 Local on");
+  teststep("warning","原始用例id为SYS-CDCU-车窗-0018");
+  gTC_CANTest_SOA_SetSever("RRWinPosCmdRespStruct.RespCode:1"); // 测试步骤 TC_CANTest SOA SetServer RRWinPosCmdRespStruct.RespCode:1
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq_Prepare("FLWinPosCmdStruct.FLWinPos 11&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 11&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 20&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 20&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq FLWinPosCmdStruct.FLWinPos 11&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 11&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 20&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 20&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+  g_EM_SOAClient_Swc_SOA_REQ("Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:3&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:3&ServiceExecuteFeedbackFlag:2 //Ventilation
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq("FLWinPosCmdStruct.FLWinPos 11&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 11&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 20&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 20&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq FLWinPosCmdStruct.FLWinPos 11&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 11&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 20&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 20&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+}
+
+testcase SYS_CDCU_chechuang_0019()
+{
+  TestDescription("一键通风(远控) Local on");
+  teststep("warning","原始用例id为SYS-CDCU-车窗-0019");
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_WindowService_ErrStruct.OpeNRC 1 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 1 traceback8
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_WindowService_ErrStruct.OpeErrInfo[0-1]:0x9 traceback10"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeErrInfo[0-1]:0x9 traceback10
+  g_EM_SOAClient_Swc_SOA_REQ("Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:3&ServiceExecuteFeedbackFlag:2&UserID:0x01010001"); // 测试步骤 TC_CANTest SOA REQ Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:3&ServiceExecuteFeedbackFlag:2&UserID:0x01010001 //Ventilation
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_WindowService_ErrStruct.OpeNRC 1 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 1 traceback8
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("8"); // 测试步骤 TC_Sleep 8
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_WindowService_ErrStruct.OpeErrInfo[0-1]:0x9 traceback10"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeErrInfo[0-1]:0x9 traceback10
+}
+
+testcase SYS_CDCU_chechuang_0020()
+{
+  TestDescription("一键通风(蓝牙控) Local on");
+  teststep("warning","原始用例id为SYS-CDCU-车窗-0020");
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq_Prepare("FLWinPosCmdStruct.FLWinPos 11&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 11&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 20&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 20&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq FLWinPosCmdStruct.FLWinPos 11&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 11&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 20&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 20&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_WindowService_ErrStruct.OpeErrInfo[2-3]:0x00C8 traceback5"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeErrInfo[2-3]:0x00C8 traceback5
+  g_EM_SOAClient_Swc_SOA_REQ("Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:3&ServiceExecuteFeedbackFlag:2&UserID:0x01000002"); // 测试步骤 TC_CANTest SOA REQ Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:3&ServiceExecuteFeedbackFlag:2&UserID:0x01000002 //Ventilation
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq("FLWinPosCmdStruct.FLWinPos 11&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 11&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 20&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 20&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq FLWinPosCmdStruct.FLWinPos 11&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 11&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 20&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 20&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_WindowService_ErrStruct.OpeErrInfo[2-3]:0x00C8 traceback5"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeErrInfo[2-3]:0x00C8 traceback5
+}
+
+testcase SYS_CDCU_chechuang_0021()
+{
+  TestDescription("一键通风(左前窗失效) Local on");
+  teststep("warning","原始用例id为SYS-CDCU-车窗-0021");
+  gTC_CANTest_SOA_SetSever("FLWinPosCmdRespStruct.RespCode:2"); // 测试步骤 TC_CANTest SOA SetServer FLWinPosCmdRespStruct.RespCode:2
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq_Prepare("FLWinPosCmdStruct.FLWinPos 11&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 11&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 20&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 20&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq FLWinPosCmdStruct.FLWinPos 11&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 11&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 20&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 20&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+  g_EM_SOAClient_Swc_SOA_REQ("Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:3&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:3&ServiceExecuteFeedbackFlag:2 //Ventilation
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq("FLWinPosCmdStruct.FLWinPos 11&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 11&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 20&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 20&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq FLWinPosCmdStruct.FLWinPos 11&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 11&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 20&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 20&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+}
+
+testcase SYS_CDCU_chechuang_0022()
+{
+  TestDescription("一键通风(右前窗失效) Local on");
+  teststep("warning","原始用例id为SYS-CDCU-车窗-0022");
+  gTC_CANTest_SOA_SetSever("FLWinPosCmdRespStruct.RespCode:1"); // 测试步骤 TC_CANTest SOA SetServer FLWinPosCmdRespStruct.RespCode:1
+  gTC_CANTest_SOA_SetSever("FRWinPosCmdRespStruct.RespCode:2"); // 测试步骤 TC_CANTest SOA SetServer FRWinPosCmdRespStruct.RespCode:2
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq_Prepare("FLWinPosCmdStruct.FLWinPos 11&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 11&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 20&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 20&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq FLWinPosCmdStruct.FLWinPos 11&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 11&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 20&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 20&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+  g_EM_SOAClient_Swc_SOA_REQ("Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:3&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:3&ServiceExecuteFeedbackFlag:2 //Ventilation
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq("FLWinPosCmdStruct.FLWinPos 11&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 11&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 20&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 20&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq FLWinPosCmdStruct.FLWinPos 11&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 11&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 20&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 20&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+}
+
+testcase SYS_CDCU_chechuang_0023()
+{
+  TestDescription("一键通风(左后窗失效) Local on");
+  teststep("warning","原始用例id为SYS-CDCU-车窗-0023");
+  gTC_CANTest_SOA_SetSever("FRWinPosCmdRespStruct.RespCode:1"); // 测试步骤 TC_CANTest SOA SetServer FRWinPosCmdRespStruct.RespCode:1
+  gTC_CANTest_SOA_SetSever("RLWinPosCmdRespStruct.RespCode:2"); // 测试步骤 TC_CANTest SOA SetServer RLWinPosCmdRespStruct.RespCode:2
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq_Prepare("FLWinPosCmdStruct.FLWinPos 11&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 11&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 20&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 20&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq FLWinPosCmdStruct.FLWinPos 11&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 11&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 20&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 20&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+  g_EM_SOAClient_Swc_SOA_REQ("Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:3&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:3&ServiceExecuteFeedbackFlag:2 //Ventilation
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq("FLWinPosCmdStruct.FLWinPos 11&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 11&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 20&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 20&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq FLWinPosCmdStruct.FLWinPos 11&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 11&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 20&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 20&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+}
+
+testcase SYS_CDCU_chechuang_0024()
+{
+  TestDescription("一键通风(右后窗失效) Local on");
+  teststep("warning","原始用例id为SYS-CDCU-车窗-0024");
+  gTC_CANTest_SOA_SetSever("RLWinPosCmdRespStruct.RespCode:1"); // 测试步骤 TC_CANTest SOA SetServer RLWinPosCmdRespStruct.RespCode:1
+  gTC_CANTest_SOA_SetSever("RRWinPosCmdRespStruct.RespCode:2"); // 测试步骤 TC_CANTest SOA SetServer RRWinPosCmdRespStruct.RespCode:2
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq_Prepare("FLWinPosCmdStruct.FLWinPos 11&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 11&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 20&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 20&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq FLWinPosCmdStruct.FLWinPos 11&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 11&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 20&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 20&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+  g_EM_SOAClient_Swc_SOA_REQ("Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:3&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:3&ServiceExecuteFeedbackFlag:2 //Ventilation
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq("FLWinPosCmdStruct.FLWinPos 11&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 11&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 20&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 20&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq FLWinPosCmdStruct.FLWinPos 11&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 11&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 20&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 20&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+}
+
+testcase SYS_CDCU_chechuang_0025()
+{
+  TestDescription("车窗停止运动 Local on");
+  teststep("warning","原始用例id为SYS-CDCU-车窗-0025");
+  gTC_CANTest_SOA_SetSever("FLWinPosCmdRespStruct.RespCode:0"); // 测试步骤 TC_CANTest SOA SetServer FLWinPosCmdRespStruct.RespCode:0
+  gTC_CANTest_SOA_SetSever("FRWinPosCmdRespStruct.RespCode:0"); // 测试步骤 TC_CANTest SOA SetServer FRWinPosCmdRespStruct.RespCode:0
+  gTC_CANTest_SOA_SetSever("RLWinPosCmdRespStruct.RespCode:0"); // 测试步骤 TC_CANTest SOA SetServer RLWinPosCmdRespStruct.RespCode:0
+  gTC_CANTest_SOA_SetSever("RRWinPosCmdRespStruct.RespCode:0"); // 测试步骤 TC_CANTest SOA SetServer RRWinPosCmdRespStruct.RespCode:0
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq_Prepare("CtrlFLWinStruct.CtrlFLWin 3&ServiceExecuteFeedbackFlag 2;CtrlFRWinStruct.CtrlFRWin 3&ServiceExecuteFeedbackFlag 2;CtrlRLWinStruct.CtrlRLWin 3&ServiceExecuteFeedbackFlag 2;CtrlRRWinStruct.CtrlRRWin 3&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq CtrlFLWinStruct.CtrlFLWin 3&ServiceExecuteFeedbackFlag 2;CtrlFRWinStruct.CtrlFRWin 3&ServiceExecuteFeedbackFlag 2;CtrlRLWinStruct.CtrlRLWin 3&ServiceExecuteFeedbackFlag 2;CtrlRRWinStruct.CtrlRRWin 3&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+  g_EM_SOAClient_Swc_SOA_REQ("Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:4&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:4&ServiceExecuteFeedbackFlag:2 //Stop
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq("CtrlFLWinStruct.CtrlFLWin 3&ServiceExecuteFeedbackFlag 2;CtrlFRWinStruct.CtrlFRWin 3&ServiceExecuteFeedbackFlag 2;CtrlRLWinStruct.CtrlRLWin 3&ServiceExecuteFeedbackFlag 2;CtrlRRWinStruct.CtrlRRWin 3&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq CtrlFLWinStruct.CtrlFLWin 3&ServiceExecuteFeedbackFlag 2;CtrlFRWinStruct.CtrlFRWin 3&ServiceExecuteFeedbackFlag 2;CtrlRLWinStruct.CtrlRLWin 3&ServiceExecuteFeedbackFlag 2;CtrlRRWinStruct.CtrlRRWin 3&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+}
+
+testcase SYS_CDCU_chechuang_0026()
+{
+  TestDescription("车窗停止运动(远控) Local on");
+  teststep("warning","原始用例id为SYS-CDCU-车窗-0026");
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_WindowService_ErrStruct.OpeNRC 1 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 1 traceback8
+  g_EM_SOAClient_Swc_SOA_REQ("Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:4&ServiceExecuteFeedbackFlag:2&UserID:0x01010001"); // 测试步骤 TC_CANTest SOA REQ Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:4&ServiceExecuteFeedbackFlag:2&UserID:0x01010001 //Stop
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_WindowService_ErrStruct.OpeNRC 1 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 1 traceback8
+}
+
+testcase SYS_CDCU_chechuang_0027()
+{
+  TestDescription("车窗停止运动(蓝牙控) Local on");
+  teststep("warning","原始用例id为SYS-CDCU-车窗-0027");
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq_Prepare("CtrlFLWinStruct.CtrlFLWin 3&ServiceExecuteFeedbackFlag 2;CtrlFRWinStruct.CtrlFRWin 3&ServiceExecuteFeedbackFlag 2;CtrlRLWinStruct.CtrlRLWin 3&ServiceExecuteFeedbackFlag 2;CtrlRRWinStruct.CtrlRRWin 3&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq CtrlFLWinStruct.CtrlFLWin 3&ServiceExecuteFeedbackFlag 2;CtrlFRWinStruct.CtrlFRWin 3&ServiceExecuteFeedbackFlag 2;CtrlRLWinStruct.CtrlRLWin 3&ServiceExecuteFeedbackFlag 2;CtrlRRWinStruct.CtrlRRWin 3&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+  g_EM_SOAClient_Swc_SOA_REQ("Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:4&ServiceExecuteFeedbackFlag:2&UserID:0x01000002"); // 测试步骤 TC_CANTest SOA REQ Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:4&ServiceExecuteFeedbackFlag:2&UserID:0x01000002 //Stop
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq("CtrlFLWinStruct.CtrlFLWin 3&ServiceExecuteFeedbackFlag 2;CtrlFRWinStruct.CtrlFRWin 3&ServiceExecuteFeedbackFlag 2;CtrlRLWinStruct.CtrlRLWin 3&ServiceExecuteFeedbackFlag 2;CtrlRRWinStruct.CtrlRRWin 3&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq CtrlFLWinStruct.CtrlFLWin 3&ServiceExecuteFeedbackFlag 2;CtrlFRWinStruct.CtrlFRWin 3&ServiceExecuteFeedbackFlag 2;CtrlRLWinStruct.CtrlRLWin 3&ServiceExecuteFeedbackFlag 2;CtrlRRWinStruct.CtrlRRWin 3&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+}
+
+testcase SYS_CDCU_chechuang_0028()
+{
+  TestDescription("车窗停止运动(左前窗失效) Local on");
+  teststep("warning","原始用例id为SYS-CDCU-车窗-0028");
+  gTC_CANTest_SOA_SetSever("FLWinPosCmdRespStruct.RespCode:2"); // 测试步骤 TC_CANTest SOA SetServer FLWinPosCmdRespStruct.RespCode:2
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq_Prepare("CtrlFLWinStruct.CtrlFLWin 3&ServiceExecuteFeedbackFlag 2;CtrlFRWinStruct.CtrlFRWin 3&ServiceExecuteFeedbackFlag 2;CtrlRLWinStruct.CtrlRLWin 3&ServiceExecuteFeedbackFlag 2;CtrlRRWinStruct.CtrlRRWin 3&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq CtrlFLWinStruct.CtrlFLWin 3&ServiceExecuteFeedbackFlag 2;CtrlFRWinStruct.CtrlFRWin 3&ServiceExecuteFeedbackFlag 2;CtrlRLWinStruct.CtrlRLWin 3&ServiceExecuteFeedbackFlag 2;CtrlRRWinStruct.CtrlRRWin 3&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+  g_EM_SOAClient_Swc_SOA_REQ("Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:4&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:4&ServiceExecuteFeedbackFlag:2 //Stop
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq("CtrlFLWinStruct.CtrlFLWin 3&ServiceExecuteFeedbackFlag 2;CtrlFRWinStruct.CtrlFRWin 3&ServiceExecuteFeedbackFlag 2;CtrlRLWinStruct.CtrlRLWin 3&ServiceExecuteFeedbackFlag 2;CtrlRRWinStruct.CtrlRRWin 3&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq CtrlFLWinStruct.CtrlFLWin 3&ServiceExecuteFeedbackFlag 2;CtrlFRWinStruct.CtrlFRWin 3&ServiceExecuteFeedbackFlag 2;CtrlRLWinStruct.CtrlRLWin 3&ServiceExecuteFeedbackFlag 2;CtrlRRWinStruct.CtrlRRWin 3&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+}
+
+testcase SYS_CDCU_chechuang_0029()
+{
+  TestDescription("车窗停止运动(右前窗失效) Local on");
+  teststep("warning","原始用例id为SYS-CDCU-车窗-0029");
+  gTC_CANTest_SOA_SetSever("FLWinPosCmdRespStruct.RespCode:0"); // 测试步骤 TC_CANTest SOA SetServer FLWinPosCmdRespStruct.RespCode:0
+  gTC_CANTest_SOA_SetSever("FRWinPosCmdRespStruct.RespCode:2"); // 测试步骤 TC_CANTest SOA SetServer FRWinPosCmdRespStruct.RespCode:2
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq_Prepare("CtrlFLWinStruct.CtrlFLWin 3&ServiceExecuteFeedbackFlag 2;CtrlFRWinStruct.CtrlFRWin 3&ServiceExecuteFeedbackFlag 2;CtrlRLWinStruct.CtrlRLWin 3&ServiceExecuteFeedbackFlag 2;CtrlRRWinStruct.CtrlRRWin 3&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq CtrlFLWinStruct.CtrlFLWin 3&ServiceExecuteFeedbackFlag 2;CtrlFRWinStruct.CtrlFRWin 3&ServiceExecuteFeedbackFlag 2;CtrlRLWinStruct.CtrlRLWin 3&ServiceExecuteFeedbackFlag 2;CtrlRRWinStruct.CtrlRRWin 3&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+  g_EM_SOAClient_Swc_SOA_REQ("Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:4&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:4&ServiceExecuteFeedbackFlag:2 //Stop
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq("CtrlFLWinStruct.CtrlFLWin 3&ServiceExecuteFeedbackFlag 2;CtrlFRWinStruct.CtrlFRWin 3&ServiceExecuteFeedbackFlag 2;CtrlRLWinStruct.CtrlRLWin 3&ServiceExecuteFeedbackFlag 2;CtrlRRWinStruct.CtrlRRWin 3&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq CtrlFLWinStruct.CtrlFLWin 3&ServiceExecuteFeedbackFlag 2;CtrlFRWinStruct.CtrlFRWin 3&ServiceExecuteFeedbackFlag 2;CtrlRLWinStruct.CtrlRLWin 3&ServiceExecuteFeedbackFlag 2;CtrlRRWinStruct.CtrlRRWin 3&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+}
+
+testcase SYS_CDCU_chechuang_0030()
+{
+  TestDescription("车窗停止运动(左后窗失效) Local on");
+  teststep("warning","原始用例id为SYS-CDCU-车窗-0030");
+  gTC_CANTest_SOA_SetSever("FRWinPosCmdRespStruct.RespCode:0"); // 测试步骤 TC_CANTest SOA SetServer FRWinPosCmdRespStruct.RespCode:0
+  gTC_CANTest_SOA_SetSever("RLWinPosCmdRespStruct.RespCode:2"); // 测试步骤 TC_CANTest SOA SetServer RLWinPosCmdRespStruct.RespCode:2
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq_Prepare("CtrlFLWinStruct.CtrlFLWin 3&ServiceExecuteFeedbackFlag 2;CtrlFRWinStruct.CtrlFRWin 3&ServiceExecuteFeedbackFlag 2;CtrlRLWinStruct.CtrlRLWin 3&ServiceExecuteFeedbackFlag 2;CtrlRRWinStruct.CtrlRRWin 3&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq CtrlFLWinStruct.CtrlFLWin 3&ServiceExecuteFeedbackFlag 2;CtrlFRWinStruct.CtrlFRWin 3&ServiceExecuteFeedbackFlag 2;CtrlRLWinStruct.CtrlRLWin 3&ServiceExecuteFeedbackFlag 2;CtrlRRWinStruct.CtrlRRWin 3&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+  g_EM_SOAClient_Swc_SOA_REQ("Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:4&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:4&ServiceExecuteFeedbackFlag:2 //Stop
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq("CtrlFLWinStruct.CtrlFLWin 3&ServiceExecuteFeedbackFlag 2;CtrlFRWinStruct.CtrlFRWin 3&ServiceExecuteFeedbackFlag 2;CtrlRLWinStruct.CtrlRLWin 3&ServiceExecuteFeedbackFlag 2;CtrlRRWinStruct.CtrlRRWin 3&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq CtrlFLWinStruct.CtrlFLWin 3&ServiceExecuteFeedbackFlag 2;CtrlFRWinStruct.CtrlFRWin 3&ServiceExecuteFeedbackFlag 2;CtrlRLWinStruct.CtrlRLWin 3&ServiceExecuteFeedbackFlag 2;CtrlRRWinStruct.CtrlRRWin 3&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+}
+
+testcase SYS_CDCU_chechuang_0031()
+{
+  TestDescription("车窗停止运动(右后窗失效) Local on");
+  teststep("warning","原始用例id为SYS-CDCU-车窗-0031");
+  gTC_CANTest_SOA_SetSever("RLWinPosCmdRespStruct.RespCode:0"); // 测试步骤 TC_CANTest SOA SetServer RLWinPosCmdRespStruct.RespCode:0
+  gTC_CANTest_SOA_SetSever("RRWinPosCmdRespStruct.RespCode:2"); // 测试步骤 TC_CANTest SOA SetServer RRWinPosCmdRespStruct.RespCode:2
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq_Prepare("CtrlFLWinStruct.CtrlFLWin 3&ServiceExecuteFeedbackFlag 2;CtrlFRWinStruct.CtrlFRWin 3&ServiceExecuteFeedbackFlag 2;CtrlRLWinStruct.CtrlRLWin 3&ServiceExecuteFeedbackFlag 2;CtrlRRWinStruct.CtrlRRWin 3&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq CtrlFLWinStruct.CtrlFLWin 3&ServiceExecuteFeedbackFlag 2;CtrlFRWinStruct.CtrlFRWin 3&ServiceExecuteFeedbackFlag 2;CtrlRLWinStruct.CtrlRLWin 3&ServiceExecuteFeedbackFlag 2;CtrlRRWinStruct.CtrlRRWin 3&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+  g_EM_SOAClient_Swc_SOA_REQ("Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:4&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:4&ServiceExecuteFeedbackFlag:2 //Stop
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq("CtrlFLWinStruct.CtrlFLWin 3&ServiceExecuteFeedbackFlag 2;CtrlFRWinStruct.CtrlFRWin 3&ServiceExecuteFeedbackFlag 2;CtrlRLWinStruct.CtrlRLWin 3&ServiceExecuteFeedbackFlag 2;CtrlRRWinStruct.CtrlRRWin 3&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq CtrlFLWinStruct.CtrlFLWin 3&ServiceExecuteFeedbackFlag 2;CtrlFRWinStruct.CtrlFRWin 3&ServiceExecuteFeedbackFlag 2;CtrlRLWinStruct.CtrlRLWin 3&ServiceExecuteFeedbackFlag 2;CtrlRRWinStruct.CtrlRRWin 3&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+}
+
+testcase SYS_CDCU_chechuang_0032()
+{
+  TestDescription("车窗全关 Power off");
+  teststep("warning","原始用例id为SYS-CDCU-车窗-0032");
+  g_EM_Equipment_Swc_TC_IG("OFF"); // 测试步骤 TC_IG OFF
+  gTC_CANTest_SOA_SetSever("FLWinPosCmdRespStruct.RespCode:1"); // 测试步骤 TC_CANTest SOA SetServer FLWinPosCmdRespStruct.RespCode:1
+  gTC_CANTest_SOA_SetSever("FRWinPosCmdRespStruct.RespCode:1"); // 测试步骤 TC_CANTest SOA SetServer FRWinPosCmdRespStruct.RespCode:1
+  gTC_CANTest_SOA_SetSever("RLWinPosCmdRespStruct.RespCode:1"); // 测试步骤 TC_CANTest SOA SetServer RLWinPosCmdRespStruct.RespCode:1
+  gTC_CANTest_SOA_SetSever("RRWinPosCmdRespStruct.RespCode:1"); // 测试步骤 TC_CANTest SOA SetServer RRWinPosCmdRespStruct.RespCode:1
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt1.I_LDCU_PowerMode 0"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt1.I_LDCU_PowerMode 0
+  g_CAN_Bus_Swc_Set("I_LDCU_NM.I_LDCU_NMRepeatMsgReqBit 1"); // 测试步骤 TC_CANTest SET I_LDCU_NM.I_LDCU_NMRepeatMsgReqBit 1 //网络唤醒维持帧
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("2"); // 测试步骤 TC_Sleep 2
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq_Prepare("FLWinPosCmdStruct.FLWinPos 0&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 0&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 0&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 0&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq FLWinPosCmdStruct.FLWinPos 0&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 0&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 0&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 0&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+  g_EM_SOAClient_Swc_SOA_REQ("Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:1&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:1&ServiceExecuteFeedbackFlag:2 //Auto Up
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq("FLWinPosCmdStruct.FLWinPos 0&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 0&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 0&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 0&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq FLWinPosCmdStruct.FLWinPos 0&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 0&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 0&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 0&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+}
+
+testcase SYS_CDCU_chechuang_0033()
+{
+  TestDescription("车窗全关(远控) Power off");
+  teststep("warning","原始用例id为SYS-CDCU-车窗-0033");
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq_Prepare("FLWinPosCmdStruct.FLWinPos 0&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 0&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 0&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 0&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq FLWinPosCmdStruct.FLWinPos 0&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 0&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 0&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 0&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+  g_EM_SOAClient_Swc_SOA_REQ("Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:1&ServiceExecuteFeedbackFlag:2&UserID:0x01010001"); // 测试步骤 TC_CANTest SOA REQ Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:1&ServiceExecuteFeedbackFlag:2&UserID:0x01010001 //Auto Up
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq("FLWinPosCmdStruct.FLWinPos 0&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 0&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 0&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 0&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq FLWinPosCmdStruct.FLWinPos 0&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 0&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 0&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 0&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+}
+
+testcase SYS_CDCU_chechuang_0034()
+{
+  TestDescription("车窗控制失败(远控) Power off");
+  teststep("warning","原始用例id为SYS-CDCU-车窗-0034");
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_CtrlAllWinUpDownRespStruct.RespCode 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.RespCode 0
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_WindowService_ErrStruct.OpeErrInfo[0-1]:0x01A4 traceback18"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeErrInfo[0-1]:0x01A4 traceback18
+  g_EM_SOAClient_Swc_SOA_REQ("Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:1&ServiceExecuteFeedbackFlag:2&ReqTimeOut:20&UserID:0x01010001"); // 测试步骤 TC_CANTest SOA REQ Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:1&ServiceExecuteFeedbackFlag:2&ReqTimeOut:20&UserID:0x01010001 //Auto Up
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_CtrlAllWinUpDownRespStruct.RespCode 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.RespCode 0
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("16"); // 测试步骤 TC_Sleep 16
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_WindowService_ErrStruct.OpeErrInfo[0-1]:0x01A4 traceback18"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeErrInfo[0-1]:0x01A4 traceback18
+}
+
+testcase SYS_CDCU_chechuang_0035()
+{
+  TestDescription("车窗升窗失败(远控) Power off");
+  teststep("warning","原始用例id为SYS-CDCU-车窗-0035");
+  gTC_CANTest_SOA_Set8001Delay("20"); // 测试步骤 TC_CANTest SOA Set8001Delay 20
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_CtrlAllWinUpDownRespStruct.RespCode 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.RespCode 0
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_WindowService_ErrStruct.OpeErrInfo[0-1]:0x2BC1 traceback18"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeErrInfo[0-1]:0x2BC1 traceback18
+  g_EM_SOAClient_Swc_SOA_REQ("Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:1&ServiceExecuteFeedbackFlag:2&UserID:0x01010001"); // 测试步骤 TC_CANTest SOA REQ Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:1&ServiceExecuteFeedbackFlag:2&UserID:0x01010001 //Auto Up
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_CtrlAllWinUpDownRespStruct.RespCode 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.RespCode 0
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("16"); // 测试步骤 TC_Sleep 16
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_WindowService_ErrStruct.OpeErrInfo[0-1]:0x2BC1 traceback18"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeErrInfo[0-1]:0x2BC1 traceback18
+}
+
+testcase SYS_CDCU_chechuang_0036()
+{
+  TestDescription("车窗全关(蓝牙) Power off");
+  teststep("warning","原始用例id为SYS-CDCU-车窗-0036");
+  gTC_CANTest_SOA_Set8001Delay("0"); // 测试步骤 TC_CANTest SOA Set8001Delay 0
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("2"); // 测试步骤 TC_Sleep 2
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq_Prepare("FLWinPosCmdStruct.FLWinPos 0&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 0&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 0&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 0&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq FLWinPosCmdStruct.FLWinPos 0&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 0&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 0&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 0&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+  g_EM_SOAClient_Swc_SOA_REQ("Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:1&ServiceExecuteFeedbackFlag:2&UserID:0x01000002"); // 测试步骤 TC_CANTest SOA REQ Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:1&ServiceExecuteFeedbackFlag:2&UserID:0x01000002 //Auto Up
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq("FLWinPosCmdStruct.FLWinPos 0&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 0&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 0&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 0&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq FLWinPosCmdStruct.FLWinPos 0&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 0&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 0&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 0&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+}
+
+testcase SYS_CDCU_chechuang_0037()
+{
+  TestDescription("车窗全关失败(蓝牙) Power off");
+  teststep("warning","原始用例id为SYS-CDCU-车窗-0037");
+  gTC_CANTest_SOA_SetSever("LeftSideWindowService_ErrStruct.OpeNRC:1"); // 测试步骤 TC_CANTest SOA SetServer LeftSideWindowService_ErrStruct.OpeNRC:1
+  gTC_CANTest_SOA_SetSever("RightSideWindowService_ErrStruct.OpeNRC:1"); // 测试步骤 TC_CANTest SOA SetServer RightSideWindowService_ErrStruct.OpeNRC:1
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_CtrlAllWinUpDownRespStruct.RespCode 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.RespCode 0
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_WindowService_ErrStruct.OpeErrInfo[2-3]:0x01F4 traceback18"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeErrInfo[2-3]:0x01F4 traceback18
+  g_EM_SOAClient_Swc_SOA_REQ("Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:1&ServiceExecuteFeedbackFlag:2&UserID:0x01000002"); // 测试步骤 TC_CANTest SOA REQ Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:1&ServiceExecuteFeedbackFlag:2&UserID:0x01000002 //Auto Up
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_CtrlAllWinUpDownRespStruct.RespCode 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.RespCode 0
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("16"); // 测试步骤 TC_Sleep 16
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_WindowService_ErrStruct.OpeErrInfo[2-3]:0x01F4 traceback18"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeErrInfo[2-3]:0x01F4 traceback18
+}
+
+testcase SYS_CDCU_chechuang_0038()
+{
+  TestDescription("车窗全开 Power off");
+  teststep("warning","原始用例id为SYS-CDCU-车窗-0038");
+  gTC_CANTest_SOA_SetSever("LeftSideWindowService_ErrStruct.OpeNRC:0"); // 测试步骤 TC_CANTest SOA SetServer LeftSideWindowService_ErrStruct.OpeNRC:0
+  gTC_CANTest_SOA_SetSever("RightSideWindowService_ErrStruct.OpeNRC:0"); // 测试步骤 TC_CANTest SOA SetServer RightSideWindowService_ErrStruct.OpeNRC:0
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq_Prepare("FLWinPosCmdStruct.FLWinPos 100&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 100&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 100&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 100&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq FLWinPosCmdStruct.FLWinPos 100&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 100&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 100&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 100&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+  g_EM_SOAClient_Swc_SOA_REQ("Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:2&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:2&ServiceExecuteFeedbackFlag:2 //Auto Down
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq("FLWinPosCmdStruct.FLWinPos 100&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 100&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 100&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 100&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq FLWinPosCmdStruct.FLWinPos 100&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 100&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 100&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 100&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+}
+
+testcase SYS_CDCU_chechuang_0039()
+{
+  TestDescription("车窗全开(远控) Power off");
+  teststep("warning","原始用例id为SYS-CDCU-车窗-0039");
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq_Prepare("FLWinPosCmdStruct.FLWinPos 100&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 100&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 100&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 100&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq FLWinPosCmdStruct.FLWinPos 100&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 100&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 100&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 100&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+  g_EM_SOAClient_Swc_SOA_REQ("Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:2&ServiceExecuteFeedbackFlag:2&UserID:0x01010001"); // 测试步骤 TC_CANTest SOA REQ Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:2&ServiceExecuteFeedbackFlag:2&UserID:0x01010001 //Auto Down
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq("FLWinPosCmdStruct.FLWinPos 100&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 100&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 100&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 100&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq FLWinPosCmdStruct.FLWinPos 100&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 100&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 100&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 100&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+}
+
+testcase SYS_CDCU_chechuang_0040()
+{
+  TestDescription("车窗全开(蓝牙) Power off");
+  teststep("warning","原始用例id为SYS-CDCU-车窗-0040");
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq_Prepare("FLWinPosCmdStruct.FLWinPos 100&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 100&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 100&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 100&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq FLWinPosCmdStruct.FLWinPos 100&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 100&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 100&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 100&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+  g_EM_SOAClient_Swc_SOA_REQ("Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:2&ServiceExecuteFeedbackFlag:2&UserID:0x01000002"); // 测试步骤 TC_CANTest SOA REQ Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:2&ServiceExecuteFeedbackFlag:2&UserID:0x01000002 //Auto Down
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq("FLWinPosCmdStruct.FLWinPos 100&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 100&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 100&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 100&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq FLWinPosCmdStruct.FLWinPos 100&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 100&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 100&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 100&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+}
+
+testcase SYS_CDCU_chechuang_0041()
+{
+  TestDescription("一键通风 Power off");
+  teststep("warning","原始用例id为SYS-CDCU-车窗-0041");
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq_Prepare("FLWinPosCmdStruct.FLWinPos 11&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 11&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 20&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 20&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq FLWinPosCmdStruct.FLWinPos 11&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 11&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 20&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 20&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+  g_EM_SOAClient_Swc_SOA_REQ("Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:3&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:3&ServiceExecuteFeedbackFlag:2 //Ventilation
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq("FLWinPosCmdStruct.FLWinPos 11&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 11&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 20&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 20&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq FLWinPosCmdStruct.FLWinPos 11&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 11&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 20&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 20&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+}
+
+testcase SYS_CDCU_chechuang_0042()
+{
+  TestDescription("一键通风(远控) Power off");
+  teststep("warning","原始用例id为SYS-CDCU-车窗-0042");
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq_Prepare("FLWinPosCmdStruct.FLWinPos 11&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 11&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 20&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 20&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq FLWinPosCmdStruct.FLWinPos 11&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 11&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 20&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 20&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+  g_EM_SOAClient_Swc_SOA_REQ("Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:3&ServiceExecuteFeedbackFlag:2&UserID:0x01010001"); // 测试步骤 TC_CANTest SOA REQ Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:3&ServiceExecuteFeedbackFlag:2&UserID:0x01010001 //Ventilation
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq("FLWinPosCmdStruct.FLWinPos 11&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 11&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 20&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 20&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq FLWinPosCmdStruct.FLWinPos 11&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 11&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 20&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 20&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+}
+
+testcase SYS_CDCU_chechuang_0043()
+{
+  TestDescription("一键通风失败(远控) Power off");
+  teststep("warning","原始用例id为SYS-CDCU-车窗-0043");
+  gTC_CANTest_SOA_Set8001Delay("20"); // 测试步骤 TC_CANTest SOA Set8001Delay 20
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_CtrlAllWinUpDownRespStruct.RespCode 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.RespCode 0
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_WindowService_ErrStruct.OpeErrInfo[0-1]:0x2BC2 traceback18"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeErrInfo[0-1]:0x2BC2 traceback18
+  g_EM_SOAClient_Swc_SOA_REQ("Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:3&ServiceExecuteFeedbackFlag:2&UserID:0x01010001"); // 测试步骤 TC_CANTest SOA REQ Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:3&ServiceExecuteFeedbackFlag:2&UserID:0x01010001 //Auto Up
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_CtrlAllWinUpDownRespStruct.RespCode 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.RespCode 0
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("16"); // 测试步骤 TC_Sleep 16
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_WindowService_ErrStruct.OpeErrInfo[0-1]:0x2BC2 traceback18"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeErrInfo[0-1]:0x2BC2 traceback18
+}
+
+testcase SYS_CDCU_chechuang_0044()
+{
+  TestDescription("一键通风失败(远控) Power off");
+  teststep("warning","原始用例id为SYS-CDCU-车窗-0044");
+  gTC_CANTest_SOA_Set8001Delay("0"); // 测试步骤 TC_CANTest SOA Set8001Delay 0
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_CtrlAllWinUpDownRespStruct.RespCode 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.RespCode 0
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_WindowService_ErrStruct.OpeErrInfo[0-1]:0x01A4 traceback18"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeErrInfo[0-1]:0x01A4 traceback18
+  g_EM_SOAClient_Swc_SOA_REQ("Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:3&ServiceExecuteFeedbackFlag:2&ReqTimeOut:20&UserID:0x01010001"); // 测试步骤 TC_CANTest SOA REQ Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:3&ServiceExecuteFeedbackFlag:2&ReqTimeOut:20&UserID:0x01010001 //Ventilation
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_CtrlAllWinUpDownRespStruct.RespCode 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.RespCode 0
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("16"); // 测试步骤 TC_Sleep 16
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_WindowService_ErrStruct.OpeErrInfo[0-1]:0x01A4 traceback18"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeErrInfo[0-1]:0x01A4 traceback18
+}
+
+testcase SYS_CDCU_chechuang_0045()
+{
+  TestDescription("一键通风失败(远控) Power off");
+  teststep("warning","原始用例id为SYS-CDCU-车窗-0045");
+  gTC_CANTest_SOA_SetSever("LeftSideWindowService_ErrStruct.OpeNRC:1"); // 测试步骤 TC_CANTest SOA SetServer LeftSideWindowService_ErrStruct.OpeNRC:1
+  gTC_CANTest_SOA_SetSever("RightSideWindowService_ErrStruct.OpeNRC:1"); // 测试步骤 TC_CANTest SOA SetServer RightSideWindowService_ErrStruct.OpeNRC:1
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_CtrlAllWinUpDownRespStruct.RespCode 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.RespCode 0
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_WindowService_ErrStruct.OpeErrInfo[0-1]:0x2BC2 traceback18"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeErrInfo[0-1]:0x2BC2 traceback18
+  g_EM_SOAClient_Swc_SOA_REQ("Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:3&ServiceExecuteFeedbackFlag:2&UserID:0x01010001"); // 测试步骤 TC_CANTest SOA REQ Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:3&ServiceExecuteFeedbackFlag:2&UserID:0x01010001 //Ventilation
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_CtrlAllWinUpDownRespStruct.RespCode 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.RespCode 0
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("16"); // 测试步骤 TC_Sleep 16
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_WindowService_ErrStruct.OpeErrInfo[0-1]:0x2BC2 traceback18"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeErrInfo[0-1]:0x2BC2 traceback18
+}
+
+testcase SYS_CDCU_chechuang_0046()
+{
+  TestDescription("一键通风(蓝牙) Power off");
+  teststep("warning","原始用例id为SYS-CDCU-车窗-0046");
+  gTC_CANTest_SOA_SetSever("LeftSideWindowService_ErrStruct.OpeNRC:0"); // 测试步骤 TC_CANTest SOA SetServer LeftSideWindowService_ErrStruct.OpeNRC:0
+  gTC_CANTest_SOA_SetSever("RightSideWindowService_ErrStruct.OpeNRC:0"); // 测试步骤 TC_CANTest SOA SetServer RightSideWindowService_ErrStruct.OpeNRC:0
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq_Prepare("FLWinPosCmdStruct.FLWinPos 11&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 11&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 20&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 20&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq FLWinPosCmdStruct.FLWinPos 11&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 11&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 20&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 20&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+  g_EM_SOAClient_Swc_SOA_REQ("Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:3&ServiceExecuteFeedbackFlag:2&UserID:0x01000002"); // 测试步骤 TC_CANTest SOA REQ Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:3&ServiceExecuteFeedbackFlag:2&UserID:0x01000002 //Ventilation
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq("FLWinPosCmdStruct.FLWinPos 11&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 11&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 20&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 20&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq FLWinPosCmdStruct.FLWinPos 11&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 11&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 20&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 20&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+}
+
+testcase SYS_CDCU_chechuang_0047()
+{
+  TestDescription("车窗停止运动 Power off");
+  teststep("warning","原始用例id为SYS-CDCU-车窗-0047");
+  gTC_CANTest_SOA_SetSever("FLWinPosCmdRespStruct.RespCode:0"); // 测试步骤 TC_CANTest SOA SetServer FLWinPosCmdRespStruct.RespCode:0
+  gTC_CANTest_SOA_SetSever("FRWinPosCmdRespStruct.RespCode:0"); // 测试步骤 TC_CANTest SOA SetServer FRWinPosCmdRespStruct.RespCode:0
+  gTC_CANTest_SOA_SetSever("RLWinPosCmdRespStruct.RespCode:0"); // 测试步骤 TC_CANTest SOA SetServer RLWinPosCmdRespStruct.RespCode:0
+  gTC_CANTest_SOA_SetSever("RRWinPosCmdRespStruct.RespCode:0"); // 测试步骤 TC_CANTest SOA SetServer RRWinPosCmdRespStruct.RespCode:0
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq_Prepare("CtrlFLWinStruct.CtrlFLWin 3&ServiceExecuteFeedbackFlag 2;CtrlFRWinStruct.CtrlFRWin 3&ServiceExecuteFeedbackFlag 2;CtrlRLWinStruct.CtrlRLWin 3&ServiceExecuteFeedbackFlag 2;CtrlRRWinStruct.CtrlRRWin 3&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq CtrlFLWinStruct.CtrlFLWin 3&ServiceExecuteFeedbackFlag 2;CtrlFRWinStruct.CtrlFRWin 3&ServiceExecuteFeedbackFlag 2;CtrlRLWinStruct.CtrlRLWin 3&ServiceExecuteFeedbackFlag 2;CtrlRRWinStruct.CtrlRRWin 3&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+  g_EM_SOAClient_Swc_SOA_REQ("Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:4&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:4&ServiceExecuteFeedbackFlag:2 //Stop
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq("CtrlFLWinStruct.CtrlFLWin 3&ServiceExecuteFeedbackFlag 2;CtrlFRWinStruct.CtrlFRWin 3&ServiceExecuteFeedbackFlag 2;CtrlRLWinStruct.CtrlRLWin 3&ServiceExecuteFeedbackFlag 2;CtrlRRWinStruct.CtrlRRWin 3&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq CtrlFLWinStruct.CtrlFLWin 3&ServiceExecuteFeedbackFlag 2;CtrlFRWinStruct.CtrlFRWin 3&ServiceExecuteFeedbackFlag 2;CtrlRLWinStruct.CtrlRLWin 3&ServiceExecuteFeedbackFlag 2;CtrlRRWinStruct.CtrlRRWin 3&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+}
+
+testcase SYS_CDCU_chechuang_0048()
+{
+  TestDescription("车窗停止运动(远控) Power off");
+  teststep("warning","原始用例id为SYS-CDCU-车窗-0048");
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq_Prepare("CtrlFLWinStruct.CtrlFLWin 3&ServiceExecuteFeedbackFlag 2;CtrlFRWinStruct.CtrlFRWin 3&ServiceExecuteFeedbackFlag 2;CtrlRLWinStruct.CtrlRLWin 3&ServiceExecuteFeedbackFlag 2;CtrlRRWinStruct.CtrlRRWin 3&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq CtrlFLWinStruct.CtrlFLWin 3&ServiceExecuteFeedbackFlag 2;CtrlFRWinStruct.CtrlFRWin 3&ServiceExecuteFeedbackFlag 2;CtrlRLWinStruct.CtrlRLWin 3&ServiceExecuteFeedbackFlag 2;CtrlRRWinStruct.CtrlRRWin 3&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+  g_EM_SOAClient_Swc_SOA_REQ("Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:4&ServiceExecuteFeedbackFlag:2&UserID:0x01010001"); // 测试步骤 TC_CANTest SOA REQ Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:4&ServiceExecuteFeedbackFlag:2&UserID:0x01010001 //Stop
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq("CtrlFLWinStruct.CtrlFLWin 3&ServiceExecuteFeedbackFlag 2;CtrlFRWinStruct.CtrlFRWin 3&ServiceExecuteFeedbackFlag 2;CtrlRLWinStruct.CtrlRLWin 3&ServiceExecuteFeedbackFlag 2;CtrlRRWinStruct.CtrlRRWin 3&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq CtrlFLWinStruct.CtrlFLWin 3&ServiceExecuteFeedbackFlag 2;CtrlFRWinStruct.CtrlFRWin 3&ServiceExecuteFeedbackFlag 2;CtrlRLWinStruct.CtrlRLWin 3&ServiceExecuteFeedbackFlag 2;CtrlRRWinStruct.CtrlRRWin 3&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+}
+
+testcase SYS_CDCU_chechuang_0049()
+{
+  TestDescription("车窗全关 Remote on");
+  teststep("warning","原始用例id为SYS-CDCU-车窗-0049");
+  g_EM_Equipment_Swc_TC_IG("ON"); // 测试步骤 TC_IG ON
+  gTC_CANTest_SOA_SetSever("FLWinPosCmdRespStruct.RespCode:1"); // 测试步骤 TC_CANTest SOA SetServer FLWinPosCmdRespStruct.RespCode:1
+  gTC_CANTest_SOA_SetSever("FRWinPosCmdRespStruct.RespCode:1"); // 测试步骤 TC_CANTest SOA SetServer FRWinPosCmdRespStruct.RespCode:1
+  gTC_CANTest_SOA_SetSever("RLWinPosCmdRespStruct.RespCode:1"); // 测试步骤 TC_CANTest SOA SetServer RLWinPosCmdRespStruct.RespCode:1
+  gTC_CANTest_SOA_SetSever("RRWinPosCmdRespStruct.RespCode:1"); // 测试步骤 TC_CANTest SOA SetServer RRWinPosCmdRespStruct.RespCode:1
+  g_CAN_Bus_Swc_Set("I_LDCU_BodySysSt1.I_LDCU_PowerMode 2"); // 测试步骤 TC_CANTest SET I_LDCU_BodySysSt1.I_LDCU_PowerMode 2
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("2"); // 测试步骤 TC_Sleep 2
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq_Prepare("FLWinPosCmdStruct.FLWinPos 0&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 0&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 0&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 0&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq FLWinPosCmdStruct.FLWinPos 0&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 0&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 0&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 0&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+  g_EM_SOAClient_Swc_SOA_REQ("Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:1&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:1&ServiceExecuteFeedbackFlag:2 //Auto Up
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq("FLWinPosCmdStruct.FLWinPos 0&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 0&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 0&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 0&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq FLWinPosCmdStruct.FLWinPos 0&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 0&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 0&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 0&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+}
+
+testcase SYS_CDCU_chechuang_0050()
+{
+  TestDescription("车窗全关(远控) Remote on");
+  teststep("warning","原始用例id为SYS-CDCU-车窗-0050");
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq_Prepare("FLWinPosCmdStruct.FLWinPos 0&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 0&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 0&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 0&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq FLWinPosCmdStruct.FLWinPos 0&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 0&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 0&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 0&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+  g_EM_SOAClient_Swc_SOA_REQ("Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:1&ServiceExecuteFeedbackFlag:2&UserID:0x01010001"); // 测试步骤 TC_CANTest SOA REQ Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:1&ServiceExecuteFeedbackFlag:2&UserID:0x01010001 //Auto Up
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq("FLWinPosCmdStruct.FLWinPos 0&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 0&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 0&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 0&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq FLWinPosCmdStruct.FLWinPos 0&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 0&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 0&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 0&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+}
+
+testcase SYS_CDCU_chechuang_0051()
+{
+  TestDescription("车窗控制失败(远控) Remote on");
+  teststep("warning","原始用例id为SYS-CDCU-车窗-0051");
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_CtrlAllWinUpDownRespStruct.RespCode 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.RespCode 0
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_WindowService_ErrStruct.OpeErrInfo[0-1]:0x01A4 traceback18"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeErrInfo[0-1]:0x01A4 traceback18
+  g_EM_SOAClient_Swc_SOA_REQ("Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:1&ServiceExecuteFeedbackFlag:2&ReqTimeOut:20&UserID:0x01010001"); // 测试步骤 TC_CANTest SOA REQ Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:1&ServiceExecuteFeedbackFlag:2&ReqTimeOut:20&UserID:0x01010001 //Auto Up
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_CtrlAllWinUpDownRespStruct.RespCode 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.RespCode 0
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("16"); // 测试步骤 TC_Sleep 16
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_WindowService_ErrStruct.OpeErrInfo[0-1]:0x01A4 traceback18"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeErrInfo[0-1]:0x01A4 traceback18
+}
+
+testcase SYS_CDCU_chechuang_0052()
+{
+  TestDescription("车窗升窗失败(远控) Remote on");
+  teststep("warning","原始用例id为SYS-CDCU-车窗-0052");
+  gTC_CANTest_SOA_Set8001Delay("20"); // 测试步骤 TC_CANTest SOA Set8001Delay 20
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_CtrlAllWinUpDownRespStruct.RespCode 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.RespCode 0
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_WindowService_ErrStruct.OpeErrInfo[0-1]:0x2BC1 traceback18"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeErrInfo[0-1]:0x2BC1 traceback18
+  g_EM_SOAClient_Swc_SOA_REQ("Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:1&ServiceExecuteFeedbackFlag:2&UserID:0x01010001"); // 测试步骤 TC_CANTest SOA REQ Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:1&ServiceExecuteFeedbackFlag:2&UserID:0x01010001 //Auto Up
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_CtrlAllWinUpDownRespStruct.RespCode 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.RespCode 0
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("16"); // 测试步骤 TC_Sleep 16
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_WindowService_ErrStruct.OpeErrInfo[0-1]:0x2BC1 traceback18"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeErrInfo[0-1]:0x2BC1 traceback18
+}
+
+testcase SYS_CDCU_chechuang_0053()
+{
+  TestDescription("车窗全关(蓝牙) Remote on");
+  teststep("warning","原始用例id为SYS-CDCU-车窗-0053");
+  gTC_CANTest_SOA_Set8001Delay("0"); // 测试步骤 TC_CANTest SOA Set8001Delay 0
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("2"); // 测试步骤 TC_Sleep 2
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq_Prepare("FLWinPosCmdStruct.FLWinPos 0&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 0&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 0&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 0&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq FLWinPosCmdStruct.FLWinPos 0&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 0&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 0&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 0&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+  g_EM_SOAClient_Swc_SOA_REQ("Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:1&ServiceExecuteFeedbackFlag:2&UserID:0x01000002"); // 测试步骤 TC_CANTest SOA REQ Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:1&ServiceExecuteFeedbackFlag:2&UserID:0x01000002 //Auto Up
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq("FLWinPosCmdStruct.FLWinPos 0&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 0&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 0&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 0&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq FLWinPosCmdStruct.FLWinPos 0&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 0&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 0&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 0&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+}
+
+testcase SYS_CDCU_chechuang_0054()
+{
+  TestDescription("车窗全关失败(蓝牙) Remote on");
+  teststep("warning","原始用例id为SYS-CDCU-车窗-0054");
+  gTC_CANTest_SOA_SetSever("LeftSideWindowService_ErrStruct.OpeNRC:1"); // 测试步骤 TC_CANTest SOA SetServer LeftSideWindowService_ErrStruct.OpeNRC:1
+  gTC_CANTest_SOA_SetSever("RightSideWindowService_ErrStruct.OpeNRC:1"); // 测试步骤 TC_CANTest SOA SetServer RightSideWindowService_ErrStruct.OpeNRC:1
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_CtrlAllWinUpDownRespStruct.RespCode 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.RespCode 0
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_WindowService_ErrStruct.OpeErrInfo[2-3]:0x01F4 traceback18"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeErrInfo[2-3]:0x01F4 traceback18
+  g_EM_SOAClient_Swc_SOA_REQ("Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:1&ServiceExecuteFeedbackFlag:2&UserID:0x01000002"); // 测试步骤 TC_CANTest SOA REQ Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:1&ServiceExecuteFeedbackFlag:2&UserID:0x01000002 //Auto Up
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_CtrlAllWinUpDownRespStruct.RespCode 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.RespCode 0
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("16"); // 测试步骤 TC_Sleep 16
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_WindowService_ErrStruct.OpeErrInfo[2-3]:0x01F4 traceback18"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeErrInfo[2-3]:0x01F4 traceback18
+}
+
+testcase SYS_CDCU_chechuang_0055()
+{
+  TestDescription("车窗全开 Remote on");
+  teststep("warning","原始用例id为SYS-CDCU-车窗-0055");
+  gTC_CANTest_SOA_SetSever("LeftSideWindowService_ErrStruct.OpeNRC:0"); // 测试步骤 TC_CANTest SOA SetServer LeftSideWindowService_ErrStruct.OpeNRC:0
+  gTC_CANTest_SOA_SetSever("RightSideWindowService_ErrStruct.OpeNRC:0"); // 测试步骤 TC_CANTest SOA SetServer RightSideWindowService_ErrStruct.OpeNRC:0
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq_Prepare("FLWinPosCmdStruct.FLWinPos 100&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 100&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 100&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 100&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq FLWinPosCmdStruct.FLWinPos 100&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 100&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 100&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 100&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+  g_EM_SOAClient_Swc_SOA_REQ("Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:2&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:2&ServiceExecuteFeedbackFlag:2 //Auto Down
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq("FLWinPosCmdStruct.FLWinPos 100&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 100&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 100&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 100&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq FLWinPosCmdStruct.FLWinPos 100&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 100&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 100&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 100&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+}
+
+testcase SYS_CDCU_chechuang_0056()
+{
+  TestDescription("车窗全开(远控) Remote on");
+  teststep("warning","原始用例id为SYS-CDCU-车窗-0056");
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq_Prepare("FLWinPosCmdStruct.FLWinPos 100&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 100&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 100&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 100&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq FLWinPosCmdStruct.FLWinPos 100&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 100&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 100&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 100&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+  g_EM_SOAClient_Swc_SOA_REQ("Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:2&ServiceExecuteFeedbackFlag:2&UserID:0x01010001"); // 测试步骤 TC_CANTest SOA REQ Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:2&ServiceExecuteFeedbackFlag:2&UserID:0x01010001 //Auto Down
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq("FLWinPosCmdStruct.FLWinPos 100&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 100&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 100&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 100&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq FLWinPosCmdStruct.FLWinPos 100&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 100&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 100&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 100&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+}
+
+testcase SYS_CDCU_chechuang_0057()
+{
+  TestDescription("车窗全开(蓝牙) Remote on");
+  teststep("warning","原始用例id为SYS-CDCU-车窗-0057");
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq_Prepare("FLWinPosCmdStruct.FLWinPos 100&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 100&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 100&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 100&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq FLWinPosCmdStruct.FLWinPos 100&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 100&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 100&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 100&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+  g_EM_SOAClient_Swc_SOA_REQ("Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:2&ServiceExecuteFeedbackFlag:2&UserID:0x01000002"); // 测试步骤 TC_CANTest SOA REQ Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:2&ServiceExecuteFeedbackFlag:2&UserID:0x01000002 //Auto Down
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq("FLWinPosCmdStruct.FLWinPos 100&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 100&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 100&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 100&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq FLWinPosCmdStruct.FLWinPos 100&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 100&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 100&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 100&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+}
+
+testcase SYS_CDCU_chechuang_0058()
+{
+  TestDescription("一键通风 Remote on");
+  teststep("warning","原始用例id为SYS-CDCU-车窗-0058");
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq_Prepare("FLWinPosCmdStruct.FLWinPos 11&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 11&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 20&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 20&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq FLWinPosCmdStruct.FLWinPos 11&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 11&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 20&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 20&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+  g_EM_SOAClient_Swc_SOA_REQ("Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:3&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:3&ServiceExecuteFeedbackFlag:2 //Ventilation
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq("FLWinPosCmdStruct.FLWinPos 11&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 11&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 20&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 20&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq FLWinPosCmdStruct.FLWinPos 11&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 11&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 20&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 20&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+}
+
+testcase SYS_CDCU_chechuang_0059()
+{
+  TestDescription("一键通风(远控) Remote on");
+  teststep("warning","原始用例id为SYS-CDCU-车窗-0059");
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq_Prepare("FLWinPosCmdStruct.FLWinPos 11&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 11&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 20&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 20&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq FLWinPosCmdStruct.FLWinPos 11&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 11&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 20&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 20&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+  g_EM_SOAClient_Swc_SOA_REQ("Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:3&ServiceExecuteFeedbackFlag:2&UserID:0x01010001"); // 测试步骤 TC_CANTest SOA REQ Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:3&ServiceExecuteFeedbackFlag:2&UserID:0x01010001 //Ventilation
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq("FLWinPosCmdStruct.FLWinPos 11&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 11&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 20&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 20&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq FLWinPosCmdStruct.FLWinPos 11&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 11&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 20&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 20&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+}
+
+testcase SYS_CDCU_chechuang_0060()
+{
+  TestDescription("一键通风失败(远控) Remote on");
+  teststep("warning","原始用例id为SYS-CDCU-车窗-0060");
+  gTC_CANTest_SOA_Set8001Delay("20"); // 测试步骤 TC_CANTest SOA Set8001Delay 20
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_CtrlAllWinUpDownRespStruct.RespCode 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.RespCode 0
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_WindowService_ErrStruct.OpeErrInfo[0-1]:0x2BC2 traceback18"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeErrInfo[0-1]:0x2BC2 traceback18
+  g_EM_SOAClient_Swc_SOA_REQ("Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:3&ServiceExecuteFeedbackFlag:2&UserID:0x01010001"); // 测试步骤 TC_CANTest SOA REQ Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:3&ServiceExecuteFeedbackFlag:2&UserID:0x01010001 //Auto Up
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_CtrlAllWinUpDownRespStruct.RespCode 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.RespCode 0
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("16"); // 测试步骤 TC_Sleep 16
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_WindowService_ErrStruct.OpeErrInfo[0-1]:0x2BC2 traceback18"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeErrInfo[0-1]:0x2BC2 traceback18
+}
+
+testcase SYS_CDCU_chechuang_0061()
+{
+  TestDescription("一键通风失败(远控) Remote on");
+  teststep("warning","原始用例id为SYS-CDCU-车窗-0061");
+  gTC_CANTest_SOA_Set8001Delay("0"); // 测试步骤 TC_CANTest SOA Set8001Delay 0
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_CtrlAllWinUpDownRespStruct.RespCode 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.RespCode 0
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_WindowService_ErrStruct.OpeErrInfo[0-1]:0x01A4 traceback18"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeErrInfo[0-1]:0x01A4 traceback18
+  g_EM_SOAClient_Swc_SOA_REQ("Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:3&ServiceExecuteFeedbackFlag:2&ReqTimeOut:20&UserID:0x01010001"); // 测试步骤 TC_CANTest SOA REQ Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:3&ServiceExecuteFeedbackFlag:2&ReqTimeOut:20&UserID:0x01010001 //Ventilation
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_CtrlAllWinUpDownRespStruct.RespCode 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.RespCode 0
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("16"); // 测试步骤 TC_Sleep 16
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_WindowService_ErrStruct.OpeErrInfo[0-1]:0x01A4 traceback18"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeErrInfo[0-1]:0x01A4 traceback18
+}
+
+testcase SYS_CDCU_chechuang_0062()
+{
+  TestDescription("一键通风失败(远控) Power off");
+  teststep("warning","原始用例id为SYS-CDCU-车窗-0062");
+  gTC_CANTest_SOA_SetSever("LeftSideWindowService_ErrStruct.OpeNRC:1"); // 测试步骤 TC_CANTest SOA SetServer LeftSideWindowService_ErrStruct.OpeNRC:1
+  gTC_CANTest_SOA_SetSever("RightSideWindowService_ErrStruct.OpeNRC:1"); // 测试步骤 TC_CANTest SOA SetServer RightSideWindowService_ErrStruct.OpeNRC:1
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_CtrlAllWinUpDownRespStruct.RespCode 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.RespCode 0
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_WindowService_ErrStruct.OpeErrInfo[0-1]:0x2BC2 traceback18"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeErrInfo[0-1]:0x2BC2 traceback18
+  g_EM_SOAClient_Swc_SOA_REQ("Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:3&ServiceExecuteFeedbackFlag:2&UserID:0x01010001"); // 测试步骤 TC_CANTest SOA REQ Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:3&ServiceExecuteFeedbackFlag:2&UserID:0x01010001 //Ventilation
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_CtrlAllWinUpDownRespStruct.RespCode 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.RespCode 0
+  g_EM_Equipment_Swc_TC_4G_Time_Delay_Second("16"); // 测试步骤 TC_Sleep 16
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_WindowService_ErrStruct.OpeErrInfo[0-1]:0x2BC2 traceback18"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeErrInfo[0-1]:0x2BC2 traceback18
+}
+
+testcase SYS_CDCU_chechuang_0063()
+{
+  TestDescription("一键通风(蓝牙) Remote on");
+  teststep("warning","原始用例id为SYS-CDCU-车窗-0063");
+  gTC_CANTest_SOA_SetSever("LeftSideWindowService_ErrStruct.OpeNRC:0"); // 测试步骤 TC_CANTest SOA SetServer LeftSideWindowService_ErrStruct.OpeNRC:0
+  gTC_CANTest_SOA_SetSever("RightSideWindowService_ErrStruct.OpeNRC:0"); // 测试步骤 TC_CANTest SOA SetServer RightSideWindowService_ErrStruct.OpeNRC:0
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq_Prepare("FLWinPosCmdStruct.FLWinPos 11&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 11&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 20&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 20&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq FLWinPosCmdStruct.FLWinPos 11&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 11&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 20&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 20&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+  g_EM_SOAClient_Swc_SOA_REQ("Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:3&ServiceExecuteFeedbackFlag:2&UserID:0x01000002"); // 测试步骤 TC_CANTest SOA REQ Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:3&ServiceExecuteFeedbackFlag:2&UserID:0x01000002 //Ventilation
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq("FLWinPosCmdStruct.FLWinPos 11&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 11&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 20&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 20&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq FLWinPosCmdStruct.FLWinPos 11&ServiceExecuteFeedbackFlag 2;FRWinPosCmdStruct.FRWinPos 11&ServiceExecuteFeedbackFlag 2;RLWinPosCmdStruct.RLWinPos 20&ServiceExecuteFeedbackFlag 2;RRWinPosCmdStruct.RRWinPos 20&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+}
+
+testcase SYS_CDCU_chechuang_0064()
+{
+  TestDescription("车窗停止运动 Remote on");
+  teststep("warning","原始用例id为SYS-CDCU-车窗-0064");
+  gTC_CANTest_SOA_SetSever("FLWinPosCmdRespStruct.RespCode:0"); // 测试步骤 TC_CANTest SOA SetServer FLWinPosCmdRespStruct.RespCode:0
+  gTC_CANTest_SOA_SetSever("FRWinPosCmdRespStruct.RespCode:0"); // 测试步骤 TC_CANTest SOA SetServer FRWinPosCmdRespStruct.RespCode:0
+  gTC_CANTest_SOA_SetSever("RLWinPosCmdRespStruct.RespCode:0"); // 测试步骤 TC_CANTest SOA SetServer RLWinPosCmdRespStruct.RespCode:0
+  gTC_CANTest_SOA_SetSever("RRWinPosCmdRespStruct.RespCode:0"); // 测试步骤 TC_CANTest SOA SetServer RRWinPosCmdRespStruct.RespCode:0
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq_Prepare("CtrlFLWinStruct.CtrlFLWin 3&ServiceExecuteFeedbackFlag 2;CtrlFRWinStruct.CtrlFRWin 3&ServiceExecuteFeedbackFlag 2;CtrlRLWinStruct.CtrlRLWin 3&ServiceExecuteFeedbackFlag 2;CtrlRRWinStruct.CtrlRRWin 3&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq CtrlFLWinStruct.CtrlFLWin 3&ServiceExecuteFeedbackFlag 2;CtrlFRWinStruct.CtrlFRWin 3&ServiceExecuteFeedbackFlag 2;CtrlRLWinStruct.CtrlRLWin 3&ServiceExecuteFeedbackFlag 2;CtrlRRWinStruct.CtrlRRWin 3&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+  g_EM_SOAClient_Swc_SOA_REQ("Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:4&ServiceExecuteFeedbackFlag:2"); // 测试步骤 TC_CANTest SOA REQ Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:4&ServiceExecuteFeedbackFlag:2 //Stop
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq("CtrlFLWinStruct.CtrlFLWin 3&ServiceExecuteFeedbackFlag 2;CtrlFRWinStruct.CtrlFRWin 3&ServiceExecuteFeedbackFlag 2;CtrlRLWinStruct.CtrlRLWin 3&ServiceExecuteFeedbackFlag 2;CtrlRRWinStruct.CtrlRRWin 3&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq CtrlFLWinStruct.CtrlFLWin 3&ServiceExecuteFeedbackFlag 2;CtrlFRWinStruct.CtrlFRWin 3&ServiceExecuteFeedbackFlag 2;CtrlRLWinStruct.CtrlRLWin 3&ServiceExecuteFeedbackFlag 2;CtrlRRWinStruct.CtrlRRWin 3&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+}
+
+testcase SYS_CDCU_chechuang_0065()
+{
+  TestDescription("车窗停止运动(远控) Remote on");
+  teststep("warning","原始用例id为SYS-CDCU-车窗-0065");
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq_Prepare("CtrlFLWinStruct.CtrlFLWin 3&ServiceExecuteFeedbackFlag 2;CtrlFRWinStruct.CtrlFRWin 3&ServiceExecuteFeedbackFlag 2;CtrlRLWinStruct.CtrlRLWin 3&ServiceExecuteFeedbackFlag 2;CtrlRRWinStruct.CtrlRRWin 3&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq CtrlFLWinStruct.CtrlFLWin 3&ServiceExecuteFeedbackFlag 2;CtrlFRWinStruct.CtrlFRWin 3&ServiceExecuteFeedbackFlag 2;CtrlRLWinStruct.CtrlRLWin 3&ServiceExecuteFeedbackFlag 2;CtrlRRWinStruct.CtrlRRWin 3&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK_Prepare("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+  g_EM_SOAClient_Swc_SOA_REQ("Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:4&ServiceExecuteFeedbackFlag:2&UserID:0x01010001"); // 测试步骤 TC_CANTest SOA REQ Veh_CtrlAllWinUpDownStruct.Veh_CtrlAllWinAutoupDown:4&ServiceExecuteFeedbackFlag:2&UserID:0x01010001 //Stop
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0"); // 预期结果 TC_CANTest SOA check Veh_CtrlAllWinUpDownRespStruct.Veh_CtrlAllWinUpDownNRC 0
+  gTC_CANTest_SOA_CheckReq("CtrlFLWinStruct.CtrlFLWin 3&ServiceExecuteFeedbackFlag 2;CtrlFRWinStruct.CtrlFRWin 3&ServiceExecuteFeedbackFlag 2;CtrlRLWinStruct.CtrlRLWin 3&ServiceExecuteFeedbackFlag 2;CtrlRRWinStruct.CtrlRRWin 3&ServiceExecuteFeedbackFlag 2"); // 预期结果 TC_CANTest SOA CheckReq CtrlFLWinStruct.CtrlFLWin 3&ServiceExecuteFeedbackFlag 2;CtrlFRWinStruct.CtrlFRWin 3&ServiceExecuteFeedbackFlag 2;CtrlRLWinStruct.CtrlRLWin 3&ServiceExecuteFeedbackFlag 2;CtrlRRWinStruct.CtrlRRWin 3&ServiceExecuteFeedbackFlag 2
+  g_EM_SOAClient_Swc_SOA_CHECK("Veh_WindowService_ErrStruct.OpeNRC 0 traceback8"); // 预期结果 TC_CANTest SOA check Veh_WindowService_ErrStruct.OpeNRC 0 traceback8
+}

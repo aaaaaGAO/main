@@ -282,7 +282,7 @@ class TaskService:
             )
 
     def run_did_info(self, domain: str | None = None) -> TaskResult:
-        """执行 DIDInfo（ResetDid）生成任务。
+        """执行 ResetDid生成任务。
 
         Args:
             domain: 可选生成域，不传则默认 LR_REAR。
@@ -305,8 +305,8 @@ class TaskService:
             error_message = str(error)
             elapsed_ms = (time.perf_counter() - started) * 1000.0
             # 未配置 ResetDid_Value 配置表时，按“静默跳过”处理，不视为失败，只返回提示信息
-            missing_didinfo_label = f"未配置 {LABEL_RESETDID_VALUE_CONFIG_TABLE}"
-            if missing_didinfo_label in error_message:
+            missing_resetdid_label = f"未配置 {LABEL_RESETDID_VALUE_CONFIG_TABLE}"
+            if missing_resetdid_label in error_message:
                 self.log_task_skip(
                     step="did_info",
                     domain=run_domain,

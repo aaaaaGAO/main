@@ -46,37 +46,37 @@ OPTION_CASE_LEVELS = "case_levels"
 OPTION_CASE_PLATFORMS = "case_platforms"
 OPTION_CASE_MODELS = "case_models"
 OPTION_CASE_TARGET_VERSIONS = "case_target_versions"
-OPTION_DIDINFO_INPUTS = "didinfo_inputs"
-# 历史键：仅填单个 Excel 路径（与 ``didinfo_inputs`` 的 ``路径 | *`` 管道格式不同）
-OPTION_DIDINFO_INPUT_EXCEL = "didinfo_input_excel"
+OPTION_RESETDID_INPUTS = "resetdid_inputs"
+# 历史键：仅填单个 Excel 路径（与 ``resetdid_inputs`` 的 ``路径 | *`` 管道格式不同）
+OPTION_RESETDID_INPUT_EXCEL = "resetdid_input_excel"
 OPTION_CIN_INPUT_EXCEL = "cin_input_excel"
 OPTION_SRV_EXCEL = "srv_excel"
 OPTION_SOA_SETSERVER_OUTPUT_FILENAME = "soa_setserver_output_filename"
 OPTION_SOA_DATATAB_OUTPUT_FILENAME = "soa_datatab_output_filename"
 
 # ---------------------------------------------------------------------------
-# 需求第3条：界面「ResetDid」/ DIDInfo 源表 ↔ collectCurrentState 键 ↔ ini didinfo_inputs
+# 界面「ResetDid_Value」源表 ↔ collectCurrentState 键 ↔ ini resetdid_inputs（与代码命名一致）
 # ---------------------------------------------------------------------------
 # 这一段放“前端字段名（UI_FIELD_* / STATE_KEY_*）+ 写入格式函数 + 用户可见文案标签”。
-# 传给 ConfigManager.ui_state_key(prefix, …) 的域内字段名：LR 空前缀 → didinfo_excel；DTC prefix=d → d_didinfo_excel
-UI_FIELD_DIDINFO_EXCEL = "didinfo_excel"
-STATE_KEY_LR_DIDINFO_EXCEL = UI_FIELD_DIDINFO_EXCEL
-STATE_KEY_DTC_DIDINFO_EXCEL = "d_didinfo_excel"
+# 传给 ConfigManager.ui_state_key(prefix, …) 的域内字段名：LR 空前缀 → resetdid_excel；DTC prefix=d → d_resetdid_excel
+UI_FIELD_RESETDID_EXCEL = "resetdid_excel"
+STATE_KEY_LR_RESETDID_EXCEL = UI_FIELD_RESETDID_EXCEL
+STATE_KEY_DTC_RESETDID_EXCEL = "d_resetdid_excel"
 # 写入 ini 的历史格式：单路径 + sheet 通配
-DIDINFO_INPUTS_VALUE_SUFFIX = " | *"
+RESETDID_INPUTS_VALUE_SUFFIX = " | *"
 
 
-def didinfo_inputs_value_from_ui_single_path(raw: object) -> str:
-    """将 UI 选择的单 Excel 路径转为 ``didinfo_inputs`` 选项值（空路径返回空串）。"""
+def resetdid_inputs_value_from_ui_single_path(raw: object) -> str:
+    """将 UI 选择的单 Excel 路径转为 ``resetdid_inputs`` 选项值（空路径返回空串）。"""
     text = str(raw or "").strip()
     if not text:
         return ""
-    return f"{text}{DIDINFO_INPUTS_VALUE_SUFFIX}"
+    return f"{text}{RESETDID_INPUTS_VALUE_SUFFIX}"
 
 
 # 运行前校验 / 报错中的用户可见称呼（与界面 ResetDid 对应）
 LABEL_RESETDID_VALUE_CONFIG_TABLE = "ResetDid_Value 配置表"
-LABEL_DTC_DIDINFO_INPUT_TABLE = "DTC DIDInfo 配置表"
+LABEL_DTC_RESETDID_INPUT_TABLE = "DTC ResetDid_Value 配置表"
 
 # ---------------------------------------------------------------------------
 # 需求第3条：CIN / 关键字 Clib ↔ collectCurrentState ↔ ini cin_input_excel
@@ -132,7 +132,7 @@ def io_inputs_value_from_ui_single_path(raw: object) -> str:
     text = str(raw or "").strip()
     if not text:
         return ""
-    return f"{text}{DIDINFO_INPUTS_VALUE_SUFFIX}"
+    return f"{text}{RESETDID_INPUTS_VALUE_SUFFIX}"
 
 # ---------------------------------------------------------------------------
 # 需求第3条：输出目录 / 选中 sheets / 日志等级 ↔ collectCurrentState
@@ -193,7 +193,7 @@ VALID_LOG_LEVELS: tuple[str, ...] = ("info", "warning", "error")
 #   STATE_KEY_LR_CAN_INPUT —→ [LR_REAR] input_excel（及别名）—→ CAN/XML 用例与输出
 #   STATE_KEY_LR_OUT_ROOT —→ [LR_REAR] output_dir —→ 本域生成物根路径
 #   STATE_KEY_LR_LEVELS/STATE_KEY_LR_PLATFORMS/STATE_KEY_LR_MODELS/STATE_KEY_LR_TARGET_VERSIONS/STATE_KEY_LR_SELECTED_SHEETS/STATE_KEY_LR_LOG_LEVEL —→ 同节过滤与日志
-#   STATE_KEY_LR_DIDINFO_EXCEL —→ [LR_REAR] didinfo_inputs 等 —→ 界面「ResetDid」/ DIDInfo 产物
+#   STATE_KEY_LR_RESETDID_EXCEL —→ [LR_REAR] resetdid_inputs —→ 界面「ResetDid_Value」产物
 #   STATE_KEY_LR_CIN_EXCEL —→ [LR_REAR] cin_input_excel 等 —→ CIN / Clib
 #   STATE_KEY_LR_IO_EXCEL —→ [LR_REAR] io_inputs —→ IO 映射
 #   STATE_KEY_LR_DIDCONFIG_EXCEL —→ [LR_REAR] didconfig_input_excel —→ DID_Config
@@ -213,7 +213,7 @@ LR_STATE_KEYS: tuple[str, ...] = (
     STATE_KEY_LR_TARGET_VERSIONS,
     STATE_KEY_LR_SELECTED_SHEETS,
     STATE_KEY_LR_LOG_LEVEL,
-    STATE_KEY_LR_DIDINFO_EXCEL,
+    STATE_KEY_LR_RESETDID_EXCEL,
     STATE_KEY_LR_CIN_EXCEL,
     STATE_KEY_LR_SRV_EXCEL,
     STATE_KEY_LR_IO_EXCEL,
@@ -280,7 +280,7 @@ DTC_STATE_KEYS: tuple[str, ...] = (
     STATE_KEY_DTC_UDS_ECU_QUALIFIER,
     STATE_KEY_DTC_IO_EXCEL,
     STATE_KEY_DTC_DIDCONFIG_EXCEL,
-    STATE_KEY_DTC_DIDINFO_EXCEL,
+    STATE_KEY_DTC_RESETDID_EXCEL,
     STATE_KEY_DTC_CIN_EXCEL,
     STATE_KEY_DTC_SRV_EXCEL,
 )
@@ -430,10 +430,10 @@ OPTION_DIDCONFIG_INPUT_EXCEL_CANDIDATES: tuple[str, ...] = (
 DEPRECATED_INPUT_EXCEL_DIR_OPTION_CANDIDATES: tuple[str, str] = ("Input_Excel_Dir", "input_excel_dir")
 OPTION_OUTPUT_DIR_CANDIDATES: tuple[str, str] = ("Output_Dir", OPTION_OUTPUT_DIR)
 OPTION_OUTPUT_FILENAME_CANDIDATES: tuple[str, str] = ("Output_FileName", OPTION_OUTPUT_FILENAME)
-OPTION_DIDINFO_INPUTS_CANDIDATES: tuple[str, str] = ("Didinfo_Inputs", OPTION_DIDINFO_INPUTS)
-OPTION_DIDINFO_INPUT_EXCEL_CANDIDATES: tuple[str, str] = ("Didinfo_Input_Excel", OPTION_DIDINFO_INPUT_EXCEL)
-OPTION_DIDINFO_OUTPUT_DIR_CANDIDATES: tuple[str, str] = ("Output_Dir_Didinfo", "output_dir_didinfo")
-OPTION_DIDINFO_VARIANTS_CANDIDATES: tuple[str, str] = ("Didinfo_Variants", "didinfo_variants")
+OPTION_RESETDID_INPUTS_CANDIDATES: tuple[str, str] = ("Resetdid_Inputs", OPTION_RESETDID_INPUTS)
+OPTION_RESETDID_INPUT_EXCEL_CANDIDATES: tuple[str, str] = ("Resetdid_Input_Excel", OPTION_RESETDID_INPUT_EXCEL)
+OPTION_RESETDID_OUTPUT_DIR_CANDIDATES: tuple[str, str] = ("Output_Dir_Resetdid", "output_dir_resetdid")
+OPTION_RESETDID_VARIANTS_CANDIDATES: tuple[str, str] = ("Resetdid_Variants", "resetdid_variants")
 OPTION_CIN_INPUT_EXCEL_CANDIDATES: tuple[str, str] = ("Cin_Input_Excel", OPTION_CIN_INPUT_EXCEL)
 OPTION_SRV_EXCEL_CANDIDATES: tuple[str, str] = ("Srv_Excel", OPTION_SRV_EXCEL)
 # 候选键维护规则：
@@ -465,18 +465,23 @@ PATHS_UART_KNOWN_OPTION_KEYS: tuple[str, ...] = (
     "Output_Dir_Xml",
 )
 PATHS_CAN_OUTPUT_DIR_OPTION_CANDIDATES: tuple[str, ...] = ("output_dir_can", "Output_Dir_Can", "Output_Dir")
-PATHS_DIDINFO_OUTPUT_DIR_OPTION_CANDIDATES: tuple[str, ...] = ("output_dir_didinfo", "Output_Dir_Didinfo", "output_dir", "Output_Dir")
-# [PATHS] 节：didinfo_inputs 管道键与 didinfo_input_excel 单路径键的候选顺序（历史说明）
-PATHS_DIDINFO_INPUT_PIPE_OPTION_CANDIDATES: tuple[str, str] = (
-    OPTION_DIDINFO_INPUTS,
-    OPTION_DIDINFO_INPUTS_CANDIDATES[0],
+PATHS_RESETDID_OUTPUT_DIR_OPTION_CANDIDATES: tuple[str, ...] = (
+    "output_dir_resetdid",
+    "Output_Dir_Resetdid",
+    "output_dir",
+    "Output_Dir",
 )
-PATHS_DIDINFO_INPUT_EXCEL_OPTION_CANDIDATES: tuple[str, str] = tuple(
-    reversed(OPTION_DIDINFO_INPUT_EXCEL_CANDIDATES)
+# [PATHS] 节：resetdid_inputs 管道键与 resetdid_input_excel 单路径键的候选顺序（历史说明）
+PATHS_RESETDID_INPUT_PIPE_OPTION_CANDIDATES: tuple[str, str] = (
+    OPTION_RESETDID_INPUTS,
+    OPTION_RESETDID_INPUTS_CANDIDATES[0],
 )
-PATHS_DIDINFO_INPUT_OPTION_CANDIDATES: tuple[str, ...] = (
-    *PATHS_DIDINFO_INPUT_PIPE_OPTION_CANDIDATES,
-    *PATHS_DIDINFO_INPUT_EXCEL_OPTION_CANDIDATES,
+PATHS_RESETDID_INPUT_EXCEL_OPTION_CANDIDATES: tuple[str, str] = tuple(
+    reversed(OPTION_RESETDID_INPUT_EXCEL_CANDIDATES)
+)
+PATHS_RESETDID_INPUT_OPTION_CANDIDATES: tuple[str, ...] = (
+    *PATHS_RESETDID_INPUT_PIPE_OPTION_CANDIDATES,
+    *PATHS_RESETDID_INPUT_EXCEL_OPTION_CANDIDATES,
 )
 
 # ---------------------------------------------------------------------------
@@ -494,13 +499,13 @@ PATHS_STABLE_OUTPUT_RELATED_OPTION_NAMES: tuple[str, ...] = (
     OPTION_OUTPUT_FILENAME,
     "cin_output_filename",
     "xml_output_filename",
-    "didinfo_output_filename",
+    "resetdid_output_filename",
     "didconfig_output_filename",
     "uart_output_filename",
     "uds_output_filename",
     OPTION_SOA_SETSERVER_OUTPUT_FILENAME,
     OPTION_SOA_DATATAB_OUTPUT_FILENAME,
-    "didinfo_variants",
+    "resetdid_variants",
 )
 
 PATHS_MERGED_PRESERVE_OPTION_NAMES: tuple[str, ...] = (
@@ -517,7 +522,7 @@ LR_REAR_SAVE_NORMALIZE_OPTION_NAMES: tuple[str, ...] = (
     *FILTER_OPTION_KEYS,
     OPTION_SELECTED_SHEETS,
     OPTION_LOG_LEVEL_MIN,
-    OPTION_DIDINFO_INPUTS,
+    OPTION_RESETDID_INPUTS,
     OPTION_CIN_INPUT_EXCEL,
     OPTION_UDS_ECU_QUALIFIER,
 )
@@ -551,7 +556,7 @@ DTC_SAVE_NORMALIZE_OPTION_NAMES: tuple[str, ...] = (
     OPTION_OUTPUT_DIR,
     *FILTER_OPTION_KEYS,
     OPTION_LOG_LEVEL_MIN,
-    OPTION_DIDINFO_INPUTS,
+    OPTION_RESETDID_INPUTS,
     OPTION_CIN_INPUT_EXCEL,
     OPTION_UDS_ECU_QUALIFIER,
 )
@@ -589,7 +594,7 @@ FORMATTED_SECTION_GROUPS: dict[str, tuple[tuple[str, tuple[str, ...]], ...]] = {
                 OPTION_IO_INPUTS,
                 OPTION_DIDCONFIG_INPUT_EXCEL,
                 OPTION_SRV_EXCEL,
-                OPTION_DIDINFO_INPUTS,
+                OPTION_RESETDID_INPUTS,
                 OPTION_CIN_INPUT_EXCEL,
             ),
         ),
@@ -675,7 +680,7 @@ FORMATTED_SECTION_GROUPS: dict[str, tuple[tuple[str, tuple[str, ...]], ...]] = {
                 OPTION_IO_INPUTS,
                 OPTION_DIDCONFIG_INPUT_EXCEL,
                 OPTION_SRV_EXCEL,
-                OPTION_DIDINFO_INPUTS,
+                OPTION_RESETDID_INPUTS,
                 OPTION_CIN_INPUT_EXCEL,
             ),
         ),
@@ -732,6 +737,6 @@ LR_EMPTY_STATE_OPTION_MAP: dict[str, tuple[tuple[str, str], ...]] = {
     STATE_KEY_LR_CAN_INPUT: ((SECTION_LR_REAR, OPTION_INPUT_EXCEL),),
     STATE_KEY_LR_IO_EXCEL: ((SECTION_LR_REAR, OPTION_IO_INPUTS),),
     STATE_KEY_LR_DIDCONFIG_EXCEL: ((SECTION_LR_REAR, OPTION_DIDCONFIG_INPUT_EXCEL),),
-    STATE_KEY_LR_DIDINFO_EXCEL: ((SECTION_LR_REAR, OPTION_DIDINFO_INPUTS),),
+    STATE_KEY_LR_RESETDID_EXCEL: ((SECTION_LR_REAR, OPTION_RESETDID_INPUTS),),
     STATE_KEY_LR_CIN_EXCEL: ((SECTION_LR_REAR, OPTION_CIN_INPUT_EXCEL),),
 }

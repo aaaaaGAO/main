@@ -17,9 +17,8 @@ from __future__ import annotations
 
 from flask import Blueprint, request
 
-from services.config_service import ConfigService
-from services.http_api_constants import HttpStatus, api_error, api_success
-from services.task_orchestrator import TaskOrchestrator
+from services.http_api_constants import HttpStatus, api_error
+from services.programmatic_domain_route_service import ProgrammaticDomainRouteService
 from .route_helpers import get_base_dir, jsonify_orchestrator_result, jsonify_route_result
 
 lr_rear_bp = Blueprint("lr_rear", __name__)
@@ -48,11 +47,10 @@ def generate_can():
     失败 500 且含 ``detail``（与 `route_helpers` 一致）。
     """
     payload = request.get_json(silent=True) or {}
-    base_dir = payload.get("base_dir") or current_base_dir()
-    config_path = payload.get("config_path")
-
-    orch = TaskOrchestrator.from_base_dir(base_dir, config_path=config_path)
-    result = orch.run_lr_bundle(run_can=True)
+    result = ProgrammaticDomainRouteService.run_lr_generate_can_bundle(
+        payload,
+        fallback_base_dir=current_base_dir(),
+    )
     return jsonify_orchestrator_result(
         result,
         success_separator=" / ",
@@ -71,7 +69,7 @@ def save_lr_rear_config():
 
     参数：**必须** `Content-Type: application/json`。键可含
     ``base_dir``、``levels``、``platforms``、``models``、``out_root``、``selected_sheets``、
-    ``log_level``、``can_input``、``didinfo_excel``、``cin_excel`` 等；仅**出现且可映射**的项写入，空请求体
+    ``log_level``、``can_input``、``resetdid_excel``、``cin_excel`` 等；仅**出现且可映射**的项写入，空请求体
     或无可映射字段时 400。
 
     返回：200 为 API 成功体与 ``HttpStatus.OK``；400 为 ``HttpStatus.BAD_REQUEST`` 与错误 ``message``（由 ``jsonify_route_result`` 统一 ``jsonify``）。
@@ -80,15 +78,9 @@ def save_lr_rear_config():
         return api_error("需要 JSON 请求体", status=HttpStatus.BAD_REQUEST)
 
     payload = request.get_json() or {}
-    base_dir = payload.get("base_dir") or current_base_dir()
-
-    svc = ConfigService.from_base_dir(base_dir)
-    lr_data = svc.build_lr_rear_section_data(payload)
-
-    if not lr_data:
-        return api_error("未提供任何可写入的 LR_REAR 字段", status=HttpStatus.BAD_REQUEST)
-
-    svc.save_lr_rear(lr_data)
-    return api_success("LR_REAR 配置已保存")
+    return ProgrammaticDomainRouteService.save_lr_rear_section_tuple(
+        payload,
+        fallback_base_dir=current_base_dir(),
+    )
 
 

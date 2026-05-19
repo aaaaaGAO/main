@@ -30,6 +30,25 @@
     var relayConfigs = [];
     var relayCounter = 1;
     var relayCoilModes = {};
+    var IMPORT_RESET_SELECTION_KEYS = [
+        'can_input', 'io_excel', 'didconfig_excel', 'resetdid_excel', 'cin_excel', 'srv_excel',
+        'c_input', 'c_uart', 'c_srv',
+        'd_input', 'd_io_excel', 'd_didconfig_excel', 'd_resetdid_excel', 'd_cin_excel', 'd_srv_excel'
+    ];
+    var IMPORT_RESET_DISPLAY_IDS = [
+        'can_disp', 'io_disp', 'didconfig_disp', 'resetdid_disp', 'cin_disp', 'srv_disp',
+        'c_disp', 'c_uart_disp', 'c_srv_disp',
+        'd_disp', 'd_io_disp', 'd_didconfig_disp', 'd_resetdid_disp', 'd_cin_disp', 'd_srv_disp'
+    ];
+    var IMPORT_RESET_CENTRAL_STATUS_ITEMS = [
+        ['c_uart_comm_disp', '未配置'],
+        ['c_pwr_disp', '未配置'],
+        ['c_rly_disp', '未配置'],
+        ['c_ig_disp', '未配置'],
+        ['c_pw_disp', '未配置'],
+        ['c_ignition_disp', '未配置'],
+        ['c_login_disp', '未配置']
+    ];
     /** UI 已隐藏的继电器字段：写入主配置/API 前剥离（保留 relayID，便于后端判断与后续扩展） */
     var RELAY_KEYS_STRIPPED_FOR_SAVE = ['dataBits', 'stopBits', 'kHANDSHAKE_DISABLED', 'parity'];
 
@@ -84,7 +103,7 @@
             selected_sheets: getSelectedSheets('can_select_cases_group'),
             io_excel: selection.io_excel || '',
             didconfig_excel: selection.didconfig_excel || '',
-            didinfo_excel: selection.didinfo_excel || '',
+            resetdid_excel: selection.resetdid_excel || '',
             cin_excel: selection.cin_excel || '',
             srv_excel: selection.srv_excel || '',
             out_root: document.getElementById('out_root') ? document.getElementById('out_root').value || '' : '',
@@ -122,7 +141,7 @@
             d_io_excel: selection.d_io_excel || '',
             d_io_selected_sheets: getDtcIoSelectedSheets(),
             d_didconfig_excel: selection.d_didconfig_excel || '',
-            d_didinfo_excel: selection.d_didinfo_excel || '',
+            d_resetdid_excel: selection.d_resetdid_excel || '',
             d_cin_excel: selection.d_cin_excel || '',
             d_srv_excel: selection.d_srv_excel || '',
             d_out_root: document.getElementById('d_out_root') ? document.getElementById('d_out_root').value || '' : '',
@@ -302,7 +321,7 @@
             setPath('can_input', cfg.can_input, 'can_disp');
             setPath('io_excel', cfg.io_excel, 'io_disp');
             setPath('didconfig_excel', cfg.didconfig_excel, 'didconfig_disp');
-            setPath('didinfo_excel', cfg.didinfo_excel, 'didinfo_disp');
+            setPath('resetdid_excel', cfg.resetdid_excel, 'resetdid_disp');
             setPath('cin_excel', cfg.cin_excel, 'cin_disp');
             setPath('srv_excel', cfg.srv_excel, 'srv_disp');
             restoreChecks('level_group', cfg.levels);
@@ -368,10 +387,13 @@
                 setPath('c_pwr', cfg.c_pwr, 'c_pwr_disp');
             }
             if (cfg.c_rly && Array.isArray(cfg.c_rly)) {
-                relayConfigs = cfg.c_rly.map(function (r, idx) {
+                // 不能直接替换数组引用，否则 ui_controls.js 持有的旧引用无法被同步清空/保存
+                relayConfigs.length = 0;
+                Object.keys(relayCoilModes).forEach(function (k) { delete relayCoilModes[k]; });
+                cfg.c_rly.forEach(function (r, idx) {
                     var o = relayFromPersisted(r);
                     o.id = idx + 1;
-                    return o;
+                    relayConfigs.push(o);
                 });
                 relayCounter = relayConfigs.length + 1;
                 global.relayCounter = relayCounter;
@@ -409,7 +431,7 @@
             setPath('d_input', cfg.d_input, 'd_disp');
             setPath('d_io_excel', cfg.d_io_excel, 'd_io_disp');
             setPath('d_didconfig_excel', cfg.d_didconfig_excel, 'd_didconfig_disp');
-            setPath('d_didinfo_excel', cfg.d_didinfo_excel, 'd_didinfo_disp');
+            setPath('d_resetdid_excel', cfg.d_resetdid_excel, 'd_resetdid_disp');
             setPath('d_cin_excel', cfg.d_cin_excel, 'd_cin_disp');
             setPath('d_srv_excel', cfg.d_srv_excel, 'd_srv_disp');
             restoreChecks('d_level_group', cfg.d_levels);
@@ -437,6 +459,64 @@
     }
 
     async function applyImportedState(data) {
+        // 导入采用“覆盖式”语义：先清空当前内存态/展示态，再按导入内容回填。
+        // 这样导入文件中缺失的字段会保持为空，不会残留旧配置值。
+        var resetPathDisplay = function (dispId) {
+            var el = document.getElementById(dispId);
+            if (!el) return;
+            el.innerText = '未选择';
+            el.classList.remove('selected');
+        };
+        IMPORT_RESET_SELECTION_KEYS.forEach(function (k) { selection[k] = ''; });
+        selection.can_input_type = 'file';
+        selection.c_input_type = 'file';
+        selection.d_input_type = 'file';
+        IMPORT_RESET_DISPLAY_IDS.forEach(function (dispId) { resetPathDisplay(dispId); });
+
+        var outRootEl = document.getElementById('out_root');
+        if (outRootEl) outRootEl.value = '';
+        var cOutEl = document.getElementById('c_out_root');
+        if (cOutEl) cOutEl.value = '';
+        var dOutEl = document.getElementById('d_out_root');
+        if (dOutEl) dOutEl.value = '';
+
+        uartCommConfig.port = '';
+        uartCommConfig.baudrate = '115200';
+        uartCommConfig.dataBits = '8';
+        uartCommConfig.stopBits = '1';
+        uartCommConfig.kHANDSHAKE_DISABLED = '0';
+        uartCommConfig.parity = '0';
+        uartCommConfig.frameTypeIs8676 = '0';
+        powerConfig.port = '';
+        powerConfig.baudrate = '115200';
+        powerConfig.dataBits = '8';
+        powerConfig.stopBits = '1';
+        powerConfig.kHANDSHAKE_DISABLED = '0';
+        powerConfig.parity = '0';
+        powerConfig.channel = '1';
+        relayConfigs.length = 0;
+        Object.keys(relayCoilModes).forEach(function (k) { delete relayCoilModes[k]; });
+        relayCounter = 1;
+        global.relayCounter = relayCounter;
+        igConfig.equipmentType = '';
+        igConfig.channelNumber = '';
+        igConfig.initStatus = '';
+        igConfig.eqPosition = '';
+        pwConfig.equipmentType = '';
+        pwConfig.channelNumber = '';
+        pwConfig.initStatus = '';
+        pwConfig.eqPosition = '';
+        ignConfig.waitTime = '';
+        ignConfig.current = '';
+        loginConfig.username = '';
+        loginConfig.password = '';
+        IMPORT_RESET_CENTRAL_STATUS_ITEMS.forEach(function (item) {
+            var el = document.getElementById(item[0]);
+            if (!el) return;
+            el.innerText = item[1];
+            el.classList.remove('selected');
+        });
+
         if (data.can_input) {
             selection.can_input = data.can_input;
             selection.can_input_type = data.can_input_type || 'file';
@@ -450,9 +530,9 @@
             selection.didconfig_excel = data.didconfig_excel;
             updateDisplay('didconfig_disp', data.didconfig_excel);
         }
-        if (data.didinfo_excel) {
-            selection.didinfo_excel = data.didinfo_excel;
-            updateDisplay('didinfo_disp', data.didinfo_excel);
+        if (data.resetdid_excel) {
+            selection.resetdid_excel = data.resetdid_excel;
+            updateDisplay('resetdid_disp', data.resetdid_excel);
         }
         if (data.cin_excel) {
             selection.cin_excel = data.cin_excel;
@@ -509,10 +589,14 @@
         }
         if (data.c_rly) {
             if (Array.isArray(data.c_rly)) {
-                relayConfigs = data.c_rly.map(function (r, idx) {
+                // 注意：不能直接 `relayConfigs = [...]`，否则会导致 global.relayConfigs 与其它模块引用失效
+                // 这里必须原地清空再填充，保证 ui_controls.js / collectCurrentState / autoSaveConfig 使用同一份数组引用
+                relayConfigs.length = 0;
+                Object.keys(relayCoilModes).forEach(function (k) { delete relayCoilModes[k]; });
+                data.c_rly.forEach(function (r, idx) {
                     var o = relayFromPersisted(r);
                     o.id = idx + 1;
-                    return o;
+                    relayConfigs.push(o);
                 });
                 relayCounter = relayConfigs.length + 1;
                 global.relayCounter = relayCounter;
@@ -599,10 +683,10 @@
             selection.d_didconfig_excel = dDidCfg;
             updateDisplay('d_didconfig_disp', dDidCfg);
         }
-        var dDidInfo = data.d_didinfo_excel || data.didinfo_excel;
-        if (dDidInfo) {
-            selection.d_didinfo_excel = dDidInfo;
-            updateDisplay('d_didinfo_disp', dDidInfo);
+        var dResetDidPath = data.d_resetdid_excel || data.resetdid_excel;
+        if (dResetDidPath) {
+            selection.d_resetdid_excel = dResetDidPath;
+            updateDisplay('d_resetdid_disp', dResetDidPath);
         }
         var dCin = data.d_cin_excel || data.cin_excel;
         if (dCin) {
@@ -659,6 +743,8 @@
                 return;
             }
             await applyImportedState(result.data);
+            // 导入后立即落盘当前主配置，确保“导入缺失字段”也会同步清空到 Configuration.ini
+            autoSaveConfig();
             alert('✅ 配置导入成功！');
         } catch (e) {
             alert('❌ 导入失败: ' + e.message);

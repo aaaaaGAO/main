@@ -54,7 +54,7 @@ from services.config_constants import (
     OPTION_C_RLY,
     OPTION_CIN_INPUT_EXCEL,
     OPTION_DIDCONFIG_INPUT_EXCEL,
-    OPTION_DIDINFO_INPUTS,
+    OPTION_RESETDID_INPUTS,
     OPTION_IGN_CURRENT,
     OPTION_IGN_WAITTIME,
     OPTION_INPUT_EXCEL,
@@ -78,7 +78,7 @@ from services.config_constants import (
     UI_FIELD_CAN_INPUT,
     UI_FIELD_CIN_EXCEL,
     UI_FIELD_IO_EXCEL,
-    UI_FIELD_DIDINFO_EXCEL,
+    UI_FIELD_RESETDID_EXCEL,
     STATE_KEY_DTC_IO_EXCEL,
     STATE_KEY_LR_DIDCONFIG_EXCEL,
     STATE_KEY_DTC_DIDCONFIG_EXCEL,
@@ -172,6 +172,10 @@ def clean_duplicate_sections(config_path: str) -> List[str]:
                     if stripped.startswith(","):
                         continue
                     _key_sections = CONFIG_KEY_SECTIONS
+                    # 关键业务 section（LR/CENTRAL/DTC/PATHS）只允许 `key = value` 形式；
+                    # 像 "ing" 这类孤立残片会触发 configparser.ParsingError，需在清洗阶段丢弃。
+                    if "=" not in stripped and current_section in _key_sections:
+                        continue
                     if (
                         "=" not in stripped
                         and current_section not in _key_sections
@@ -286,11 +290,11 @@ class ConfigManager:
                 fixed_config_parser.set(SECTION_PATHS, option_name, str(fixed_config[option_name]))
         output_keys = [
             "output_filename", "cin_output_filename", "xml_output_filename",
-            "didinfo_output_filename", "didconfig_output_filename",
+            "resetdid_output_filename", "didconfig_output_filename",
             "uart_output_filename", "uds_output_filename",
             OPTION_SOA_SETSERVER_OUTPUT_FILENAME,
             OPTION_SOA_DATATAB_OUTPUT_FILENAME,
-            "didinfo_variants",
+            "resetdid_variants",
         ]
         for option_name in output_keys:
             if fixed_config.get(option_name):
@@ -476,10 +480,10 @@ class ConfigManager:
                 item_keys = [
                     "unified_mapping_excel", "mapping_sheets", "cin_mapping_sheet",
                     "output_filename", "cin_output_filename", "xml_output_filename",
-                    "didinfo_output_filename", "didconfig_output_filename",
+                    "resetdid_output_filename", "didconfig_output_filename",
                     OPTION_SOA_SETSERVER_OUTPUT_FILENAME,
                     OPTION_SOA_DATATAB_OUTPUT_FILENAME,
-                    "didinfo_variants",
+                    "resetdid_variants",
                     "mapping_excel", "cin_mapping_excel",
                 ]
                 for option_name in item_keys:
@@ -528,7 +532,7 @@ class ConfigManager:
         section_data: Dict[str, Any],
         *,
         prefix: str,
-        include_didinfo: bool = False,
+        include_resetdid: bool = False,
         include_cin: bool = False,
         include_uds: bool = True,
     ) -> None:
@@ -538,7 +542,7 @@ class ConfigManager:
             out：目标状态字典（就地修改）。
             section_data：配置节键值字典。
             prefix：状态键前缀。
-            include_didinfo：是否映射 DIDInfo 输入字段。
+            include_resetdid：是否映射 ResetDid_Value 输入字段。
             include_cin：是否映射 CIN 输入字段。
             include_uds：是否映射 UDS qualifier 字段。
 
@@ -557,9 +561,9 @@ class ConfigManager:
                 OPTION_UDS_ECU_QUALIFIER,
                 "",
             )
-        if include_didinfo:
-            didinfo_raw = section_data.get(OPTION_DIDINFO_INPUTS, "")
-            out[ConfigManager.ui_state_key(prefix, UI_FIELD_DIDINFO_EXCEL)] = didinfo_raw.split(" | ")[0] if didinfo_raw else ""
+        if include_resetdid:
+            resetdid_raw = section_data.get(OPTION_RESETDID_INPUTS, "")
+            out[ConfigManager.ui_state_key(prefix, UI_FIELD_RESETDID_EXCEL)] = resetdid_raw.split(" | ")[0] if resetdid_raw else ""
         if include_cin:
             out[ConfigManager.ui_state_key(prefix, UI_FIELD_CIN_EXCEL)] = section_data.get(OPTION_CIN_INPUT_EXCEL, "")
 
@@ -578,7 +582,7 @@ class ConfigManager:
                 out,
                 lr_section,
                 prefix="",
-                include_didinfo=True,
+                include_resetdid=True,
                 include_cin=True,
             )
             out[UI_FIELD_CAN_INPUT] = out.pop("input")
@@ -627,7 +631,7 @@ class ConfigManager:
                 out,
                 dtc_section,
                 prefix="d",
-                include_didinfo=True,
+                include_resetdid=True,
                 include_cin=True,
             )
             out[STATE_KEY_DTC_SRV_EXCEL] = dtc_section.get(OPTION_SRV_EXCEL, "")

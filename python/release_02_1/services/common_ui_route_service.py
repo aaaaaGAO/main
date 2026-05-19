@@ -3,12 +3,12 @@
 """
 `web.routes.common` 对应的业务层：与 Flask 解耦，**只返回** ``(响应 dict, HTTP 状态码)``。
 
-涵盖：LR 配置片段、筛选项、整包加载配置、串口枚举、Tk 选文件/解析结构、
+涵盖：筛选项、整包加载配置、串口枚举、Tk 选文件/解析结构、
 自动保存/另存预设、从预设读回。异常统一转为 ``client_error_body`` 风格 JSON，
 由路由侧 ``jsonify``；不在此模块内记录 Flask ``request``。
 部分方法使用 `service_route_result_decorator.guard_service_route_tuple` 收敛重复 ``try/except``。
 
-与 `StateConfigService`、`ConfigService`、`ConfigManager` 协作，保持路由文件「薄」。
+与 `StateConfigService`、`ConfigManager` 协作，保持路由文件「薄」。
 """
 
 from __future__ import annotations
@@ -32,7 +32,6 @@ from services.http_api_constants import (
     make_json_tuple,
 )
 from services.config_manager import ConfigManager
-from services.config_service import ConfigService
 from services.filter_service import parse_shaixuan_config
 from services.gui_service import GuiService
 from services.request_payload_utils import merge_ui_state_from_data_only
@@ -60,20 +59,6 @@ class CommonUiRouteService:
         返回：无。
         """
         self.base_dir = base_dir
-
-    @guard_service_route_tuple(http_status_on_error=HttpStatus.INTERNAL_SERVER_ERROR)
-    def lr_rear_config_result(self) -> tuple[dict[str, Any], int]:
-        """
-        读取并返回左右后域相关配置子集（经 `ConfigService.get_lr_rear`）。
-
-        参数：无（使用 `self.base_dir`）。
-
-        返回：成功为 ``({"success": True, "data": ...}, 200)``；异常为
-        ``(client_error_body(...), 500)``（由 ``guard_service_route_tuple`` 统一捕获）。
-        """
-        service = ConfigService.from_base_dir(self.base_dir)
-        payload_data: dict[str, Any] = service.get_lr_rear()
-        return api_success(data=payload_data)
 
     @guard_service_route_tuple(http_status_on_error=HttpStatus.INTERNAL_SERVER_ERROR)
     def filter_options_result(self) -> tuple[dict[str, Any], int]:

@@ -15,7 +15,7 @@ from __future__ import annotations
 
 from flask import Blueprint, request
 
-from services.task_orchestrator import TaskOrchestrator
+from services.programmatic_domain_route_service import ProgrammaticDomainRouteService
 from .route_helpers import get_base_dir, jsonify_orchestrator_result
 
 dtc_bp = Blueprint("dtc", __name__)
@@ -44,22 +44,9 @@ def generate_dtc():
     返回：`jsonify_orchestrator_result` 成功（200）或失败（500 + ``detail``）。
     """
     payload = request.get_json(silent=True) or {}
-    base_dir = payload.get("base_dir") or current_base_dir()
-    run_can = payload.get("run_can", True)
-    run_xml = payload.get("run_xml", True)
-    run_cin = bool(payload.get("run_cin", False))
-    run_did = bool(payload.get("run_did", False))
-    run_soa = bool(payload.get("run_soa", False))
-    validate_before_run = payload.get("validate_before_run", True)
-
-    orch = TaskOrchestrator.from_base_dir(base_dir)
-    result = orch.run_dtc_bundle(
-        run_can=run_can,
-        run_xml=run_xml,
-        run_cin=run_cin,
-        run_did=run_did,
-        run_soa=run_soa,
-        validate_before_run=validate_before_run,
+    result = ProgrammaticDomainRouteService.run_dtc_programmatic_bundle(
+        payload,
+        fallback_base_dir=current_base_dir(),
     )
     return jsonify_orchestrator_result(result, success_separator=" / ", failure_message=None, failure_separator=" / ")
 

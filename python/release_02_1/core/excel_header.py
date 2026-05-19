@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-用例表表头定位与列索引查找（供 CAN / XML / DIDConfig / DIDInfo / UART 等生成器共用）。
+用例表表头定位与列索引查找（供 CAN / XML / DIDConfig / ResetDid / UART 等生成器共用）。
 
 实现来自 infra.excel.header。
 """

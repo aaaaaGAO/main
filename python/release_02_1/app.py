@@ -11,7 +11,7 @@ Flask 应用入口（骨架版）
 - 心跳监控线程与启动逻辑（端口探测、自动打开浏览器）
 
 所有业务接口已迁移至：
-- web.routes.common  -> /api/healthz, /api/heartbeat, /api/load_config, /api/select_file, /api/parse_file_structure, /api/get_filter_options
+- web.routes.common  -> /api/heartbeat, /api/load_config, /api/select_file, /api/parse_file_structure, /api/get_filter_options
 - web.routes.lr_rear  -> /api/lr/generate/can, /api/lr/config
 - web.routes.central  -> /api/central/generate
 - web.routes.dtc      -> /api/dtc/generate
@@ -37,7 +37,7 @@ from services.http_api_constants import HttpStatus, api_error_dict
 from web import create_app
 
 # 工具显示名（Web 右上角 + build_exe 打包时的 EXE 文件名，只改此处即可）
-TOOL_DISPLAY_NAME = "测试用例生成工具_2026.4.30"
+TOOL_DISPLAY_NAME = "测试用例生成工具_2026.5.6"
 
 # ---------------------------------------------------------------------------
 # 配置

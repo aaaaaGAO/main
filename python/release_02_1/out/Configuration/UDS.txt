@@ -1,2 +1,2 @@
 [UDS]
-ECU_qualifier=CDCU
+ECU_qualifier=LDCU

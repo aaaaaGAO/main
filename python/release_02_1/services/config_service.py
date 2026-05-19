@@ -34,7 +34,7 @@ from services.config_constants import (
     OPTION_CASE_TARGET_VERSIONS,
     OPTION_CIN_INPUT_EXCEL,
     OPTION_DIDCONFIG_INPUT_EXCEL,
-    OPTION_DIDINFO_INPUTS,
+    OPTION_RESETDID_INPUTS,
     OPTION_INPUT_EXCEL,
     OPTION_IO_INPUTS,
     OPTION_LOG_LEVEL_MIN,
@@ -45,7 +45,7 @@ from services.config_constants import (
     STATE_KEY_LR_CAN_INPUT,
     STATE_KEY_LR_CIN_EXCEL,
     STATE_KEY_LR_DIDCONFIG_EXCEL,
-    STATE_KEY_LR_DIDINFO_EXCEL,
+    STATE_KEY_LR_RESETDID_EXCEL,
     STATE_KEY_LR_IO_EXCEL,
     STATE_KEY_LR_LEVELS,
     STATE_KEY_LR_LOG_LEVEL,
@@ -59,7 +59,7 @@ from services.config_constants import (
     VALID_LOG_LEVELS,
     cin_input_excel_value_from_ui_path,
     input_excel_value_from_ui_path,
-    didinfo_inputs_value_from_ui_single_path,
+    resetdid_inputs_value_from_ui_single_path,
     io_inputs_value_from_ui_single_path,
 )
 
@@ -216,11 +216,11 @@ class ConfigService:
         if can_input is not None:
             lr_data[OPTION_INPUT_EXCEL] = input_excel_value_from_ui_path(can_input)
 
-        did_path = payload.get(STATE_KEY_LR_DIDINFO_EXCEL)
+        did_path = payload.get(STATE_KEY_LR_RESETDID_EXCEL)
         if did_path is not None:
-            did_val = didinfo_inputs_value_from_ui_single_path(did_path)
+            did_val = resetdid_inputs_value_from_ui_single_path(did_path)
             if did_val:
-                lr_data[OPTION_DIDINFO_INPUTS] = did_val
+                lr_data[OPTION_RESETDID_INPUTS] = did_val
 
         cin_raw = payload.get(STATE_KEY_LR_CIN_EXCEL)
         if cin_raw is not None:
@@ -278,7 +278,7 @@ class ConfigService:
     def update_lr_rear_and_related(self, cfg: configparser.ConfigParser, preset_data: Dict[str, Any]) -> None:
         """
         按照原 app.py /api/save_preset 中的逻辑，更新：
-        - [LR_REAR]   : case_levels/平台/车型/input_excel/io_inputs/didconfig_input_excel/output_dir/didinfo/cin/selected_sheets/log_level_min
+        - [LR_REAR]   : case_levels/平台/车型/input_excel/io_inputs/didconfig_input_excel/output_dir/resetdid/cin/selected_sheets/log_level_min
 
         注意：
         - 不负责 CENTRAL/DTC/FILTER 等部分，保持与原函数分段一致，以便分阶段迁移。
@@ -332,10 +332,10 @@ class ConfigService:
         didconfig_path = str(preset_data.get(STATE_KEY_LR_DIDCONFIG_EXCEL, "") or "").strip()
         cfg.set(SECTION_LR_REAR, OPTION_DIDCONFIG_INPUT_EXCEL, didconfig_path)
 
-        # ResetDid_Value 配置表（didinfo_inputs）
-        did_val = didinfo_inputs_value_from_ui_single_path(preset_data.get(STATE_KEY_LR_DIDINFO_EXCEL, ""))
+        # ResetDid_Value 配置表（resetdid_inputs）
+        did_val = resetdid_inputs_value_from_ui_single_path(preset_data.get(STATE_KEY_LR_RESETDID_EXCEL, ""))
         if did_val:
-            cfg.set(SECTION_LR_REAR, OPTION_DIDINFO_INPUTS, did_val)
+            cfg.set(SECTION_LR_REAR, OPTION_RESETDID_INPUTS, did_val)
 
         # Clib 配置表（cin_input_excel）
         cin_path = cin_input_excel_value_from_ui_path(preset_data.get(STATE_KEY_LR_CIN_EXCEL, ""))

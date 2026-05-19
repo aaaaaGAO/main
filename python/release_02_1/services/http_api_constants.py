@@ -24,6 +24,8 @@ RESPONSE_KEY_MESSAGE = "message"
 RESPONSE_KEY_DETAIL = "detail"
 RESPONSE_KEY_DATA = "data"
 # ---------- 经由 ``api_success(..., extra=...)`` 等合并到顶层的约定键 ----------
+# 探活/心跳等轻量接口：与 ``success`` 并列，取值如 ``"alive"``（见 `POST /api/heartbeat`）。
+RESPONSE_KEY_STATUS = "status"
 RESPONSE_KEY_OUTPUT_PATH = "output_path"
 RESPONSE_KEY_PATH = "path"
 RESPONSE_KEY_FILENAME = "filename"

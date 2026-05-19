@@ -32,7 +32,7 @@ from services.config_constants import (
     STATE_KEY_DTC_CIN_EXCEL,
     STATE_KEY_DTC_CAN_INPUT,
     STATE_KEY_DTC_DIDCONFIG_EXCEL,
-    STATE_KEY_DTC_DIDINFO_EXCEL,
+    STATE_KEY_DTC_RESETDID_EXCEL,
     STATE_KEY_DTC_IO_EXCEL,
     STATE_KEY_DTC_IO_SELECTED_SHEETS,
     STATE_KEY_DTC_SRV_EXCEL,
@@ -47,7 +47,7 @@ from services.config_constants import (
     STATE_KEY_LR_CAN_INPUT,
     STATE_KEY_LR_CIN_EXCEL,
     STATE_KEY_LR_DIDCONFIG_EXCEL,
-    STATE_KEY_LR_DIDINFO_EXCEL,
+    STATE_KEY_LR_RESETDID_EXCEL,
     STATE_KEY_LR_IO_EXCEL,
     STATE_KEY_LR_SRV_EXCEL,
     STATE_KEY_LR_LEVELS,
@@ -75,7 +75,7 @@ from services.config_constants import (
     OPTION_C_RLY,
     OPTION_CIN_INPUT_EXCEL,
     OPTION_DIDCONFIG_INPUT_EXCEL,
-    OPTION_DIDINFO_INPUTS,
+    OPTION_RESETDID_INPUTS,
     OPTION_INPUT_EXCEL,
     OPTION_IO_INPUTS,
     OPTION_IGN_CURRENT,
@@ -95,7 +95,7 @@ from services.config_constants import (
     UART_COMM_KEY_MAP,
     cin_input_excel_value_from_ui_path,
     input_excel_value_from_ui_path,
-    didinfo_inputs_value_from_ui_single_path,
+    resetdid_inputs_value_from_ui_single_path,
 )
 from services.config_manager import ConfigManager
 from services.config_service import ConfigPaths, ConfigService
@@ -106,21 +106,21 @@ class LrDtcBundleStateKeys:
     """左右后域与 DTC 共用的「一键生成」 state 键名元组（仅键字符串不同，语义一致）。"""
 
     didconfig_excel: str
-    didinfo_excel: str
+    resetdid_excel: str
     cin_excel: str
     srv_excel: str
 
 
 LR_REAR_BUNDLE_STATE_KEYS = LrDtcBundleStateKeys(
     STATE_KEY_LR_DIDCONFIG_EXCEL,
-    STATE_KEY_LR_DIDINFO_EXCEL,
+    STATE_KEY_LR_RESETDID_EXCEL,
     STATE_KEY_LR_CIN_EXCEL,
     STATE_KEY_LR_SRV_EXCEL,
 )
 
 DTC_DOMAIN_BUNDLE_STATE_KEYS = LrDtcBundleStateKeys(
     STATE_KEY_DTC_DIDCONFIG_EXCEL,
-    STATE_KEY_DTC_DIDINFO_EXCEL,
+    STATE_KEY_DTC_RESETDID_EXCEL,
     STATE_KEY_DTC_CIN_EXCEL,
     STATE_KEY_DTC_SRV_EXCEL,
 )
@@ -272,7 +272,7 @@ class StateConfigService:
             STATE_KEY_LR_TARGET_VERSIONS: state_value_to_text(state.get(STATE_KEY_LR_TARGET_VERSIONS)),
             STATE_KEY_LR_SELECTED_SHEETS: state_value_to_text(state.get(STATE_KEY_LR_SELECTED_SHEETS)),
             STATE_KEY_LR_LOG_LEVEL: state_value_to_text(state.get(STATE_KEY_LR_LOG_LEVEL)) or "info",
-            STATE_KEY_LR_DIDINFO_EXCEL: state_value_to_text(state.get(STATE_KEY_LR_DIDINFO_EXCEL)),
+            STATE_KEY_LR_RESETDID_EXCEL: state_value_to_text(state.get(STATE_KEY_LR_RESETDID_EXCEL)),
             STATE_KEY_LR_CIN_EXCEL: state_value_to_text(state.get(STATE_KEY_LR_CIN_EXCEL)),
             STATE_KEY_LR_SRV_EXCEL: state_value_to_text(state.get(STATE_KEY_LR_SRV_EXCEL)),
             STATE_KEY_LR_IO_EXCEL: state_value_to_text(state.get(STATE_KEY_LR_IO_EXCEL)),
@@ -467,14 +467,22 @@ class StateConfigService:
         uart_comm: Optional[Dict[str, Any]],
     ) -> None:
         """
-        将前端的 `c_uart_comm` 同步到 `[CENTRAL]` 下各 UART 相关键；全空时按策略清空。
+        将前端的 `c_uart_comm` 同步到 `[CENTRAL]` 下各 UART 相关键；显式提交的串口块里无有效 port 时按策略清空。
 
-        参数：cfg — 配置；uart_comm — 字典或 None。返回：无。
+        参数：
+            cfg — 配置；
+            uart_comm — 应为 dict。为 ``None`` 时表示本次合并的 state **未携带** `c_uart_comm`
+            （例如左右域一键生成请求的 JSON 里没有该键，却仍因 `selection` 中的 `c_uart` 等键触发了
+            CENTRAL 合并分支）；此时**不修改**已有的 `uart_comm_*`，避免误清空。
+
+        返回：无。
         """
+        if uart_comm is None:
+            return
         has_uart_in_cfg = cfg.has_section(SECTION_CENTRAL) and any(
             cfg.has_option(SECTION_CENTRAL, item_key) for item_key in UART_COMM_CFG_KEYS
         )
-        port_set = bool((uart_comm.get("port") or "").strip()) if uart_comm else False
+        port_set = bool((uart_comm.get("port") or "").strip())
         if not (has_uart_in_cfg or port_set):
             return
 
@@ -528,16 +536,16 @@ class StateConfigService:
         state: Dict[str, Any],
     ) -> None:
         """
-        在标准域写回之后，补全 DTC 特有条目：DIDInfo/CIN/IO 映射/DID_Config 路径与表。
+        在标准域写回之后，补全 DTC 特有条目：ResetDid/CIN/IO 映射/DID_Config 路径与表。
 
         参数：cfg — 配置；state — 含 `STATE_KEY_DTC_*`。返回：无。
         """
-        dtc_didinfo_excel = state.get(STATE_KEY_DTC_DIDINFO_EXCEL)
+        dtc_resetdid_excel = state.get(STATE_KEY_DTC_RESETDID_EXCEL)
         StateConfigService.set_text_option(
             cfg,
             SECTION_DTC,
-            OPTION_DIDINFO_INPUTS,
-            didinfo_inputs_value_from_ui_single_path(dtc_didinfo_excel) if dtc_didinfo_excel else "",
+            OPTION_RESETDID_INPUTS,
+            resetdid_inputs_value_from_ui_single_path(dtc_resetdid_excel) if dtc_resetdid_excel else "",
             remove_on_empty=True,
         )
 
@@ -763,11 +771,11 @@ class StateConfigService:
         返回：``run_can`` / ``run_xml`` / ``run_did`` / ``run_cin`` / ``run_soa`` 布尔 dict。
         """
         has_didconfig = bool((state.get(state_key_bundle.didconfig_excel) or "").strip())
-        has_didinfo = bool((state.get(state_key_bundle.didinfo_excel) or "").strip())
+        has_resetdid = bool((state.get(state_key_bundle.resetdid_excel) or "").strip())
         return {
             "run_can": True,
             "run_xml": True,
-            "run_did": has_didconfig or has_didinfo,
+            "run_did": has_didconfig or has_resetdid,
             "run_cin": bool(state.get(state_key_bundle.cin_excel)),
             "run_soa": bool((state.get(state_key_bundle.srv_excel) or "").strip()),
         }

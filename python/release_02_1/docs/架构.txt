@@ -89,11 +89,11 @@ project_root/
 │   │   ├── runtime.py              # XML 主流程、resolve_base_dir、load_runtime_config
 │   │   ├── runtime_io.py           # 读 Excel、用例分组、写 XML；已收口为类内实现 + 统一导出
 │   │   └── service.py              # XMLGeneratorService、run_pipeline
-│   ├── capl_didinfo/               # DID 信息（含 ResetDid_Value 配置表）→ DIDInfo.txt
-│   │   ├── entrypoint.py           # DIDInfo 生成入口：run_generation / run_generation_workflow
+│   ├── capl_resetdid/               # ResetDid_Value（Configure DID / Length / Byte / Bit）→ DIDInfo.txt
+│   │   ├── entrypoint.py           # ResetDid 生成入口：run_generation / run_generation_workflow
 │   │   ├── runtime.py              # resolve_base_dir、load_runtime_config、init_runtime
 │   │   ├── runtime_io.py           # 表头 Configure DID/Length/Byte/Bit、车型列、generate_from_sheet
-│   │   ├── service.py              # DIDInfoGeneratorService、run_pipeline
+│   │   ├── service.py              # ResetDidGeneratorService、run_pipeline
 │   │   └── __init__.py
 │   ├── capl_didconfig/
 │   │   ├── entrypoint.py           # DIDConfig 生成入口：run_generation
@@ -175,15 +175,16 @@ project_root/
 
 【web/】
   - 职责：HTTP 路由与请求分发，不包含业务算法。create_app 创建 Flask 应用并注册 common、lr_rear、central、dtc 四个蓝图。
-  - routes/common.py：通用 API（心跳、健康检查、文件选择、配置加载、筛选项、一键生成、预设保存/导入），供前端 api.js 调用。
+  - routes/common.py：通用 API（心跳、文件选择、配置加载、筛选项、一键生成、预设保存/导入），供前端 api.js 调用。
   - routes/lr_rear.py、central.py、dtc.py：按域提供“生成”与“保存配置”接口，内部调用 services 层，避免在路由里写复杂逻辑。
 
 【services/】
   - 职责：应用服务层，组合领域逻辑，供 Web 调用。把“配置读写”“任务编排”“弹窗与文件解析”“运行前校验”从 Web 中剥离，便于测试与复用。
   - config_manager：统一读写主配置文件、固定配置文件，保证格式一致、去重、同步。
   - config_service：对前端暴露的配置接口（路径、筛选项、预设、域配置），与 config_manager 配合。
-  - task_orchestrator：按域（左右后/中央/DTC）编排“先校验再依次执行 DIDConfig、DIDInfo、CIN、UART、CAN、XML、SOA”等任务；同一任务内复用 workbook 对象，降低重复解析开销，并在 finally 阶段统一关闭。
-  - task_service：单任务执行（CAN/XML/CIN/DIDInfo/DIDConfig/UART/SOA），调用对应 generators.*.entrypoint.run_generation / run_cli。
+  - task_orchestrator：按域（左右后/中央/DTC）编排“先校验再依次执行 DIDConfig、ResetDid_Value、CIN、UART、CAN、XML、SOA”等任务；同一任务内复用 workbook 对象，降低重复解析开销，并在 finally 阶段统一关闭。
+  - programmatic_domain_route_service：可编程子步路由用到的 TaskOrchestrator/ConfigService 组装（与 Flask request 解耦）。
+  - task_service：单任务执行（CAN/XML/CIN/ResetDid/DIDConfig/UART/SOA），调用对应 generators.*.entrypoint.run_generation / run_cli。
   - gui_service：Tkinter 弹窗（文件/文件夹选择、另存为）、文件/文件夹结构解析（Excel sheet、CAN testcase、XML testgroup）。
   - filter_service：解析 config/filter_options.ini，提供等级/平台/车型等下拉数据（缺文件时返回空列表；仅支持此文件名，无 .txt 回退）。
   - run_validator：运行前校验输出目录可写、输入路径存在，避免执行到一半才报错。
@@ -197,7 +198,7 @@ project_root/
   - common/：通用小工具（用例 ID 清洗、Clib 名称清洗、生成汇总）+ 少量统一导出入口。
 
 【generators/】
-  - 职责：具体格式转换实现。每个子包（capl_can、capl_cin、capl_xml、capl_didinfo、capl_didconfig、capl_soa、capl_uart）只关心“自己这种输出格式”的编排与写出，读表、过滤、步骤解析等复用 core/infra。
+  - 职责：具体格式转换实现。每个子包（capl_can、capl_cin、capl_xml、capl_resetdid、capl_didconfig、capl_soa、capl_uart）只关心“自己这种输出格式”的编排与写出，读表、过滤、步骤解析等复用 core/infra。
   - 入口约定：各子包提供 entrypoint 模块，对外暴露 run_generation / run_cli（及别名），供 TaskService 与命令行（python -m generators.capl_can.entrypoint）调用；具体编排与实现仍在 runtime、runtime_io、service 中。
   - 域隔离约定：各 runtime 仅读取当前 domain 对应 section，缺失即报错；已移除 get_first 跨节兜底与 runtime 内对 [PATHS] 的跨域读取。
   - 结构收口约定：CAN/XML/UART 的 runtime_io 已完成“散函数命名收口 + Utility 统一导出”，外部调用保持稳定，内部实现更集中。

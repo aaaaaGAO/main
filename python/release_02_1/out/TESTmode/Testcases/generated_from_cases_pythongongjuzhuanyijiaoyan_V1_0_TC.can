@@ -11,7 +11,6 @@ variables
 testcase SYS_LDCU_light_001()
 {
   TestDescription("初始化车型配置-1");
-  g_EM_SOAGen_Swc_SOA_CONNECT();
   g_HIL_Sysvar_Swc_SetOpen("J_DO_LS_DeforstrRly 0"); // 测试步骤 Step SetOpen J_DO_LS_DeforstrRly 0
   g_HIL_Bus_Swc_Set("I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 1"); // 预期结果 Step AutoIncreaseInVal 1 15 2 Set I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq
   g_HIL_Bus_Swc_Set("I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq 3"); // 预期结果 Step AutoIncreaseInVal 1 15 2 Set I_TBOX_WinRemoteCtrl::I_TBOX_LDCU_DoorLockReq
@@ -117,5 +116,4 @@ testcase SYS_LDCU_light_006()
   g_EM_UDS_ETH_Swc_DOIP_Reconnect(); // 预期结果 TC_CANTest DOIP Reconnect
   g_HIL_Sysvar_Swc_SetOpen("J_DO_LS_DeforstrRly 1"); // 测试步骤 Step SetOpen J_DO_LS_DeforstrRly 1
   g_HIL_Sysvar_Swc_SetOpen("J_DO_LS_DeforstrRly abc"); // 预期结果 Step SetOpen J_DO_LS_DeforstrRly abc
-  g_EM_SOAGen_Swc_SOA_CLOSE();
 }

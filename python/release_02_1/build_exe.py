@@ -65,7 +65,6 @@ hidden_imports = [
     'generators.capl_resetdid.entrypoint',
     'generators.capl_resetdid',
     'generators.capl_resetdid.service',
-    'generators.capl_didinfo.entrypoint',
     'generators.capl_didconfig.entrypoint',
     'generators.capl_uart.entrypoint',
     'generators.capl_soa.entrypoint',
