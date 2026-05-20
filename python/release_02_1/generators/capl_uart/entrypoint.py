@@ -16,27 +16,26 @@ from typing import Any
 from .service import UARTGeneratorService
 
 
-def run_generation(*, workbook_cache: dict[str, Any] | None = None) -> None:
-    """UART 生成主流程，供 TaskService 与命令行调用。
-
-    功能：调用 UARTGeneratorService.run_pipeline，内部完成配置解析、Excel 解析、
-    文本拼装与写入（[UARTRS232]、[IVIToMCU]、[MCUToIVI] 等段）。
-
-    参数：
-        workbook_cache：可选工作簿缓存字典；传入后可在同一生成流程中复用
-            已打开 workbook，降低重复 load 开销。
-
-    返回：无。
-    """
-    UARTGeneratorService().run_pipeline(workbook_cache=workbook_cache)
-
-
 class UARTEntrypointWorkflowUtility:
     """UART 入口编排统一工具类。"""
 
-    @staticmethod
-    def run_generation(*args: Any, **kwargs: Any) -> Any:
-        return run_generation(*args, **kwargs)
+    @classmethod
+    def run_generation(cls, *, workbook_cache: dict[str, Any] | None = None) -> None:
+        """执行 UART 生成主流程。
+
+        参数：
+            workbook_cache：可选工作簿缓存字典；传入后可在同一生成流程中复用
+                已打开 workbook，降低重复 load 开销。
+
+        返回：
+            无。
+        """
+        UARTGeneratorService().run_pipeline(workbook_cache=workbook_cache)
+
+
+def run_generation(*, workbook_cache: dict[str, Any] | None = None) -> None:
+    """兼容入口：转发到 UARTEntrypointWorkflowUtility.run_generation。"""
+    UARTEntrypointWorkflowUtility.run_generation(workbook_cache=workbook_cache)
 
 
 if __name__ == "__main__":
@@ -51,7 +50,7 @@ if __name__ == "__main__":
         except (AttributeError, OSError):
             pass
     try:
-        run_generation()
+        UARTEntrypointWorkflowUtility.run_generation()
     except KeyboardInterrupt:
         print("\n用户中断执行", file=sys.stderr)
         sys.exit(1)

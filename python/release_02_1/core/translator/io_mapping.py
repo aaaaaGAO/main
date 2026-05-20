@@ -54,14 +54,14 @@ from services.config_constants import (
     OPTION_IO_INPUTS_CANDIDATES,
     get_io_mapping_section_candidates,
 )
-from utils.excel_io import split_input_lines
+from utils.excel_io import ExcelUtility
 from utils.logger import (
     ExcludeProgressFilter as LoggerExcludeProgressFilter,
     PROGRESS_LEVEL as LoggerProgressLevel,
     ProgressOnlyFilter as LoggerProgressOnlyFilter,
     get_log_level_from_config,
 )
-from infra.filesystem import get_base_dir
+from infra.filesystem import ProjectPaths
 
 # ==================== ① 常量与异常 ====================
 
@@ -125,7 +125,7 @@ def setup_logging(base_dir: Optional[str], section: Optional[str] = None) -> log
     返回：logging.Logger。支持 log_level_min；进度类消息始终写入。
     """
     global ACTIVE_LOGGER
-    base_dir = base_dir or get_base_dir()
+    base_dir = base_dir or ProjectPaths.get_base_dir()
     user_level = get_log_level_from_config(base_dir, section=section)
 
     run_dirs = ensure_run_log_dirs(base_dir)
@@ -654,7 +654,7 @@ def load_io_mapping_from_config(
     返回：IOMappingContext 或 None。有 Inputs 时返回上下文，供 transform_args 使用。
     """
     inputs_text = get_io_mapping_inputs_text(config, domain)
-    input_lines = split_input_lines(inputs_text)
+    input_lines = ExcelUtility.split_input_lines(inputs_text)
     if not input_lines:
         return None
 

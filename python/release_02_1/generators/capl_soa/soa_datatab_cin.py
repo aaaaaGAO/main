@@ -19,7 +19,7 @@ from typing import Any
 
 from infra.config.config_access import read_fixed_config
 from infra.excel.workbook import merged_cell_value
-from infra.filesystem.pathing import resolve_output_dir_relative_path
+from infra.filesystem.pathing import RuntimePathResolver
 from generators.capl_soa.soa_excel_utils import is_client_marker, normalize_cell_text, open_workbook_cached
 from services.config_constants import OPTION_SOA_DATATAB_OUTPUT_FILENAME
 
@@ -674,7 +674,7 @@ def render_datatab_document(
 
 def resolve_datatab_output_directory(base_dir: str, configured_output_dir: str) -> str:
     """解析 SOA_DataTab 固定输出目录（严格存在校验）。"""
-    return resolve_output_dir_relative_path(
+    return RuntimePathResolver.resolve_output_dir_relative_path(
         base_dir,
         configured_output_dir,
         SOA_DATATAB_RELATIVE_PARTS,

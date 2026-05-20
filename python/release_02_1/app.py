@@ -32,7 +32,7 @@ import webbrowser
 from flask import Flask, jsonify, render_template, request
 from werkzeug.exceptions import HTTPException
 
-from infra.filesystem import get_base_dir
+from infra.filesystem import ProjectPaths
 from services.http_api_constants import HttpStatus, api_error_dict
 from web import create_app
 
@@ -51,7 +51,7 @@ def get_app_path() -> str:
     参数：无。
     返回：项目根目录绝对路径。
     """
-    return get_base_dir(__file__)
+    return ProjectPaths.get_base_dir(__file__)
 
 
 def get_resource_path(relative_path: str) -> str:

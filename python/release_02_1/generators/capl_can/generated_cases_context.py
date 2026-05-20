@@ -24,7 +24,7 @@ from services.config_constants import (
     SECTION_CENTRAL,
 )
 from services.filter_service import parse_shaixuan_config
-from utils.sheet_filter import parse_selected_sheets
+from utils.excel_io import ExcelUtility
 
 from .renderer import CANFileRenderer
 from .runtime import CANEntrypointSupport
@@ -101,7 +101,7 @@ def build_generated_cases_run_context(
         gconfig.get_from_section(domain, OPTION_SELECTED_SHEETS, fallback="")
         or gconfig.get_from_section(domain, "Selected_Sheets", fallback="")
     ).strip()
-    selected_filter = parse_selected_sheets(selected_sheets_str)
+    selected_filter = ExcelUtility.parse_selected_sheets(selected_sheets_str)
 
     keyword_specs = CANRuntimeIOUtility.load_keyword_specs(
         runtime_paths["mapping_excel_path"], runtime_paths["sheet_names"]

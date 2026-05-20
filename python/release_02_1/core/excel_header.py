@@ -1,60 +1,20 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-用例表表头定位与列索引查找（供 CAN / XML / DIDConfig / ResetDid / UART 等生成器共用）。
+"""表头解析兼容出口。
 
-实现来自 infra.excel.header。
+本模块已收敛为 `infra.excel.header` 的兼容导出层，避免上层继续依赖代理函数。
+新代码应直接从 `infra.excel.header` 导入 `TestCaseHeaderResolver`
+与 `find_header_row_and_col_indices`。
 """
 
 from __future__ import annotations
 
-from typing import Any, Dict, List, Tuple
-
 from infra.excel.header import (
     TestCaseHeaderResolver,
-    find_header_row_and_col_indices as common_find_header_row_and_col_indices,
+    find_header_row_and_col_indices,
 )
-
-
-def find_header_row_and_col_indices(
-    ws: Any,
-    column_aliases: Dict[str, List[str]],
-    *,
-    max_scan_rows: int = 30,
-) -> Tuple[int, Dict[str, int], List[str]]:
-    """通用表头查找：在前 max_scan_rows 行内按列别名字典定位表头行与列号。
-    参数: ws — 工作表；column_aliases — 列名到别名列表的映射；max_scan_rows — 最大扫描行数。
-    返回: (表头行号 1-based, 列别名->列索引 0-based, 缺失列列表)。
-    """
-    return common_find_header_row_and_col_indices(
-        ws, column_aliases, max_scan_rows=max_scan_rows
-    )
-
-
-def find_testcase_header_row(ws, *, scan_rows: int = 50, debug_sheet_name: str = ""):
-    """委托 TestCaseHeaderResolver.find_header_row。参数: ws — 工作表；scan_rows — 扫描行数；debug_sheet_name — 调试用表名。返回: 表头行号（1-based）或 -1。"""
-    return TestCaseHeaderResolver.find_header_row(
-        ws, scan_rows=scan_rows, max_col=50, debug_sheet_name=debug_sheet_name
-    )
-
-
-def find_col_index_by_name_in_values(header_vals, search_keywords):
-    """委托 TestCaseHeaderResolver.find_col_index。参数: header_vals — 表头行单元格值序列；search_keywords — 列名或别名。返回: 列索引（0-based）或 -1。"""
-    keyword_candidates = (
-        search_keywords if isinstance(search_keywords, (list, tuple)) else (search_keywords,)
-    )
-    return TestCaseHeaderResolver.find_col_index(header_vals, tuple(keyword_candidates))
-
-
-def find_case_type_column_index_in_values(header_vals):
-    """委托 TestCaseHeaderResolver.find_case_type_column_index。参数: header_vals — 表头行单元格值序列。返回: 用例类型列索引（0-based）或 -1。"""
-    return TestCaseHeaderResolver.find_case_type_column_index(header_vals)
-
 
 __all__ = [
     "TestCaseHeaderResolver",
     "find_header_row_and_col_indices",
-    "find_testcase_header_row",
-    "find_col_index_by_name_in_values",
-    "find_case_type_column_index_in_values",
 ]

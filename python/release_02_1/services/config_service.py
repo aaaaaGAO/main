@@ -23,8 +23,7 @@ from typing import Any, Dict
 from infra.config import read_fixed_config
 from infra.filesystem import (
     ProjectPaths,
-    resolve_main_config_path,
-    resolve_main_config_write_path,
+    RuntimePathResolver,
 )
 from services.config_manager import ConfigManager
 from services.config_constants import (
@@ -112,7 +111,7 @@ class ConfigService:
         """
         project_paths = ProjectPaths.from_base_dir(base_dir, config_filename=config_filename)
         if config_filename not in (None, "Configuration.ini"):
-            config_path = resolve_main_config_path(
+            config_path = RuntimePathResolver.resolve_main_config_path(
                 base_dir,
                 config_filename=config_filename,
             )
@@ -129,7 +128,7 @@ class ConfigService:
         return cls(
             ConfigPaths(
                 base_dir=project_paths.base_dir,
-                config_path=resolve_main_config_write_path(base_dir),
+                config_path=RuntimePathResolver.resolve_main_config_write_path(base_dir),
             ),
             config_manager=ConfigManager(project_paths.base_dir, config_path=None),
         )

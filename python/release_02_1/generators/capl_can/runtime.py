@@ -19,8 +19,6 @@ from services.config_constants import (
     SECTION_LR_REAR,
 )
 from infra.filesystem.pathing import RuntimePathResolver
-from infra.filesystem.pathing import resolve_output_dir_relative_path
-from utils.path_utils import list_excel_files, resolve_runtime_path
 
 
 class CANEntrypointSupport:
@@ -73,7 +71,7 @@ class CANEntrypointSupport:
         # 若未在配置中显式填写，则尝试从 uds.txt（或自定义 uds_output_filename）中读取。
         fixed = gconfig.fixed_config
         uds_filename = (fixed.get("uds_output_filename") or "uds.txt").strip() or "uds.txt"
-        root = resolve_runtime_path(base_dir, output_dir)
+        root = RuntimePathResolver.resolve_runtime_path(base_dir, output_dir)
         config_dir = (
             root if os.path.basename(root).lower() == "configuration" else os.path.join(root, "Configuration")
         )
@@ -121,9 +119,9 @@ class CANEntrypointSupport:
         if not raw_path:
             raise ValueError(f"未配置输入路径：请配置 [{domain}] 的 input_excel。")
 
-        full_path = resolve_runtime_path(base_dir, raw_path)
+        full_path = RuntimePathResolver.resolve_runtime_path(base_dir, raw_path)
         if os.path.isdir(full_path):
-            excel_files = list_excel_files(full_path)
+            excel_files = RuntimePathResolver.list_excel_files(full_path)
             if not excel_files:
                 raise FileNotFoundError(f"文件夹内未找到 Excel 文件: {full_path}")
         else:
@@ -138,7 +136,7 @@ class CANEntrypointSupport:
             )
         if mapping_excel_file.startswith("./"):
             mapping_excel_file = mapping_excel_file[2:]
-        mapping_excel_path = resolve_runtime_path(base_dir, mapping_excel_file)
+        mapping_excel_path = RuntimePathResolver.resolve_runtime_path(base_dir, mapping_excel_file)
 
         if domain in (SECTION_CENTRAL, SECTION_DTC):
             output_dir = gconfig.get_required_from_section(domain, OPTION_OUTPUT_DIR)
@@ -169,14 +167,14 @@ class CANEntrypointSupport:
             if sheet_name.strip()
         ]
 
-        testmode_dir = resolve_output_dir_relative_path(
+        testmode_dir = RuntimePathResolver.resolve_output_dir_relative_path(
             base_dir,
             output_dir,
             ("TESTmode",),
             anchor_level="self",
             required=True,
         )
-        testcases_dir = resolve_output_dir_relative_path(
+        testcases_dir = RuntimePathResolver.resolve_output_dir_relative_path(
             testmode_dir,
             ".",
             ("Testcases",),
@@ -309,5 +307,5 @@ class CANEntrypointSupport:
             if cin_excel_path:
                 break
         if cin_excel_path:
-            cin_excel_path = resolve_runtime_path(base_dir, cin_excel_path)
+            cin_excel_path = RuntimePathResolver.resolve_runtime_path(base_dir, cin_excel_path)
         return cin_excel_path

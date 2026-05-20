@@ -14,14 +14,10 @@ import glob
 import logging
 from typing import Any, Optional
 
-from core.common.sanitizer import sanitize_case_id
 from core.case_filter import CaseFilter
-from core.excel_header import (
-    find_case_type_column_index_in_values,
-    find_col_index_by_name_in_values,
-    find_testcase_header_row,
-)
+from infra.excel.header import TestCaseHeaderResolver
 from infra.excel.workbook import ExcelService
+from utils.excel_io import StringUtility
 
 # 拼音支持（用于 XML testcase name 转拼音）
 lazy_pinyin = None
@@ -180,8 +176,8 @@ def parse_testcases_from_sheet(
     )
 
     if header_vals is None:
-        header_row_idx2, header_vals2, _ = find_testcase_header_row(
-            ws, scan_rows=50, debug_sheet_name=display_name
+        header_row_idx2, header_vals2, _ = TestCaseHeaderResolver.find_header_row(
+            ws, scan_rows=50, max_col=50, debug_sheet_name=display_name
         )
         if header_row_idx2 is None or not header_vals2:
             return testcases, {
@@ -195,14 +191,14 @@ def parse_testcases_from_sheet(
         header_row_idx = header_row_idx2
         header_vals = header_vals2
 
-    case_type_col_idx = find_case_type_column_index_in_values(header_vals)
-    case_id_col_idx = find_col_index_by_name_in_values(header_vals, ["用例ID", "用例id", "用例编号"])
-    group_col_idx = find_col_index_by_name_in_values(header_vals, ["功能模块", "模块"])
-    level_col_idx = find_col_index_by_name_in_values(header_vals, ["等级", "用例等级"])
-    platform_col_idx = find_col_index_by_name_in_values(header_vals, ["平台", "Platform"])
-    model_col_idx = find_col_index_by_name_in_values(header_vals, ["车型", "Model"])
-    target_version_col_idx = find_col_index_by_name_in_values(
-        header_vals, ["Target Version", "目标版本"]
+    case_type_col_idx = TestCaseHeaderResolver.find_case_type_column_index(header_vals)
+    case_id_col_idx = TestCaseHeaderResolver.find_col_index(header_vals, ("用例ID", "用例id", "用例编号"))
+    group_col_idx = TestCaseHeaderResolver.find_col_index(header_vals, ("功能模块", "模块"))
+    level_col_idx = TestCaseHeaderResolver.find_col_index(header_vals, ("等级", "用例等级"))
+    platform_col_idx = TestCaseHeaderResolver.find_col_index(header_vals, ("平台", "Platform"))
+    model_col_idx = TestCaseHeaderResolver.find_col_index(header_vals, ("车型", "Model"))
+    target_version_col_idx = TestCaseHeaderResolver.find_col_index(
+        header_vals, ("Target Version", "目标版本")
     )
     # Target Version 缺列时不在此打 warning，仅 CAN 解析路径打一次，避免 CAN+XML 重复
 
@@ -251,7 +247,7 @@ def parse_testcases_from_sheet(
             continue
 
         raw_case_id_str = str(case_id_value).strip()
-        case_id_str, _changed, _reason = sanitize_case_id(case_id_value)
+        case_id_str, _changed, _reason = StringUtility.sanitize_case_id(case_id_value)
         if not case_id_str:
             continue
 
@@ -480,8 +476,8 @@ def parse_testcases_from_excel(
         except Exception:
             pass
 
-        header_row_idx, header_vals, found_group_col = find_testcase_header_row(
-            ws, scan_rows=50, debug_sheet_name=sheet_name_str
+        header_row_idx, header_vals, found_group_col = TestCaseHeaderResolver.find_header_row(
+            ws, scan_rows=50, max_col=50, debug_sheet_name=sheet_name_str
         )
         if header_row_idx is None or not header_vals:
             stats['header_validation_failed'] += 1
@@ -512,8 +508,12 @@ def parse_testcases_from_excel(
                         str(header_cell).replace("\r\n", "\\n").replace("\n", "\\n").replace("\r", "\\n").strip()
                     )
                     header_preview.append(cell_text)
-            case_id_idx = find_col_index_by_name_in_values(header_vals, ["用例ID", "用例id", "用例编号"])
-            group_idx = find_col_index_by_name_in_values(header_vals, ["功能模块", "模块", "模块名称"])
+            case_id_idx = TestCaseHeaderResolver.find_col_index(
+                header_vals, ("用例ID", "用例id", "用例编号")
+            )
+            group_idx = TestCaseHeaderResolver.find_col_index(
+                header_vals, ("功能模块", "模块", "模块名称")
+            )
             warn_msg = (
                 f"[提示] 工作表 '{sheet_name}'：已识别到表头行=第{header_row_idx}行（用例ID列已识别），"
                 f"但未识别到'功能模块/模块'列名，将回退到固定第3列读取功能模块。\n"

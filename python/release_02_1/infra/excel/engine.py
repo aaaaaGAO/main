@@ -10,7 +10,7 @@ nfc_normalize、norm_str 等通用字符串处理保留在 utils，此处统一�
 from __future__ import annotations
 
 from infra.excel.workbook import ExcelService, merged_cell_value
-from utils.excel_io import nfc_normalize, norm_str
+from utils.excel_io import StringUtility
 
 __all__ = [
     "ExcelService",
@@ -18,4 +18,7 @@ __all__ = [
     "nfc_normalize",
     "norm_str",
 ]
+
+nfc_normalize = StringUtility.nfc_normalize
+norm_str = StringUtility.norm_str
 

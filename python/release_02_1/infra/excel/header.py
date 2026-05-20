@@ -218,6 +218,8 @@ class TestCaseHeaderResolver:
 __all__ = [
     "ColumnMapper",
     "find_header_row_and_col_indices",
+    "normalize_cell_text",
+    "normalize_nfc_text",
     "TestCaseHeaderResolver",
 ]
 

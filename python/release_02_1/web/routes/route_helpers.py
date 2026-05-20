@@ -16,7 +16,7 @@ from functools import wraps
 from typing import Any, Callable
 
 from flask import current_app, jsonify
-from infra.filesystem import get_project_root
+from infra.filesystem import ProjectPaths
 from services.http_api_constants import HttpStatus, api_error, api_success
 
 RouteJsonTupleFn = Callable[..., tuple[dict[str, Any], int]]
@@ -30,7 +30,7 @@ def get_base_dir(current_file: str) -> str:
 
     返回：工程根绝对路径字符串。
     """
-    return current_app.config.get("BASE_DIR", "") or get_project_root(current_file)
+    return current_app.config.get("BASE_DIR", "") or ProjectPaths.get_project_root(current_file)
 
 
 def jsonify_route_result(view_fn: RouteJsonTupleFn) -> Callable[..., Any]:

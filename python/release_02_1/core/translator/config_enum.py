@@ -24,7 +24,7 @@ from services.config_constants import (
     OPTION_DIDCONFIG_INPUT_EXCEL,
     get_config_enum_section_candidates,
 )
-from utils.excel_io import split_input_lines
+from utils.excel_io import ExcelUtility
 
 
 class ConfigEnumParseError(Exception):
@@ -226,7 +226,7 @@ def load_config_enum_from_config(
     返回: ConfigEnumContext 或 None（未配置 Inputs 时）。
     """
     inputs_text = get_config_enum_inputs_text(config, domain)
-    inputs = split_input_lines(inputs_text)
+    inputs = ExcelUtility.split_input_lines(inputs_text)
     if not inputs:
         return None
 

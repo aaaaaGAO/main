@@ -14,8 +14,8 @@ from core.step_error_detail import StepErrorDetailBuilder
 from core.parser import (
     ClibMatchError,
     KeywordMatchError,
+    StepParser,
     StepSyntaxError,
-    parse_step_line,
 )
 
 from .models import CANRawStep, StepTranslateResult, TranslateError
@@ -65,7 +65,7 @@ class CANStepTranslator:
             )
 
         try:
-            result = parse_step_line(
+            result = StepParser.parse_line(
                 line,
                 self.keyword_specs,
                 mode="can",

@@ -12,7 +12,7 @@ from __future__ import annotations
 import os
 from typing import List, Tuple
 
-from infra.filesystem import resolve_configured_path
+from infra.filesystem import RuntimePathResolver
 from services.config_manager import ConfigManager
 from services.config_constants import (
     DEFAULT_DOMAIN_LR_REAR,
@@ -97,7 +97,7 @@ class RunValidator:
         参数：raw — 配置中的路径字符串；base_dir — 工程根目录。
         返回：规范化的绝对路径，空配置返回空串。
         """
-        return resolve_configured_path(base_dir, raw)
+        return RuntimePathResolver.resolve_configured_path(base_dir, raw)
 
     @staticmethod
     def check_output_dir_writable(output_dir: str) -> Tuple[bool, str]:

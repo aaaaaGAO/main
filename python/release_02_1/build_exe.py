@@ -77,7 +77,6 @@ hidden_imports = [
     'core.translator.io_mapping',
     'core.parser.step_parser',
     'core.common.name_sanitize',
-    'core.common.sanitizer',
     'core.translator.config_enum',
     'core.caseid_log_dedup',
     'core.log_run_context',

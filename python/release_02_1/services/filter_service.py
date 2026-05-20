@@ -12,7 +12,7 @@ import configparser
 import os
 from typing import Dict, List
 
-from infra.filesystem.pathing import resolve_filter_options_path
+from infra.filesystem.pathing import RuntimePathResolver
 from services.config_constants import FILTER_OPTIONS_UI_KEYS
 
 FILTER_OPTIONS_SECTION = "FILTER_OPTIONS"
@@ -64,7 +64,7 @@ class FilterService:
         返回：{"levels", "platforms", "models", "target_versions", "uds_ecu_qualifier"}；文件不存在时返回空列表。
         """
         filters: Dict[str, List[str]] = {dict_key: [] for dict_key, _ in _FILTER_OPTION_KEYS}
-        filter_options_path = resolve_filter_options_path(base_dir)
+        filter_options_path = RuntimePathResolver.resolve_filter_options_path(base_dir)
 
         if not os.path.exists(filter_options_path):
             print(f"提示: {filter_options_path} 不存在，前端将显示空列表")

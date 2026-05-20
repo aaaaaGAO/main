@@ -11,16 +11,11 @@ import os
 from dataclasses import dataclass
 from typing import Iterable
 
-from core.common.sanitizer import sanitize_case_id
 from core.parse_table_loggers import get_caseid_clean_dup_logger, get_testcases_parse_logger
-from utils.excel_io import ExcelService, ColumnMapper, norm_str
+from utils.excel_io import ExcelService, ColumnMapper, StringUtility
 
 from core.case_filter import CaseFilter
-from core.excel_header import (
-    find_case_type_column_index_in_values,
-    find_col_index_by_name_in_values,
-    find_testcase_header_row,
-)
+from infra.excel.header import TestCaseHeaderResolver
 
 from .models import CANRawStep, CANTestCase
 
@@ -167,8 +162,8 @@ class CANExcelRepository:
         sheet_name = str(ws.title)
 
         # 1. 使用 XML 的表头扫描逻辑，在前 50 行内定位真正的表头行
-        header_row_idx, header_vals, _found_group = find_testcase_header_row(
-            ws, scan_rows=50, debug_sheet_name=sheet_name
+        header_row_idx, header_vals, _found_group = TestCaseHeaderResolver.find_header_row(
+            ws, scan_rows=50, max_col=50, debug_sheet_name=sheet_name
         )
         if header_row_idx is None or not header_vals:
             # 与 XML 含义对齐：在前 50 行内未识别到包含“用例ID”的表头
@@ -182,27 +177,29 @@ class CANExcelRepository:
             return []
 
         # 2. 使用 XML 的列索引发现逻辑，查找各业务列的位置（0-based）
-        case_type_col_idx = find_case_type_column_index_in_values(header_vals)
-        case_id_col_idx = find_col_index_by_name_in_values(
-            header_vals, ["用例ID", "用例id", "用例编号", "用例 ID"]
+        case_type_col_idx = TestCaseHeaderResolver.find_case_type_column_index(header_vals)
+        case_id_col_idx = TestCaseHeaderResolver.find_col_index(
+            header_vals, ("用例ID", "用例id", "用例编号", "用例 ID")
         )
-        group_col_idx = find_col_index_by_name_in_values(header_vals, ["功能模块", "模块", "模块名称"])
-        level_col_idx = find_col_index_by_name_in_values(header_vals, ["等级", "用例等级"])
-        platform_col_idx = find_col_index_by_name_in_values(header_vals, ["平台", "Platform"])
-        model_col_idx = find_col_index_by_name_in_values(header_vals, ["车型", "Model"])
-        target_version_col_idx = find_col_index_by_name_in_values(
-            header_vals, ["Target Version", "目标版本"]
+        group_col_idx = TestCaseHeaderResolver.find_col_index(
+            header_vals, ("功能模块", "模块", "模块名称")
+        )
+        level_col_idx = TestCaseHeaderResolver.find_col_index(header_vals, ("等级", "用例等级"))
+        platform_col_idx = TestCaseHeaderResolver.find_col_index(header_vals, ("平台", "Platform"))
+        model_col_idx = TestCaseHeaderResolver.find_col_index(header_vals, ("车型", "Model"))
+        target_version_col_idx = TestCaseHeaderResolver.find_col_index(
+            header_vals, ("Target Version", "目标版本")
         )
 
         # 用例名称/步骤/预期：CAN 生成必填列
-        case_name_col_idx = find_col_index_by_name_in_values(
-            header_vals, ["用例名称", "用例名", "name", "标题"]
+        case_name_col_idx = TestCaseHeaderResolver.find_col_index(
+            header_vals, ("用例名称", "用例名", "name", "标题")
         )
-        step_col_idx = find_col_index_by_name_in_values(
-            header_vals, ["测试步骤", "步骤", "step", "Step"]
+        step_col_idx = TestCaseHeaderResolver.find_col_index(
+            header_vals, ("测试步骤", "步骤", "step", "Step")
         )
-        expected_col_idx = find_col_index_by_name_in_values(
-            header_vals, ["预期结果", "预期", "结果", "expect", "expected"]
+        expected_col_idx = TestCaseHeaderResolver.find_col_index(
+            header_vals, ("预期结果", "预期", "结果", "expect", "expected")
         )
 
         # 3. 必填列检查：CAN 生成必须「用例ID」「用例名称」「测试步骤」「预期结果」；功能模块/等级/平台/车型/用例类型为可选
@@ -281,7 +278,7 @@ class CANExcelRepository:
 
             # 新用例起始行：有非空的用例ID
             case_id_cell = row_vals[case_id_col_idx] if len(row_vals) > case_id_col_idx else None
-            case_id_value = norm_str(case_id_cell)
+            case_id_value = StringUtility.norm_str(case_id_cell)
             has_new_case = case_id_value != ""
 
             if has_new_case:
@@ -289,7 +286,7 @@ class CANExcelRepository:
                     cases.append(current_case)
 
                 raw_case_id = case_id_value
-                case_id, changed, reason = sanitize_case_id(raw_case_id)
+                case_id, changed, reason = StringUtility.sanitize_case_id(raw_case_id)
                 if not case_id:
                     _log_caseid = get_caseid_clean_dup_logger(self.base_dir)
                     _log_caseid.warning(
@@ -336,11 +333,13 @@ class CANExcelRepository:
                     else None
                 )
 
-                level = norm_str(level_cell).upper() if level_col_idx is not None else "ALL"
-                platform = norm_str(platform_cell).upper() if platform_col_idx is not None else "ALL"
-                model = norm_str(model_cell).upper() if model_col_idx is not None else "ALL"
-                case_type = norm_str(case_type_cell) if case_type_col_idx is not None else "自动"
-                target_version = norm_str(target_version_cell) if target_version_col_idx is not None else ""
+                level = StringUtility.norm_str(level_cell).upper() if level_col_idx is not None else "ALL"
+                platform = StringUtility.norm_str(platform_cell).upper() if platform_col_idx is not None else "ALL"
+                model = StringUtility.norm_str(model_cell).upper() if model_col_idx is not None else "ALL"
+                case_type = StringUtility.norm_str(case_type_cell) if case_type_col_idx is not None else "自动"
+                target_version = (
+                    StringUtility.norm_str(target_version_cell) if target_version_col_idx is not None else ""
+                )
 
                 self.stats.total_cases += 1
 
@@ -355,7 +354,7 @@ class CANExcelRepository:
                         if group_col_idx is not None and len(row_vals) > group_col_idx
                         else None
                     )
-                    group_name = norm_str(group_val) or "-"
+                    group_name = StringUtility.norm_str(group_val) or "-"
 
                     skip_events.append(
                         {
@@ -395,7 +394,7 @@ class CANExcelRepository:
                     if case_name_col_idx is not None and len(row_vals) > case_name_col_idx
                     else None
                 )
-                case_name = norm_str(case_name_val)
+                case_name = StringUtility.norm_str(case_name_val)
 
                 current_case = CANTestCase(
                     case_id=case_id,
@@ -433,12 +432,12 @@ class CANExcelRepository:
 
             for line_pair_index in range(max(len(step_lines), len(expected_lines))):
                 step_line = (
-                    norm_str(step_lines[line_pair_index])
+                    StringUtility.norm_str(step_lines[line_pair_index])
                     if line_pair_index < len(step_lines)
                     else ""
                 )
                 expected_line = (
-                    norm_str(expected_lines[line_pair_index])
+                    StringUtility.norm_str(expected_lines[line_pair_index])
                     if line_pair_index < len(expected_lines)
                     else ""
                 )
@@ -520,12 +519,12 @@ class CANExcelRepository:
 
         for line_pair_index in range(max(len(step_lines), len(expected_lines))):
             step_line = (
-                norm_str(step_lines[line_pair_index])
+                StringUtility.norm_str(step_lines[line_pair_index])
                 if line_pair_index < len(step_lines)
                 else ""
             )
             expected_line = (
-                norm_str(expected_lines[line_pair_index])
+                StringUtility.norm_str(expected_lines[line_pair_index])
                 if line_pair_index < len(expected_lines)
                 else ""
             )
@@ -552,7 +551,7 @@ class CANExcelRepository:
         idx = mapper.get(field)
         if idx >= len(row):
             return ""
-        return norm_str(row[idx])
+        return StringUtility.norm_str(row[idx])
 
     def missing_header_details(self, header_row: Iterable[object]) -> list[str]:
         """生成表头缺失明细。

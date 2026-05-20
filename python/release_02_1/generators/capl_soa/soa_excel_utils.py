@@ -16,6 +16,7 @@ import os
 from dataclasses import dataclass
 from typing import Any
 
+from infra.excel.header import normalize_cell_text as common_normalize_cell_text
 from infra.excel.workbook import ExcelService
 
 
@@ -24,9 +25,7 @@ CLIENT_MARKER_TEXTS: frozenset[str] = frozenset({"x", "×", "X"})
 
 def normalize_cell_text(value: Any) -> str:
     """将任意单元格值标准化为去首尾空白的字符串。"""
-    if value is None:
-        return ""
-    return str(value).strip()
+    return common_normalize_cell_text(value)
 
 
 def is_client_marker(value: Any) -> bool:

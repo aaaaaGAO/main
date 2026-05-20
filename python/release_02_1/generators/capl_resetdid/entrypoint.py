@@ -9,6 +9,8 @@ ResetDid_Value 生成入口模块。
 
 from __future__ import annotations
 
+from typing import Any
+
 from .service import ResetDidGeneratorService
 
 
@@ -26,17 +28,23 @@ def run_generation_workflow(domain: str | None = None):
     return service.run_pipeline(domain=domain)
 
 
+class ResetDidEntrypointWorkflowUtility:
+    """ResetDid 入口编排统一工具类。"""
+
+    @staticmethod
+    def run_generation_workflow(*args: Any, **kwargs: Any) -> Any:
+        return run_generation_workflow(*args, **kwargs)
+
+    @classmethod
+    def run_generation(cls, domain: str | None = None) -> None:
+        """ResetDid 生成主入口，供 TaskService 与命令行调用。"""
+        cls.run_generation_workflow(domain=domain)
+
+
 def run_generation(domain: str | None = None) -> None:
-    """ResetDid 生成主入口，供 TaskService 与命令行调用。
-
-    功能：执行 ``run_generation_workflow``，完成从配置到输出文件的整条流水线。
-
-    形参：domain — 同 ``run_generation_workflow``。
-
-    返回：无。
-    """
-    run_generation_workflow(domain=domain)
+    """兼容入口：转发到 ResetDidEntrypointWorkflowUtility.run_generation。"""
+    ResetDidEntrypointWorkflowUtility.run_generation(domain=domain)
 
 
 if __name__ == "__main__":
-    run_generation()
+    ResetDidEntrypointWorkflowUtility.run_generation()

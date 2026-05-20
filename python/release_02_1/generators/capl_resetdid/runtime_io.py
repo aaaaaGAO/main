@@ -14,7 +14,7 @@ import re
 from dataclasses import dataclass
 from typing import Any, Optional, Tuple
 
-from utils.excel_io import norm_str
+from utils.excel_io import StringUtility
 
 
 def find_header_row_and_cols(ws: Any) -> Tuple[int, dict]:
@@ -22,13 +22,13 @@ def find_header_row_and_cols(ws: Any) -> Tuple[int, dict]:
     required = {"Configure DID", "Length (Bytes)", "Byte", "Bit"}
     for row_index in range(1, min(ws.max_row, 50) + 1):
         row_vals = {
-            norm_str(ws.cell(row_index, column_index).value)
+            StringUtility.norm_str(ws.cell(row_index, column_index).value)
             for column_index in range(1, min(ws.max_column, 50) + 1)
         }
         if required.issubset(row_vals):
             col_map = {}
             for column_index in range(1, min(ws.max_column, 50) + 1):
-                column_value = norm_str(ws.cell(row_index, column_index).value)
+                column_value = StringUtility.norm_str(ws.cell(row_index, column_index).value)
                 if column_value in required:
                     col_map[column_value] = column_index
             return row_index, col_map
@@ -44,7 +44,7 @@ def norm_variant(variant_text: str) -> str:
     返回：
         去空白并转大写后的字符串。
     """
-    return norm_str(variant_text).upper()
+    return StringUtility.norm_str(variant_text).upper()
 
 
 def find_variant_cols(ws: Any, header_row: int, variant_names: list[str]) -> dict[str, int]:
@@ -55,7 +55,7 @@ def find_variant_cols(ws: Any, header_row: int, variant_names: list[str]) -> dic
     found: dict[str, int] = {}
     for row_index in range(1, header_row + 1):
         for column_index in range(1, ws.max_column + 1):
-            cell_value = norm_str(ws.cell(row_index, column_index).value)
+            cell_value = StringUtility.norm_str(ws.cell(row_index, column_index).value)
             item_key = norm_variant(cell_value)
             if item_key in canonical_to_original:
                 orig = canonical_to_original[item_key]
@@ -95,7 +95,7 @@ def merged_cell_value(ws: Any, row: int, col: int) -> Any:
     return cell_value
 def parse_int_or_range(byte_text: str) -> Optional[Tuple[int, int]]:
     """解析 Byte 列：单个数字或 a-b/a~b，返回 (start, end)。"""
-    byte_text = norm_str(byte_text)
+    byte_text = StringUtility.norm_str(byte_text)
     if not byte_text:
         return None
     byte_text = byte_text.replace("~", "-")
@@ -109,7 +109,7 @@ def parse_int_or_range(byte_text: str) -> Optional[Tuple[int, int]]:
         return None
 def parse_bit(bit_text: str) -> Optional[Tuple[int, int, bool]]:
     """解析 Bit 列：All->(0,7,True)；数字->(i,i,False)；a-b->(a,b,False)；END/无效->None。"""
-    bit_text = norm_str(bit_text)
+    bit_text = StringUtility.norm_str(bit_text)
     if not bit_text:
         return None
     if bit_text.upper() == "END":
@@ -137,7 +137,7 @@ def normalize_did(did_str: str) -> Optional[str]:
     return None
 def normalize_field_data(cell_val: Any) -> str:
     """规范化 Field_Data：空->0x00；0x 开头原样；含空格去空格。"""
-    normalized_text = norm_str(cell_val)
+    normalized_text = StringUtility.norm_str(cell_val)
     if not normalized_text or not normalized_text.strip():
         return "0x00"
     normalized_text = normalized_text.strip()
@@ -254,7 +254,7 @@ def generate_from_sheet(
 
     started = False
     for row_index in range(header_row + 1, ws.max_row + 1):
-        did_cell = norm_str(merged_cell_value(ws, row_index, col_did))
+        did_cell = StringUtility.norm_str(merged_cell_value(ws, row_index, col_did))
         normalized_did = normalize_did(did_cell) if did_cell else None
         if normalized_did:
             current_did = normalized_did
@@ -285,10 +285,10 @@ def generate_from_sheet(
             continue
 
         byte_val_raw = merged_cell_value(ws, row_index, col_byte)
-        byte_raw = norm_str(byte_val_raw)
+        byte_raw = StringUtility.norm_str(byte_val_raw)
         byte_cell_val = ws.cell(row_index, col_byte).value
         byte_is_explicit_cell = byte_cell_val is not None
-        bit_raw = norm_str(merged_cell_value(ws, row_index, col_bit))
+        bit_raw = StringUtility.norm_str(merged_cell_value(ws, row_index, col_bit))
 
         if byte_raw and byte_raw.upper() == "END":
             continue
@@ -297,7 +297,7 @@ def generate_from_sheet(
 
         if not byte_raw and not bit_raw:
             row_has_any = any(
-                norm_str(ws.cell(row_index, column_index).value)
+                StringUtility.norm_str(ws.cell(row_index, column_index).value)
                 for column_index in range(1, min(ws.max_column, 50) + 1)
             )
             if row_has_any:

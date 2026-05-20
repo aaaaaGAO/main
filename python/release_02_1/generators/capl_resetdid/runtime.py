@@ -20,7 +20,6 @@ from typing import Any, Iterable
 from core.generator_config import GeneratorConfig
 from core.generator_logging import GeneratorLogger, LogSpecConfig
 from core.run_context import clear_run_logger as clear_run_logger_impl
-from infra.config.input_parser import split_input_lines
 from services.config_constants import (
     LABEL_RESETDID_VALUE_CONFIG_TABLE,
     OPTION_RESETDID_OUTPUT_DIR_CANDIDATES,
@@ -30,6 +29,7 @@ from services.config_constants import (
     SECTION_DTC,
     SECTION_LR_REAR,
 )
+from utils.excel_io import ExcelUtility
 from utils.logger import (
     PROGRESS_LEVEL,
     ExcludeSubstringsFilter,
@@ -37,7 +37,6 @@ from utils.logger import (
 )
 from infra.filesystem.pathing import (
     RuntimePathResolver,
-    resolve_output_dir_relative_path,
 )
 
 from .runtime_io import (
@@ -82,7 +81,7 @@ def iter_input_specs(raw: str) -> Iterable[tuple[str, list[str] | None]]:
     返回：
         `(excel_path, sheets)` 迭代器；`sheets=None` 表示用默认 sheet。
     """
-    for path_text, sheet_text in split_input_lines(raw):
+    for path_text, sheet_text in ExcelUtility.split_input_lines(raw):
         if not sheet_text:
             yield (path_text, None)
         elif sheet_text.strip() == "*":
@@ -149,7 +148,7 @@ def load_runtime_config(base_dir: str, domain: str | None = None) -> tuple:
         ).strip()
         if not output_dir_resetdid:
             output_dir_resetdid = gconfig.get_required_from_section(sec, OPTION_OUTPUT_DIR)
-        config_dir_path = resolve_output_dir_relative_path(
+        config_dir_path = RuntimePathResolver.resolve_output_dir_relative_path(
             base_dir,
             output_dir_resetdid,
             ("Configuration",),
@@ -196,7 +195,7 @@ def load_runtime_config(base_dir: str, domain: str | None = None) -> tuple:
         raise RuntimeError(
             f"未配置 ResetDid 输出目录：请在 [{SECTION_LR_REAR}] 配置 output_dir 或 output_dir_resetdid"
         )
-    config_dir_path = resolve_output_dir_relative_path(
+    config_dir_path = RuntimePathResolver.resolve_output_dir_relative_path(
         base_dir,
         output_dir_resetdid,
         ("Configuration",),

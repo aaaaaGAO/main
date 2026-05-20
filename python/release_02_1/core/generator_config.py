@@ -18,7 +18,7 @@ from infra.config import (
     read_config_tolerant_duplicates,
     read_fixed_config,
 )
-from infra.filesystem import resolve_fixed_config_path, resolve_main_config_path
+from infra.filesystem import RuntimePathResolver
 
 
 class GeneratorConfig:
@@ -66,7 +66,7 @@ class GeneratorConfig:
         无参数。使用 self.base_dir / self.config_path_value。返回: self，便于链式调用。
         """
         if self.config_path_value is None:
-            self.config_path_value = resolve_main_config_path(self.base_dir)
+            self.config_path_value = RuntimePathResolver.resolve_main_config_path(self.base_dir)
         if self.config_path_value is None or not os.path.exists(self.config_path_value):
             self.config_parser = configparser.ConfigParser()
             self.config_parser.optionxform = str
@@ -74,7 +74,7 @@ class GeneratorConfig:
             self.loaded = True
             return self
         abs_config_path = os.path.abspath(self.config_path_value)
-        fixed_config_path = resolve_fixed_config_path(self.base_dir)
+        fixed_config_path = RuntimePathResolver.resolve_fixed_config_path(self.base_dir)
         main_mtime = os.path.getmtime(abs_config_path)
         fixed_mtime = os.path.getmtime(fixed_config_path) if os.path.exists(fixed_config_path) else -1.0
         cache_key = (self.base_dir, abs_config_path, self.tolerant_duplicates)

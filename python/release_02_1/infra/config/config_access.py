@@ -12,7 +12,7 @@ import configparser
 import os
 from typing import List, Optional
 
-from infra.filesystem import resolve_fixed_config_path, resolve_runtime_path
+from infra.filesystem import RuntimePathResolver
 from services.config_constants import PATHS_MERGED_PRESERVE_OPTION_NAMES, SECTION_PATHS
 
 
@@ -20,7 +20,7 @@ def read_config(config_path: str) -> configparser.ConfigParser:
     """读取主配置文件，保留选项名大小写。参数: config_path — 配置文件路径。返回: ConfigParser。"""
     cfg = configparser.ConfigParser()
     cfg.optionxform = str
-    resolved_path = resolve_runtime_path(None, config_path)
+    resolved_path = RuntimePathResolver.resolve_runtime_path(None, config_path)
     with open(resolved_path, "r", encoding="utf-8", errors="replace") as config_file:
         cfg.read_file(config_file)
     return cfg
@@ -30,7 +30,7 @@ def read_config_if_exists(config_path: str) -> configparser.ConfigParser:
     """读取存在的主配置文件；文件不存在时返回空 ConfigParser。"""
     config = configparser.ConfigParser()
     config.optionxform = str
-    resolved_path = resolve_runtime_path(None, config_path)
+    resolved_path = RuntimePathResolver.resolve_runtime_path(None, config_path)
     if not resolved_path or not os.path.exists(resolved_path):
         return config
 
@@ -46,7 +46,7 @@ def read_config_tolerant_duplicates(config_path: str) -> configparser.ConfigPars
     """读取主配置文件，同节内重复选项去重后解析。参数: config_path — 配置文件路径。返回: ConfigParser。"""
     config = configparser.ConfigParser()
     config.optionxform = str
-    resolved_path = resolve_runtime_path(None, config_path)
+    resolved_path = RuntimePathResolver.resolve_runtime_path(None, config_path)
     with open(resolved_path, "r", encoding="utf-8", errors="replace") as config_file:
         lines = config_file.readlines()
     seen_options: dict[str, set[str]] = {}
@@ -80,7 +80,7 @@ def read_config_tolerant_duplicates(config_path: str) -> configparser.ConfigPars
 
 def read_fixed_config(base_dir: str) -> dict[str, str]:
     """从 base_dir/config 下固定配置文件的 [PATHS] 节读取固定配置项。参数: base_dir — 工程根目录。返回: {key: value} 字典。"""
-    fixed_config_path = resolve_fixed_config_path(base_dir)
+    fixed_config_path = RuntimePathResolver.resolve_fixed_config_path(base_dir)
     fixed_config: dict[str, str] = {}
 
     if not os.path.exists(fixed_config_path):

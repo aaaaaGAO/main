@@ -15,8 +15,7 @@ from dataclasses import dataclass
 from typing import Any, Dict, Optional
 
 from core.generator_logging import GeneratorLogger, LogSpecConfig
-from infra.filesystem import resolve_main_config_path
-from infra.filesystem.pathing import resolve_configured_path
+from infra.filesystem import RuntimePathResolver
 from generators.capl_soa.soa_setserver_cin import SOASetServerCinGenerator
 from generators.capl_soa.soa_datatab_cin import SOADataTabCinGenerator
 from services.config_constants import (
@@ -30,13 +29,13 @@ from services.config_constants import (
     OPTION_UDS_ECU_QUALIFIER,
     SECTION_CENTRAL,
 )
-from generators.capl_can.entrypoint import run_generation as run_can_generation
-from generators.capl_cin.entrypoint import run_generation as run_cin_generation
-from generators.capl_didconfig.entrypoint import run_generation as run_didconfig_generation
-from generators.capl_resetdid.entrypoint import run_generation as run_resetdid_generation
-from generators.capl_uart.entrypoint import run_generation as run_uart_generation
-from generators.capl_xml.entrypoint import run_generation as run_xml_generation
-from generators.capl_soa.entrypoint import run_generation as run_soa_generation
+from generators.capl_can.entrypoint import CANEntrypointWorkflowUtility
+from generators.capl_cin.entrypoint import CINEntrypointWorkflowUtility
+from generators.capl_didconfig.entrypoint import DIDConfigEntrypointWorkflowUtility
+from generators.capl_resetdid.entrypoint import ResetDidEntrypointWorkflowUtility
+from generators.capl_uart.entrypoint import UARTEntrypointWorkflowUtility
+from generators.capl_xml.entrypoint import XMLEntrypointWorkflowUtility
+from generators.capl_soa.entrypoint import SOAGenerationUtility
 from utils.logger import PROGRESS_LEVEL, ExcludeSubstringsFilter
 
 logger = logging.getLogger(__name__)
@@ -73,7 +72,7 @@ class TaskService:
         """
         self.base_dir = os.path.abspath(base_dir)
         if config_path is None:
-            self.config_path = resolve_main_config_path(self.base_dir)
+            self.config_path = RuntimePathResolver.resolve_main_config_path(self.base_dir)
         else:
             self.config_path = os.path.abspath(config_path)
 
@@ -154,7 +153,7 @@ class TaskService:
         """
         started = self.log_task_start(step="can", domain=domain)
         try:
-            run_can_generation(
+            CANEntrypointWorkflowUtility.run_generation(
                 config_path=self.config_path,
                 base_dir=self.base_dir,
                 domain=domain,
@@ -210,7 +209,7 @@ class TaskService:
         """
         started = self.log_task_start(step="xml", domain=domain)
         try:
-            run_xml_generation(
+            XMLEntrypointWorkflowUtility.run_generation(
                 config_path=self.config_path,
                 base_dir=self.base_dir,
                 domain=domain,
@@ -260,7 +259,7 @@ class TaskService:
         """
         started = self.log_task_start(step="cin", domain=domain)
         try:
-            run_cin_generation(domain=domain)
+            CINEntrypointWorkflowUtility.run_generation(domain=domain)
             self.log_task_done(
                 step="cin",
                 domain=domain,
@@ -293,7 +292,7 @@ class TaskService:
         run_domain = domain or DEFAULT_DOMAIN_LR_REAR
         started = self.log_task_start(step="did_info", domain=run_domain)
         try:
-            run_resetdid_generation(domain=domain)
+            ResetDidEntrypointWorkflowUtility.run_generation(domain=domain)
             self.log_task_done(
                 step="did_info",
                 domain=run_domain,
@@ -337,7 +336,7 @@ class TaskService:
         run_domain = domain or DEFAULT_DOMAIN_LR_REAR
         started = self.log_task_start(step="did_config", domain=run_domain)
         try:
-            run_didconfig_generation(domain=domain)
+            DIDConfigEntrypointWorkflowUtility.run_generation(domain=domain)
             self.log_task_done(
                 step="did_config",
                 domain=run_domain,
@@ -384,7 +383,7 @@ class TaskService:
         """
         started = self.log_task_start(step="uart", domain=SECTION_CENTRAL)
         try:
-            run_uart_generation(workbook_cache=workbook_cache)
+            UARTEntrypointWorkflowUtility.run_generation(workbook_cache=workbook_cache)
             self.log_task_done(
                 step="uart",
                 domain=SECTION_CENTRAL,
@@ -447,7 +446,7 @@ class TaskService:
         soa_file_logger = soa_log_manager.setup()
         soa_file_logger.log(PROGRESS_LEVEL, ">>> 开始执行 [%s] 域 SOA 生成任务...", domain)
         try:
-            generator_config = run_soa_generation(
+            generator_config = SOAGenerationUtility.run_generation(
                 config_path=self.config_path,
                 base_dir=self.base_dir,
                 domain=domain,
@@ -481,8 +480,12 @@ class TaskService:
                     generator_config.get_fixed(OPTION_SOA_DATATAB_OUTPUT_FILENAME) or ""
                 ).strip()
                 if srv_value and output_dir_raw:
-                    excel_abs = resolve_configured_path(generator_config.base_dir, srv_value)
-                    anchor_abs = resolve_configured_path(generator_config.base_dir, output_dir_raw)
+                    excel_abs = RuntimePathResolver.resolve_configured_path(
+                        generator_config.base_dir, srv_value
+                    )
+                    anchor_abs = RuntimePathResolver.resolve_configured_path(
+                        generator_config.base_dir, output_dir_raw
+                    )
                     SOASetServerCinGenerator(anchor_path=anchor_abs).generate(
                         excel_abs,
                         find_or_create_soa_onder=False,

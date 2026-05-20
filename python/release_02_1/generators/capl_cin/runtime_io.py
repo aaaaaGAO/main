@@ -23,7 +23,7 @@ from .constants import CASEID_LOG_PATTERNS
 from .runtime import CINEntrypointSupport
 
 from core.error_module import ErrorModuleResolver
-from core.parser import KeywordMatchError, StepSyntaxError, parse_step_line
+from core.parser import KeywordMatchError, StepParser, StepSyntaxError
 from core.step_error_detail import StepErrorDetailBuilder, format_step_error_lines
 from core.translator import (
     ConfigEnumParseError,
@@ -183,7 +183,7 @@ def parse_step_line_cin(
         return None
 
     try:
-        result = parse_step_line(
+        result = StepParser.parse_line(
             original,
             keyword_specs,
             mode="cin",

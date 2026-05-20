@@ -21,18 +21,18 @@ web 包：Web 层（Flask 应用 + 路由）
 from __future__ import annotations
 
 from flask import Flask
-from infra.filesystem.pathing import RuntimePathResolver
+from infra.filesystem.pathing import ProjectPaths
 
 from .routes.common import common_bp
 from .routes.lr_rear import lr_rear_bp
 from .routes.central import central_bp
 from .routes.dtc import dtc_bp
 def project_root() -> str:
-    """获取项目根目录（主配置、固定配置、filter_options.ini 所在目录），统一使用 infra.filesystem.pathing.get_project_root。
+    """获取项目根目录（主配置、固定配置、filter_options.ini 所在目录），统一使用 `ProjectPaths.get_project_root`。
     参数：无。
     返回：根目录绝对路径。
     """
-    return RuntimePathResolver.resolve_base_dir(__file__)
+    return ProjectPaths.get_project_root(__file__)
 
 
 def create_app() -> Flask:

@@ -19,9 +19,8 @@ from services.config_constants import (
 )
 from infra.excel.header import find_header_row_and_col_indices
 from infra.excel.workbook import merged_cell_value
-from infra.filesystem import resolve_output_dir_relative_path
-from utils.excel_io import norm_str
-from utils.path_utils import resolve_runtime_path
+from infra.filesystem import RuntimePathResolver
+from utils.excel_io import StringUtility
 
 from . import runtime as didconfig_generator_runtime
 
@@ -113,12 +112,12 @@ class DIDConfigGeneratorService:
                 output_name = gconfig.get_fixed("didconfig_output_filename") or DEFAULT_DID_CONFIG_FILENAME
 
             config_dir = gconfig.config_dir
-            excel_path = resolve_runtime_path(config_dir, excel_rel_path)
-            raw_output_dir = resolve_runtime_path(config_dir, output_dir_rel)
+            excel_path = RuntimePathResolver.resolve_runtime_path(config_dir, excel_rel_path)
+            raw_output_dir = RuntimePathResolver.resolve_runtime_path(config_dir, output_dir_rel)
 
             # 统一 output_dir 子目录解析：在 output_dir 下寻找 Configuration，不自动创建。
             try:
-                output_dir = resolve_output_dir_relative_path(
+                output_dir = RuntimePathResolver.resolve_output_dir_relative_path(
                     base_dir,
                     raw_output_dir,
                     ("Configuration",),
@@ -172,9 +171,9 @@ class DIDConfigGeneratorService:
                     byte_v = merged_cell_value(ws, row_index, cols["byte"])
                     bit_v = merged_cell_value(ws, row_index, cols["bit"])
 
-                    name_s = norm_str(name_v)
-                    byte_s = norm_str(byte_v)
-                    bit_s = norm_str(bit_v)
+                    name_s = StringUtility.norm_str(name_v)
+                    byte_s = StringUtility.norm_str(byte_v)
+                    bit_s = StringUtility.norm_str(bit_v)
 
                     if not name_s and not byte_s and not bit_s:
                         continue
@@ -242,7 +241,7 @@ class DIDConfigGeneratorService:
                 output_content.append(f"DIDLength:{did_length};//DID数据长度BYTE")
 
                 for excel_row, name, byte, bit_raw in parsed_rows:
-                    bit_s = norm_str(bit_raw).lower()
+                    bit_s = StringUtility.norm_str(bit_raw).lower()
                     if bit_s == "all":
                         bit_pos = 0
                         field_len = 8

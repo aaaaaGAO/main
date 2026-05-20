@@ -25,72 +25,13 @@ from typing import Any, Dict, Optional
 from services.config_constants import (
     CENTRAL_FILTER_KEY_MAP,
     CENTRAL_STATE_KEYS,
+    ConfigOption,
+    ConfigSection,
     DTC_FILTER_KEY_MAP,
     DTC_STATE_KEYS,
     LR_EMPTY_STATE_OPTION_MAP,
     LR_STATE_KEYS,
-    STATE_KEY_DTC_CIN_EXCEL,
-    STATE_KEY_DTC_CAN_INPUT,
-    STATE_KEY_DTC_DIDCONFIG_EXCEL,
-    STATE_KEY_DTC_RESETDID_EXCEL,
-    STATE_KEY_DTC_IO_EXCEL,
-    STATE_KEY_DTC_IO_SELECTED_SHEETS,
-    STATE_KEY_DTC_SRV_EXCEL,
-    STATE_KEY_DTC_UDS_ECU_QUALIFIER,
-    STATE_KEY_DTC_LEVELS,
-    STATE_KEY_DTC_LOG_LEVEL,
-    STATE_KEY_DTC_MODELS,
-    STATE_KEY_DTC_OUT_ROOT,
-    STATE_KEY_DTC_PLATFORMS,
-    STATE_KEY_DTC_SELECTED_SHEETS,
-    STATE_KEY_DTC_TARGET_VERSIONS,
-    STATE_KEY_LR_CAN_INPUT,
-    STATE_KEY_LR_CIN_EXCEL,
-    STATE_KEY_LR_DIDCONFIG_EXCEL,
-    STATE_KEY_LR_RESETDID_EXCEL,
-    STATE_KEY_LR_IO_EXCEL,
-    STATE_KEY_LR_SRV_EXCEL,
-    STATE_KEY_LR_LEVELS,
-    STATE_KEY_LR_LOG_LEVEL,
-    STATE_KEY_LR_MODELS,
-    STATE_KEY_LR_OUT_ROOT,
-    STATE_KEY_LR_PLATFORMS,
-    STATE_KEY_LR_SELECTED_SHEETS,
-    STATE_KEY_LR_TARGET_VERSIONS,
-    STATE_KEY_CENTRAL_CAN_INPUT,
-    STATE_KEY_CENTRAL_IGN_CURRENT,
-    STATE_KEY_CENTRAL_IGN_WAIT_TIME,
-    STATE_KEY_CENTRAL_LOG_LEVEL,
-    STATE_KEY_CENTRAL_LOGIN_PASSWORD,
-    STATE_KEY_CENTRAL_LOGIN_USERNAME,
-    STATE_KEY_CENTRAL_OUT_ROOT,
-    STATE_KEY_CENTRAL_SELECTED_SHEETS,
-    STATE_KEY_CENTRAL_SRV_EXCEL,
-    STATE_KEY_CENTRAL_UART,
-    STATE_KEY_CENTRAL_UART_COMM,
-    STATE_KEY_CENTRAL_UDS_ECU_QUALIFIER,
-    OPTION_C_IG,
-    OPTION_C_PW,
-    OPTION_C_PWR,
-    OPTION_C_RLY,
-    OPTION_CIN_INPUT_EXCEL,
-    OPTION_DIDCONFIG_INPUT_EXCEL,
-    OPTION_RESETDID_INPUTS,
-    OPTION_INPUT_EXCEL,
-    OPTION_IO_INPUTS,
-    OPTION_IGN_CURRENT,
-    OPTION_IGN_WAITTIME,
-    OPTION_LOGIN_PASSWORD,
-    OPTION_LOGIN_USERNAME,
-    OPTION_LOG_LEVEL_MIN,
-    OPTION_OUTPUT_DIR,
-    OPTION_SELECTED_SHEETS,
-    OPTION_SRV_EXCEL,
-    OPTION_UDS_ECU_QUALIFIER,
-    OPTION_UART_EXCEL,
-    SECTION_CENTRAL,
-    SECTION_DTC,
-    SECTION_LR_REAR,
+    UIStateKey,
     UART_COMM_CFG_KEYS,
     UART_COMM_KEY_MAP,
     cin_input_excel_value_from_ui_path,
@@ -112,17 +53,17 @@ class LrDtcBundleStateKeys:
 
 
 LR_REAR_BUNDLE_STATE_KEYS = LrDtcBundleStateKeys(
-    STATE_KEY_LR_DIDCONFIG_EXCEL,
-    STATE_KEY_LR_RESETDID_EXCEL,
-    STATE_KEY_LR_CIN_EXCEL,
-    STATE_KEY_LR_SRV_EXCEL,
+    UIStateKey.LR_DIDCONFIG_EXCEL,
+    UIStateKey.LR_RESETDID_EXCEL,
+    UIStateKey.LR_CIN_EXCEL,
+    UIStateKey.LR_SRV_EXCEL,
 )
 
 DTC_DOMAIN_BUNDLE_STATE_KEYS = LrDtcBundleStateKeys(
-    STATE_KEY_DTC_DIDCONFIG_EXCEL,
-    STATE_KEY_DTC_RESETDID_EXCEL,
-    STATE_KEY_DTC_CIN_EXCEL,
-    STATE_KEY_DTC_SRV_EXCEL,
+    UIStateKey.DTC_DIDCONFIG_EXCEL,
+    UIStateKey.DTC_RESETDID_EXCEL,
+    UIStateKey.DTC_CIN_EXCEL,
+    UIStateKey.DTC_SRV_EXCEL,
 )
 
 
@@ -147,23 +88,23 @@ class StandardDomainUiBinding:
 
 
 CENTRAL_DOMAIN_UI_BINDING = StandardDomainUiBinding(
-    section=SECTION_CENTRAL,
-    input_key=STATE_KEY_CENTRAL_CAN_INPUT,
-    out_root_key=STATE_KEY_CENTRAL_OUT_ROOT,
-    selected_sheets_key=STATE_KEY_CENTRAL_SELECTED_SHEETS,
-    log_level_key=STATE_KEY_CENTRAL_LOG_LEVEL,
-    uds_key=STATE_KEY_CENTRAL_UDS_ECU_QUALIFIER,
+    section=ConfigSection.CENTRAL,
+    input_key=UIStateKey.CENTRAL_CAN_INPUT,
+    out_root_key=UIStateKey.CENTRAL_OUT_ROOT,
+    selected_sheets_key=UIStateKey.CENTRAL_SELECTED_SHEETS,
+    log_level_key=UIStateKey.CENTRAL_LOG_LEVEL,
+    uds_key=UIStateKey.CENTRAL_UDS_ECU_QUALIFIER,
     filter_pairs=list(CENTRAL_FILTER_KEY_MAP),
     clear_selected_sheets_with_input=True,
 )
 
 DTC_DOMAIN_UI_BINDING = StandardDomainUiBinding(
-    section=SECTION_DTC,
-    input_key=STATE_KEY_DTC_CAN_INPUT,
-    out_root_key=STATE_KEY_DTC_OUT_ROOT,
-    selected_sheets_key=STATE_KEY_DTC_SELECTED_SHEETS,
-    log_level_key=STATE_KEY_DTC_LOG_LEVEL,
-    uds_key=STATE_KEY_DTC_UDS_ECU_QUALIFIER,
+    section=ConfigSection.DTC,
+    input_key=UIStateKey.DTC_CAN_INPUT,
+    out_root_key=UIStateKey.DTC_OUT_ROOT,
+    selected_sheets_key=UIStateKey.DTC_SELECTED_SHEETS,
+    log_level_key=UIStateKey.DTC_LOG_LEVEL,
+    uds_key=UIStateKey.DTC_UDS_ECU_QUALIFIER,
     filter_pairs=list(DTC_FILTER_KEY_MAP),
     clear_selected_sheets_with_input=False,
 )
@@ -264,19 +205,19 @@ class StateConfigService:
         """
         state_value_to_text = StateConfigService.state_value_to_text
         return {
-            STATE_KEY_LR_CAN_INPUT: state_value_to_text(state.get(STATE_KEY_LR_CAN_INPUT)),
-            STATE_KEY_LR_OUT_ROOT: state_value_to_text(state.get(STATE_KEY_LR_OUT_ROOT)),
-            STATE_KEY_LR_LEVELS: state_value_to_text(state.get(STATE_KEY_LR_LEVELS)) or "ALL",
-            STATE_KEY_LR_PLATFORMS: state_value_to_text(state.get(STATE_KEY_LR_PLATFORMS)),
-            STATE_KEY_LR_MODELS: state_value_to_text(state.get(STATE_KEY_LR_MODELS)),
-            STATE_KEY_LR_TARGET_VERSIONS: state_value_to_text(state.get(STATE_KEY_LR_TARGET_VERSIONS)),
-            STATE_KEY_LR_SELECTED_SHEETS: state_value_to_text(state.get(STATE_KEY_LR_SELECTED_SHEETS)),
-            STATE_KEY_LR_LOG_LEVEL: state_value_to_text(state.get(STATE_KEY_LR_LOG_LEVEL)) or "info",
-            STATE_KEY_LR_RESETDID_EXCEL: state_value_to_text(state.get(STATE_KEY_LR_RESETDID_EXCEL)),
-            STATE_KEY_LR_CIN_EXCEL: state_value_to_text(state.get(STATE_KEY_LR_CIN_EXCEL)),
-            STATE_KEY_LR_SRV_EXCEL: state_value_to_text(state.get(STATE_KEY_LR_SRV_EXCEL)),
-            STATE_KEY_LR_IO_EXCEL: state_value_to_text(state.get(STATE_KEY_LR_IO_EXCEL)),
-            STATE_KEY_LR_DIDCONFIG_EXCEL: state_value_to_text(state.get(STATE_KEY_LR_DIDCONFIG_EXCEL)),
+            UIStateKey.LR_CAN_INPUT: state_value_to_text(state.get(UIStateKey.LR_CAN_INPUT)),
+            UIStateKey.LR_OUT_ROOT: state_value_to_text(state.get(UIStateKey.LR_OUT_ROOT)),
+            UIStateKey.LR_LEVELS: state_value_to_text(state.get(UIStateKey.LR_LEVELS)) or "ALL",
+            UIStateKey.LR_PLATFORMS: state_value_to_text(state.get(UIStateKey.LR_PLATFORMS)),
+            UIStateKey.LR_MODELS: state_value_to_text(state.get(UIStateKey.LR_MODELS)),
+            UIStateKey.LR_TARGET_VERSIONS: state_value_to_text(state.get(UIStateKey.LR_TARGET_VERSIONS)),
+            UIStateKey.LR_SELECTED_SHEETS: state_value_to_text(state.get(UIStateKey.LR_SELECTED_SHEETS)),
+            UIStateKey.LR_LOG_LEVEL: state_value_to_text(state.get(UIStateKey.LR_LOG_LEVEL)) or "info",
+            UIStateKey.LR_RESETDID_EXCEL: state_value_to_text(state.get(UIStateKey.LR_RESETDID_EXCEL)),
+            UIStateKey.LR_CIN_EXCEL: state_value_to_text(state.get(UIStateKey.LR_CIN_EXCEL)),
+            UIStateKey.LR_SRV_EXCEL: state_value_to_text(state.get(UIStateKey.LR_SRV_EXCEL)),
+            UIStateKey.LR_IO_EXCEL: state_value_to_text(state.get(UIStateKey.LR_IO_EXCEL)),
+            UIStateKey.LR_DIDCONFIG_EXCEL: state_value_to_text(state.get(UIStateKey.LR_DIDCONFIG_EXCEL)),
         }
 
     @staticmethod
@@ -362,35 +303,35 @@ class StateConfigService:
         StateConfigService.set_text_option(
             cfg,
             section,
-            OPTION_INPUT_EXCEL,
+            ConfigOption.INPUT_EXCEL,
             state.get(binding.input_key),
             remove_on_empty=True,
         )
         if state.get(binding.input_key) == "" and binding.clear_selected_sheets_with_input:
-            StateConfigService.clear_option_if_present(cfg, section, OPTION_SELECTED_SHEETS)
+            StateConfigService.clear_option_if_present(cfg, section, ConfigOption.SELECTED_SHEETS)
 
-        StateConfigService.set_text_option(cfg, section, OPTION_OUTPUT_DIR, state.get(binding.out_root_key))
+        StateConfigService.set_text_option(cfg, section, ConfigOption.OUTPUT_DIR, state.get(binding.out_root_key))
         StateConfigService.apply_filter_option_state(cfg, section, state, binding.filter_pairs)
         StateConfigService.set_text_option(
             cfg,
             section,
-            OPTION_SELECTED_SHEETS,
+            ConfigOption.SELECTED_SHEETS,
             state.get(binding.selected_sheets_key),
             remove_on_empty=True,
         )
         StateConfigService.set_text_option(
             cfg,
             section,
-            OPTION_LOG_LEVEL_MIN,
+            ConfigOption.LOG_LEVEL_MIN,
             state.get(binding.log_level_key),
             lowercase=True,
         )
-        StateConfigService.set_text_option(cfg, section, OPTION_UDS_ECU_QUALIFIER, state.get(binding.uds_key))
+        StateConfigService.set_text_option(cfg, section, ConfigOption.UDS_ECU_QUALIFIER, state.get(binding.uds_key))
 
     @staticmethod
     def is_configured_c_pwr(payload_data: Any) -> bool:
         """
-        判断中央域「充电/电源板」类 JSON 是否已配置到应写入 `OPTION_C_PWR` 的程度（含有效 port）。
+        判断中央域「充电/电源板」类 JSON 是否已配置到应写入 `ConfigOption.C_PWR` 的程度（含有效 port）。
 
         参数：payload_data — 前端下发明文字典或 None。返回：可序列化落盘为 True，否则 False。
         """
@@ -401,7 +342,7 @@ class StateConfigService:
         """
         判断继电器列表 JSON 是否已形成“有效继电器配置”。
 
-        参数：relays — 列表或他类型。返回：可写入 `OPTION_C_RLY` 为 True。
+        参数：relays — 列表或他类型。返回：可写入 `ConfigOption.C_RLY` 为 True。
         """
         if not isinstance(relays, list) or len(relays) == 0:
             return False
@@ -413,7 +354,7 @@ class StateConfigService:
     @staticmethod
     def is_configured_ig_pw(payload_data: Any) -> bool:
         """
-        判断点火/功率类 JSON 是否含设备类型或通道号等，用于 `OPTION_C_IG` / `OPTION_C_PW`。
+        判断点火/功率类 JSON 是否含设备类型或通道号等，用于 `ConfigOption.C_IG` / `ConfigOption.C_PW`。
 
         参数：payload_data — 字典或 None。返回：应序列化落盘为 True 否则 False。
         """
@@ -479,8 +420,8 @@ class StateConfigService:
         """
         if uart_comm is None:
             return
-        has_uart_in_cfg = cfg.has_section(SECTION_CENTRAL) and any(
-            cfg.has_option(SECTION_CENTRAL, item_key) for item_key in UART_COMM_CFG_KEYS
+        has_uart_in_cfg = cfg.has_section(ConfigSection.CENTRAL) and any(
+            cfg.has_option(ConfigSection.CENTRAL, item_key) for item_key in UART_COMM_CFG_KEYS
         )
         port_set = bool((uart_comm.get("port") or "").strip())
         if not (has_uart_in_cfg or port_set):
@@ -489,11 +430,11 @@ class StateConfigService:
         if uart_comm and port_set:
             for source_key, cfg_key in UART_COMM_KEY_MAP.items():
                 if source_key in uart_comm:
-                    cfg.set(SECTION_CENTRAL, cfg_key, str(uart_comm.get(source_key) or "").strip())
+                    cfg.set(ConfigSection.CENTRAL, cfg_key, str(uart_comm.get(source_key) or "").strip())
             return
 
         for cfg_key in UART_COMM_CFG_KEYS:
-            StateConfigService.clear_option_if_present(cfg, SECTION_CENTRAL, cfg_key)
+            StateConfigService.clear_option_if_present(cfg, ConfigSection.CENTRAL, cfg_key)
 
     @staticmethod
     def sync_ignition_cycle_options(
@@ -505,18 +446,18 @@ class StateConfigService:
 
         参数：cfg — 配置；state — 含 `STATE_KEY_CENTRAL_IGN_*` 的 state。返回：无。
         """
-        has_wait_time = state.get(STATE_KEY_CENTRAL_IGN_WAIT_TIME) is not None
-        has_current = state.get(STATE_KEY_CENTRAL_IGN_CURRENT) is not None
+        has_wait_time = state.get(UIStateKey.CENTRAL_IGN_WAIT_TIME) is not None
+        has_current = state.get(UIStateKey.CENTRAL_IGN_CURRENT) is not None
         if not (has_wait_time or has_current):
             return
 
-        ign_waittime = str(state.get(STATE_KEY_CENTRAL_IGN_WAIT_TIME) or "").strip()
-        ign_current = str(state.get(STATE_KEY_CENTRAL_IGN_CURRENT) or "").strip()
+        ign_waittime = str(state.get(UIStateKey.CENTRAL_IGN_WAIT_TIME) or "").strip()
+        ign_current = str(state.get(UIStateKey.CENTRAL_IGN_CURRENT) or "").strip()
         if has_wait_time:
             StateConfigService.set_text_option(
                 cfg,
-                SECTION_CENTRAL,
-                OPTION_IGN_WAITTIME,
+                ConfigSection.CENTRAL,
+                ConfigOption.IGN_WAITTIME,
                 ign_waittime,
                 remove_on_empty=True,
             )
@@ -524,8 +465,8 @@ class StateConfigService:
         if has_current:
             StateConfigService.set_text_option(
                 cfg,
-                SECTION_CENTRAL,
-                OPTION_IGN_CURRENT,
+                ConfigSection.CENTRAL,
+                ConfigOption.IGN_CURRENT,
                 ign_current,
                 remove_on_empty=True,
             )
@@ -540,27 +481,27 @@ class StateConfigService:
 
         参数：cfg — 配置；state — 含 `STATE_KEY_DTC_*`。返回：无。
         """
-        dtc_resetdid_excel = state.get(STATE_KEY_DTC_RESETDID_EXCEL)
+        dtc_resetdid_excel = state.get(UIStateKey.DTC_RESETDID_EXCEL)
         StateConfigService.set_text_option(
             cfg,
-            SECTION_DTC,
-            OPTION_RESETDID_INPUTS,
+            ConfigSection.DTC,
+            ConfigOption.RESETDID_INPUTS,
             resetdid_inputs_value_from_ui_single_path(dtc_resetdid_excel) if dtc_resetdid_excel else "",
             remove_on_empty=True,
         )
 
-        dtc_cin_excel = state.get(STATE_KEY_DTC_CIN_EXCEL)
+        dtc_cin_excel = state.get(UIStateKey.DTC_CIN_EXCEL)
         StateConfigService.set_text_option(
             cfg,
-            SECTION_DTC,
-            OPTION_CIN_INPUT_EXCEL,
+            ConfigSection.DTC,
+            ConfigOption.CIN_INPUT_EXCEL,
             cin_input_excel_value_from_ui_path(dtc_cin_excel) if dtc_cin_excel else "",
             remove_on_empty=True,
         )
 
-        if STATE_KEY_DTC_IO_EXCEL in state or STATE_KEY_DTC_IO_SELECTED_SHEETS in state:
-            io_excel_path = input_excel_value_from_ui_path(state.get(STATE_KEY_DTC_IO_EXCEL))
-            io_selected_sheets = str(state.get(STATE_KEY_DTC_IO_SELECTED_SHEETS) or "").strip()
+        if UIStateKey.DTC_IO_EXCEL in state or UIStateKey.DTC_IO_SELECTED_SHEETS in state:
+            io_excel_path = input_excel_value_from_ui_path(state.get(UIStateKey.DTC_IO_EXCEL))
+            io_selected_sheets = str(state.get(UIStateKey.DTC_IO_SELECTED_SHEETS) or "").strip()
             io_inputs_value = (
                 f"{io_excel_path} | {io_selected_sheets if io_selected_sheets else '*'}"
                 if io_excel_path
@@ -568,18 +509,18 @@ class StateConfigService:
             )
             StateConfigService.set_text_option(
                 cfg,
-                SECTION_DTC,
-                OPTION_IO_INPUTS,
+                ConfigSection.DTC,
+                ConfigOption.IO_INPUTS,
                 io_inputs_value,
                 remove_on_empty=True,
             )
 
-        if STATE_KEY_DTC_DIDCONFIG_EXCEL in state:
-            dtc_didconfig_excel = state.get(STATE_KEY_DTC_DIDCONFIG_EXCEL)
+        if UIStateKey.DTC_DIDCONFIG_EXCEL in state:
+            dtc_didconfig_excel = state.get(UIStateKey.DTC_DIDCONFIG_EXCEL)
             StateConfigService.set_text_option(
                 cfg,
-                SECTION_DTC,
-                OPTION_DIDCONFIG_INPUT_EXCEL,
+                ConfigSection.DTC,
+                ConfigOption.DIDCONFIG_INPUT_EXCEL,
                 str(dtc_didconfig_excel or "").strip(),
                 remove_on_empty=True,
             )
@@ -604,26 +545,26 @@ class StateConfigService:
         self.ensure_sections(
             cfg,
             (
-                SECTION_LR_REAR,
-                SECTION_CENTRAL,
-                SECTION_DTC,
+                ConfigSection.LR_REAR,
+                ConfigSection.CENTRAL,
+                ConfigSection.DTC,
             ),
         )
         if not skip_lr_rear and self.has_any_lr_state(state):
             preset = self.build_lr_preset_from_state(state)
             self.config_service.update_lr_rear_and_related(cfg, preset)
-            if state.get(OPTION_UDS_ECU_QUALIFIER):
+            if state.get(ConfigOption.UDS_ECU_QUALIFIER):
                 cfg.set(
-                    SECTION_LR_REAR,
-                    OPTION_UDS_ECU_QUALIFIER,
-                    str(state[OPTION_UDS_ECU_QUALIFIER]).strip(),
+                    ConfigSection.LR_REAR,
+                    ConfigOption.UDS_ECU_QUALIFIER,
+                    str(state[ConfigOption.UDS_ECU_QUALIFIER]).strip(),
                 )
-            if cfg.has_section(SECTION_LR_REAR):
+            if cfg.has_section(ConfigSection.LR_REAR):
                 self.set_text_option(
                     cfg,
-                    SECTION_LR_REAR,
-                    OPTION_SRV_EXCEL,
-                    state.get(STATE_KEY_LR_SRV_EXCEL),
+                    ConfigSection.LR_REAR,
+                    ConfigOption.SRV_EXCEL,
+                    state.get(UIStateKey.LR_SRV_EXCEL),
                     remove_on_empty=True,
                 )
                 self.remove_mapped_options_on_empty_state(cfg, state, LR_EMPTY_STATE_OPTION_MAP)
@@ -632,62 +573,62 @@ class StateConfigService:
             self.apply_standard_domain_state(cfg, state, CENTRAL_DOMAIN_UI_BINDING)
             self.set_text_option(
                 cfg,
-                SECTION_CENTRAL,
-                OPTION_UART_EXCEL,
-                state.get(STATE_KEY_CENTRAL_UART),
+                ConfigSection.CENTRAL,
+                ConfigOption.UART_EXCEL,
+                state.get(UIStateKey.CENTRAL_UART),
                 remove_on_empty=True,
             )
             self.set_text_option(
                 cfg,
-                SECTION_CENTRAL,
-                OPTION_SRV_EXCEL,
-                state.get(STATE_KEY_CENTRAL_SRV_EXCEL),
+                ConfigSection.CENTRAL,
+                ConfigOption.SRV_EXCEL,
+                state.get(UIStateKey.CENTRAL_SRV_EXCEL),
                 remove_on_empty=True,
             )
-            uart_comm_raw = state.get(STATE_KEY_CENTRAL_UART_COMM)
+            uart_comm_raw = state.get(UIStateKey.CENTRAL_UART_COMM)
             uart_comm = uart_comm_raw if isinstance(uart_comm_raw, dict) else None
             self.sync_uart_comm_options(cfg, uart_comm)
             self.sync_ignition_cycle_options(cfg, state)
 
-            if state.get(STATE_KEY_CENTRAL_LOGIN_USERNAME) is not None:
+            if state.get(UIStateKey.CENTRAL_LOGIN_USERNAME) is not None:
                 cfg.set(
-                    SECTION_CENTRAL,
-                    OPTION_LOGIN_USERNAME,
-                    str(state.get(STATE_KEY_CENTRAL_LOGIN_USERNAME) or "").strip(),
+                    ConfigSection.CENTRAL,
+                    ConfigOption.LOGIN_USERNAME,
+                    str(state.get(UIStateKey.CENTRAL_LOGIN_USERNAME) or "").strip(),
                 )
-            if state.get(STATE_KEY_CENTRAL_LOGIN_PASSWORD) is not None:
+            if state.get(UIStateKey.CENTRAL_LOGIN_PASSWORD) is not None:
                 cfg.set(
-                    SECTION_CENTRAL,
-                    OPTION_LOGIN_PASSWORD,
-                    str(state.get(STATE_KEY_CENTRAL_LOGIN_PASSWORD) or "").strip(),
+                    ConfigSection.CENTRAL,
+                    ConfigOption.LOGIN_PASSWORD,
+                    str(state.get(UIStateKey.CENTRAL_LOGIN_PASSWORD) or "").strip(),
                 )
 
             self.set_json_option_or_remove(
                 cfg,
-                SECTION_CENTRAL,
-                OPTION_C_PWR,
-                state.get(OPTION_C_PWR),
+                ConfigSection.CENTRAL,
+                ConfigOption.C_PWR,
+                state.get(ConfigOption.C_PWR),
                 is_configured=self.is_configured_c_pwr,
             )
             self.set_json_option_or_remove(
                 cfg,
-                SECTION_CENTRAL,
-                OPTION_C_RLY,
-                state.get(OPTION_C_RLY),
+                ConfigSection.CENTRAL,
+                ConfigOption.C_RLY,
+                state.get(ConfigOption.C_RLY),
                 is_configured=self.is_configured_c_rly,
             )
             self.set_json_option_or_remove(
                 cfg,
-                SECTION_CENTRAL,
-                OPTION_C_IG,
-                state.get(OPTION_C_IG),
+                ConfigSection.CENTRAL,
+                ConfigOption.C_IG,
+                state.get(ConfigOption.C_IG),
                 is_configured=self.is_configured_ig_pw,
             )
             self.set_json_option_or_remove(
                 cfg,
-                SECTION_CENTRAL,
-                OPTION_C_PW,
-                state.get(OPTION_C_PW),
+                ConfigSection.CENTRAL,
+                ConfigOption.C_PW,
+                state.get(ConfigOption.C_PW),
                 is_configured=self.is_configured_ig_pw,
             )
 
@@ -696,9 +637,9 @@ class StateConfigService:
             self.sync_dtc_domain_inputs(cfg, state)
             self.set_text_option(
                 cfg,
-                SECTION_DTC,
-                OPTION_SRV_EXCEL,
-                state.get(STATE_KEY_DTC_SRV_EXCEL),
+                ConfigSection.DTC,
+                ConfigOption.SRV_EXCEL,
+                state.get(UIStateKey.DTC_SRV_EXCEL),
                 remove_on_empty=True,
             )
 
@@ -809,9 +750,9 @@ class StateConfigService:
         返回：``run_can`` / ``run_xml`` 为 True；``run_uart`` 在矩阵或串口已配置时为 True；
         ``run_soa`` 在服务矩阵路径非空时为 True。
         """
-        c_uart = (state.get(STATE_KEY_CENTRAL_UART) or "").strip()
-        c_srv = (state.get(STATE_KEY_CENTRAL_SRV_EXCEL) or "").strip()
-        uart_comm_raw = state.get(STATE_KEY_CENTRAL_UART_COMM)
+        c_uart = (state.get(UIStateKey.CENTRAL_UART) or "").strip()
+        c_srv = (state.get(UIStateKey.CENTRAL_SRV_EXCEL) or "").strip()
+        uart_comm_raw = state.get(UIStateKey.CENTRAL_UART_COMM)
         uart_comm = uart_comm_raw if isinstance(uart_comm_raw, dict) else None
         port_set = bool((uart_comm.get("port") or "").strip()) if uart_comm else False
         run_uart = bool(c_uart) or port_set

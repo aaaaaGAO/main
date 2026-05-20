@@ -22,7 +22,7 @@ from infra.config import (
     read_config_tolerant_duplicates as infra_read_config_tolerant_duplicates,
     read_fixed_config as infra_read_fixed_config,
 )
-from infra.filesystem import get_project_root, resolve_main_config_path
+from infra.filesystem import ProjectPaths, RuntimePathResolver
 
 
 def read_config(config_path: str) -> configparser.ConfigParser:
@@ -77,7 +77,7 @@ class ConfigCenter:
             self.base_dir_value = base_dir
             type(self).shared_base_dir = base_dir
         elif not getattr(self, "base_dir_value", None):
-            self.base_dir_value = get_project_root(__file__)
+            self.base_dir_value = ProjectPaths.get_project_root(__file__)
             type(self).shared_base_dir = self.base_dir_value
         self.load()
         self.initialized = True
@@ -88,7 +88,7 @@ class ConfigCenter:
         参数：无（使用实例上的 `base_dir_value`）。
         返回：无。
         """
-        self.config_path = resolve_main_config_path(self.base_dir_value)
+        self.config_path = RuntimePathResolver.resolve_main_config_path(self.base_dir_value)
         if self.config_path:
             self.raw_config = read_config_if_exists(self.config_path)
         else:

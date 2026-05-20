@@ -76,31 +76,6 @@ def run_generation_workflow(
         log_mgr.clear()
 
 
-def run_generation(
-    config_path=None,
-    base_dir=None,
-    domain=DEFAULT_DOMAIN_LR_REAR,
-    workbook_cache: dict[str, Any] | None = None,
-):
-    """CAN 生成统一入口，供 TaskService 与命令行调用。
-
-    功能：接收可选配置路径、工程根目录与业务域，调用 run_generation_workflow 完成整条流水线。
-
-    形参：
-        config_path：配置文件路径；None 时按主配置默认解析规则查找 `Configuration.ini`。
-        base_dir：工程根目录；None 时自动解析。
-        domain：业务域，默认 "LR_REAR"。
-
-    返回：无。
-    """
-    run_generation_workflow(
-        config_path=config_path,
-        base_dir=base_dir,
-        domain=domain,
-        workbook_cache=workbook_cache,
-    )
-
-
 class CANEntrypointWorkflowUtility:
     """CAN 入口编排统一工具类。"""
 
@@ -108,9 +83,36 @@ class CANEntrypointWorkflowUtility:
     def run_generation_workflow(*args: Any, **kwargs: Any) -> Any:
         return run_generation_workflow(*args, **kwargs)
 
-    @staticmethod
-    def run_generation(*args: Any, **kwargs: Any) -> Any:
-        return run_generation(*args, **kwargs)
+    @classmethod
+    def run_generation(
+        cls,
+        config_path=None,
+        base_dir=None,
+        domain=DEFAULT_DOMAIN_LR_REAR,
+        workbook_cache: dict[str, Any] | None = None,
+    ) -> None:
+        """CAN 生成统一入口，供 TaskService 与命令行调用。"""
+        cls.run_generation_workflow(
+            config_path=config_path,
+            base_dir=base_dir,
+            domain=domain,
+            workbook_cache=workbook_cache,
+        )
+
+
+def run_generation(
+    config_path=None,
+    base_dir=None,
+    domain=DEFAULT_DOMAIN_LR_REAR,
+    workbook_cache: dict[str, Any] | None = None,
+):
+    """兼容入口：转发到 CANEntrypointWorkflowUtility.run_generation。"""
+    CANEntrypointWorkflowUtility.run_generation(
+        config_path=config_path,
+        base_dir=base_dir,
+        domain=domain,
+        workbook_cache=workbook_cache,
+    )
 
 
 if __name__ == "__main__":
@@ -118,4 +120,4 @@ if __name__ == "__main__":
     parser.add_argument("--config", help="配置文件路径")
     parser.add_argument("--domain", default=DEFAULT_DOMAIN_LR_REAR, help="业务域：LR_REAR / CENTRAL / DTC")
     args = parser.parse_args()
-    run_generation(config_path=args.config, domain=args.domain)
+    CANEntrypointWorkflowUtility.run_generation(config_path=args.config, domain=args.domain)

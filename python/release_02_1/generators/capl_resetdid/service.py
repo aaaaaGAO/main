@@ -9,8 +9,8 @@ import sys
 from pathlib import Path
 
 from infra.excel.workbook import ExcelService
+from infra.filesystem import RuntimePathResolver
 from . import runtime as resetdid_generator_runtime
-from utils.path_utils import resolve_runtime_path
 
 
 class ResetDidGeneratorService:
@@ -47,7 +47,9 @@ class ResetDidGeneratorService:
 
             for excel_rel, sheets in inputs:
                 excel_path_str = str(excel_rel).strip().replace("/", os.sep)
-                excel_path = Path(resolve_runtime_path(str(config_path.parent), excel_path_str))
+                excel_path = Path(
+                    RuntimePathResolver.resolve_runtime_path(str(config_path.parent), excel_path_str)
+                )
                 if not excel_path.exists():
                     print(f"[resetdid] 警告: 未找到 Excel: {excel_path}，跳过")
                     continue

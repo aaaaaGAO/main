@@ -25,7 +25,7 @@ from core.generator_config import GeneratorConfig
 from infra.config.config_access import read_fixed_config
 from infra.excel.header import ColumnMapper
 from infra.excel.workbook import merged_cell_value
-from infra.filesystem.pathing import resolve_configured_path, resolve_output_dir_relative_path
+from infra.filesystem.pathing import RuntimePathResolver
 from generators.capl_soa.soa_excel_utils import normalize_cell_text, open_workbook_cached
 from services.config_constants import (
     OPTION_SOA_SETSERVER_OUTPUT_FILENAME,
@@ -630,7 +630,7 @@ def resolve_setserver_testmode_directory(anchor_path: str) -> str:
     if not os.path.exists(anchor_abs):
         raise FileNotFoundError(f"锚点路径不存在: {anchor_path}")
     output_dir = anchor_abs if os.path.isdir(anchor_abs) else os.path.dirname(anchor_abs)
-    return resolve_output_dir_relative_path(
+    return RuntimePathResolver.resolve_output_dir_relative_path(
         output_dir,
         ".",
         DEFAULT_SOA_SETSERVER_REL_PARTS,
@@ -678,7 +678,7 @@ def resolve_srv_excel_absolute_path(base_dir: str, domain_key: str) -> str:
             break
     if not srv_value:
         raise ValueError(f"未配置 [{section_name}] srv_excel（服务通信矩阵），且请求未提供 excel_path")
-    resolved_path = resolve_configured_path(generator_config.base_dir, srv_value)
+    resolved_path = RuntimePathResolver.resolve_configured_path(generator_config.base_dir, srv_value)
     return resolved_path
 
 

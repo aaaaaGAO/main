@@ -8,8 +8,6 @@ import os
 
 from infra.filesystem.pathing import (
     RuntimePathResolver,
-    resolve_output_dir_relative_path,
-    resolve_runtime_path,
 )
 from infra.excel.workbook import ExcelService
 
@@ -163,11 +161,11 @@ class CINEntrypointSupport:
                     f"未配置关键字 Clib 表：请在 [{SECTION_CENTRAL}] 中配置 {candidate_text}"
                 )
             raise ValueError(f"未配置关键字 Clib 表：请配置 {candidate_text}")
-        input_excel_path = resolve_runtime_path(base_dir, input_excel_file)
+        input_excel_path = RuntimePathResolver.resolve_runtime_path(base_dir, input_excel_file)
         if mapping_excel_file.startswith("./"):
             mapping_excel_file = mapping_excel_file[2:]
-        mapping_excel_path = resolve_runtime_path(base_dir, mapping_excel_file)
-        output_dir = resolve_output_dir_relative_path(
+        mapping_excel_path = RuntimePathResolver.resolve_runtime_path(base_dir, mapping_excel_file)
+        output_dir = RuntimePathResolver.resolve_output_dir_relative_path(
             base_dir,
             output_dir,
             ("TESTmode",),

@@ -24,26 +24,35 @@ if sys.stderr is None:
 from .service import XMLGeneratorService
 
 
+class XMLEntrypointWorkflowUtility:
+    """XML 入口编排统一工具类。"""
+
+    @classmethod
+    def run_generation(
+        cls,
+        config_path: str | None = None,
+        base_dir: str | None = None,
+        domain: str = DEFAULT_DOMAIN_LR_REAR,
+        workbook_cache: dict[str, Any] | None = None,
+    ) -> None:
+        """XML 生成统一入口，供 TaskService 与命令行调用。"""
+        service = XMLGeneratorService()
+        service.run_pipeline(
+            config_path=config_path,
+            base_dir=base_dir,
+            domain=domain,
+            workbook_cache=workbook_cache,
+        )
+
+
 def run_generation(
     config_path: str | None = None,
     base_dir: str | None = None,
     domain: str = DEFAULT_DOMAIN_LR_REAR,
     workbook_cache: dict[str, Any] | None = None,
 ) -> None:
-    """XML 生成统一入口，供 TaskService 与命令行调用。
-
-    功能：创建 XMLGeneratorService 并执行 run_pipeline，依次完成读配置、初始化日志、
-    查找 Excel、解析分组、写 XML、汇总。
-
-    形参：
-        config_path：配置文件路径；None 时按主配置默认解析规则查找 `Configuration.ini`。
-        base_dir：工程根目录；None 时由 Service 内部解析。
-        domain：业务域，用于读取对应域的输入输出路径等配置。
-
-    返回：无。
-    """
-    service = XMLGeneratorService()
-    service.run_pipeline(
+    """兼容入口：转发到 XMLEntrypointWorkflowUtility.run_generation。"""
+    XMLEntrypointWorkflowUtility.run_generation(
         config_path=config_path,
         base_dir=base_dir,
         domain=domain,
@@ -51,13 +60,5 @@ def run_generation(
     )
 
 
-class XMLEntrypointWorkflowUtility:
-    """XML 入口编排统一工具类。"""
-
-    @staticmethod
-    def run_generation(*args: Any, **kwargs: Any) -> Any:
-        return run_generation(*args, **kwargs)
-
-
 if __name__ == "__main__":
-    run_generation()
+    XMLEntrypointWorkflowUtility.run_generation()

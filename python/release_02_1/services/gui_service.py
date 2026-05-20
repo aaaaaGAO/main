@@ -20,7 +20,7 @@ import xml.etree.ElementTree as ET
 from typing import Any, Dict, List, Literal, Optional
 
 from infra.excel.workbook import ExcelService
-from infra.filesystem import resolve_runtime_path
+from infra.filesystem import RuntimePathResolver
 from services.http_api_constants import api_error_dict, api_success_dict
 
 tk = None  # type: ignore[assignment]
@@ -255,7 +255,7 @@ class GuiService:
         if not file_path or not file_path.strip():
             return api_error_dict("未提供路径")
         raw_path = file_path.strip()
-        resolved_path = resolve_runtime_path(base_dir, raw_path)
+        resolved_path = RuntimePathResolver.resolve_runtime_path(base_dir, raw_path)
         if not os.path.exists(resolved_path):
             return api_error_dict(f"路径不存在: {raw_path}（解析后: {resolved_path}）")
 

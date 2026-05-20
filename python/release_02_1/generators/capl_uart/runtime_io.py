@@ -29,13 +29,10 @@ from services.config_constants import (
     SECTION_PATHS,
     UART_COMM_CFG_KEYS,
 )
-from utils import file_io
+from utils.file_io import FileIOUtility
 from utils.logger import TeeToLogger
 from infra.filesystem.pathing import (
     RuntimePathResolver,
-    resolve_configured_path,
-    resolve_output_dir_relative_path,
-    resolve_runtime_path,
 )
 
 # ---------- 模块级变量：解析表格日志，供 read_uart_excel_data 与 build_stdout_tee 使用 ----------
@@ -275,8 +272,8 @@ def resolve_io_paths(config: configparser.ConfigParser, base_dir: str) -> tuple[
             if config.has_section(SECTION_PATHS)
             else "./output"
         )
-    input_excel = resolve_configured_path(base_dir, input_excel)
-    output_dir = resolve_output_dir_relative_path(
+    input_excel = RuntimePathResolver.resolve_configured_path(base_dir, input_excel)
+    output_dir = RuntimePathResolver.resolve_output_dir_relative_path(
         base_dir,
         output_dir,
         ("Configuration",),
@@ -297,7 +294,7 @@ def read_uart_excel_data(
     从 UART 通信矩阵 Excel 指定 Sheet 读取消息与信号，按 Msg ID 聚合为消息列表。
     Sheet 不存在或缺少必填列时返回 []。
     """
-    resolved_excel_path = resolve_runtime_path(None, excel_path)
+    resolved_excel_path = RuntimePathResolver.resolve_runtime_path(None, excel_path)
     if not os.path.exists(resolved_excel_path):
         raise FileNotFoundError(f"找不到 Excel 文件: {resolved_excel_path}")
 
@@ -505,7 +502,7 @@ def generate_uart_content(
 
 def write_text_safe(output_path: str, content: str) -> None:
     """写入文本文件，utf-8 优先，失败时回退 gb18030。"""
-    file_io.write_text_safe(output_path, content, encoding="utf-8", fallback_encoding="gb18030")
+    FileIOUtility.write_text_safe(output_path, content, encoding="utf-8", fallback_encoding="gb18030")
 
 
 class UARTExcelParser:

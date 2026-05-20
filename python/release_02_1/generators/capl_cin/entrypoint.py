@@ -87,17 +87,6 @@ def run_generation_workflow(domain: str = DEFAULT_DOMAIN_LR_REAR):
         log_mgr.clear()
 
 
-def run_generation(domain: str = DEFAULT_DOMAIN_LR_REAR):
-    """CIN 生成主入口，供 TaskService 与命令行调用。
-
-    功能：执行 run_generation_workflow，完成从配置读取到 .cin 写出的整条流水线。
-
-    形参：domain — 业务域（LR_REAR / CENTRAL / DTC），默认 LR_REAR。
-    返回：无。
-    """
-    run_generation_workflow(domain=domain)
-
-
 class CINEntrypointWorkflowUtility:
     """CIN 入口编排统一工具类。"""
 
@@ -105,10 +94,16 @@ class CINEntrypointWorkflowUtility:
     def run_generation_workflow(*args: Any, **kwargs: Any) -> Any:
         return run_generation_workflow(*args, **kwargs)
 
-    @staticmethod
-    def run_generation(*args: Any, **kwargs: Any) -> Any:
-        return run_generation(*args, **kwargs)
+    @classmethod
+    def run_generation(cls, domain: str = DEFAULT_DOMAIN_LR_REAR) -> None:
+        """CIN 生成主入口，供 TaskService 与命令行调用。"""
+        cls.run_generation_workflow(domain=domain)
+
+
+def run_generation(domain: str = DEFAULT_DOMAIN_LR_REAR):
+    """兼容入口：转发到 CINEntrypointWorkflowUtility.run_generation。"""
+    CINEntrypointWorkflowUtility.run_generation(domain=domain)
 
 
 if __name__ == "__main__":
-    run_generation()
+    CINEntrypointWorkflowUtility.run_generation()

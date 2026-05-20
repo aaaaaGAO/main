@@ -23,7 +23,7 @@ import os
 import re
 from typing import Callable, Optional, Sequence
 
-from infra.filesystem import resolve_main_config_path
+from infra.filesystem import RuntimePathResolver
 from services.config_constants import DEFAULT_DOMAIN_LR_REAR, OPTION_LOG_LEVEL_MIN
 from core.error_module import ErrorModuleResolver
 from core.log_run_context import get_run_domain
@@ -270,7 +270,7 @@ def get_log_level_from_config(
             except Exception:
                 section = DEFAULT_DOMAIN_LR_REAR
         cfg = configparser.ConfigParser()
-        config_path = resolve_main_config_path(base_dir)
+        config_path = RuntimePathResolver.resolve_main_config_path(base_dir)
         cfg.read(config_path, encoding="utf-8")
         level_str = cfg.get(section, OPTION_LOG_LEVEL_MIN, fallback="info").strip().lower()
         return level_map.get(level_str, logging.INFO)

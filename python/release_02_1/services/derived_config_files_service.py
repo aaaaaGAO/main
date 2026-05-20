@@ -18,7 +18,7 @@ import os
 import re
 from typing import Any, Dict, List, Optional
 
-from infra.filesystem import resolve_named_subdir
+from infra.filesystem import RuntimePathResolver
 from services.config_constants import (
     OPTION_C_IG,
     OPTION_C_PW,
@@ -70,7 +70,7 @@ class DerivedConfigFilesService:
         返回：
             解析后的绝对路径；无法解析时返回 ``None``。
         """
-        return resolve_named_subdir(
+        return RuntimePathResolver.resolve_named_subdir(
             self.base_dir,
             output_dir,
             subdir_name,

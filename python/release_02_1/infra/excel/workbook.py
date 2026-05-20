@@ -14,7 +14,7 @@ import os
 from typing import Any
 
 from openpyxl import load_workbook
-from infra.filesystem import resolve_runtime_path
+from infra.filesystem import RuntimePathResolver
 
 
 def merged_cell_value(ws: Any, row: int, col: int) -> Any:
@@ -53,7 +53,7 @@ class ExcelService:
         参数：excel_file_path — 文件路径；read_only — 只读模式；data_only — 只读公式结果；rich_text — 富文本；nfc — 是否 NFC 归一化。
         返回：openpyxl Workbook。异常：FileNotFoundError / ValueError / PermissionError。
         """
-        excel_file_path = resolve_runtime_path(None, excel_file_path)
+        excel_file_path = RuntimePathResolver.resolve_runtime_path(None, excel_file_path)
 
         if not os.path.exists(excel_file_path):
             raise FileNotFoundError(f"找不到 Excel 文件: {excel_file_path}")

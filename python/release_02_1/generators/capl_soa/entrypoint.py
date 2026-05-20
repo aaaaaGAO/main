@@ -12,11 +12,7 @@ import os
 from typing import Any
 
 from jinja2 import Environment, FileSystemLoader
-from infra.filesystem.pathing import (
-    RuntimePathResolver,
-    resolve_configured_path,
-    resolve_output_dir_relative_path,
-)
+from infra.filesystem.pathing import RuntimePathResolver
 from core.generator_config import GeneratorConfig
 from generators.capl_soa.soa_setserver_cin import SOASetServerCinGenerator
 from generators.capl_soa.soa_excel_utils import is_client_marker, normalize_cell_text, open_workbook_cached
@@ -66,14 +62,14 @@ def load_paths(gconfig: GeneratorConfig, base_dir: str, domain: str) -> tuple[st
     if not srv_excel:
         raise ValueError(f"未配置 [{domain}] srv_excel（服务通信矩阵）")
     output_dir = gconfig.get_required_from_section(domain, OPTION_OUTPUT_DIR).strip()
-    excel_path = resolve_configured_path(base_dir, srv_excel)
+    excel_path = RuntimePathResolver.resolve_configured_path(base_dir, srv_excel)
 
     # SOA Node 路径规则：
     # 1) 取用户 output_dir 绝对路径；
     # 2) 取其上一级目录；
     # 3) 拼接 public/ILNode/SOANode；
     # 4) 若目标目录不存在则直接报错，不自动创建。
-    soa_output_dir = resolve_output_dir_relative_path(
+    soa_output_dir = RuntimePathResolver.resolve_output_dir_relative_path(
         base_dir,
         output_dir,
         ("public", "ILNode", "SOANode"),
@@ -195,35 +191,6 @@ def render_nodes_to_files(variables_list: list[dict[str, Any]], output_dir: str)
             file_obj.write(rendered)
 
 
-def run_generation(
-    config_path: str | None = None,
-    base_dir: str | None = None,
-    domain: str = "CENTRAL",
-    *,
-    workbook_cache: dict[str, Any] | None = None,
-) -> GeneratorConfig:
-    """执行 SOA 节点生成主流程。
-
-    参数：
-        config_path：可选配置路径。
-        base_dir：可选项目根目录。
-        domain：生成域，默认 `CENTRAL`。
-        workbook_cache：可选工作簿缓存字典；用于同一流程内复用已打开 Excel。
-
-    返回：
-        本流程已加载的 `GeneratorConfig` 实例，供调用方复用，避免同一次任务内再次 `load`。
-    """
-    gconfig = resolve_base_and_config(base_dir, config_path)
-    resolved_base_dir = gconfig.base_dir
-    excel_path, output_dir = load_paths(gconfig, resolved_base_dir, domain)
-    if not os.path.isfile(excel_path):
-        raise FileNotFoundError(f"服务通信矩阵不存在: {excel_path}")
-    variables_list = read_variables_list_from_excel(excel_path, workbook_cache=workbook_cache)
-    render_nodes_to_files(variables_list, output_dir)
-    logger.log(PROGRESS_LEVEL, "SOA 生成完成：%s 个节点文件，输出目录: %s", len(variables_list), output_dir)
-    return gconfig
-
-
 def run_setserver_cin_generation(excel_path: str, anchor_path: str) -> str:
     """根据 Service_Interface 工作表生成 ``SOA_StartSetserver.cin``。
 
@@ -261,9 +228,25 @@ class SOAGenerationUtility:
     def render_nodes_to_files(*args: Any, **kwargs: Any) -> Any:
         return render_nodes_to_files(*args, **kwargs)
 
-    @staticmethod
-    def run_generation(*args: Any, **kwargs: Any) -> Any:
-        return run_generation(*args, **kwargs)
+    @classmethod
+    def run_generation(
+        cls,
+        config_path: str | None = None,
+        base_dir: str | None = None,
+        domain: str = "CENTRAL",
+        *,
+        workbook_cache: dict[str, Any] | None = None,
+    ) -> GeneratorConfig:
+        """执行 SOA 节点生成主流程。"""
+        gconfig = cls.resolve_base_and_config(base_dir, config_path)
+        resolved_base_dir = gconfig.base_dir
+        excel_path, output_dir = cls.load_paths(gconfig, resolved_base_dir, domain)
+        if not os.path.isfile(excel_path):
+            raise FileNotFoundError(f"服务通信矩阵不存在: {excel_path}")
+        variables_list = cls.read_variables_list_from_excel(excel_path, workbook_cache=workbook_cache)
+        cls.render_nodes_to_files(variables_list, output_dir)
+        logger.log(PROGRESS_LEVEL, "SOA 生成完成：%s 个节点文件，输出目录: %s", len(variables_list), output_dir)
+        return gconfig
 
     @staticmethod
     def run_setserver_cin_generation(*args: Any, **kwargs: Any) -> Any:
@@ -284,7 +267,23 @@ def run_cli(
 
     返回：无。
     """
-    run_generation(config_path=config_path, base_dir=base_dir, domain=domain)
+    SOAGenerationUtility.run_generation(config_path=config_path, base_dir=base_dir, domain=domain)
+
+
+def run_generation(
+    config_path: str | None = None,
+    base_dir: str | None = None,
+    domain: str = "CENTRAL",
+    *,
+    workbook_cache: dict[str, Any] | None = None,
+) -> GeneratorConfig:
+    """兼容入口：转发到 SOAGenerationUtility.run_generation。"""
+    return SOAGenerationUtility.run_generation(
+        config_path=config_path,
+        base_dir=base_dir,
+        domain=domain,
+        workbook_cache=workbook_cache,
+    )
 
 
 if __name__ == "__main__":

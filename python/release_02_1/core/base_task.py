@@ -23,7 +23,7 @@ import sys
 from abc import ABC, abstractmethod
 from typing import Any, Optional
 
-from infra.filesystem import get_base_dir, resolve_main_config_path
+from infra.filesystem import ProjectPaths, RuntimePathResolver
 from infra.logger import PROGRESS_LEVEL, TeeToLogger
 from infra.config import read_config_if_exists, read_fixed_config
 from core.run_context import clear_run_logger
@@ -53,8 +53,8 @@ class BaseGeneratorTask(ABC):
             base_dir: 项目根目录路径，为 None 时自动推断
             reference_file: 用于推断根目录的参考文件路径
         """
-        self.base_dir = base_dir or get_base_dir(reference_file or __file__)
-        self.config_path = resolve_main_config_path(self.base_dir)
+        self.base_dir = base_dir or ProjectPaths.get_base_dir(reference_file or __file__)
+        self.config_path = RuntimePathResolver.resolve_main_config_path(self.base_dir)
         self.config = None
         self.fixed_config: dict[str, str] = {}
         self.logger: Optional[logging.Logger] = None

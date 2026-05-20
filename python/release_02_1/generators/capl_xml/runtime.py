@@ -39,12 +39,10 @@ from services.config_constants import (
     XML_RUNTIME_KEY_SELECTED_FILTER,
 )
 from utils.logger import PROGRESS_LEVEL
-from utils.sheet_filter import parse_selected_sheets
+from utils.excel_io import ExcelUtility
 
 from infra.filesystem.pathing import (
     RuntimePathResolver,
-    resolve_output_dir_relative_path,
-    resolve_runtime_path,
 )
 from services.filter_service import parse_shaixuan_config
 
@@ -314,10 +312,10 @@ def load_runtime_config(
         allowed_target_versions = None
 
     selected_sheets_str = gconfig.get_from_section(domain, OPTION_SELECTED_SHEETS, fallback="")
-    selected_filter = parse_selected_sheets(selected_sheets_str)
+    selected_filter = ExcelUtility.parse_selected_sheets(selected_sheets_str)
 
-    excel_path = resolve_runtime_path(base_dir, case_excel_file)
-    output_dir = resolve_output_dir_relative_path(
+    excel_path = RuntimePathResolver.resolve_runtime_path(base_dir, case_excel_file)
+    output_dir = RuntimePathResolver.resolve_output_dir_relative_path(
         base_dir,
         output_dir,
         ("TESTmode",),
