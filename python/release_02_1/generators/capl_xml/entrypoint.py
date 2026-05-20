@@ -45,19 +45,7 @@ class XMLEntrypointWorkflowUtility:
         )
 
 
-def run_generation(
-    config_path: str | None = None,
-    base_dir: str | None = None,
-    domain: str = DEFAULT_DOMAIN_LR_REAR,
-    workbook_cache: dict[str, Any] | None = None,
-) -> None:
-    """兼容入口：转发到 XMLEntrypointWorkflowUtility.run_generation。"""
-    XMLEntrypointWorkflowUtility.run_generation(
-        config_path=config_path,
-        base_dir=base_dir,
-        domain=domain,
-        workbook_cache=workbook_cache,
-    )
+run_generation = XMLEntrypointWorkflowUtility.run_generation
 
 
 if __name__ == "__main__":

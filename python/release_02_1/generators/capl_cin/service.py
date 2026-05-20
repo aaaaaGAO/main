@@ -13,7 +13,7 @@ import os
 from typing import Optional
 
 from core.error_module import ErrorModuleResolver
-from core.common.name_sanitize import sanitize_clib_name
+from utils.excel_io import StringUtility
 from services.config_constants import (
     CIN_RUNTIME_KEY_CONFIG_ENUM_CTX,
     CIN_RUNTIME_KEY_INPUT_EXCEL_PATH,
@@ -25,12 +25,7 @@ from services.config_constants import (
     CIN_RUNTIME_KEY_SHEET_NAMES_STR,
 )
 
-from .runtime_io import (
-    generate_content as io_generate_content,
-    load_keyword_specs as io_load_keyword_specs,
-    read_clib_steps as io_read_clib_steps,
-    render_step_lines as io_render_step_lines,
-)
+from .runtime_io import CINRuntimeIOUtility
 from .constants import DEFAULT_KEYWORD_SHEET_NAME
 
 
@@ -54,9 +49,11 @@ class CINGeneratorService:
         if not sheet_names:
             sheet_names = [DEFAULT_KEYWORD_SHEET_NAME]
 
-        keyword_specs = io_load_keyword_specs(runtime[CIN_RUNTIME_KEY_MAPPING_EXCEL_PATH], sheet_names)
+        keyword_specs = CINRuntimeIOUtility.load_keyword_specs(
+            runtime[CIN_RUNTIME_KEY_MAPPING_EXCEL_PATH], sheet_names
+        )
 
-        sheet_title, raw_ordered = io_read_clib_steps(
+        sheet_title, raw_ordered = CINRuntimeIOUtility.read_clib_steps(
             runtime[CIN_RUNTIME_KEY_INPUT_EXCEL_PATH],
             clib_sheet=runtime.get(CIN_RUNTIME_KEY_INPUT_SHEET),
         )
@@ -66,7 +63,7 @@ class CINGeneratorService:
 
         ordered = []
         for name, raw_steps in raw_ordered:
-            export_func = f"g_HIL_Clib_Swc_Clib_{sanitize_clib_name(name)}"
+            export_func = f"g_HIL_Clib_Swc_Clib_{StringUtility.sanitize_clib_name(name)}"
             steps: list[str] = []
             for step_item in raw_steps:
                 if isinstance(step_item, tuple):
@@ -74,7 +71,7 @@ class CINGeneratorService:
                 else:
                     raw = step_item
                     excel_row_num = None
-                rendered = io_render_step_lines(
+                rendered = CINRuntimeIOUtility.render_step_lines(
                     raw,
                     keyword_specs=keyword_specs,
                     io_mapping_ctx=io_mapping_ctx,
@@ -93,7 +90,7 @@ class CINGeneratorService:
         if not ordered:
             return None
 
-        cin_content, error_records = io_generate_content(ordered, include_files=None)
+        cin_content, error_records = CINRuntimeIOUtility.generate_content(ordered, include_files=None)
         cin_content = cin_content.replace("\r\n", "\n").replace("\n", "\r\n")
         out_path = os.path.join(runtime[CIN_RUNTIME_KEY_OUTPUT_DIR], runtime[CIN_RUNTIME_KEY_OUTPUT_CIN_FILENAME])
         os.makedirs(os.path.dirname(out_path), exist_ok=True)

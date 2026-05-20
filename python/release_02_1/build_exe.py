@@ -76,7 +76,6 @@ hidden_imports = [
     # 领域层（原根目录模块已迁入 core）
     'core.translator.io_mapping',
     'core.parser.step_parser',
-    'core.common.name_sanitize',
     'core.translator.config_enum',
     'core.caseid_log_dedup',
     'core.log_run_context',

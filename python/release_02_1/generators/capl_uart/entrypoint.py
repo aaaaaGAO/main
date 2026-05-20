@@ -33,9 +33,7 @@ class UARTEntrypointWorkflowUtility:
         UARTGeneratorService().run_pipeline(workbook_cache=workbook_cache)
 
 
-def run_generation(*, workbook_cache: dict[str, Any] | None = None) -> None:
-    """兼容入口：转发到 UARTEntrypointWorkflowUtility.run_generation。"""
-    UARTEntrypointWorkflowUtility.run_generation(workbook_cache=workbook_cache)
+run_generation = UARTEntrypointWorkflowUtility.run_generation
 
 
 if __name__ == "__main__":

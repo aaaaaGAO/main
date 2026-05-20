@@ -42,75 +42,198 @@ STRICT_DIDCONFIG_OPTION_CANDIDATES: tuple[str, ...] = (
 )
 
 
-def find_colon(text: str, start: int) -> int:
-    """在 text[start:] 中查找第一个冒号（半角/全角）位置。参数: text — 字符串；start — 起始下标。返回: 索引，无则 -1。"""
-    candidates = [text.find(separator_char, start) for separator_char in _COLON_CHARS]
-    candidates = [candidate_pos for candidate_pos in candidates if candidate_pos >= 0]
-    return min(candidates) if candidates else -1
+class ConfigEnumUtility:
+    """configuration.xlsx 枚举解析工具类。"""
 
+    @staticmethod
+    def find_colon(text: str, start: int) -> int:
+        """在 text[start:] 中查找第一个冒号（半角/全角）位置。"""
+        candidates = [text.find(separator_char, start) for separator_char in _COLON_CHARS]
+        candidates = [candidate_pos for candidate_pos in candidates if candidate_pos >= 0]
+        return min(candidates) if candidates else -1
 
-def normalize_enum_name_key(text: str) -> str:
-    """Name/键规范化：去首尾空白、转小写。参数: text — 原始字符串。返回: str。"""
-    return str(text).strip().casefold()
+    @staticmethod
+    def normalize_enum_name_key(text: str) -> str:
+        """Name/键规范化：去首尾空白、转小写。"""
+        return str(text).strip().casefold()
 
+    @staticmethod
+    def is_numeric_value(text: str) -> bool:
+        """判断是否为十进制数值。"""
+        return bool(text is not None and _RE_NUMERIC.match(str(text)))
 
-def is_numeric_value(text: str) -> bool:
-    """判断是否为十进制数值。参数: text — 待判断字符串。返回: bool。"""
-    return bool(text is not None and _RE_NUMERIC.match(str(text)))
+    @staticmethod
+    def has_expression_chars(text: str) -> bool:
+        """判断是否含表达式符号 ><=()，此类值不翻译。"""
+        if text is None:
+            return False
+        return any((ch in _EXPR_CHARS) for ch in str(text))
 
+    @classmethod
+    def parse_values_cell(cls, values_cell: str) -> Dict[str, str]:
+        """解析 Values 单元格为「翻译前(右)->翻译后(左)」映射。"""
+        if values_cell is None:
+            return {}
+        text = str(values_cell).strip()
+        if not text:
+            return {}
 
-def has_expression_chars(text: str) -> bool:
-    """判断是否含表达式符号 ><=()，此类值不翻译。参数: text — 待判断字符串。返回: bool。"""
-    if text is None:
-        return False
-    return any((ch in _EXPR_CHARS) for ch in str(text))
-
-
-def parse_values_cell(values_cell: str) -> Dict[str, str]:
-    """解析 Values 单元格为「翻译前(右)->翻译后(左)」映射。参数: values_cell — 单元格字符串。返回: 规范 key -> 左侧值。"""
-    if values_cell is None:
-        return {}
-    text = str(values_cell).strip()
-    if not text:
-        return {}
-
-    mapping: Dict[str, str] = {}
-    for raw_line in text.splitlines():
-        line = raw_line.strip()
-        if not line:
-            continue
-
-        cursor_pos = 0
-        line_length = len(line)
-        while cursor_pos < line_length:
-            colon_index = find_colon(line, cursor_pos)
-            if colon_index < 0:
-                break
-            left = line[cursor_pos:colon_index].strip()
-            if not left:
-                cursor_pos = colon_index + 1
+        mapping: Dict[str, str] = {}
+        for raw_line in text.splitlines():
+            line = raw_line.strip()
+            if not line:
                 continue
-            right_start = colon_index + 1
-            while right_start < line_length and line[right_start].isspace():
-                right_start += 1
-            start_right = right_start
-            next_pair_pos = None
-            next_pair_match = re.search(r"\s+\S+\s*[:\uFF1A]", line[start_right:])
-            if next_pair_match:
-                next_pair_pos = start_right + next_pair_match.start()
-            if next_pair_pos is None:
-                right = line[start_right:].strip()
-                cursor_pos = line_length
+
+            cursor_pos = 0
+            line_length = len(line)
+            while cursor_pos < line_length:
+                colon_index = cls.find_colon(line, cursor_pos)
+                if colon_index < 0:
+                    break
+                left = line[cursor_pos:colon_index].strip()
+                if not left:
+                    cursor_pos = colon_index + 1
+                    continue
+                right_start = colon_index + 1
+                while right_start < line_length and line[right_start].isspace():
+                    right_start += 1
+                start_right = right_start
+                next_pair_pos = None
+                next_pair_match = re.search(r"\s+\S+\s*[:\uFF1A]", line[start_right:])
+                if next_pair_match:
+                    next_pair_pos = start_right + next_pair_match.start()
+                if next_pair_pos is None:
+                    right = line[start_right:].strip()
+                    cursor_pos = line_length
+                else:
+                    right = line[start_right:next_pair_pos].strip()
+                    cursor_pos = next_pair_pos
+                    while cursor_pos < line_length and line[cursor_pos].isspace():
+                        cursor_pos += 1
+                if not right:
+                    continue
+                mapping[cls.normalize_enum_name_key(right)] = left.strip()
+
+        return mapping
+
+    @staticmethod
+    def get_config_enum_inputs_text(config, domain: str) -> str:
+        """从配置中按域读取 DID_Config Excel 路径文本。"""
+        section_candidates = get_config_enum_section_candidates(domain)
+        for section in section_candidates:
+            if not config.has_section(section):
+                continue
+            inputs_text = ""
+            for option_name in STRICT_DIDCONFIG_OPTION_CANDIDATES:
+                inputs_text = config.get(section, option_name, fallback="")
+                if inputs_text:
+                    break
+            inputs_text = inputs_text.strip("\n")
+            if inputs_text.strip():
+                return inputs_text
+        return ""
+
+    @classmethod
+    def load_context_from_config(
+        cls,
+        config,
+        base_dir: Optional[str] = None,
+        config_path: Optional[str] = None,
+        domain: str = DEFAULT_DOMAIN_LR_REAR,
+    ) -> Optional["ConfigEnumContext"]:
+        """从主配置文件加载 configuration.xlsx，构建 Name->Values 枚举上下文。"""
+        inputs_text = cls.get_config_enum_inputs_text(config, domain)
+        inputs = ExcelUtility.split_input_lines(inputs_text)
+        if not inputs:
+            return None
+
+        if config_path:
+            config_dir = os.path.dirname(os.path.abspath(config_path))
+        elif base_dir:
+            config_dir = base_dir
+        else:
+            config_dir = os.getcwd()
+
+        name_to_values: Dict[str, Dict[str, str]] = {}
+
+        for rel_path, sheets_str in inputs:
+            excel_path = rel_path.strip()
+            excel_path_for_check = excel_path.replace("/", os.sep)
+            if not os.path.isabs(excel_path_for_check):
+                excel_path_for_check = os.path.abspath(os.path.join(config_dir, excel_path_for_check))
+            excel_path_for_check = os.path.normpath(excel_path_for_check)
+
+            if not os.path.exists(excel_path_for_check):
+                try:
+                    excel_path_utf8 = excel_path_for_check.encode("utf-8").decode("utf-8")
+                    if os.path.exists(excel_path_utf8):
+                        excel_path_for_check = excel_path_utf8
+                    else:
+                        raise ConfigEnumParseError(f"找不到 configuration.xlsx: {excel_path_for_check}")
+                except Exception:
+                    raise ConfigEnumParseError(f"找不到 configuration.xlsx: {excel_path_for_check}")
+
+            excel_path = excel_path_for_check.replace("\\", "/")
+
+            try:
+                wb = ExcelService.open_workbook(
+                    excel_path,
+                    data_only=True,
+                    read_only=True,
+                )
+            except Exception as error:
+                raise ConfigEnumParseError(str(error))
+
+            if not sheets_str or sheets_str.strip() == "*" or sheets_str.strip() == "":
+                sheets = list(wb.sheetnames)
             else:
-                right = line[start_right:next_pair_pos].strip()
-                cursor_pos = next_pair_pos
-                while cursor_pos < line_length and line[cursor_pos].isspace():
-                    cursor_pos += 1
-            if not right:
-                continue
-            mapping[normalize_enum_name_key(right)] = left.strip()
+                sheet_candidates = [
+                    sheet_text.strip()
+                    for sheet_text in sheets_str.split(",")
+                    if sheet_text.strip()
+                ]
+                sheets = [
+                    sheet_name
+                    for sheet_name in sheet_candidates
+                    if sheet_name in wb.sheetnames
+                ]
+                if not sheets:
+                    sheets = list(wb.sheetnames)
 
-    return mapping
+            for sheet in sheets:
+                ws = wb[sheet]
+                try:
+                    header = next(ws.iter_rows(min_row=1, max_row=1, values_only=True))
+                except StopIteration:
+                    continue
+                headers = [str(header_cell).strip() if header_cell is not None else "" for header_cell in header]
+
+                name_idx = None
+                values_idx = None
+                for header_index, header_text in enumerate(headers):
+                    if header_text == "Name":
+                        name_idx = header_index
+                    if header_text == "Values":
+                        values_idx = header_index
+                if name_idx is None or values_idx is None:
+                    continue
+
+                for row in ws.iter_rows(min_row=2, values_only=True):
+                    name_cell = row[name_idx] if len(row) > name_idx else None
+                    values_cell = row[values_idx] if len(row) > values_idx else None
+
+                    name_s = str(name_cell).strip() if name_cell is not None else ""
+                    values_s = str(values_cell).strip() if values_cell is not None else ""
+
+                    if not name_s:
+                        continue
+                    enum_map = cls.parse_values_cell(values_s) if values_s else {}
+                    name_to_values[cls.normalize_enum_name_key(name_s)] = enum_map
+
+        if not name_to_values:
+            return None
+
+        return ConfigEnumContext(name_to_values=name_to_values)
 
 
 @dataclass
@@ -127,7 +250,7 @@ class ConfigEnumContext:
         if not raw_name:
             raise ConfigEnumParseError("Name 为空")
 
-        name_key = normalize_enum_name_key(raw_name)
+        name_key = ConfigEnumUtility.normalize_enum_name_key(raw_name)
         values_map = self.name_to_values.get(name_key)
         values_empty = False
         if not values_map:
@@ -147,21 +270,21 @@ class ConfigEnumContext:
                 rest_tokens.append(token_text)
         rest_str = " ".join(rest_tokens).strip()
         if rest_str:
-            if is_numeric_value(rest_str):
+            if ConfigEnumUtility.is_numeric_value(rest_str):
                 out.append(rest_str)
                 return out
-            if has_expression_chars(rest_str):
+            if ConfigEnumUtility.has_expression_chars(rest_str):
                 out.append(rest_str)
                 return out
             if values_empty:
                 raise ConfigEnumParseError(f"Values 为空: Name={raw_name}, Value={rest_str}")
             if _RE_ENGLISH_PHRASE.match(rest_str):
-                k_all = normalize_enum_name_key(rest_str)
+                k_all = ConfigEnumUtility.normalize_enum_name_key(rest_str)
                 if k_all in values_map:
                     out.append(values_map[k_all])
                     return out
                 raise ConfigEnumParseError(f"Values 未匹配: Name={raw_name}, Value={rest_str}")
-            k_all = normalize_enum_name_key(rest_str)
+            k_all = ConfigEnumUtility.normalize_enum_name_key(rest_str)
             if k_all in values_map:
                 out.append(values_map[k_all])
                 return out
@@ -173,7 +296,7 @@ class ConfigEnumContext:
                 argument_index += 1
                 continue
 
-            if is_numeric_value(tok):
+            if ConfigEnumUtility.is_numeric_value(tok):
                 out.append(tok)
                 argument_index += 1
                 continue
@@ -181,13 +304,13 @@ class ConfigEnumContext:
             if argument_index + 1 < len(args):
                 tok2 = str(args[argument_index + 1]).strip()
                 two = f"{tok} {tok2}".strip()
-                two_key = normalize_enum_name_key(two)
+                two_key = ConfigEnumUtility.normalize_enum_name_key(two)
                 if two_key in values_map:
                     out.append(values_map[two_key])
                     argument_index += 2
                     continue
 
-            one_key = normalize_enum_name_key(tok)
+            one_key = ConfigEnumUtility.normalize_enum_name_key(tok)
             if one_key in values_map:
                 out.append(values_map[one_key])
                 argument_index += 1
@@ -198,129 +321,12 @@ class ConfigEnumContext:
         return out
 
 
-def get_config_enum_inputs_text(config, domain: str) -> str:
-    """从配置中按域读取 DID_Config Excel 路径文本。参数: config — 配置对象；domain — 域。返回: 输入配置字符串。"""
-    section_candidates = get_config_enum_section_candidates(domain)
-    for section in section_candidates:
-        if not config.has_section(section):
-            continue
-        inputs_text = ""
-        for option_name in STRICT_DIDCONFIG_OPTION_CANDIDATES:
-            inputs_text = config.get(section, option_name, fallback="")
-            if inputs_text:
-                break
-        inputs_text = inputs_text.strip("\n")
-        if inputs_text.strip():
-            return inputs_text
-    return ""
-
-
-def load_config_enum_from_config(
-    config,
-    base_dir: Optional[str] = None,
-    config_path: Optional[str] = None,
-    domain: str = DEFAULT_DOMAIN_LR_REAR,
-) -> Optional[ConfigEnumContext]:
-    """从主配置文件的域内 didconfig_input_excel 加载 configuration.xlsx，构建 Name->Values 枚举上下文。
-    参数: config — 配置对象；base_dir — 工程根目录；config_path — 配置文件路径；domain — 域。
-    返回: ConfigEnumContext 或 None（未配置 Inputs 时）。
-    """
-    inputs_text = get_config_enum_inputs_text(config, domain)
-    inputs = ExcelUtility.split_input_lines(inputs_text)
-    if not inputs:
-        return None
-
-    if config_path:
-        config_dir = os.path.dirname(os.path.abspath(config_path))
-    elif base_dir:
-        config_dir = base_dir
-    else:
-        config_dir = os.getcwd()
-
-    name_to_values: Dict[str, Dict[str, str]] = {}
-
-    for rel_path, sheets_str in inputs:
-        excel_path = rel_path.strip()
-        excel_path_for_check = excel_path.replace("/", os.sep)
-        if not os.path.isabs(excel_path_for_check):
-            excel_path_for_check = os.path.abspath(os.path.join(config_dir, excel_path_for_check))
-        excel_path_for_check = os.path.normpath(excel_path_for_check)
-
-        if not os.path.exists(excel_path_for_check):
-            try:
-                excel_path_utf8 = excel_path_for_check.encode("utf-8").decode("utf-8")
-                if os.path.exists(excel_path_utf8):
-                    excel_path_for_check = excel_path_utf8
-                else:
-                    raise ConfigEnumParseError(f"找不到 configuration.xlsx: {excel_path_for_check}")
-            except Exception:
-                raise ConfigEnumParseError(f"找不到 configuration.xlsx: {excel_path_for_check}")
-
-        excel_path = excel_path_for_check.replace("\\", "/")
-
-        try:
-            wb = ExcelService.open_workbook(
-                excel_path,
-                data_only=True,
-                read_only=True,
-            )
-        except Exception as error:
-            raise ConfigEnumParseError(str(error))
-
-        if not sheets_str or sheets_str.strip() == "*" or sheets_str.strip() == "":
-            sheets = list(wb.sheetnames)
-        else:
-            sheet_candidates = [
-                sheet_text.strip()
-                for sheet_text in sheets_str.split(",")
-                if sheet_text.strip()
-            ]
-            sheets = [
-                sheet_name
-                for sheet_name in sheet_candidates
-                if sheet_name in wb.sheetnames
-            ]
-            if not sheets:
-                sheets = list(wb.sheetnames)
-
-        for sheet in sheets:
-            ws = wb[sheet]
-            try:
-                header = next(ws.iter_rows(min_row=1, max_row=1, values_only=True))
-            except StopIteration:
-                continue
-            headers = [str(header_cell).strip() if header_cell is not None else "" for header_cell in header]
-
-            name_idx = None
-            values_idx = None
-            for header_index, header_text in enumerate(headers):
-                if header_text == "Name":
-                    name_idx = header_index
-                if header_text == "Values":
-                    values_idx = header_index
-            if name_idx is None or values_idx is None:
-                continue
-
-            for row in ws.iter_rows(min_row=2, values_only=True):
-                name_cell = row[name_idx] if len(row) > name_idx else None
-                values_cell = row[values_idx] if len(row) > values_idx else None
-
-                name_s = str(name_cell).strip() if name_cell is not None else ""
-                values_s = str(values_cell).strip() if values_cell is not None else ""
-
-                if not name_s:
-                    continue
-                enum_map = parse_values_cell(values_s) if values_s else {}
-                name_to_values[normalize_enum_name_key(name_s)] = enum_map
-
-    if not name_to_values:
-        return None
-
-    return ConfigEnumContext(name_to_values=name_to_values)
+load_config_enum_from_config = ConfigEnumUtility.load_context_from_config
 
 
 __all__ = [
     "load_config_enum_from_config",
+    "ConfigEnumUtility",
     "ConfigEnumContext",
     "ConfigEnumParseError",
 ]

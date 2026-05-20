@@ -9,36 +9,24 @@ ResetDid_Value 生成入口模块。
 
 from __future__ import annotations
 
-from typing import Any
-
 from .service import ResetDidGeneratorService
-
-
-def run_generation_workflow(domain: str | None = None):
-    """ResetDid 生成主编排，委托 Service 完成读配置、初始化日志、解析 Excel、写产物、清理。
-
-    功能：创建 ``ResetDidGeneratorService`` 并执行 ``run_pipeline``，内部完成所有步骤。
-
-    形参：domain — 业务域；为 ``DTC`` 时仅从 ``[DTC]`` 读取；未传则视为 ``LR_REAR``，
-    且仅从 ``[LR_REAR]`` 读取（不再跨节读 ``[PATHS]``）。
-
-    返回：Service 内部可能无副作用；本入口不向外返回输出路径。
-    """
-    service = ResetDidGeneratorService()
-    return service.run_pipeline(domain=domain)
-
 
 class ResetDidEntrypointWorkflowUtility:
     """ResetDid 入口编排统一工具类。"""
 
-    @staticmethod
-    def run_generation_workflow(*args: Any, **kwargs: Any) -> Any:
-        return run_generation_workflow(*args, **kwargs)
-
     @classmethod
     def run_generation(cls, domain: str | None = None) -> None:
-        """ResetDid 生成主入口，供 TaskService 与命令行调用。"""
-        cls.run_generation_workflow(domain=domain)
+        """ResetDid 生成主编排，委托 Service 完成读配置、初始化日志、解析 Excel、写产物、清理。
+
+        参数：
+            domain：业务域；为 ``DTC`` 时仅从 ``[DTC]`` 读取；未传则视为 ``LR_REAR``，
+                且仅从 ``[LR_REAR]`` 读取（不再跨节读 ``[PATHS]``）。
+
+        返回：
+            None：生成结果通过日志与产物落盘体现。
+        """
+        service = ResetDidGeneratorService()
+        service.run_pipeline(domain=domain)
 
 
 def run_generation(domain: str | None = None) -> None:

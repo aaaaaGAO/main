@@ -12,7 +12,7 @@ from typing import Any
 from infra.excel.workbook import ExcelService
 from services.config_constants import SECTION_CENTRAL, SECTION_PATHS, UART_COMM_CFG_KEYS
 
-from . import runtime as rt
+from .runtime import UARTExcelParser, UARTRuntimeIOUtility
 
 
 class UARTGeneratorService:
@@ -30,32 +30,32 @@ class UARTGeneratorService:
 
         返回：无。异常时抛出原始异常，供上层任务编排记录失败详情。
         """
-        rt.flush_std_streams()
-        base_dir, config_path = rt.resolve_runtime_paths()
+        UARTRuntimeIOUtility.flush_std_streams()
+        base_dir, config_path = UARTRuntimeIOUtility.resolve_runtime_paths()
 
         print("=" * 60, flush=True)
         print("从当前主配置文件生成 Uart.txt 文件", flush=True)
         print("=" * 60, flush=True)
 
-        logger = rt.setup_logging(base_dir)
+        logger = UARTRuntimeIOUtility.setup_logging(base_dir)
         try:
-            rt.get_parse_logger(base_dir)
+            UARTRuntimeIOUtility.get_parse_logger(base_dir)
         except Exception:
             pass
 
         orig_stdout = sys.stdout
         if sys.stdout is not None:
             try:
-                sys.stdout = rt.build_stdout_tee(logger, sys.stdout)
+                sys.stdout = UARTRuntimeIOUtility.build_stdout_tee(logger, sys.stdout)
             except Exception:
                 orig_stdout = None
 
         try:
-            config = rt.load_config_with_repair(config_path, logger)
+            config = UARTRuntimeIOUtility.load_config_with_repair(config_path, logger)
             if not config.has_section(SECTION_CENTRAL) and not config.has_section(SECTION_PATHS):
                 raise ValueError("配置文件缺少 [CENTRAL] 节")
 
-            uart_rs232_config = rt.read_uart_rs232_config(config)
+            uart_rs232_config = UARTRuntimeIOUtility.read_uart_rs232_config(config)
             if uart_rs232_config:
                 print(f"\n读取串口通信配置: {uart_rs232_config}", flush=True)
                 print(
@@ -72,9 +72,9 @@ class UARTGeneratorService:
             if uart_rs232_config and uart_rs232_config.get("frameTypeIs8676"):
                 frame_type_value = uart_rs232_config.get("frameTypeIs8676")
             else:
-                frame_type_value = rt.read_frame_type_value(config)
+                frame_type_value = UARTRuntimeIOUtility.read_frame_type_value(config)
 
-            input_excel, _, output_path = rt.resolve_io_paths(config, base_dir)
+            input_excel, _, output_path = UARTRuntimeIOUtility.resolve_io_paths(config, base_dir)
             print(f"\n输入文件: {input_excel}", flush=True)
             print(f"输出文件: {output_path}", flush=True)
             print(f"FrameTypeIs8676 = {frame_type_value}", flush=True)
@@ -97,7 +97,7 @@ class UARTGeneratorService:
                     if workbook_cache is not None:
                         workbook_cache[normalized_excel_path] = uart_workbook
                 print("\n读取 IVIToMCU sheet...")
-                ivi_to_mcu_messages = rt.read_uart_excel_data(
+                ivi_to_mcu_messages = UARTExcelParser.read_uart_excel_data(
                     input_excel,
                     sheet_name="IVIToMCU",
                     workbook=uart_workbook,
@@ -107,7 +107,7 @@ class UARTGeneratorService:
                     print(f"  - Msg:0x{msg['msg_id']} {msg['message_name']} ({len(msg['signals'])} 个信号)")
 
                 print("读取 MCUToIVI sheet...", flush=True)
-                mcu_to_ivi_messages = rt.read_uart_excel_data(
+                mcu_to_ivi_messages = UARTExcelParser.read_uart_excel_data(
                     input_excel,
                     sheet_name="MCUToIVI",
                     workbook=uart_workbook,
@@ -144,14 +144,14 @@ class UARTGeneratorService:
                     )
 
             print("\n生成文件...", flush=True)
-            uart_content = rt.generate_uart_content(
+            uart_content = UARTRuntimeIOUtility.generate_uart_content(
                 frame_type_value,
                 ivi_to_mcu_messages,
                 mcu_to_ivi_messages,
                 uart_rs232_config,
             )
             uart_content = uart_content.replace("\r\n", "\n").replace("\n", "\r\n")
-            rt.write_text_safe(output_path, uart_content)
+            UARTRuntimeIOUtility.write_text_safe(output_path, uart_content)
             print("文件已保存（utf-8 或 gb18030）", flush=True)
 
             print(f"\n文件已生成: {output_path}", flush=True)

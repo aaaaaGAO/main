@@ -8,7 +8,7 @@ import os
 import sys
 import traceback
 
-from core.common.generation_summary import build_ungenerated_reason
+from core.common.generation_summary import GenerationSummaryUtility
 from services.config_constants import (
     DEFAULT_DOMAIN_LR_REAR,
     XML_RUNTIME_KEY_ALLOWED_LEVELS,
@@ -36,7 +36,7 @@ class XMLGeneratorService:
         返回：
             人可读原因字符串。
         """
-        return build_ungenerated_reason(stats, generated_label="XML文件")
+        return GenerationSummaryUtility.build_ungenerated_reason(stats, generated_label="XML文件")
 
     def run_pipeline(
         self,

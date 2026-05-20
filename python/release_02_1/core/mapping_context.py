@@ -9,7 +9,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Optional
 
-from core.translator.config_enum import load_config_enum_from_config
+from core.translator.config_enum import ConfigEnumUtility
 from core.translator.io_mapping import load_io_mapping_from_config
 from services.config_constants import DEFAULT_DOMAIN_LR_REAR
 
@@ -37,7 +37,7 @@ class MappingContext:
                 config_path=config_path,
                 domain=domain,
             ),
-            config_enum=load_config_enum_from_config(
+            config_enum=ConfigEnumUtility.load_context_from_config(
                 config,
                 base_dir=base_dir,
                 config_path=config_path,

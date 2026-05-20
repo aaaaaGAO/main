@@ -9,7 +9,7 @@ from __future__ import annotations
 from typing import Any
 
 from core.translator import ConfigEnumParseError, IOMappingParseError
-from core.common.name_sanitize import sanitize_clib_name
+from utils.excel_io import StringUtility
 from core.step_error_detail import StepErrorDetailBuilder
 from core.parser import (
     ClibMatchError,
@@ -71,7 +71,7 @@ class CANStepTranslator:
                 mode="can",
                 io_mapping_ctx=self.io_mapping_ctx,
                 config_enum_ctx=self.config_enum_ctx,
-                sanitize_clib_name=sanitize_clib_name,
+                sanitize_clib_name=StringUtility.sanitize_clib_name,
                 clib_validator=self.clib_validator,
             )
             if result is None:

@@ -19,7 +19,7 @@ from datetime import datetime
 from functools import partial
 from typing import Any, Callable, Optional, Tuple
 
-from core.common.generation_summary import build_ungenerated_reason as common_build_ungenerated_reason
+from core.common.generation_summary import GenerationSummaryUtility
 from core.error_module import ErrorModuleResolver
 from core.generator_config import GeneratorConfig
 from core.generator_logging import GeneratorLogger
@@ -146,7 +146,7 @@ class CANRuntimeIOUtility:
     @staticmethod
     def build_ungenerated_reason(stats: dict) -> str:
         """构建未生成 `.can` 的原因说明字符串。"""
-        return common_build_ungenerated_reason(stats, generated_label=".can")
+        return GenerationSummaryUtility.build_ungenerated_reason(stats, generated_label=".can")
 
     @staticmethod
     def load_keyword_specs(excel_path: str, sheet_names: list[str]) -> dict:

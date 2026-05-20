@@ -39,12 +39,7 @@ from infra.filesystem.pathing import (
     RuntimePathResolver,
 )
 
-from .runtime_io import (
-    find_header_row_and_cols as runtime_io_find_header_row_and_cols,
-    find_variant_cols as runtime_io_find_variant_cols,
-    generate_from_sheet as runtime_io_generate_from_sheet,
-    pick_sheet_name as runtime_io_pick_sheet_name,
-)
+from .runtime_io import ResetDidRuntimeIOUtility
 
 # ResetDid 同节别名白名单：仅允许对这些键做 coalesce，防止兜底范围失控。
 # 非白名单路径一律应走 get_required_from_section（缺失即报错）。
@@ -373,17 +368,17 @@ def pick_sheet_name(wb: Any, default_sheet: str | None) -> str:
     返回：
         实际选中的 sheet 名称。
     """
-    return runtime_io_pick_sheet_name(wb, default_sheet)
+    return ResetDidRuntimeIOUtility.pick_sheet_name(wb, default_sheet)
 
 
 def find_header_row_and_cols(ws: Any) -> tuple:
     """查找 ResetDid 表头行和列映射。"""
-    return runtime_io_find_header_row_and_cols(ws)
+    return ResetDidRuntimeIOUtility.find_header_row_and_cols(ws)
 
 
 def find_variant_cols(ws: Any, header_row: int, variant_names: list[str]) -> dict[str, int]:
     """查找车型列号映射。"""
-    return runtime_io_find_variant_cols(ws, header_row, variant_names)
+    return ResetDidRuntimeIOUtility.find_variant_cols(ws, header_row, variant_names)
 
 
 def generate_from_sheet(
@@ -411,7 +406,7 @@ def generate_from_sheet(
     返回：
         生成结果元组，包含文本片段与更新后的去重状态。
     """
-    return runtime_io_generate_from_sheet(
+    return ResetDidRuntimeIOUtility.generate_from_sheet(
         ws,
         excel_name=excel_name,
         variant_name=variant_name,

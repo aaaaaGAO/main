@@ -9,15 +9,17 @@ core.translator：领域层翻译器（统一入口）
 - load_io_mapping_from_config(cfg, base_dir) -> IOMappingContext
   从主配置文件加载 IO 映射表；解析失败抛出 IOMappingParseError。
 - IOMappingContext : 按 Name 查 Path 等，供步骤翻译使用。
-- load_config_enum_from_config(cfg, base_dir) -> ConfigEnumContext
-  从配置加载 configuration 枚举；解析失败抛出 ConfigEnumParseError。
+- ConfigEnumUtility.load_context_from_config(cfg, base_dir, ...) -> ConfigEnumContext
+  推荐入口：从配置加载 configuration 枚举；解析失败抛出 ConfigEnumParseError。
+- load_config_enum_from_config(cfg, base_dir, ...) -> ConfigEnumContext
+  兼容入口：历史符号，当前为 `ConfigEnumUtility.load_context_from_config` 的别名（非模块级 def）。
 - ConfigEnumContext : 按配置项名查枚举值。
 - load_keyword_specs_from_excel(...) -> list[KeywordSpec]
   从 Excel 加载关键字规格，用于步骤解析与生成。
 - KeywordSpec : 关键字规格数据（名称、参数等）。
 """
 
-from core.translator.config_enum import ConfigEnumContext, ConfigEnumParseError, load_config_enum_from_config
+from core.translator.config_enum import ConfigEnumContext, ConfigEnumParseError, ConfigEnumUtility, load_config_enum_from_config
 from core.translator.io_mapping import IOMappingContext, IOMappingParseError, load_io_mapping_from_config
 from core.translator.keyword_mapping import KeywordSpec, load_keyword_specs_from_excel
 
@@ -26,6 +28,7 @@ __all__ = [
     "IOMappingContext",
     "IOMappingParseError",
     "load_config_enum_from_config",
+    "ConfigEnumUtility",
     "ConfigEnumContext",
     "ConfigEnumParseError",
     "load_keyword_specs_from_excel",

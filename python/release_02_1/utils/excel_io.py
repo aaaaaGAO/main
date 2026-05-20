@@ -81,6 +81,19 @@ class StringUtility:
         return "".join(result)
 
     @staticmethod
+    def sanitize_clib_name(name: str) -> str:
+        """清洗 Clib 名称，移除 CAPL 函数名不期望的 '+' 与 '-' 字符。
+
+        参数：
+            name：原始 Clib 名称。
+
+        返回：
+            str：删除 '+' 和 '-' 后的名称字符串。
+        """
+        cleaned_name = str(name).strip()
+        return cleaned_name.replace("+", "").replace("-", "")
+
+    @staticmethod
     def sanitize_case_id(raw: Any) -> Tuple[str, bool, str]:
         """清洗用例 ID：非法字符、中文转拼音、SYS- 提取等。"""
         if raw is None:

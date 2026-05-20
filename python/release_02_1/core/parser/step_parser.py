@@ -80,12 +80,14 @@ class StepParser:
 
     @staticmethod
     def _strip_inline_comment(line_text: str) -> str:
+        """去掉行内 // 注释并 trim。"""
         if "//" in line_text:
             return line_text.split("//", 1)[0].strip()
         return line_text.strip()
 
     @staticmethod
     def _iter_inclusive_values(start: float, end: float, step: float) -> List[float]:
+        """按步长生成闭区间数值序列（含端点）。"""
         if step == 0:
             return []
         item_values: List[float] = []
@@ -102,16 +104,19 @@ class StepParser:
 
     @staticmethod
     def _format_numeric_value(item_value: float) -> str:
+        """将浮点格式化为 CAPL 友好的数字字符串。"""
         if abs(item_value - int(item_value)) < 1e-12:
             return str(int(item_value))
         return str(item_value)
 
     @staticmethod
     def _escape_c_string(text: str) -> str:
+        """转义 CAPL 双引号字符串中的反斜杠与引号。"""
         return text.replace("\\", "\\\\").replace('"', '\\"')
 
     @staticmethod
     def _is_literal_token(token: str) -> bool:
+        """判断 token 是否为字面量（数字或时间/电压等单位）。"""
         if not token:
             return True
         text = str(token).strip()
@@ -125,6 +130,7 @@ class StepParser:
 
     @staticmethod
     def _looks_like_config_name(token: str) -> bool:
+        """启发式判断 token 是否像配置项名称。"""
         if not token or len(token) < 2:
             return False
         normalized = token.strip()
@@ -134,6 +140,7 @@ class StepParser:
 
     @staticmethod
     def _extract_two_line_path_lines(text: str) -> tuple[str, str] | None:
+        """从多行文本提取恰好两行的路径片段。"""
         if "\n" not in text and "\r" not in text:
             return None
         raw_lines = text.replace("\r\n", "\n").replace("\r", "\n").split("\n")
@@ -153,6 +160,7 @@ class StepParser:
         default_param_parser: Optional[Callable[[Sequence[str]], Sequence[str]]],
         clib_validator: Optional[Callable[[str], bool]],
     ) -> List[str]:
+        """解析首行 Set 步骤并返回额外 CAPL 行。"""
         inner_step_line = f"Step Set {first_line}"
         try:
             inner_res = cls.parse_line(
@@ -180,6 +188,7 @@ class StepParser:
         default_param_parser: Optional[Callable[[Sequence[str]], Sequence[str]]],
         clib_validator: Optional[Callable[[str], bool]],
     ) -> tuple[str, List[str]]:
+        """Keep*WithTime 双行路径：首行生成 Set，第二行作为参数。"""
         if not one_arg_raw:
             return one_arg_raw, []
         path_lines = cls._extract_two_line_path_lines(str(one_arg_raw))
@@ -208,6 +217,7 @@ class StepParser:
         default_param_parser: Optional[Callable[[Sequence[str]], Sequence[str]]],
         clib_validator: Optional[Callable[[str], bool]],
     ) -> tuple[List[str], List[str]]:
+        """普通关键字双行路径：首行 Set，第二行替换首参。"""
         if not args:
             return args, []
         first_arg = str(args[0]).strip()
@@ -522,33 +532,8 @@ class StepParser:
         return ParseResult(extra_lines + [main_code], original_line_full)
 
 
-def parse_step_line(
-    line: str,
-    keyword_specs: dict,
-    *,
-    mode: str,
-    io_mapping_ctx: Any = None,
-    config_enum_ctx: Any = None,
-    sanitize_clib_name: Optional[Callable[[str], str]] = None,
-    default_param_parser: Optional[Callable[[Sequence[str]], Sequence[str]]] = None,
-    clib_validator: Optional[Callable[[str], bool]] = None,
-) -> Optional[ParseResult]:
-    """兼容入口：转发到 `StepParser.parse_line`。"""
-    return StepParser.parse_line(
-        line,
-        keyword_specs,
-        mode=mode,
-        io_mapping_ctx=io_mapping_ctx,
-        config_enum_ctx=config_enum_ctx,
-        sanitize_clib_name=sanitize_clib_name,
-        default_param_parser=default_param_parser,
-        clib_validator=clib_validator,
-    )
-
-
 __all__ = [
     "StepParser",
-    "parse_step_line",
     "ParseResult",
     "KeywordMatchError",
     "StepSyntaxError",

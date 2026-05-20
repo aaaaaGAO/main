@@ -133,6 +133,7 @@ class RuntimePathResolver:
             return os.path.abspath(base_dir)
         return ProjectPaths.get_project_root(reference_file)
 
+    # ==================== 配置路径解析（只读，不创建目录） ====================
     @staticmethod
     def resolve_config_file_path(
         base_dir: str,
@@ -170,6 +171,23 @@ class RuntimePathResolver:
         )
 
     @classmethod
+    def resolve_config_path(
+        cls,
+        base_dir: str,
+        config_path: str | None = None,
+    ) -> str:
+        """兼容入口：解析主配置文件路径。
+
+        参数：
+            base_dir：工程根目录。
+            config_path：可选显式主配置路径；为空时默认 `config/Configuration.ini`。
+
+        返回：
+            str：主配置文件绝对路径。
+        """
+        return cls.resolve_main_config_path(base_dir, config_path=config_path)
+
+    @classmethod
     def resolve_fixed_config_path(
         cls,
         base_dir: str,
@@ -203,6 +221,7 @@ class RuntimePathResolver:
         """筛选项配置保存路径：config/filter_options.ini。"""
         return ProjectPaths.from_base_dir(base_dir).filter_options_path
 
+    # ==================== 通用运行期路径解析（只读，不创建目录） ====================
     @classmethod
     def find_config_path(cls, base_dir: str, filename: str = "Configuration.ini") -> str | None:
         """在 base_dir/config 下查找配置文件，存在返回绝对路径。"""
@@ -238,6 +257,7 @@ class RuntimePathResolver:
             return os.path.normpath(os.path.abspath(os.path.join(base_dir, candidate)))
         return os.path.normpath(os.path.abspath(candidate))
 
+    # ==================== 输出目录供给（按参数可能产生目录副作用） ====================
     @staticmethod
     def resolve_named_subdir(
         base_dir: str,
@@ -246,7 +266,11 @@ class RuntimePathResolver:
         *,
         create_dir: bool = False,
     ) -> str | None:
-        """解析配置目录下的目标子目录。"""
+        """解析配置目录下的目标子目录。
+
+        参数：
+            create_dir：为 True 时会创建目录（副作用操作）。
+        """
         root_dir = RuntimePathResolver.resolve_configured_path(base_dir, configured_dir)
         if not root_dir:
             return None
@@ -298,7 +322,12 @@ class RuntimePathResolver:
         create_dir: bool = False,
         required: bool = True,
     ) -> str:
-        """按 output_dir 统一规则解析目标路径。"""
+        """按 output_dir 统一规则解析目标路径。
+
+        参数：
+            create_dir：为 True 时会创建目标目录（副作用操作）。
+            required：为 True 且目录不存在时抛出异常。
+        """
         output_dir_abs = RuntimePathResolver.resolve_configured_path(base_dir, configured_output_dir)
         if not output_dir_abs or not os.path.isdir(output_dir_abs):
             raise PathResolutionError(
@@ -320,7 +349,11 @@ class RuntimePathResolver:
         *,
         create_dir: bool = False,
     ) -> str:
-        """在用户 output_dir 下按相对目录链解析目标目录。"""
+        """在用户 output_dir 下按相对目录链解析目标目录。
+
+        参数：
+            create_dir：为 True 时会创建目标目录（副作用操作）。
+        """
         output_dir_abs = RuntimePathResolver.resolve_configured_path(base_dir, configured_output_dir)
         if not output_dir_abs or not os.path.isdir(output_dir_abs):
             raise PathResolutionError(
