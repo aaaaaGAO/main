@@ -13,7 +13,7 @@ from __future__ import annotations
 import importlib
 import importlib.util
 from dataclasses import dataclass
-from typing import Any, Callable, List, Optional, Sequence
+from typing import Any, Callable, List, Mapping, Optional, Protocol, Sequence
 
 IOMappingParseError = Exception  # type: ignore[misc, assignment]
 if importlib.util.find_spec("core.translator.io_mapping") is not None:
@@ -58,6 +58,50 @@ class ParseResult:
     original_line_full: str
 
 
+class KeywordSpecLike(Protocol):
+    """步骤解析所需的最小 KeywordSpec 协议（避免与具体实现耦合）。"""
+
+    func_name: str
+    keyword: str
+    capl_func: str
+
+
+KeywordSpecs = Mapping[str, KeywordSpecLike]
+
+
+class IOMappingContextLike(Protocol):
+    """步骤解析所需的最小 IO mapping 上下文协议。"""
+
+    name_to_path: Mapping[str, str]
+    name_to_values: Mapping[str, Mapping[str, str]]
+
+    def transform_args(self, args: List[str]) -> List[str]: ...
+
+
+class ConfigEnumContextLike(Protocol):
+    """步骤解析所需的最小 configuration 枚举上下文协议。"""
+
+    def translate_args(self, args: List[str]) -> List[str]: ...
+
+
+class ClibValidator(Protocol):
+    """Clib 名称校验回调签名。"""
+
+    def __call__(self, clib_name: str) -> bool: ...
+
+
+class SanitizeClibName(Protocol):
+    """Clib 名称清洗回调签名（用于生成 CAPL 函数名后缀）。"""
+
+    def __call__(self, clib_name: str) -> str: ...
+
+
+class DefaultParamParser(Protocol):
+    """默认参数解析回调签名（用于把字符串参数加引号等）。"""
+
+    def __call__(self, tokens: Sequence[str]) -> Sequence[str]: ...
+
+
 class StepParser:
     """步骤行解析器。"""
 
@@ -79,14 +123,14 @@ class StepParser:
     _CFG_KWS = {"set_config", "setconfig"}
 
     @staticmethod
-    def _strip_inline_comment(line_text: str) -> str:
+    def strip_inline_comment(line_text: str) -> str:
         """去掉行内 // 注释并 trim。"""
         if "//" in line_text:
             return line_text.split("//", 1)[0].strip()
         return line_text.strip()
 
     @staticmethod
-    def _iter_inclusive_values(start: float, end: float, step: float) -> List[float]:
+    def iter_inclusive_values(start: float, end: float, step: float) -> List[float]:
         """按步长生成闭区间数值序列（含端点）。"""
         if step == 0:
             return []
@@ -103,19 +147,19 @@ class StepParser:
         return item_values
 
     @staticmethod
-    def _format_numeric_value(item_value: float) -> str:
+    def format_numeric_value(item_value: float) -> str:
         """将浮点格式化为 CAPL 友好的数字字符串。"""
         if abs(item_value - int(item_value)) < 1e-12:
             return str(int(item_value))
         return str(item_value)
 
     @staticmethod
-    def _escape_c_string(text: str) -> str:
+    def escape_c_string(text: str) -> str:
         """转义 CAPL 双引号字符串中的反斜杠与引号。"""
         return text.replace("\\", "\\\\").replace('"', '\\"')
 
     @staticmethod
-    def _is_literal_token(token: str) -> bool:
+    def is_literal_token(token: str) -> bool:
         """判断 token 是否为字面量（数字或时间/电压等单位）。"""
         if not token:
             return True
@@ -129,7 +173,7 @@ class StepParser:
         return text.lower() in ("ms", "s", "us", "ns", "v", "mv", "a", "ma")
 
     @staticmethod
-    def _looks_like_config_name(token: str) -> bool:
+    def looks_like_config_name(token: str) -> bool:
         """启发式判断 token 是否像配置项名称。"""
         if not token or len(token) < 2:
             return False
@@ -139,7 +183,7 @@ class StepParser:
         return normalized[0].isupper() and any(char.isupper() for char in normalized[1:])
 
     @staticmethod
-    def _extract_two_line_path_lines(text: str) -> tuple[str, str] | None:
+    def extract_two_line_path_lines(text: str) -> tuple[str, str] | None:
         """从多行文本提取恰好两行的路径片段。"""
         if "\n" not in text and "\r" not in text:
             return None
@@ -150,15 +194,15 @@ class StepParser:
         return path_lines[0], path_lines[1]
 
     @classmethod
-    def _build_inner_set_lines(
+    def build_inner_set_lines(
         cls,
         first_line: str,
-        keyword_specs: dict,
+        keyword_specs: KeywordSpecs,
         mode_l: str,
         config_enum_ctx: Any,
-        sanitize_clib_name: Optional[Callable[[str], str]],
-        default_param_parser: Optional[Callable[[Sequence[str]], Sequence[str]]],
-        clib_validator: Optional[Callable[[str], bool]],
+        sanitize_clib_name: Optional[SanitizeClibName],
+        default_param_parser: Optional[DefaultParamParser],
+        clib_validator: Optional[ClibValidator],
     ) -> List[str]:
         """解析首行 Set 步骤并返回额外 CAPL 行。"""
         inner_step_line = f"Step Set {first_line}"
@@ -178,24 +222,24 @@ class StepParser:
         return list(inner_res.code_lines) if inner_res and inner_res.code_lines else []
 
     @classmethod
-    def _emit_set_for_two_line_keep_time(
+    def emit_set_for_two_line_keep_time(
         cls,
         one_arg_raw: str,
-        keyword_specs: dict,
+        keyword_specs: KeywordSpecs,
         mode_l: str,
         config_enum_ctx: Any,
-        sanitize_clib_name: Optional[Callable[[str], str]],
-        default_param_parser: Optional[Callable[[Sequence[str]], Sequence[str]]],
-        clib_validator: Optional[Callable[[str], bool]],
+        sanitize_clib_name: Optional[SanitizeClibName],
+        default_param_parser: Optional[DefaultParamParser],
+        clib_validator: Optional[ClibValidator],
     ) -> tuple[str, List[str]]:
         """Keep*WithTime 双行路径：首行生成 Set，第二行作为参数。"""
         if not one_arg_raw:
             return one_arg_raw, []
-        path_lines = cls._extract_two_line_path_lines(str(one_arg_raw))
+        path_lines = cls.extract_two_line_path_lines(str(one_arg_raw))
         if not path_lines:
             return one_arg_raw, []
         first_line, second_line = path_lines
-        extra_lines = cls._build_inner_set_lines(
+        extra_lines = cls.build_inner_set_lines(
             first_line,
             keyword_specs,
             mode_l,
@@ -207,25 +251,25 @@ class StepParser:
         return second_line, extra_lines
 
     @classmethod
-    def _emit_set_for_two_line_path(
+    def emit_set_for_two_line_path(
         cls,
         args: List[str],
-        keyword_specs: dict,
+        keyword_specs: KeywordSpecs,
         mode_l: str,
         config_enum_ctx: Any,
-        sanitize_clib_name: Optional[Callable[[str], str]],
-        default_param_parser: Optional[Callable[[Sequence[str]], Sequence[str]]],
-        clib_validator: Optional[Callable[[str], bool]],
+        sanitize_clib_name: Optional[SanitizeClibName],
+        default_param_parser: Optional[DefaultParamParser],
+        clib_validator: Optional[ClibValidator],
     ) -> tuple[List[str], List[str]]:
         """普通关键字双行路径：首行 Set，第二行替换首参。"""
         if not args:
             return args, []
         first_arg = str(args[0]).strip()
-        path_lines = cls._extract_two_line_path_lines(first_arg)
+        path_lines = cls.extract_two_line_path_lines(first_arg)
         if not path_lines:
             return args, []
         first_line, second_line = path_lines
-        extra_lines = cls._build_inner_set_lines(
+        extra_lines = cls.build_inner_set_lines(
             first_line,
             keyword_specs,
             mode_l,
@@ -240,21 +284,21 @@ class StepParser:
     def parse_line(
         cls,
         line: str,
-        keyword_specs: dict,
+        keyword_specs: KeywordSpecs,
         *,
         mode: str,
-        io_mapping_ctx: Any = None,
-        config_enum_ctx: Any = None,
-        sanitize_clib_name: Optional[Callable[[str], str]] = None,
-        default_param_parser: Optional[Callable[[Sequence[str]], Sequence[str]]] = None,
-        clib_validator: Optional[Callable[[str], bool]] = None,
+        io_mapping_ctx: Optional[IOMappingContextLike] = None,
+        config_enum_ctx: Optional[ConfigEnumContextLike] = None,
+        sanitize_clib_name: Optional[SanitizeClibName] = None,
+        default_param_parser: Optional[DefaultParamParser] = None,
+        clib_validator: Optional[ClibValidator] = None,
     ) -> Optional[ParseResult]:
         """解析一行步骤，返回生成的 CAPL 行。"""
         original_line_full = str(line).strip()
         if not original_line_full or original_line_full.startswith("//"):
             return None
 
-        line_without_comment = cls._strip_inline_comment(original_line_full)
+        line_without_comment = cls.strip_inline_comment(original_line_full)
         if not line_without_comment:
             return None
 
@@ -313,10 +357,10 @@ class StepParser:
             inner_cmd_tokens = tokens[val_idx + 3 :]
             if not inner_cmd_tokens:
                 raise StepSyntaxError(f"AutoIncreaseInVal 缺少内部命令: {original_line_full}")
-            generated_values = cls._iter_inclusive_values(start_value, end_value, step_value)
+            generated_values = cls.iter_inclusive_values(start_value, end_value, step_value)
             out_lines: List[str] = []
             for generated_value in generated_values:
-                value_text = cls._format_numeric_value(generated_value)
+                value_text = cls.format_numeric_value(generated_value)
                 temp_tokens = list(inner_cmd_tokens)
                 temp_tokens.append(value_text)
                 new_inner_line = " ".join(temp_tokens)
@@ -387,7 +431,7 @@ class StepParser:
                         )
                     except IOMappingParseError as exc:
                         raise IOMappingParseError(f"IO_mapping 表中 Name 找不到: {first_tok}") from exc
-            elif cls._is_literal_token(first_tok):
+            elif cls.is_literal_token(first_tok):
                 one_arg_raw = " ".join(args_kt).strip()
             else:
                 if io_mapping_ctx is not None:
@@ -409,13 +453,13 @@ class StepParser:
                             raise IOMappingParseError(
                                 f"IO_mapping 表中 Name 找不到: {first_tok}"
                             ) from exc
-                    elif cls._looks_like_config_name(first_tok):
+                    elif cls.looks_like_config_name(first_tok):
                         raise IOMappingParseError(f"IO_mapping 表中 Name 找不到: {first_tok}")
                     else:
                         one_arg_raw = " ".join(args_kt).strip()
                 else:
                     one_arg_raw = " ".join(args_kt).strip()
-            one_arg_raw, extra_lines_kt = cls._emit_set_for_two_line_keep_time(
+            one_arg_raw, extra_lines_kt = cls.emit_set_for_two_line_keep_time(
                 one_arg_raw,
                 keyword_specs,
                 mode_l,
@@ -424,7 +468,7 @@ class StepParser:
                 default_param_parser,
                 clib_validator,
             )
-            one_arg = cls._escape_c_string(one_arg_raw or "")
+            one_arg = cls.escape_c_string(one_arg_raw or "")
             return ParseResult(
                 extra_lines_kt + [f'  {capl_func}("{one_arg}");'],
                 original_line_full,
@@ -515,7 +559,7 @@ class StepParser:
                 if first_arg.upper().startswith("J_"):
                     args = list(io_mapping_ctx.transform_args(args))
 
-        args, extra_lines = cls._emit_set_for_two_line_path(
+        args, extra_lines = cls.emit_set_for_two_line_path(
             args,
             keyword_specs,
             mode_l,
@@ -525,7 +569,7 @@ class StepParser:
             clib_validator,
         )
         if args:
-            one_arg = cls._escape_c_string(" ".join([str(arg_token) for arg_token in args]).strip())
+            one_arg = cls.escape_c_string(" ".join([str(arg_token) for arg_token in args]).strip())
             main_code = f'  {spec.capl_func}("{one_arg}");'
         else:
             main_code = f"  {spec.capl_func}();"

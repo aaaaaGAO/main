@@ -11,21 +11,24 @@ from __future__ import annotations
 from typing import List, Tuple
 
 
-def split_input_lines(text: str) -> List[Tuple[str, str]]:
-    """解析 Inputs 配置多行格式（path | sheet1,sheet2 或 path）。
-    参数: text — 配置文本，支持 # / ; 注释行。
-    返回: [(path, sheets_str), ...]，sheets_str 可为空或 "*"。
-    """
-    out: List[Tuple[str, str]] = []
-    for raw in (text or "").splitlines():
-        line = raw.strip()
-        if not line or line.startswith("#") or line.startswith(";"):
-            continue
-        if "|" in line:
-            path_part, sheets_part = [segment.strip() for segment in line.split("|", 1)]
-        else:
-            path_part, sheets_part = line.strip(), ""
-        if path_part:
-            out.append((path_part, sheets_part))
-    return out
+class InputLineParser:
+    """多行 Inputs 配置文本解析器。"""
 
+    @staticmethod
+    def split_input_lines(text: str) -> List[Tuple[str, str]]:
+        """解析 Inputs 配置多行格式（path | sheet1,sheet2 或 path）。
+        参数: text — 配置文本，支持 # / ; 注释行。
+        返回: [(path, sheets_str), ...]，sheets_str 可为空或 "*"。
+        """
+        out: List[Tuple[str, str]] = []
+        for raw in (text or "").splitlines():
+            line = raw.strip()
+            if not line or line.startswith("#") or line.startswith(";"):
+                continue
+            if "|" in line:
+                path_part, sheets_part = [segment.strip() for segment in line.split("|", 1)]
+            else:
+                path_part, sheets_part = line.strip(), ""
+            if path_part:
+                out.append((path_part, sheets_part))
+        return out

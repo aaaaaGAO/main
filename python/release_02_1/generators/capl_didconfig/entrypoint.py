@@ -28,10 +28,5 @@ class DIDConfigEntrypointWorkflowUtility:
         service.run_pipeline(domain=domain)
 
 
-def run_generation(domain: str | None = None):
-    """兼容入口：转发到 DIDConfigEntrypointWorkflowUtility.run_generation。"""
-    DIDConfigEntrypointWorkflowUtility.run_generation(domain=domain)
-
-
 if __name__ == "__main__":
     DIDConfigEntrypointWorkflowUtility.run_generation()

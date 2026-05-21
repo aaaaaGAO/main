@@ -9,18 +9,32 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, TypedDict
 
 from services.config_service import ConfigService
 from services.http_api_constants import HttpStatus, api_error, api_success
 from services.task_orchestrator import TaskOrchestrator
 
 
+class ProgrammaticDomainPayload(TypedDict, total=False):
+    """可编程域接口请求体（用于脚本/颗粒度 API），允许按需增量扩展字段。"""
+
+    base_dir: str
+    config_path: str
+    validate_before_run: bool
+    run_can: bool
+    run_xml: bool
+    run_uart: bool
+    run_soa: bool
+    run_cin: bool
+    run_did: bool
+
+
 class ProgrammaticDomainRouteService:
     """脚本/颗粒度接口用的域编排封装（无 Flask ``request`` 依赖）。"""
 
     @staticmethod
-    def parse_base_dir(payload: dict[str, Any], fallback_base_dir: str) -> str:
+    def parse_base_dir(payload: ProgrammaticDomainPayload, fallback_base_dir: str) -> str:
         """从 JSON ``payload['base_dir']`` 或非空退回 ``fallback_base_dir``。"""
         raw = payload.get("base_dir")
         if isinstance(raw, str):
@@ -30,7 +44,7 @@ class ProgrammaticDomainRouteService:
         return fallback_base_dir
 
     @staticmethod
-    def run_lr_generate_can_bundle(payload: dict[str, Any], *, fallback_base_dir: str):
+    def run_lr_generate_can_bundle(payload: ProgrammaticDomainPayload, *, fallback_base_dir: str):
         """构造编排器并执行 ``run_lr_bundle(run_can=True)``。"""
         base_dir = ProgrammaticDomainRouteService.parse_base_dir(payload, fallback_base_dir)
         config_path = payload.get("config_path")
@@ -39,7 +53,7 @@ class ProgrammaticDomainRouteService:
 
     @staticmethod
     def save_lr_rear_section_tuple(
-        payload: dict[str, Any], *, fallback_base_dir: str
+        payload: ProgrammaticDomainPayload, *, fallback_base_dir: str
     ) -> tuple[dict[str, Any], int]:
         """
         将 ``payload`` 中可识别的 LR_REAR 字段写入主配置。
@@ -58,7 +72,7 @@ class ProgrammaticDomainRouteService:
         return api_success("LR_REAR 配置已保存")
 
     @staticmethod
-    def run_central_programmatic_bundle(payload: dict[str, Any], *, fallback_base_dir: str):
+    def run_central_programmatic_bundle(payload: ProgrammaticDomainPayload, *, fallback_base_dir: str):
         """中央域：按请求体布尔开关调用 ``run_central_bundle``。"""
         base_dir = ProgrammaticDomainRouteService.parse_base_dir(payload, fallback_base_dir)
         run_can = payload.get("run_can", True)
@@ -76,7 +90,7 @@ class ProgrammaticDomainRouteService:
         )
 
     @staticmethod
-    def run_dtc_programmatic_bundle(payload: dict[str, Any], *, fallback_base_dir: str):
+    def run_dtc_programmatic_bundle(payload: ProgrammaticDomainPayload, *, fallback_base_dir: str):
         """DTC 域：按请求体布尔开关调用 ``run_dtc_bundle``。"""
         base_dir = ProgrammaticDomainRouteService.parse_base_dir(payload, fallback_base_dir)
         run_can = payload.get("run_can", True)

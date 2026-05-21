@@ -229,11 +229,6 @@ class SOAGenerationUtility:
         return SOASetServerCinGenerator(anchor_path=anchor_path).generate(excel_path)
 
 
-run_generation = SOAGenerationUtility.run_generation
-run_setserver_cin_generation = SOAGenerationUtility.run_setserver_cin_generation
-run_cli = SOAGenerationUtility.run_generation
-
-
 if __name__ == "__main__":
-    run_cli()
+    SOAGenerationUtility.run_generation()
 

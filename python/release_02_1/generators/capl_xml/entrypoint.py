@@ -45,8 +45,5 @@ class XMLEntrypointWorkflowUtility:
         )
 
 
-run_generation = XMLEntrypointWorkflowUtility.run_generation
-
-
 if __name__ == "__main__":
     XMLEntrypointWorkflowUtility.run_generation()

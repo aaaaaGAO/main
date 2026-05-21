@@ -89,8 +89,5 @@ class CINEntrypointWorkflowUtility:
             log_mgr.clear()
 
 
-run_generation = CINEntrypointWorkflowUtility.run_generation
-
-
 if __name__ == "__main__":
     CINEntrypointWorkflowUtility.run_generation()

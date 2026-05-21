@@ -18,9 +18,9 @@ import unicodedata
 import os
 from typing import Any, Dict, List, Optional, Set, Tuple
 
-from infra.config.input_parser import split_input_lines as core_split_input_lines
+from infra.config.input_parser import InputLineParser
 from infra.excel.header import ColumnMapper, normalize_cell_text as common_normalize_cell_text
-from infra.excel.workbook import ExcelService, merged_cell_value
+from infra.excel.workbook import ExcelService
 
 Style = None  # type: ignore[assignment]
 lazy_pinyin = None  # type: ignore[assignment]
@@ -144,7 +144,7 @@ class ExcelUtility:
         返回：
             list[tuple[str, str]]：每项为 `(path, sheets)`。
         """
-        return core_split_input_lines(text)
+        return InputLineParser.split_input_lines(text)
 
     @staticmethod
     def parse_selected_sheets(filter_str: Optional[str]) -> Optional[Dict[str, Set[str]]]:

@@ -32,9 +32,9 @@ from services.http_api_constants import (
     make_json_tuple,
 )
 from services.config_manager import ConfigManager
-from services.filter_service import parse_shaixuan_config
+from services.filter_service import FilterService
 from services.gui_service import GuiService
-from services.request_payload_utils import merge_ui_state_from_data_only
+from services.request_payload_utils import RequestPayloadUtility
 from services.service_route_result_decorator import guard_service_route_tuple
 from services.state_config_service import StateConfigService
 
@@ -70,7 +70,7 @@ class CommonUiRouteService:
         返回：成功时**直接**返回 ``(dict, 200)``（**无**外裹 ``success`` 键，与历史前端兼容）；
         异常为错误体 + 500（装饰器统一处理）。
         """
-        payload_data = parse_shaixuan_config(self.base_dir)
+        payload_data = FilterService.parse_shaixuan_config(self.base_dir)
         return make_json_tuple(payload_data, HttpStatus.OK)
 
     @guard_service_route_tuple(http_status_on_error=HttpStatus.INTERNAL_SERVER_ERROR)
@@ -181,7 +181,7 @@ class CommonUiRouteService:
 
         返回：``success`` + 提示文案；状态码 200 为成功，500 为 `persist_state_config` 异常。
         """
-        state = merge_ui_state_from_data_only(payload)
+        state = RequestPayloadUtility.merge_ui_state_from_data_only(payload)
         StateConfigService.from_base_dir(self.base_dir).persist_state_config(state)
         return api_success("配置已自动保存")
 
@@ -194,7 +194,7 @@ class CommonUiRouteService:
 
         返回：含 ``filepath`` 的成功体；用户取消为 ``success: False``（200）；失败 500。
         """
-        state = merge_ui_state_from_data_only(payload)
+        state = RequestPayloadUtility.merge_ui_state_from_data_only(payload)
         default_name = f"Configuration_{time.strftime('%Y-%m-%d', time.localtime())}.ini"
         chosen_path = GuiService.ask_saveas_filename(initialfile=default_name)
         if not chosen_path:

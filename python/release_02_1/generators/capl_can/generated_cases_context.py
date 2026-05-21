@@ -23,7 +23,7 @@ from services.config_constants import (
     OPTION_SELECTED_SHEETS,
     SECTION_CENTRAL,
 )
-from services.filter_service import parse_shaixuan_config
+from services.filter_service import FilterService
 from utils.excel_io import ExcelUtility
 
 from .renderer import CANFileRenderer
@@ -89,7 +89,7 @@ def build_generated_cases_run_context(
         can_domain_filter_raw(gconfig, domain, OPTION_CASE_TARGET_VERSIONS) or ""
     )
     try:
-        filter_options = parse_shaixuan_config(base_dir)
+        filter_options = FilterService.parse_shaixuan_config(base_dir)
         all_target_versions = filter_options.get("target_versions") or []
     except Exception:
         all_target_versions = []
@@ -141,14 +141,3 @@ def build_generated_cases_run_context(
         renderer=renderer,
     )
 
-
-class GeneratedCasesContextUtility:
-    """CAN 用例上下文构建统一工具类入口。"""
-
-    @staticmethod
-    def can_domain_filter_raw(*args: Any, **kwargs: Any) -> Any:
-        return can_domain_filter_raw(*args, **kwargs)
-
-    @staticmethod
-    def build_generated_cases_run_context(*args: Any, **kwargs: Any) -> Any:
-        return build_generated_cases_run_context(*args, **kwargs)

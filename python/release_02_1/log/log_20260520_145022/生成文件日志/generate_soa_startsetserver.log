@@ -1,5 +1,0 @@
-2026-05-20 14:50:23,519  >>> 开始执行 [LR_REAR] 域 SOA 生成任务...
-2026-05-20 14:50:24,336  SOA 生成完成：7 个节点文件，输出目录: C:\Users\高登兰\Desktop\所有完整代码2026_3_10_重构版\python\release_02_1\public\ILNode\SOANode
-2026-05-20 14:50:24,345 INFO Service_Interface 表头定位在第 1 行
-2026-05-20 14:50:25,436  已写入 C:\Users\高登兰\Desktop\所有完整代码2026_3_10_重构版\python\release_02_1\Public\TESTmode\Bus\SOA\SOA_Onder\SOA_StartSetserver.cin（Event=59 条，Method=231 条）
-2026-05-20 14:50:26,608  >>> 任务完成！LR_REAR SOA Node 生成完成，SOA_StartSetserver 与 SOA_DataTab 生成完成

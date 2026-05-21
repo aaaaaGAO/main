@@ -17,7 +17,7 @@ import logging.handlers
 import os
 
 from core.caseid_log_dedup import DedupOnceFilter
-from core.log_run_context import ensure_run_log_dirs
+from core.log_run_context import RunLogContext
 from utils.logger import get_log_level_from_config
 
 
@@ -26,7 +26,7 @@ def get_parse_file_logger(base_dir: str, *, filename: str, logger_name: str) -> 
     参数: base_dir — 项目根；filename — 日志文件名；logger_name — Logger 名称。
     返回: 配置好的 Logger，写入 base_dir/log/.../解析表格日志/filename。
     """
-    run_dirs = ensure_run_log_dirs(base_dir)
+    run_dirs = RunLogContext.ensure_dirs(base_dir)
     parse_dir = run_dirs.parse_dir
     os.makedirs(parse_dir, exist_ok=True)
 

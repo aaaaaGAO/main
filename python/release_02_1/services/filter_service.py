@@ -86,6 +86,3 @@ class FilterService:
 
         return filters
 
-
-# Backward-compatible module-level alias
-parse_shaixuan_config = FilterService.parse_shaixuan_config

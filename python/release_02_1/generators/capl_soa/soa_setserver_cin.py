@@ -22,9 +22,9 @@ import re
 from typing import Any
 
 from core.generator_config import GeneratorConfig
-from infra.config.config_access import read_fixed_config
+from infra.config import read_fixed_config
 from infra.excel.header import ColumnMapper
-from infra.excel.workbook import merged_cell_value
+from infra.excel.workbook import ExcelService
 from infra.filesystem.pathing import RuntimePathResolver
 from generators.capl_soa.soa_excel_utils import normalize_cell_text, open_workbook_cached
 from services.config_constants import (
@@ -259,7 +259,7 @@ class SOASetServerCinUtility:
         row_values: list[Any] = []
         upper_col = max(max_column, 1)
         for column_idx in range(1, upper_col + 1):
-            row_values.append(merged_cell_value(worksheet, row_idx, column_idx))
+            row_values.append(ExcelService.merged_cell_value(worksheet, row_idx, column_idx))
         return row_values
 
     @classmethod
@@ -331,13 +331,13 @@ class SOASetServerCinUtility:
         max_row = worksheet.max_row or header_row_idx
 
         for row_idx in range(header_row_idx + 1, max_row + 1):
-            service_raw = merged_cell_value(worksheet, row_idx, service_col + 1)
+            service_raw = ExcelService.merged_cell_value(worksheet, row_idx, service_col + 1)
             service_name = normalize_cell_text(service_raw)
             if service_name:
                 current_service_name = service_name
             if not current_service_name:
                 continue
-            server_raw = merged_cell_value(worksheet, row_idx, server_col + 1)
+            server_raw = ExcelService.merged_cell_value(worksheet, row_idx, server_col + 1)
             server_ecu = normalize_cell_text(server_raw)
             if not server_ecu:
                 continue
@@ -389,7 +389,7 @@ class SOASetServerCinUtility:
         current_service_name = ""
 
         for row_idx in range(header_row_idx + 1, max_row + 1):
-            service_raw = merged_cell_value(worksheet, row_idx, service_col + 1)
+            service_raw = ExcelService.merged_cell_value(worksheet, row_idx, service_col + 1)
             service_name = normalize_cell_text(service_raw)
             if service_name:
                 current_service_name = service_name
@@ -399,9 +399,9 @@ class SOASetServerCinUtility:
                 uds_ecu_qualifier,
             ):
                 continue
-            tuple_raw = merged_cell_value(worksheet, row_idx, tuple_col + 1)
-            cycle_raw = merged_cell_value(worksheet, row_idx, cycle_col + 1)
-            grammar_raw = merged_cell_value(worksheet, row_idx, grammar_col + 1)
+            tuple_raw = ExcelService.merged_cell_value(worksheet, row_idx, tuple_col + 1)
+            cycle_raw = ExcelService.merged_cell_value(worksheet, row_idx, cycle_col + 1)
+            grammar_raw = ExcelService.merged_cell_value(worksheet, row_idx, grammar_col + 1)
 
             tuple_num = cls.parse_tuple_id_numeric(tuple_raw)
             if tuple_num is None or tuple_num <= TUPLE_ID_THRESHOLD:
@@ -455,7 +455,7 @@ class SOASetServerCinUtility:
         current_tuple_id: int | None = None
 
         for row_idx in range(header_row_idx + 1, max_row + 1):
-            service_raw = merged_cell_value(worksheet, row_idx, service_col + 1)
+            service_raw = ExcelService.merged_cell_value(worksheet, row_idx, service_col + 1)
             service_name = normalize_cell_text(service_raw)
             if service_name:
                 current_service_name = service_name
@@ -465,18 +465,18 @@ class SOASetServerCinUtility:
                 uds_ecu_qualifier,
             ):
                 continue
-            tuple_raw = merged_cell_value(worksheet, row_idx, tuple_col + 1)
+            tuple_raw = ExcelService.merged_cell_value(worksheet, row_idx, tuple_col + 1)
             tuple_num = cls.parse_tuple_id_numeric(tuple_raw)
             if tuple_num is not None:
                 current_tuple_id = tuple_num
             if current_tuple_id is None or current_tuple_id >= METHOD_TUPLE_ID_MAX_EXCLUSIVE:
                 continue
 
-            type_text = normalize_cell_text(merged_cell_value(worksheet, row_idx, type_col + 1))
+            type_text = normalize_cell_text(ExcelService.merged_cell_value(worksheet, row_idx, type_col + 1))
             if not cls.is_rr_out_type(type_text):
                 continue
 
-            grammar_text = normalize_cell_text(merged_cell_value(worksheet, row_idx, grammar_col + 1))
+            grammar_text = normalize_cell_text(ExcelService.merged_cell_value(worksheet, row_idx, grammar_col + 1))
             if not grammar_text:
                 logger.debug("跳过行 %s：RR-Out 行负载参数语法为空", row_idx)
                 continue
@@ -695,11 +695,8 @@ class SOASetServerCinGenerator:
         return output_file_path
 
 
-# 兼容导出：历史调用方直接 import 该符号（如 CentralProgrammaticRouteService）
-resolve_srv_excel_absolute_path = SOASetServerCinUtility.resolve_srv_excel_absolute_path
-
 __all__ = [
     "DOMAIN_TO_SECTION",
     "SOASetServerCinGenerator",
-    "resolve_srv_excel_absolute_path",
+    "SOASetServerCinUtility",
 ]

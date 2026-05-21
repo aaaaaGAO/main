@@ -17,7 +17,7 @@ import re
 from dataclasses import dataclass
 from datetime import datetime
 from functools import partial
-from typing import Any, Callable, Optional, Tuple
+from typing import Callable, Optional, Tuple
 
 from core.common.generation_summary import GenerationSummaryUtility
 from core.error_module import ErrorModuleResolver
@@ -25,6 +25,8 @@ from core.generator_config import GeneratorConfig
 from core.generator_logging import GeneratorLogger
 from core.mapping_context import MappingContext
 from core.translator import load_keyword_specs_from_excel
+from core.translator.config_enum import ConfigEnumContext
+from core.translator.io_mapping import IOMappingContext
 from services.config_constants import DEFAULT_DOMAIN_LR_REAR, SECTION_CENTRAL
 
 from .excel_repo import CANExcelRepository
@@ -43,8 +45,8 @@ if importlib.util.find_spec("pypinyin") is not None:
 class CANRuntimeContext:
     """CAN 生成运行期上下文，由编排层构造并注入，供用例读取流程使用。"""
 
-    io_mapping_ctx: Any
-    config_enum_ctx: Any
+    io_mapping_ctx: Optional[IOMappingContext]
+    config_enum_ctx: Optional[ConfigEnumContext]
     clib_names_set: Optional[set[str]] = None
 
 
@@ -280,7 +282,7 @@ class CANRuntimeIOUtility:
         base_dir: str,
         *,
         domain: str = DEFAULT_DOMAIN_LR_REAR,
-    ) -> Tuple[Any, Any]:
+    ) -> Tuple[Optional[IOMappingContext], Optional[ConfigEnumContext]]:
         """加载 IO 与 ConfigEnum 映射上下文。
 
         参数：

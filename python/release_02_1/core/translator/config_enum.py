@@ -321,11 +321,7 @@ class ConfigEnumContext:
         return out
 
 
-load_config_enum_from_config = ConfigEnumUtility.load_context_from_config
-
-
 __all__ = [
-    "load_config_enum_from_config",
     "ConfigEnumUtility",
     "ConfigEnumContext",
     "ConfigEnumParseError",

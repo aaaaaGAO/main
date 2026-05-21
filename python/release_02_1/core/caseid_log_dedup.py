@@ -9,21 +9,25 @@
 
 目标：
 - 在同一个 Python 进程中，同一条消息只写入一次（不影响业务逻辑，只影响日志）。
-- 每次新任务开始时需调用 reset_dedup_filter() 清空去重集合，否则 Web 二次点击时
+- 每次新任务开始时需调用 LogDedupManager.reset() 清空去重集合，否则 Web 二次点击时
   相同内容会被误判为重复而不再写入新日志目录。
 """
 
 from __future__ import annotations
 
 import logging
-from typing import Set
-
-_SEEN: Set[str] = set()
+from typing import ClassVar, Set
 
 
-def reset_dedup_filter() -> None:
-    """清空去重集合，供每次新任务开始时调用（如 log_run_context.reset_run_context）。"""
-    _SEEN.clear()
+class LogDedupManager:
+    """同进程日志去重状态管理器（为 run_context 重置提供统一入口）。"""
+
+    _seen: ClassVar[Set[str]] = set()
+
+    @classmethod
+    def reset(cls) -> None:
+        """清空去重集合，供每次新任务开始时调用（如 RunLogContext.reset）。"""
+        cls._seen.clear()
 
 
 class DedupOnceFilter(logging.Filter):
@@ -35,10 +39,10 @@ class DedupOnceFilter(logging.Filter):
             msg = record.getMessage()
         except Exception:
             msg = str(record.msg)
-        if msg in _SEEN:
+        if msg in LogDedupManager._seen:
             return False
-        _SEEN.add(msg)
+        LogDedupManager._seen.add(msg)
         # 防止极端情况下集合无限增长（保守上限）
-        if len(_SEEN) > 200000:
-            _SEEN.clear()
+        if len(LogDedupManager._seen) > 200000:
+            LogDedupManager._seen.clear()
         return True

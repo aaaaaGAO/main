@@ -22,11 +22,11 @@ import inspect
 import logging
 import time
 from dataclasses import dataclass
-from typing import Any, Callable
+from typing import Any, Callable, Mapping
 
 from services.config_constants import SECTION_CENTRAL, SECTION_DTC, SECTION_LR_REAR
 from services.http_api_constants import HttpStatus, api_error, api_success
-from services.request_payload_utils import merge_generation_state_from_payload
+from services.request_payload_utils import RequestPayloadUtility
 from services.service_route_result_decorator import guard_plain_service_route_tuple
 from services.state_config_service import StateConfigService
 from services.task_orchestrator import TaskOrchestrator
@@ -104,7 +104,7 @@ class GenerationRouteService:
 
     def execute_from_payload(
         self,
-        payload: dict[str, Any],
+        payload: Mapping[str, Any],
         *,
         options: GenerationRouteOptions,
     ) -> tuple[dict[str, Any], int]:
@@ -119,14 +119,14 @@ class GenerationRouteService:
         `TaskOrchestrator.build_result_message` 生成。
         """
         started = time.perf_counter()
-        state = merge_generation_state_from_payload(payload)
+        state = RequestPayloadUtility.merge_generation_state_from_payload(payload)
         validate_before_run = payload.get("validate_before_run", True)
         logger.info(
             "[route.%s] event=start domain=%s validate_before_run=%s payload_keys=%s",
             options.route_name,
             options.domain,
             validate_before_run,
-            sorted(list(payload.keys())),
+            sorted(list(payload.keys())) if hasattr(payload, "keys") else [],
         )
 
         config = self.state_config_service.prepare_generation_config(

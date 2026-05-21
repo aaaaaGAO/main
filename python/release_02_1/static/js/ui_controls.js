@@ -15,14 +15,6 @@
     var ignConfig = global.ignConfig;
     var loginConfig = global.loginConfig || { username: '', password: '' };
 
-    function showTab(tabId) {
-        document.querySelectorAll('.tab-content').forEach(function (t) { t.classList.remove('active'); });
-        document.querySelectorAll('.nav-tab').forEach(function (t) { t.classList.remove('active'); });
-        var tabEl = document.getElementById(tabId);
-        if (tabEl) tabEl.classList.add('active');
-        if (global.event && global.event.currentTarget) global.event.currentTarget.classList.add('active');
-    }
-
     function toggleCheck(groupId) {
         var inputs = document.querySelectorAll('#' + groupId + ' input');
         var isRadioGroup = groupId.indexOf('platform') !== -1 || groupId.indexOf('model') !== -1;
@@ -162,7 +154,7 @@
         }
         var list = document.getElementById('relayList');
         if (list) {
-            list.innerHTML = '<p style="text-align: center; color: #909399; padding: 20px;">暂无继电器配置，点击\"添加继电器\"开始配置</p>';
+            list.innerHTML = global.UIComponents.renderMessage('暂无继电器配置，点击"添加继电器"开始配置', 'center');
         }
         // 继电器这里直接显式发送最小 state，确保后端能收到 c_rly: []
         if (global.API && global.API.autoSaveConfig) {
@@ -232,10 +224,10 @@
         try {
             var data = await global.API.parseFileStructure(path);
             if (!data.success) {
-                container.innerHTML = '<p style="color:#f56c6c;font-size:13px;padding:8px;">解析失败: ' + (data.message || '未知错误') + '</p>';
+                container.innerHTML = global.UIComponents.renderMessage('解析失败: ' + (data.message || '未知错误'), 'error');
                 return;
             }
-            container.innerHTML = _renderCaseSelectCheckboxes(data.data, containerId);
+            container.innerHTML = global.UIComponents.renderCaseSelectCheckboxes(data.data, containerId);
             if (initialSelectedSheets && String(initialSelectedSheets).trim()) {
                 global.restoreCaseCheckboxes(containerId, initialSelectedSheets);
             } else {
@@ -244,12 +236,8 @@
             updateAllParentAndSelectAllState(containerId);
         } catch (e) {
             console.error(e);
-            container.innerHTML = '<p style="color:#f56c6c;font-size:13px;padding:8px;">解析请求失败: ' + e.message + '</p>';
+            container.innerHTML = global.UIComponents.renderMessage('解析请求失败: ' + e.message, 'error');
         }
-    }
-
-    function esc(v) {
-        return String(v).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     }
 
     async function autoParseDtcIoSheets(initialSelectedSheets) {
@@ -271,12 +259,12 @@
         try {
             var data = await global.API.parseFileStructure(path);
             if (!data.success || !data.data || data.data.length === 0) {
-                container.innerHTML = '<p style="color:#f56c6c;padding:8px;">解析失败</p>';
+                container.innerHTML = global.UIComponents.renderMessage('解析失败', 'error');
                 return;
             }
 
             // 复用通用树形渲染逻辑，使样式/折叠行为与“勾选用例”一致
-            container.innerHTML = _renderCaseSelectCheckboxes(data.data, 'd_io_sheets_container');
+            container.innerHTML = global.UIComponents.renderCaseSelectCheckboxes(data.data, 'd_io_sheets_container');
 
             // 处理勾选状态还原：
             // - initialSelectedSheets 为空或为 "*"：默认全选
@@ -302,74 +290,8 @@
             updateAllParentAndSelectAllState('d_io_sheets_container');
         } catch (e) {
             console.error(e);
-            container.innerHTML = '<p style="color:#f56c6c;padding:8px;">解析异常</p>';
+            container.innerHTML = global.UIComponents.renderMessage('解析异常', 'error');
         }
-    }
-
-    function _renderCaseSelectCheckboxes(items, containerId) {
-        if (!items || items.length === 0) {
-            return '<p style="color:#909399;font-size:13px;padding:8px;">未找到可解析的文件（支持 Excel、CAN、XML）</p>';
-        }
-        // 过滤掉无关或纯版本记录类 Sheet，例如 Rev.Hist / 变更记录 / 变更历史
-        var filterRevHist = function (arr) {
-            return (arr || []).filter(function (s) {
-                var name = String(s || '').trim().toLowerCase();
-                return !(
-                    name === 'rev.hist' ||
-                    name === '变更记录' ||
-                    name === '变更历史'
-                );
-            });
-        };
-        var safeContainerId = esc(containerId);
-        var html = '<div class="case-tree-list">';
-        items.forEach(function (item, fileIdx) {
-            var tableName = item.relpath ? item.relpath : item.filename;
-            var tableLabel = (item.relpath && item.relpath !== item.filename) ? item.relpath : item.filename;
-            var blockId = 'case_block_' + Date.now() + '_' + fileIdx;
-            var hasChildren = !item.error && (
-                (item.type === 'excel' && item.sheets && item.sheets.length) ||
-                (item.type === 'can' && item.testcases && item.testcases.length) ||
-                (item.type === 'xml' && ((item.testgroups && item.testgroups.length) || (item.capltestcases && item.capltestcases.length)))
-            );
-            html += '<div class="case-table-block case-tree-parent' + (hasChildren ? '' : ' no-expand') + '" id="' + blockId + '" data-container-id="' + safeContainerId + '">';
-            html += '<div class="case-parent-row">';
-            html += '<span class="case-expand-btn" onclick="toggleTreeExpand(\'' + blockId + '\')" title="展开/收起">';
-            html += '<span class="icon-collapsed">▶</span><span class="icon-expanded">▼</span></span>';
-            html += '<label><input type="checkbox" class="parent-checkbox" data-parent-block="' + blockId + '" onchange="onParentCheckboxChange(this)"><span>📄 ' + esc(tableLabel) + '</span></label>';
-            html += '</div>';
-            if (item.error) {
-                html += '<div class="case-tree-children" style="display:block;padding:8px 14px;color:#f56c6c;font-size:12px;">' + item.error + '</div>';
-            } else {
-                var sheets = [];
-                if (item.type === 'excel' && item.sheets && item.sheets.length) {
-                    sheets = filterRevHist(item.sheets).map(function (s) { return { name: s, type: 'Sheet' }; });
-                } else if (item.type === 'can' && item.testcases && item.testcases.length) {
-                    item.testcases.forEach(function (s) { sheets.push({ name: s, type: 'Testcase' }); });
-                } else if (item.type === 'xml') {
-                    if (item.testgroups && item.testgroups.length) {
-                        item.testgroups.forEach(function (s) { sheets.push({ name: s, type: 'Testgroup' }); });
-                    }
-                    if (item.capltestcases && item.capltestcases.length) {
-                        item.capltestcases.forEach(function (s) { sheets.push({ name: s, type: 'Capltestcase' }); });
-                    }
-                }
-                if (sheets.length > 0) {
-                    html += '<div class="case-tree-children"><div class="case-sheet-grid">';
-                    sheets.forEach(function (s) {
-                        var safeName = esc(s.name);
-                        var safeTable = esc(tableName);
-                        html += '<label class="check-item" title="' + safeName + '"><input type="checkbox" class="sheet-checkbox" value="' + safeName + '" data-table="' + safeTable + '" data-sheet="' + safeName + '" data-parent-block="' + blockId + '" onchange="onSheetCheckboxChange(this)"> ' + s.name + '</label>';
-                    });
-                    html += '</div></div>';
-                } else {
-                    html += '<div class="case-tree-children" style="display:block;padding:8px 14px;color:#909399;font-size:12px;">无解析结果</div>';
-                }
-            }
-            html += '</div>';
-        });
-        html += '</div>';
-        return html;
     }
 
     function toggleTreeExpand(blockId) {
@@ -442,68 +364,13 @@
                 return;
             }
             var container = document.getElementById('parseFileContent');
-            if (container) container.innerHTML = _renderParseResult(data.data);
+            if (container) container.innerHTML = global.UIComponents.renderParseResult(data.data);
             var modal = document.getElementById('parseFileModal');
             if (modal) modal.style.display = 'flex';
         } catch (e) {
             console.error(e);
             alert('解析请求失败: ' + e.message);
         }
-    }
-
-    function _renderParseResult(items) {
-        if (!items || items.length === 0) {
-            return '<p style="color:#909399;">未找到可解析的文件（支持 Excel、CAN、XML）</p>';
-        }
-        var html = '';
-        items.forEach(function (item) {
-            var rel = item.relpath ? ' <span style="color:#909399;font-size:11px;">' + item.relpath + '</span>' : '';
-            html += '<div style="margin-bottom:16px;padding:12px;border:1px solid #ebeef5;border-radius:6px;background:#fafafa;">';
-            html += '<div style="font-weight:600;margin-bottom:8px;">📄 ' + item.filename + rel + '</div>';
-            if (item.error) {
-                html += '<div style="color:#f56c6c;font-size:12px;">' + item.error + '</div>';
-            } else if (item.type === 'excel' && item.sheets && item.sheets.length) {
-                html += '<div style="color:#606266;">Sheet 名 (' + item.sheets.length + ' 个):</div>';
-                html += '<div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:6px;">';
-                item.sheets.forEach(function (s) {
-                    html += '<span style="background:#ecf5ff;color:#409eff;padding:2px 8px;border-radius:4px;font-size:12px;">' + s + '</span>';
-                });
-                html += '</div>';
-            } else if (item.type === 'can' && item.testcases && item.testcases.length) {
-                html += '<div style="color:#606266;">Testcase 名 (' + item.testcases.length + ' 个):</div>';
-                html += '<div style="margin-top:6px;max-height:120px;overflow-y:auto;display:flex;flex-wrap:wrap;gap:6px;">';
-                item.testcases.slice(0, 50).forEach(function (s) {
-                    html += '<span style="background:#e1f3d8;color:#67c23a;padding:2px 8px;border-radius:4px;font-size:12px;">' + s + '</span>';
-                });
-                if (item.testcases.length > 50) {
-                    html += '<span style="color:#909399;font-size:11px;">... 共 ' + item.testcases.length + ' 个</span>';
-                }
-                html += '</div>';
-            } else if (item.type === 'xml') {
-                if (item.testgroups && item.testgroups.length) {
-                    html += '<div style="color:#606266;">Testgroup (' + item.testgroups.length + ' 个):</div>';
-                    html += '<div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:6px;">';
-                    item.testgroups.slice(0, 20).forEach(function (s) {
-                        html += '<span style="background:#fdf6ec;color:#e6a23c;padding:2px 8px;border-radius:4px;font-size:12px;">' + s + '</span>';
-                    });
-                    if (item.testgroups.length > 20) html += '<span style="color:#909399;font-size:11px;">... 共 ' + item.testgroups.length + ' 个</span>';
-                    html += '</div>';
-                }
-                if (item.capltestcases && item.capltestcases.length) {
-                    html += '<div style="color:#606266;margin-top:8px;">Capltestcase (' + item.capltestcases.length + ' 个):</div>';
-                    html += '<div style="margin-top:6px;max-height:100px;overflow-y:auto;display:flex;flex-wrap:wrap;gap:6px;">';
-                    item.capltestcases.slice(0, 30).forEach(function (s) {
-                        html += '<span style="background:#f4f4f5;color:#909399;padding:2px 8px;border-radius:4px;font-size:12px;">' + s + '</span>';
-                    });
-                    if (item.capltestcases.length > 30) html += '<span style="color:#909399;font-size:11px;">... 共 ' + item.capltestcases.length + ' 个</span>';
-                    html += '</div>';
-                }
-            } else {
-                html += '<div style="color:#909399;">无解析结果</div>';
-            }
-            html += '</div>';
-        });
-        return html;
     }
 
     function closeParseFileModal() {
@@ -670,10 +537,6 @@
             btn.disabled = false;
             btn.innerText = '⚡ 开始一键运行DTC任务';
         }
-    }
-
-    function sendHeartbeat() {
-        global.API.heartbeat();
     }
 
     // 通用：带“其他（自定义）”的下拉 + 输入框
@@ -960,93 +823,15 @@
     function renderRelayList() {
         var container = document.getElementById('relayList');
         if (!container) return;
-        if (relayConfigs.length === 0) {
-            container.innerHTML = '<p style="text-align: center; color: #909399; padding: 20px;">暂无继电器配置，点击"添加继电器"开始配置</p>';
-            return;
-        }
-        var baudStandard = ['9600', '19200', '38400', '57600', '115200'];
-        // 支持常用 RS232 继电器规格：8 / 16 / 24 / 32 / 64 路
-        var typeStandard = ['RS232_8', 'RS232_16', 'RS232_24', 'RS232_32', 'RS232_64'];
-        container.innerHTML = relayConfigs.map(function (relay, index) {
-            var relayNumber = index + 1;
-            // 根据继电器类型自动计算线圈数量，形如 RS232_8 / RS232_16 / RS232_24 / RS232_32 / RS232_64
+        relayConfigs.forEach(function (relay) {
             var typeParts = String(relay.relayType || 'RS232_8').split('_');
             var parsedCoilCount = parseInt(typeParts[typeParts.length - 1], 10);
             var coilCount = (!isNaN(parsedCoilCount) && parsedCoilCount > 0) ? parsedCoilCount : 8;
             if (relay.coilStatuses.length !== coilCount) {
                 relay.coilStatuses = Array(coilCount).fill(18);
             }
-            var coilMode = relayCoilModes[relay.id] || 'open';
-            var baudIsStandard = baudStandard.indexOf(relay.baudrate) !== -1;
-            var typeIsStandard = typeStandard.indexOf(relay.relayType) !== -1;
-            var html = '<div class="relay-item" style="border: 1px solid #dcdfe6; border-radius: 6px; padding: 20px; margin-bottom: 15px; background: #fafafa;">';
-            html += '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">';
-            html += '<h3 style="margin: 0; color: #409eff;">继电器 ' + relayNumber + '</h3>';
-            html += '<button class="btn" onclick="removeRelay(' + relay.id + ')" style="padding: 4px 12px; background: #f56c6c; color: white; border: none;">删除</button></div>';
-            html += '<div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">';
-            html += '<div><label style="display: block; margin-bottom: 5px; font-weight: 600;">端口号 (port):</label>';
-            html += '<select class="relay-port-select" data-relay-id="' + relay.id + '" onchange="updateRelayConfig(' + relay.id + ', \'port\', this.value)" style="width: 100%; padding: 8px; border: 1px solid #dcdfe6; border-radius: 4px;"></select></div>';
-            html += '<div><label style="display: block; margin-bottom: 5px; font-weight: 600;">波特率 (baudrate):</label>';
-            html += '<select id="relay-baudrate-' + relay.id + '" onchange="handleRelaySelectChange(' + relay.id + ', \'baudrate\', this)" style="width: 100%; padding: 8px; border: 1px solid #dcdfe6; border-radius: 4px;">';
-            baudStandard.forEach(function (b) {
-                html += '<option value="' + b + '"' + (baudIsStandard && relay.baudrate === b ? ' selected' : '') + '>' + b + '</option>';
-            });
-            html += '<option value="__custom__"' + (!baudIsStandard && relay.baudrate ? ' selected' : '') + '>其他（自定义）</option>';
-            html += '</select>';
-            html += '<input type="number" id="relay-baudrate-custom-' + relay.id + '" value="' + (!baudIsStandard ? (relay.baudrate || '') : '') + '" placeholder="自定义波特率" style="margin-top: 6px; width: 100%; padding: 6px; border: 1px solid #dcdfe6; border-radius: 4px; display: ' + (!baudIsStandard && relay.baudrate ? 'block' : 'none') + ';" onchange="handleRelayCustomInputChange(' + relay.id + ', \'baudrate\', this.value)"></div>';
-            /* 以下字段 UI 已隐藏，原生成逻辑保留在注释中便于恢复（需同时恢复 dataBitsStandard / stopBitsStandard 及 isStandard 变量）
-            var dataBitsStandard = ['5', '6', '7', '8'];
-            var stopBitsStandard = ['1', '1.5', '2'];
-            var dataBitsIsStandard = dataBitsStandard.indexOf(relay.dataBits) !== -1;
-            var stopBitsIsStandard = stopBitsStandard.indexOf(relay.stopBits) !== -1;
-            html += '<div><label style="display: block; margin-bottom: 5px; font-weight: 600;">数据位 (dataBits):</label>';
-            html += '<select id="relay-databits-' + relay.id + '" onchange="handleRelaySelectChange(' + relay.id + ', \'dataBits\', this)" style="width: 100%; padding: 8px; border: 1px solid #dcdfe6; border-radius: 4px;">';
-            dataBitsStandard.forEach(function (b) {
-                html += '<option value="' + b + '"' + (dataBitsIsStandard && relay.dataBits === b ? ' selected' : '') + '>' + b + '</option>';
-            });
-            html += '<option value="__custom__"' + (!dataBitsIsStandard && relay.dataBits ? ' selected' : '') + '>其他（自定义）</option>';
-            html += '</select>';
-            html += '<input type="number" id="relay-databits-custom-' + relay.id + '" value="' + (!dataBitsIsStandard ? (relay.dataBits || '') : '') + '" placeholder="自定义数据位" style="margin-top: 6px; width: 100%; padding: 6px; border: 1px solid #dcdfe6; border-radius: 4px; display: ' + (!dataBitsIsStandard && relay.dataBits ? 'block' : 'none') + ';" onchange="handleRelayCustomInputChange(' + relay.id + ', \'dataBits\', this.value)"></div>';
-            html += '<div><label style="display: block; margin-bottom: 5px; font-weight: 600;">停止位 (stopBits):</label>';
-            html += '<select id="relay-stopbits-' + relay.id + '" onchange="handleRelaySelectChange(' + relay.id + ', \'stopBits\', this)" style="width: 100%; padding: 8px; border: 1px solid #dcdfe6; border-radius: 4px;">';
-            stopBitsStandard.forEach(function (b) {
-                html += '<option value="' + b + '"' + (stopBitsIsStandard && relay.stopBits === b ? ' selected' : '') + '>' + b + '</option>';
-            });
-            html += '<option value="__custom__"' + (!stopBitsIsStandard && relay.stopBits ? ' selected' : '') + '>其他（自定义）</option>';
-            html += '</select>';
-            html += '<input type="text" id="relay-stopbits-custom-' + relay.id + '" value="' + (!stopBitsIsStandard ? (relay.stopBits || '') : '') + '" placeholder="自定义停止位" style="margin-top: 6px; width: 100%; padding: 6px; border: 1px solid #dcdfe6; border-radius: 4px; display: ' + (!stopBitsIsStandard && relay.stopBits ? 'block' : 'none') + ';" onchange="handleRelayCustomInputChange(' + relay.id + ', \'stopBits\', this.value)"></div>';
-            html += '<div><label style="display: block; margin-bottom: 5px; font-weight: 600;">握手 (kHANDSHAKE_DISABLED):</label>';
-            html += '<select onchange="updateRelayConfig(' + relay.id + ', \'kHANDSHAKE_DISABLED\', this.value)" style="width: 100%; padding: 8px; border: 1px solid #dcdfe6; border-radius: 4px;">';
-            html += '<option value="0"' + (relay.kHANDSHAKE_DISABLED === '0' ? ' selected' : '') + '>0</option><option value="1"' + (relay.kHANDSHAKE_DISABLED === '1' ? ' selected' : '') + '>1</option></select></div>';
-            html += '<div><label style="display: block; margin-bottom: 5px; font-weight: 600;">校验 (parity):</label>';
-            html += '<select onchange="updateRelayConfig(' + relay.id + ', \'parity\', this.value)" style="width: 100%; padding: 8px; border: 1px solid #dcdfe6; border-radius: 4px;">';
-            html += '<option value="0"' + (relay.parity === '0' ? ' selected' : '') + '>无校验</option><option value="1"' + (relay.parity === '1' ? ' selected' : '') + '>奇校验</option><option value="2"' + (relay.parity === '2' ? ' selected' : '') + '>偶校验</option></select></div>';
-            html += '<div><label style="display: block; margin-bottom: 5px; font-weight: 600;">继电器设备地址 (relayID):</label>';
-            html += '<input type="number" value="' + (relay.relayID || '1') + '" min="1" onchange="updateRelayConfig(' + relay.id + ', \'relayID\', this.value)" style="width: 100%; padding: 8px; border: 1px solid #dcdfe6; border-radius: 4px;"></div>';
-            */
-            html += '<div><label style="display: block; margin-bottom: 5px; font-weight: 600;">继电器类型 (RelayType):</label>';
-            html += '<select id="relay-type-' + relay.id + '" onchange="handleRelaySelectChange(' + relay.id + ', \'relayType\', this)" style="width: 100%; padding: 8px; border: 1px solid #dcdfe6; border-radius: 4px;">';
-            typeStandard.forEach(function (t) {
-                html += '<option value="' + t + '"' + (relay.relayType === t ? ' selected' : '') + '>' + t + '</option>';
-            });
-            html += '</select></div></div>';
-            html += '<div style="margin-top: 15px;"><label style="display: block; margin-bottom: 5px; font-weight: 600;">线圈状态配置 (RelayCoilStatus):</label>';
-            html += '<div style="margin-bottom: 10px; display: flex; gap: 10px; align-items: center;">';
-            html += '<div style="display: flex; gap: 5px;">';
-            html += '<button id="coil-mode-open-' + relay.id + '" class="btn" onclick="setCoilMode(' + relay.id + ', \'open\')" style="padding: 6px 12px; ' + (coilMode === 'open' ? 'background: #67c23a;' : 'background: #dcdfe6; color: #606266;') + ' color: white; border: none;">常开</button>';
-            html += '<button id="coil-mode-close-' + relay.id + '" class="btn" onclick="setCoilMode(' + relay.id + ', \'close\')" style="padding: 6px 12px; ' + (coilMode === 'close' ? 'background: #f56c6c;' : 'background: #dcdfe6; color: #606266;') + ' color: white; border: none;">常关</button></div>';
-            html += '<input type="text" id="coil-input-' + relay.id + '" placeholder="输入线圈编号，如: 1,3,5 或 1-5" style="flex: 1; padding: 8px; border: 1px solid #dcdfe6; border-radius: 4px;">';
-            html += '<button class="btn" onclick="applyCoilStatus(' + relay.id + ')" style="padding: 8px 15px; background: #409eff; color: white; border: none;">应用</button></div>';
-            html += '<div style="display: grid; grid-template-columns: repeat(8, 1fr); gap: 8px;">';
-            relay.coilStatuses.forEach(function (status, idx) {
-                html += '<div><label style="display: block; font-size: 12px; margin-bottom: 3px;">线圈' + (idx + 1) + '</label>';
-                html += '<select onchange="updateRelayConfig(' + relay.id + ', \'coilStatuses\', this.value, ' + idx + ')" style="width: 100%; padding: 6px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 12px;">';
-                html += '<option value="17"' + (status === 17 ? ' selected' : '') + '>常开(17)</option>';
-                html += '<option value="18"' + (status === 18 ? ' selected' : '') + '>常关(18)</option></select></div>';
-            });
-            html += '</div></div></div>';
-            return html;
-        }).join('');
+        });
+        container.innerHTML = global.UIComponents.renderRelayListHtml(relayConfigs, relayCoilModes);
         setTimeout(loadSerialPortsForRelay, 100);
     }
 
@@ -1433,7 +1218,6 @@
         closeLoginConfig();
     }
 
-    global.showTab = showTab;
     global.toggleCheck = toggleCheck;
     global.selectPath = selectPath;
     global.autoParseAndRender = autoParseAndRender;
@@ -1493,44 +1277,4 @@
     global.clearPWConfigState = clearPWConfigState;
     global.clearIgnitionConfigState = clearIgnitionConfigState;
     global.clearLoginConfigState = clearLoginConfigState;
-
-    var workerCode = 'setInterval(function(){self.postMessage("ping");}, 5000);';
-    var blob = new Blob([workerCode], { type: 'application/javascript' });
-    var worker = new Worker(URL.createObjectURL(blob));
-    worker.onmessage = function (e) {
-        if (e.data === 'ping') sendHeartbeat();
-    };
-    document.addEventListener('visibilitychange', function () {
-        if (document.visibilityState === 'visible') sendHeartbeat();
-    });
-    sendHeartbeat();
-    var lastFired = Date.now();
-    setInterval(function () {
-        var now = Date.now();
-        if (now - lastFired > 20000) sendHeartbeat();
-        lastFired = now;
-    }, 5000);
-
-    // 后端关闭时的统一处理：弹出提示并尝试自动关闭窗口
-    var backendDownNotified = false;
-    function handleBackendDown() {
-        if (backendDownNotified) return;
-        backendDownNotified = true;
-        try {
-            alert('后端程序已关闭或异常退出，本页面将不再可用。\n\n请关闭本页面，并重新双击 EXE 启动工具后再使用。');
-        } catch (e) {
-            console.error(e);
-        }
-        try {
-            // 若浏览器允许（例如由程序自动打开的窗口），尝试自动关闭当前页
-            window.close();
-        } catch (e2) {
-            console.error(e2);
-        }
-    }
-    global.handleBackendDown = handleBackendDown;
-
-    window.onload = function () {
-        if (global.initFromConfig) global.initFromConfig();
-    };
 })(typeof window !== 'undefined' ? window : this);

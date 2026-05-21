@@ -17,28 +17,28 @@ from openpyxl import load_workbook
 from infra.filesystem import RuntimePathResolver
 
 
-def merged_cell_value(ws: Any, row: int, col: int) -> Any:
-    """取单元格值，支持合并单元格（空值取合并区域左上角值）。
-    参数：ws — 工作表；row, col — 行号、列号。
-    返回：单元格值。
-    """
-    cell = ws.cell(row, col)
-    cell_value = cell.value
-    if cell_value is not None:
-        return cell_value
-    try:
-        coord = cell.coordinate
-        for merged_range in getattr(ws.merged_cells, "ranges", []):
-            if coord in merged_range:
-                return ws.cell(merged_range.min_row, merged_range.min_col).value
-    except Exception:
-        pass
-    return cell_value
-
-
 class ExcelService:
     """统一的 Excel 工作簿打开与行迭代（openpyxl 封装）。"""
     _WORKBOOK_BINARY_CACHE: dict[tuple[str, float], bytes] = {}
+
+    @staticmethod
+    def merged_cell_value(ws: Any, row: int, col: int) -> Any:
+        """取单元格值，支持合并单元格（空值取合并区域左上角值）。
+        参数：ws — 工作表；row, col — 行号、列号。
+        返回：单元格值。
+        """
+        cell = ws.cell(row, col)
+        cell_value = cell.value
+        if cell_value is not None:
+            return cell_value
+        try:
+            coord = cell.coordinate
+            for merged_range in getattr(ws.merged_cells, "ranges", []):
+                if coord in merged_range:
+                    return ws.cell(merged_range.min_row, merged_range.min_col).value
+        except Exception:
+            pass
+        return cell_value
 
     @staticmethod
     def open_workbook(
@@ -146,4 +146,4 @@ class ExcelService:
         return existing_sheets if existing_sheets else list(wb.sheetnames)
 
 
-__all__ = ["ExcelService", "merged_cell_value"]
+__all__ = ["ExcelService"]

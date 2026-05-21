@@ -9,12 +9,11 @@ Excel 读写引擎（底层）
 
 from __future__ import annotations
 
-from infra.excel.workbook import ExcelService, merged_cell_value
+from infra.excel.workbook import ExcelService
 from utils.excel_io import StringUtility
 
 __all__ = [
     "StringUtility",
     "ExcelService",
-    "merged_cell_value",
 ]
 

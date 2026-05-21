@@ -26,7 +26,7 @@ from typing import Callable, Optional, Sequence
 from infra.filesystem import RuntimePathResolver
 from services.config_constants import DEFAULT_DOMAIN_LR_REAR, OPTION_LOG_LEVEL_MIN
 from core.error_module import ErrorModuleResolver
-from core.log_run_context import get_run_domain
+from core.log_run_context import RunLogContext
 
 PROGRESS_LEVEL = 25
 logging.addLevelName(PROGRESS_LEVEL, "PROGRESS")
@@ -266,7 +266,7 @@ def get_log_level_from_config(
     try:
         if section is None:
             try:
-                section = get_run_domain() or DEFAULT_DOMAIN_LR_REAR
+                section = RunLogContext.get_domain() or DEFAULT_DOMAIN_LR_REAR
             except Exception:
                 section = DEFAULT_DOMAIN_LR_REAR
         cfg = configparser.ConfigParser()

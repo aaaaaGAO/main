@@ -23,7 +23,7 @@ from utils.logger import (
     get_log_level_from_config,
 )
 
-from core.log_run_context import ensure_run_log_dirs
+from core.log_run_context import RunLogContext
 from core.run_context import clear_run_logger
 
 
@@ -112,7 +112,7 @@ class GeneratorLogger:
             return self.logger_instance
 
         user_level = get_log_level_from_config(self.base_dir, section=None)
-        self.run_dirs_value = ensure_run_log_dirs(self.base_dir)
+        self.run_dirs_value = RunLogContext.ensure_dirs(self.base_dir)
         formatter = self.formatter_factory("%(asctime)s %(levelname)s %(message)s")
 
         logger_name = self.logger_name_value

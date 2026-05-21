@@ -46,12 +46,6 @@ class HttpStatus:
     INTERNAL_SERVER_ERROR = 500
 
 
-# 兼容旧导入名（与各服务层已替换的常量等价）
-HTTP_OK = HttpStatus.OK
-HTTP_BAD_REQUEST = HttpStatus.BAD_REQUEST
-HTTP_INTERNAL_SERVER_ERROR = HttpStatus.INTERNAL_SERVER_ERROR
-
-
 def make_json_tuple(response_body: dict[str, Any], http_status: int) -> tuple[dict[str, Any], int]:
     """将已构造好的响应体与安全 HTTP 状态码组成服务层返回值元组。"""
     return response_body, http_status

@@ -17,8 +17,8 @@ import re
 from dataclasses import dataclass
 from typing import Any
 
-from infra.config.config_access import read_fixed_config
-from infra.excel.workbook import merged_cell_value
+from infra.config import read_fixed_config
+from infra.excel.workbook import ExcelService
 from infra.filesystem.pathing import RuntimePathResolver
 from generators.capl_soa.soa_excel_utils import is_client_marker, normalize_cell_text, open_workbook_cached
 from services.config_constants import OPTION_SOA_DATATAB_OUTPUT_FILENAME
@@ -196,7 +196,7 @@ def build_header_row_values(worksheet: Any, row_idx: int, max_column: int) -> li
     row_values: list[Any] = []
     upper_column = max(max_column, 1)
     for column_idx in range(1, upper_column + 1):
-        row_values.append(merged_cell_value(worksheet, row_idx, column_idx))
+        row_values.append(ExcelService.merged_cell_value(worksheet, row_idx, column_idx))
     return row_values
 
 
@@ -293,7 +293,7 @@ def read_rows_as_dicts(
         row_data: dict[str, Any] = {}
         has_any_value = False
         for key, col_index in column_indexes.items():
-            value = merged_cell_value(worksheet, row_idx, col_index + 1)
+            value = ExcelService.merged_cell_value(worksheet, row_idx, col_index + 1)
             row_data[key] = value
             if value is not None and normalize_cell_text(value):
                 has_any_value = True
@@ -357,10 +357,10 @@ def locate_client_columns(worksheet: Any, header_row: int) -> list[tuple[int, st
     client_columns: list[tuple[int, str]] = []
     max_column = worksheet.max_column or 1
     for column_idx in range(1, max_column + 1):
-        above_text = normalize_cell_text(merged_cell_value(worksheet, header_row - 1, column_idx)) if header_row > 1 else ""
-        current_text = normalize_cell_text(merged_cell_value(worksheet, header_row, column_idx))
+        above_text = normalize_cell_text(ExcelService.merged_cell_value(worksheet, header_row - 1, column_idx)) if header_row > 1 else ""
+        current_text = normalize_cell_text(ExcelService.merged_cell_value(worksheet, header_row, column_idx))
         below_text = (
-            normalize_cell_text(merged_cell_value(worksheet, header_row + 1, column_idx))
+            normalize_cell_text(ExcelService.merged_cell_value(worksheet, header_row + 1, column_idx))
             if header_row < (worksheet.max_row or header_row)
             else ""
         )
@@ -407,8 +407,8 @@ def collect_service_entries(
     entries: list[tuple[Any, ...]] = []
 
     for row_idx in range(start_row, max_row + 1):
-        service_id_literal = format_service_id_literal(merged_cell_value(worksheet, row_idx, service_id_column))
-        server_ecu_name = normalize_cell_text(merged_cell_value(worksheet, row_idx, server_ecu_column))
+        service_id_literal = format_service_id_literal(ExcelService.merged_cell_value(worksheet, row_idx, service_id_column))
+        server_ecu_name = normalize_cell_text(ExcelService.merged_cell_value(worksheet, row_idx, server_ecu_column))
         if not service_id_literal and not server_ecu_name:
             continue
         if not service_id_literal or not server_ecu_name:
@@ -425,7 +425,7 @@ def collect_service_entries(
             client_key = normalize_node_key(client_name)
             if not client_key or client_key in EXCLUDED_CLIENT_NODE_KEYS:
                 continue
-            if not is_client_marker(merged_cell_value(worksheet, row_idx, column_idx)):
+            if not is_client_marker(ExcelService.merged_cell_value(worksheet, row_idx, column_idx)):
                 continue
             node_index = node_index_map.get(client_key)
             if node_index is None:

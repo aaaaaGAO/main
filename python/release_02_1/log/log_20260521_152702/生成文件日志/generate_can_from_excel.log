@@ -1,0 +1,24 @@
+2026-05-21 15:27:08,477 INFO >>> 开始执行 [LR_REAR] 域生成任务...
+2026-05-21 15:27:08,646  解析 Excel 文件: TC_LDCU_车辆电源模式管理_MQB_AGT_V1.0.xlsx
+2026-05-21 15:27:08,647  处理Excel=TC_LDCU_车辆电源模式管理_MQB_AGT_V1.0.xlsx
+2026-05-21 15:27:20,704 INFO   处理Sheet=TC
+2026-05-21 15:27:20,705 INFO [跳过] 用例ID=SYS-LDCU-Powermode-0001, 功能模块=电源模式状态机定义, 用例类型='手动测试'（非自动测试/空）
+2026-05-21 15:27:20,706 INFO [跳过] 用例ID=SYS-LDCU-Powermode-0015, 功能模块=LocalON跳转至Off, 用例类型='手动测试'（非自动测试/空）
+2026-05-21 15:27:20,709 INFO [跳过] 用例ID=SYS-LDCU-Powermode-0052, 功能模块=RemoteOn跳转至Off, 用例类型='手动测试'（非自动测试/空）
+2026-05-21 15:27:20,710 INFO [跳过] 用例ID=SYS-LDCU-Powermode-0195, 功能模块=钥匙搜索状态跳转逻辑, 用例类型='实车测试'（非自动测试/空）
+2026-05-21 15:27:20,711 INFO [跳过] 用例ID=SYS-LDCU-Powermode-0196, 功能模块=钥匙搜索状态跳转逻辑, 用例类型='实车测试'（非自动测试/空）
+2026-05-21 15:27:20,712 INFO [跳过] 用例ID=SYS-LDCU-Powermode-0197, 功能模块=钥匙搜索状态跳转逻辑, 用例类型='实车测试'（非自动测试/空）
+2026-05-21 15:27:20,715 INFO [跳过] 用例ID=SYS-LDCU-Powermode-0198, 功能模块=钥匙搜索状态跳转逻辑, 用例类型='实车测试'（非自动测试/空）
+2026-05-21 15:27:20,716 INFO [跳过] 用例ID=SYS-LDCU-Powermode-0199, 功能模块=钥匙搜索状态跳转逻辑, 用例类型='实车测试'（非自动测试/空）
+2026-05-21 15:27:20,719 INFO [跳过] 用例ID=SYS-LDCU-Powermode-0200, 功能模块=钥匙搜索状态跳转逻辑, 用例类型='实车测试'（非自动测试/空）
+2026-05-21 15:27:20,719 INFO [跳过] 用例ID=SYS-LDCU-Powermode-0201, 功能模块=钥匙搜索状态跳转逻辑, 用例类型='实车测试'（非自动测试/空）
+2026-05-21 15:27:20,727 INFO [跳过] 用例ID=SYS-LDCU-Powermode-0202, 功能模块=钥匙搜索状态跳转逻辑, 用例类型='实车测试'（非自动测试/空）
+2026-05-21 15:27:20,728 INFO [跳过] 用例ID=SYS-LDCU-Powermode-0203, 功能模块=钥匙有效性判断KeyValidSt, 用例类型='实车测试'（非自动测试/空）
+2026-05-21 15:27:20,731 INFO [跳过] 用例ID=SYS-LDCU-Powermode-0204, 功能模块=钥匙有效性判断KeyValidSt, 用例类型='实车测试'（非自动测试/空）
+2026-05-21 15:27:20,732 INFO [跳过] 用例ID=SYS-LDCU-Powermode-0205, 功能模块=钥匙有效性判断KeyValidSt, 用例类型='实车测试'（非自动测试/空）
+2026-05-21 15:27:20,734 INFO [跳过] 用例ID=SYS-LDCU-Powermode-0206, 功能模块=射频钥匙位置RKEKeypositionSt, 用例类型='实车测试'（非自动测试/空）
+2026-05-21 15:27:20,741  生成文件: generated_from_cases_TC_LDCU_cheliangdianyuanmoshiguanli_MQB_AGT_V1_0_TC.can (用例数=194)
+2026-05-21 15:27:20,809  Master .can 文件已生成: C:\Users\高登兰\Desktop\所有完整代码2026_3_10_重构版\python\release_02_1\out\TESTmode\generated_from_cases.can
+2026-05-21 15:27:20,811  所有文件生成完成！共生成 1 个小文件和 1 个Master文件
+2026-05-21 15:27:20,812    Excel=TC_LDCU_车辆电源模式管理_MQB_AGT_V1.0.xlsx → 生成 1 个 .can：generated_from_cases_TC_LDCU_cheliangdianyuanmoshiguanli_MQB_AGT_V1_0_TC.can
+2026-05-21 15:27:20,814 INFO >>> 任务完成！日志已保存至: C:\Users\高登兰\Desktop\所有完整代码2026_3_10_重构版\python\release_02_1\log\log_20260521_152702\生成文件日志\generate_can_from_excel.log

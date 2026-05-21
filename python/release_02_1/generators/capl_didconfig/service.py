@@ -18,7 +18,6 @@ from services.config_constants import (
     SECTION_LR_REAR,
 )
 from infra.excel.header import find_header_row_and_col_indices
-from infra.excel.workbook import merged_cell_value
 from infra.filesystem import RuntimePathResolver
 from utils.excel_io import StringUtility
 
@@ -37,13 +36,13 @@ class DIDConfigGeneratorService:
         返回：
             无。执行成功时写出 DIDConfig 目标文件；配置缺失或解析失败时抛出异常。
         """
-        base_dir = didconfig_generator_runtime.resolve_base_dir()
-        gconfig = didconfig_generator_runtime.load_runtime(base_dir)
+        base_dir = didconfig_generator_runtime.DIDConfigRuntimeIOUtility.resolve_base_dir()
+        gconfig = didconfig_generator_runtime.DIDConfigRuntimeIOUtility.load_runtime(base_dir)
         if gconfig is None:
             return
 
-        log_mgr, logger, old_stdout, old_stderr = didconfig_generator_runtime.init_logging(base_dir)
-        progress_level = didconfig_generator_runtime.get_progress_level()
+        log_mgr, logger, old_stdout, old_stderr = didconfig_generator_runtime.DIDConfigRuntimeIOUtility.init_logging(base_dir)
+        progress_level = didconfig_generator_runtime.DIDConfigRuntimeIOUtility.get_progress_level()
         try:
             cfg = gconfig.raw_config
             excel_rel_path = ""
@@ -167,9 +166,9 @@ class DIDConfigGeneratorService:
 
                 parsed_rows: list[tuple[int, str, int, str]] = []
                 for row_index in range(header_row + 1, ws.max_row + 1):
-                    name_v = merged_cell_value(ws, row_index, cols["name"])
-                    byte_v = merged_cell_value(ws, row_index, cols["byte"])
-                    bit_v = merged_cell_value(ws, row_index, cols["bit"])
+                    name_v = ExcelService.merged_cell_value(ws, row_index, cols["name"])
+                    byte_v = ExcelService.merged_cell_value(ws, row_index, cols["byte"])
+                    bit_v = ExcelService.merged_cell_value(ws, row_index, cols["bit"])
 
                     name_s = StringUtility.norm_str(name_v)
                     byte_s = StringUtility.norm_str(byte_v)

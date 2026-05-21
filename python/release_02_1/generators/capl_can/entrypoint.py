@@ -83,9 +83,6 @@ class CANEntrypointWorkflowUtility:
             log_mgr.clear()
 
 
-run_generation = CANEntrypointWorkflowUtility.run_generation
-
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="CAN 生成工具：从 Excel 用例表生成 CAPL .can 文件。")
     parser.add_argument("--config", help="配置文件路径")

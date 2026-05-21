@@ -18,8 +18,8 @@ import functools
 import logging
 from typing import Any
 
-from generators.capl_soa.entrypoint import run_setserver_cin_generation
-from generators.capl_soa.soa_setserver_cin import resolve_srv_excel_absolute_path
+from generators.capl_soa.entrypoint import SOAGenerationUtility
+from generators.capl_soa.soa_setserver_cin import SOASetServerCinUtility
 from services.http_api_constants import (
     HttpStatus,
     RESPONSE_KEY_OUTPUT_PATH,
@@ -47,7 +47,7 @@ def invoke_soa_setserver_generation(
 
     返回：``api_success`` 拼装的结果与 HTTP 200。
     """
-    output_path = run_setserver_cin_generation(
+    output_path = SOAGenerationUtility.run_setserver_cin_generation(
         excel_path=resolved_excel,
         anchor_path=stripped_anchor,
     )
@@ -112,7 +112,7 @@ class CentralProgrammaticRouteService:
         resolved_excel = stripped_excel
         if not resolved_excel:
             try:
-                resolved_excel = resolve_srv_excel_absolute_path(base_dir, domain_upper)
+                resolved_excel = SOASetServerCinUtility.resolve_srv_excel_absolute_path(base_dir, domain_upper)
             except ValueError as resolution_error:
                 return api_error(str(resolution_error), status=HttpStatus.BAD_REQUEST)
 

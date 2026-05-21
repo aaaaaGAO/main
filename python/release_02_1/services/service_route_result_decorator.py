@@ -22,7 +22,7 @@ from functools import wraps
 from typing import Any
 
 from services.http_api_constants import HttpStatus, make_json_tuple
-from services.request_payload_utils import client_error_body
+from services.request_payload_utils import RequestPayloadUtility
 
 ServiceRouteTuple = tuple[dict[str, Any], int]
 
@@ -45,7 +45,7 @@ def guard_service_route_tuple(*, http_status_on_error: int = HttpStatus.INTERNAL
             try:
                 return method(instance, *args, **kwargs)
             except Exception as route_error:
-                return make_json_tuple(client_error_body(str(route_error)), http_status_on_error)
+                return make_json_tuple(RequestPayloadUtility.client_error_body(str(route_error)), http_status_on_error)
 
         return wrapped
 
@@ -80,7 +80,7 @@ def guard_plain_service_route_tuple(
             except Exception as route_error:
                 if before_error_response is not None:
                     before_error_response(route_error)
-                return make_json_tuple(client_error_body(str(route_error)), http_status_on_error)
+                return make_json_tuple(RequestPayloadUtility.client_error_body(str(route_error)), http_status_on_error)
 
         return wrapped
 

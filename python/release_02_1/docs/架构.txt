@@ -41,15 +41,14 @@ project_root/
 │   ├── base_task.py                # 生成任务模板：setup → extract_data → transform → load
 │   ├── case_filter.py              # 等级/平台/车型/用例类型过滤（parse_levels、parse_platforms_or_models）
 │   ├── error_module.py             # 错误模块归类（io_mapping / Configuration / 关键字映射表 / clib）
-│   ├── excel_header.py             # 通用表头查找（委托 infra.excel.header）
 │   ├── generator_config.py        # GeneratorConfig：主配置 / 固定配置读取封装
 │   ├── generator_logging.py       # GeneratorLogger：生成器专用日志（多文件、进度过滤、clear）
 │   ├── mapping_context.py         # MappingContext：io_mapping + config_enum 聚合，供生成器使用
 │   ├── run_context.py              # Tee、stdout/stderr 重定向与恢复、clear_run_logger
 │   ├── step_error_detail.py       # 步骤级错误明细（build_detail、format_step_error_lines）
 │   ├── keyword_error.py            # 关键字错误描述（describe_keyword_error）
-│   ├── caseid_log_dedup.py        # 用例 ID 日志同进程去重（DedupOnceFilter、reset_dedup_filter）
-│   ├── log_run_context.py         # 运行日志目录创建、任务级重置（ensure_run_log_dirs、reset_run_context）
+│   ├── caseid_log_dedup.py        # 用例 ID 日志同进程去重（LogDedupManager、DedupOnceFilter）
+│   ├── log_run_context.py         # 运行日志目录与域上下文（RunLogContext.ensure_dirs / reset）
 │   ├── parse_table_loggers.py     # 各表解析 Logger 工厂（TestCases、Uart_Matrix、caseid_clean_dup 等）
 │   ├── common/
 │   │   ├── sanitizer.py            # 用例 ID 清洗：非法字符、中文转拼音、SYS- 提取
@@ -132,26 +131,26 @@ project_root/
 │       └── __init__.py
 │
 ├── utils/                          # 【通用工具】薄封装，各层复用
-│   ├── config.py                   # 读取 INI、ConfigCenter 单例
-│   ├── excel_io.py                 # norm_str、nfc_normalize、split_input_lines、ColumnMapper；统一导出 ExcelService/merged_cell_value
-│   ├── file_io.py                  # write_text_safe（utf-8/gb18030 回退）
+│   ├── excel_io.py                 # ExcelUtility、StringUtility（含 parse_selected_sheets、norm_str 等）
+│   ├── file_io.py                  # FileIOUtility（utf-8/gb18030 安全写入）
 │   ├── logger.py                   # TeeToLogger、PROGRESS_LEVEL、过滤器、get_log_level_from_config
-│   ├── path_utils.py               # get_base_dir、find_config_path、get_project_root、resolve_target_subdir、list_excel_files
-│   ├── sheet_filter.py             # parse_selected_sheets（前端勾选 table|sheet 解析）
-│   ├── generator_logging.py       # 生成器用日志辅助
 │   └── __init__.py
 │
 ├── static/                         # 前端静态资源
+│   ├── css/
+│   │   └── main.css                # 全局样式（自 index.html 内联 <style> 抽离；模态框/表单/布局）
 │   └── js/
 │       ├── api.js                  # 所有与后端的 fetch 封装：selectFile、parseFileStructure、loadConfig、getFilterOptions、
 │       │                           #   autoSaveConfig、generate、generateCentral、generateDTC、savePreset、importPreset、
 │       │                           #   getSerialPorts、heartbeat
+│       ├── components.js           # UI 片段渲染：用例树、解析结果弹窗、继电器列表 HTML；导出 UIComponents
 │       ├── config_handler.js       # 配置恢复、自动保存、预设导入导出；维护 selection、uartCommConfig、powerConfig 等；
 │       │                           #   collectCurrentState、getChecks、getSelectedSheets、initFromConfig、applyImportedState
-│       └── ui_controls.js          # Tab 切换、路径选择弹窗、用例树勾选、运行按钮、心跳；依赖 api.js、config_handler.js
+│       ├── ui_controls.js          # 路径选择、弹窗业务、用例树交互、运行按钮；依赖 api.js、config_handler.js、components.js
+│       └── app.js                  # 应用入口：Tab 切换（showTab）、window.onload 初始化、Worker 心跳、handleBackendDown
 │
 ├── templates/
-│   └── index.html                  # 主页面：左右后/中央/DTC Tab、配置表单、文件选择、开始运行、结果展示
+│   └── index.html                  # 主页面结构；引用 static/css/main.css 与 static/js 五个脚本（见下方说明）
 │
 ├── docs/                           # 设计/验收文档
 │   ├── 架构.txt                    # 本文件
@@ -192,7 +191,7 @@ project_root/
 【core/】
   - 职责：领域逻辑层，纯业务算法，不依赖 Web/GUI。被 generators 与 services 复用，保证“同一套解析/过滤/翻译规则”处处一致。
   - base_task、case_filter、generator_config、mapping_context：为各生成器提供“配置读取、过滤、映射上下文”等基础能力。
-  - parser/step_parser、translator/（io_mapping、config_enum、keyword_mapping）：步骤行解析与参数/枚举翻译，CAN 与 CIN 共用。
+  - parser/step_parser、translator/（io_mapping、config_enum、keyword_mapping）：步骤行解析（StepParser.parse_line）与参数/枚举翻译，CAN 与 CIN 共用。
   - generator_logging、run_context、log_run_context、parse_table_loggers、caseid_log_dedup：日志与运行上下文管理，避免多任务串状态。
   - step_error_detail、keyword_error、error_module：统一错误明细与模块归类，便于前端与日志展示。
   - common/：通用小工具（用例 ID 清洗、Clib 名称清洗、生成汇总）+ 少量统一导出入口。
@@ -213,13 +212,18 @@ project_root/
 【utils/】
   - 职责：通用工具薄封装，各层复用。字符串处理、INI 读取、日志级别、路径解析、sheet 勾选解析等；Excel 读写中与 openpyxl 强相关的部分已迁至 infra.excel，utils 仅保留通用能力与统一导出。
 
+【static/css/】
+  - main.css：全局变量、布局、Tab/区块/按钮、用例树、模态框与表单控件样式；index.html 不再内嵌 <style>。
+
 【static/js/】
-  - api.js：封装所有与后端的 fetch 请求（文件选择、解析结构、加载配置、筛选项、生成、预设、心跳等），供页面与 config_handler、ui_controls 调用。
-  - config_handler.js：配置恢复、自动保存、预设导入导出；维护当前选择与表单状态（selection、各 config 对象），提供 collectCurrentState、getChecks、getSelectedSheets 等。
-  - ui_controls.js：Tab 切换、路径选择弹窗、用例树勾选、运行按钮、心跳定时；依赖 api.js 与 config_handler.js，实现用户可见的交互逻辑。
+  - api.js：封装所有与后端的 fetch 请求（文件选择、解析结构、加载配置、筛选项、生成、预设、心跳等），供 config_handler、ui_controls、app 调用。
+  - components.js：纯 UI 渲染（UIComponents）：用例勾选树、文件结构解析弹窗、继电器列表等 HTML 片段；不含业务状态变更。
+  - config_handler.js：配置恢复、自动保存、预设导入导出；维护当前选择与表单状态（selection、各 config 对象），提供 collectCurrentState、getChecks、getSelectedSheets、initFromConfig 等。
+  - ui_controls.js：路径选择、各域运行、弹窗开闭与保存、用例树勾选交互；调用 UIComponents 渲染 DOM，依赖 api.js 与 config_handler.js。
+  - app.js：页签切换 showTab、页面加载 initFromConfig、Worker 心跳与后端断连 handleBackendDown。
 
 【templates/】
-  - index.html：单页主界面，包含左右后/中央/DTC 三个 Tab、配置表单、文件与目录选择、开始运行、结果与错误展示，并引用 static/js 三个脚本。
+  - index.html：单页主界面（左右后/中央/DTC Tab、配置表单、文件与目录选择、开始运行）；引用 main.css，并按 api → components → config_handler → ui_controls → app 顺序加载五个脚本。
 
 【docs/】
   - 存放架构说明、函数注释规范、验收清单说明、必需文件说明等，便于交付与验收。

@@ -12,7 +12,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from core.base_task import BaseGeneratorTask
-from core.log_run_context import ensure_run_log_dirs
+from core.log_run_context import RunLogContext
 from core.mapping_context import MappingContext
 from services.config_constants import (
     DEFAULT_DOMAIN_LR_REAR,
@@ -23,12 +23,7 @@ from services.config_constants import (
 )
 
 from .excel_repo import CANExcelRepository
-from .generated_from_cases_bundle import (
-    log_excel_generation_summaries,
-    log_no_can_generated_summary,
-    process_excel_for_generated_case_cans,
-    write_master_can_aggregate_file,
-)
+from .generated_from_cases_bundle import GeneratedCasesBundleUtility
 from .logging import log_progress_or_info
 from .models import CANTestCase
 from .renderer import CANFileRenderer
@@ -192,7 +187,7 @@ class CANGeneratorService(BaseGeneratorTask):
         runtime_io 与 CANEntrypointSupport 完成。
         """
         if run_dirs is None:
-            run_dirs = ensure_run_log_dirs(base_dir)
+            run_dirs = RunLogContext.ensure_dirs(base_dir)
 
         if main_log_path is None:
             main_log_path = os.path.join(run_dirs.gen_dir, "generate_can_from_excel.log")
@@ -217,7 +212,7 @@ class CANGeneratorService(BaseGeneratorTask):
         logger = logging.getLogger("can_generator")
 
         for excel_path in runtime_paths["excel_files"]:
-            process_excel_for_generated_case_cans(
+            GeneratedCasesBundleUtility.process_excel_for_generated_case_cans(
                 excel_path=excel_path,
                 base_dir=base_dir,
                 allowed_levels=ctx.allowed_levels,
@@ -238,7 +233,7 @@ class CANGeneratorService(BaseGeneratorTask):
             )
 
         if not generated_can_files:
-            log_no_can_generated_summary(
+            GeneratedCasesBundleUtility.log_no_can_generated_summary(
                 logger,
                 selected_filter=ctx.selected_filter,
                 excel_files=runtime_paths["excel_files"],
@@ -246,7 +241,7 @@ class CANGeneratorService(BaseGeneratorTask):
             )
             return
 
-        write_master_can_aggregate_file(
+        GeneratedCasesBundleUtility.write_master_can_aggregate_file(
             master_output_path=runtime_paths["master_output_path"],
             generated_can_files=generated_can_files,
             secoc_qualifier=str(runtime_paths.get("secoc_qualifier") or ""),
@@ -260,7 +255,7 @@ class CANGeneratorService(BaseGeneratorTask):
             f"所有文件生成完成！共生成 {len(generated_can_files)} 个小文件和 1 个Master文件",
         )
 
-        log_excel_generation_summaries(
+        GeneratedCasesBundleUtility.log_excel_generation_summaries(
             logger,
             excel_files=runtime_paths["excel_files"],
             excel_can_map=excel_can_map,

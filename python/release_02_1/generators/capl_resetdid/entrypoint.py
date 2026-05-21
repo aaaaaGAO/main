@@ -29,10 +29,5 @@ class ResetDidEntrypointWorkflowUtility:
         service.run_pipeline(domain=domain)
 
 
-def run_generation(domain: str | None = None) -> None:
-    """兼容入口：转发到 ResetDidEntrypointWorkflowUtility.run_generation。"""
-    ResetDidEntrypointWorkflowUtility.run_generation(domain=domain)
-
-
 if __name__ == "__main__":
     ResetDidEntrypointWorkflowUtility.run_generation()

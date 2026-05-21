@@ -33,9 +33,6 @@ class UARTEntrypointWorkflowUtility:
         UARTGeneratorService().run_pipeline(workbook_cache=workbook_cache)
 
 
-run_generation = UARTEntrypointWorkflowUtility.run_generation
-
-
 if __name__ == "__main__":
     if sys.stdout is not None:
         try:

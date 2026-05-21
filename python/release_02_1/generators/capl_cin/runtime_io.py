@@ -9,10 +9,11 @@ CIN 生成运行期 IO 与步骤解析。
 
 from __future__ import annotations
 
+import configparser
 import importlib
 import importlib.util
 import os
-from typing import Any, Callable, Optional, Tuple
+from typing import Callable, ClassVar, Optional, Tuple
 
 from infra.excel.workbook import ExcelService
 
@@ -30,6 +31,8 @@ from core.translator import (
     IOMappingParseError,
     load_keyword_specs_from_excel,
 )
+from core.translator.config_enum import ConfigEnumContext
+from core.translator.io_mapping import IOMappingContext
 from utils.excel_io import StringUtility
 
 ProgressFormatter = None
@@ -40,15 +43,14 @@ if importlib.util.find_spec(logger_module_name) is not None:
     ProgressFormatter = getattr(logger_module, "ProgressFormatter", None)
     SubstringFilter = getattr(logger_module, "SubstringFilter", None)
 
-# 模块内保存上一次解析错误，供 render_step_lines 中 build_detail 使用
-last_parse_error_state: dict = {"type": None, "reason": ""}
-
-io_mapping_context: Any = None
-config_enum_context: Any = None
-
+# 模块内保存上一次解析错误，供 render_step_lines 中 build_detail 使用（已迁入 CINRuntimeIOUtility）
 
 class CINRuntimeIOUtility:
     """CIN 运行期 IO/步骤解析统一工具类。"""
+
+    last_parse_error_state: ClassVar[dict] = {"type": None, "reason": ""}
+    io_mapping_context: ClassVar[Optional[IOMappingContext]] = None
+    config_enum_context: ClassVar[Optional[ConfigEnumContext]] = None
 
     @staticmethod
     def ignore_warning_message(_message: str) -> None:
@@ -156,14 +158,14 @@ class CINRuntimeIOUtility:
         line: str,
         keyword_specs: dict,
         *,
-        io_mapping_ctx: Any,
-        config_enum_ctx: Any,
-        logger: Optional[Any],
+        io_mapping_ctx: Optional[IOMappingContext],
+        config_enum_ctx: Optional[ConfigEnumContext],
+        logger: Optional[object],
         name: Optional[str] = None,
     ) -> Optional[tuple[list[str], str]]:
         """CIN 模式下一行步骤解析，返回 (code_lines, original_line_full) 或 None。"""
-        last_parse_error_state["type"] = None
-        last_parse_error_state["reason"] = ""
+        CINRuntimeIOUtility.last_parse_error_state["type"] = None
+        CINRuntimeIOUtility.last_parse_error_state["reason"] = ""
         original = line.strip()
         if not original or original.startswith("//"):
             return None
@@ -182,8 +184,8 @@ class CINRuntimeIOUtility:
                 return None
             return (result.code_lines, result.original_line_full)
         except IOMappingParseError as exc:
-            last_parse_error_state["type"] = "iomapping_conflict" if "CONFLICT" in str(exc) else "iomapping"
-            last_parse_error_state["reason"] = str(exc)
+            CINRuntimeIOUtility.last_parse_error_state["type"] = "iomapping_conflict" if "CONFLICT" in str(exc) else "iomapping"
+            CINRuntimeIOUtility.last_parse_error_state["reason"] = str(exc)
             if logger:
                 step_text = original.strip()
                 reason = str(exc)
@@ -193,8 +195,8 @@ class CINRuntimeIOUtility:
                 logger.error(f"错误模块【{err_mod}】 {name_part} 用例步骤：{step_text}  原因：{fail_text}")
             return None
         except ConfigEnumParseError as exc:
-            last_parse_error_state["type"] = "config_enum"
-            last_parse_error_state["reason"] = str(exc)
+            CINRuntimeIOUtility.last_parse_error_state["type"] = "config_enum"
+            CINRuntimeIOUtility.last_parse_error_state["reason"] = str(exc)
             if logger:
                 step_text = original.strip()
                 reason = str(exc)
@@ -204,8 +206,8 @@ class CINRuntimeIOUtility:
                 logger.error(f"错误模块【{err_mod}】 {name_part} 用例步骤：{step_text}  原因：{fail_text}")
             return None
         except (KeywordMatchError, StepSyntaxError) as exc:
-            last_parse_error_state["type"] = "keyword" if isinstance(exc, KeywordMatchError) else "syntax"
-            last_parse_error_state["reason"] = str(exc)
+            CINRuntimeIOUtility.last_parse_error_state["type"] = "keyword" if isinstance(exc, KeywordMatchError) else "syntax"
+            CINRuntimeIOUtility.last_parse_error_state["reason"] = str(exc)
             if logger and isinstance(exc, StepSyntaxError):
                 fail_text = f"步骤语法错误: {exc}"
                 name_part = f"Clib_Name：{name}" if name else "Clib_Name：未知"
@@ -219,9 +221,9 @@ class CINRuntimeIOUtility:
         raw_line: str,
         keyword_specs: dict,
         *,
-        io_mapping_ctx: Any,
-        config_enum_ctx: Any,
-        logger: Optional[Any] = None,
+        io_mapping_ctx: Optional[IOMappingContext],
+        config_enum_ctx: Optional[ConfigEnumContext],
+        logger: Optional[object] = None,
         source_id: Optional[str] = None,
         excel_name: Optional[str] = None,
         sheet_name: Optional[str] = None,
@@ -243,8 +245,8 @@ class CINRuntimeIOUtility:
         )
 
         if result is None:
-            err_type = last_parse_error_state.get("type")
-            err_reason = last_parse_error_state.get("reason", "")
+            err_type = CINRuntimeIOUtility.last_parse_error_state.get("type")
+            err_reason = CINRuntimeIOUtility.last_parse_error_state.get("reason", "")
             if err_type == "iomapping_conflict":
                 return None
             error_detail = StepErrorDetailBuilder.build_detail(
@@ -305,12 +307,11 @@ class CINRuntimeIOUtility:
 
         return "\n".join(lines), error_records
 
-    @staticmethod
-    def reset_runtime_state() -> None:
+    @classmethod
+    def reset_runtime_state(cls) -> None:
         """初始化/重置全局上下文状态，避免跨任务串状态。"""
-        global io_mapping_context, config_enum_context
-        io_mapping_context = None
-        config_enum_context = None
+        cls.io_mapping_context = None
+        cls.config_enum_context = None
 
     @staticmethod
     def setup_generator_logger(base_dir: str) -> GeneratorLogger:
@@ -323,24 +324,22 @@ class CINRuntimeIOUtility:
             file_filters=[SubstringFilter(CASEID_LOG_PATTERNS, include=False)],
         )
 
-    @staticmethod
+    @classmethod
     def load_mapping_context(
-        cfg: Any, base_dir: str, config_path: str, domain: str = DEFAULT_DOMAIN_LR_REAR
-    ) -> Tuple[Any, Any]:
+        cls,
+        cfg: configparser.ConfigParser,
+        base_dir: str,
+        config_path: str,
+        domain: str = DEFAULT_DOMAIN_LR_REAR,
+    ) -> Tuple[Optional[IOMappingContext], Optional[ConfigEnumContext]]:
         """按 domain 加载 io_mapping 与 Configuration 枚举上下文。"""
-        global io_mapping_context, config_enum_context
-        io_mapping_context, config_enum_context = CINEntrypointSupport.load_mapping_context(
+        cls.io_mapping_context, cls.config_enum_context = CINEntrypointSupport.load_mapping_context(
             cfg, base_dir=base_dir, config_path=config_path, domain=domain
         )
-        return io_mapping_context, config_enum_context
+        return cls.io_mapping_context, cls.config_enum_context
 
     @staticmethod
     def read_clib_steps_entry(excel_path: str, clib_sheet: Optional[str] = None) -> tuple:
         """统一入口：从 Clib Excel 读取 Name/Step。"""
         return CINRuntimeIOUtility.read_clib_steps(excel_path, clib_sheet=clib_sheet)
 
-
-# 兼容导出：编排层沿用稳定模块级名
-reset_runtime_state = CINRuntimeIOUtility.reset_runtime_state
-setup_generator_logger = CINRuntimeIOUtility.setup_generator_logger
-load_mapping_context = CINRuntimeIOUtility.load_mapping_context

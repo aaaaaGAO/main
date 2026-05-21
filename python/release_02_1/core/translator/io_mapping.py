@@ -48,7 +48,7 @@ from typing import Any, Dict, List, Optional
 from infra.excel.workbook import ExcelService
 
 from core.caseid_log_dedup import DedupOnceFilter
-from core.log_run_context import ensure_run_log_dirs
+from core.log_run_context import RunLogContext
 from services.config_constants import (
     DEFAULT_DOMAIN_LR_REAR,
     OPTION_IO_INPUTS_CANDIDATES,
@@ -97,7 +97,7 @@ class IOMappingUtility:
         base_dir = base_dir or ProjectPaths.get_base_dir()
         user_level = get_log_level_from_config(base_dir, section=section)
 
-        run_dirs = ensure_run_log_dirs(base_dir)
+        run_dirs = RunLogContext.ensure_dirs(base_dir)
         log_dir = run_dirs.parse_dir
         os.makedirs(log_dir, exist_ok=True)
         log_path = os.path.join(log_dir, "IO_Mapping.log")
@@ -798,13 +798,8 @@ class IOMappingContext:
         return transformed_args
 
 
-# 兼容导出：稳定对外名，实现集中在 IOMappingUtility.load_context_from_config
-load_io_mapping_from_config = IOMappingUtility.load_context_from_config
-
-
 __all__ = [
     "IOMappingUtility",
-    "load_io_mapping_from_config",
     "IOMappingContext",
     "IOMappingParseError",
 ]

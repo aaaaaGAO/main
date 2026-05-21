@@ -28,7 +28,7 @@ from services.config_constants import (
 )
 from services.run_validator import RunValidator
 from services.task_service import TaskService, TaskResult
-from core.log_run_context import reset_run_context, set_run_domain
+from core.log_run_context import RunLogContext
 
 
 @dataclass
@@ -121,7 +121,7 @@ class TaskOrchestrator:
         self,
         result: OrchestratorResult,
         *,
-        config: Optional[Any],
+        config: Optional[ConfigParser],
         section: str,
         prefix: str = "",
         separator: str = " | ",
@@ -255,8 +255,8 @@ class TaskOrchestrator:
             run_soa,
             validate_before_run,
         )
-        reset_run_context()
-        set_run_domain(config_section)
+        RunLogContext.reset()
+        RunLogContext.set_domain(config_section)
         messages: List[str] = []
         detail_parts: List[str] = []
         results: Dict[str, TaskResult] = {}
