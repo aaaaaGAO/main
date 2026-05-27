@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<testmodule title="Test Module" version="1.0">
+	<description>Generated from .can test cases</description>
+	<testgroup title="TC_LDCU_大灯高度调节_MQB_AGT_V1.0">
+		<testgroup title="TC ">
+			<capltestcase name="SYS_LDCU_HeadlightLevelingControl_001">	
+			</capltestcase>	
+			<capltestcase name="SYS_LDCU_HeadlightLevelingControl_002">	
+			</capltestcase>	
+			<capltestcase name="SYS_LDCU_HeadlightLevelingControl_003">	
+			</capltestcase>	
+			<capltestcase name="SYS_LDCU_HeadlightLevelingControl_004">	
+			</capltestcase>	
+			<capltestcase name="SYS_LDCU_HeadlightLevelingControl_005">	
+			</capltestcase>	
+		</testgroup>
+	</testgroup>
+	<testgroup title="TC_LDCU_玻璃加热_MQB_AGT_V1.0">
+		<testgroup title="TC">
+			<capltestcase name="SYS_LDCU_CameraHeated_001">	
+			</capltestcase>	
+			<capltestcase name="SYS_LDCU_CameraHeated_002">	
+			</capltestcase>	
+			<capltestcase name="SYS_LDCU_CameraHeated_003">	
+			</capltestcase>	
+			<capltestcase name="SYS_LDCU_RearMirrorHeat_001">	
+			</capltestcase>	
+			<capltestcase name="SYS_LDCU_RearMirrorHeat_002">	
+			</capltestcase>	
+			<capltestcase name="SYS_LDCU_RearMirrorHeat_003">	
+			</capltestcase>	
+			<capltestcase name="SYS_LDCU_RearMirrorHeat_004">	
+			</capltestcase>	
+			<capltestcase name="SYS_LDCU_RearMirrorHeat_005">	
+			</capltestcase>	
+			<capltestcase name="SYS_LDCU_RearMirrorHeat_006">	
+			</capltestcase>	
+			<capltestcase name="SYS_LDCU_RearMirrorHeat_007">	
+			</capltestcase>	
+			<capltestcase name="SYS_LDCU_RearMirrorHeat_008">	
+			</capltestcase>	
+			<capltestcase name="SYS_LDCU_RearMirrorHeat_009">	
+			</capltestcase>	
+			<capltestcase name="SYS_LDCU_RearMirrorHeat_010">	
+			</capltestcase>	
+			<capltestcase name="SYS_LDCU_RearMirrorHeat_011">	
+			</capltestcase>	
+			<capltestcase name="SYS_LDCU_RearMirrorHeat_012">	
+			</capltestcase>	
+			<capltestcase name="SYS_LDCU_RearMirrorHeat_014">	
+			</capltestcase>	
+			<capltestcase name="SYS_LDCU_RearMirrorHeat_015">	
+			</capltestcase>	
+			<capltestcase name="SYS_LDCU_RearMirrorHeat_016">	
+			</capltestcase>	
+			<capltestcase name="SYS_LDCU_RearMirrorHeat_017">	
+			</capltestcase>	
+			<capltestcase name="SYS_LDCU_RearMirrorHeat_018">	
+			</capltestcase>	
+			<capltestcase name="SYS_LDCU_RearMirrorHeat_019">	
+			</capltestcase>	
+			<capltestcase name="SYS_LDCU_RearMirrorHeat_020">	
+			</capltestcase>	
+			<capltestcase name="SYS_LDCU_RearMirrorHeat_021">	
+			</capltestcase>	
+			<capltestcase name="SYS_LDCU_RearMirrorHeat_022">	
+			</capltestcase>	
+			<capltestcase name="SYS_LDCU_RearMirrorHeat_023">	
+			</capltestcase>	
+			<capltestcase name="SYS_LDCU_RearMirrorHeat_028">	
+			</capltestcase>	
+			<capltestcase name="SYS_LDCU_RearMirrorHeat_029">	
+			</capltestcase>	
+			<capltestcase name="SYS_LDCU_RearMirrorHeat_030">	
+			</capltestcase>	
+			<capltestcase name="SYS_LDCU_RearMirrorHeat_031">	
+			</capltestcase>	
+			<capltestcase name="SYS_LDCU_RearMirrorHeat_032">	
+			</capltestcase>	
+			<capltestcase name="SYS_LDCU_RearMirrorHeat_033">	
+			</capltestcase>	
+			<capltestcase name="SYS_LDCU_RearMirrorHeat_034">	
+			</capltestcase>	
+		</testgroup>
+	</testgroup>
+</testmodule>

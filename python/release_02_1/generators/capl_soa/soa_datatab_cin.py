@@ -5,7 +5,7 @@ SOA_DataTab.cin 生成器。
 
 本模块负责从服务通信矩阵 Excel（Service_Deployment / Service_Interface）
 生成 SOA_DataTab.cin，作为 SOA 页面流程中的第三个生成物。
-输出目录固定为用户 output_dir 的上一级下：
+输出目录固定为用户 output_dir 向上两级目录下：
 Public/TESTmode/Bus/SOA/SOA_Onder（严格模式，不自动创建）。
 """
 
@@ -176,6 +176,24 @@ def format_service_id_literal(service_id_value: Any) -> str:
     if numeric_value is None:
         return raw_text
     return f"0x{numeric_value:04X}"
+
+
+def format_eventgroup_id_literal(eventgroup_id_value: int) -> str:
+    """将 EventgroupID 格式化为 CAPL 可读字面量（与 Excel 转换脚本一致）。
+
+    功能：
+    - Method 行（ElementID < 0x8000）无关联 Eventgroup 时写 ``65535``（脚本内 ``0xffff`` 的十进制形式）；
+    - Event 行及 Method 关联 Event 时写 ``0x0001`` 等十六进制字面量。
+
+    参数：
+    - eventgroup_id_value: 已解析的 EventgroupID 整数值。
+
+    返回：
+    - str: 写入 ``soa_subserviceinfo`` / ``soa_subservice_methodinfo`` 最后一列的字面量文本。
+    """
+    if eventgroup_id_value == 0xFFFF:
+        return "65535"
+    return f"0x{eventgroup_id_value:04X}"
 
 
 def build_header_row_values(worksheet: Any, row_idx: int, max_column: int) -> list[Any]:
@@ -493,7 +511,16 @@ def collect_event_entries(interface_rows: list[dict[str, Any]], service_to_ecu: 
             if not eventgroup_id:
                 continue
             name = normalize_cell_text(child.get("Name"))
-            entries.append((entry_index, service_id, eventgroup_id, f'"{name}"', f'"{ecu_name}"'))
+            parsed_eventgroup = try_parse_element_id(eventgroup_id)
+            eventgroup_literal = (
+                format_eventgroup_id_literal(parsed_eventgroup)
+                if parsed_eventgroup is not None
+                else eventgroup_id
+            )
+            service_id_literal = format_service_id_literal(service_id)
+            entries.append(
+                (entry_index, service_id_literal, eventgroup_literal, f'"{name}"', f'"{ecu_name}"')
+            )
             entry_index += 1
     return entries
 
@@ -539,7 +566,19 @@ def collect_method_entries(interface_rows: list[dict[str, Any]], service_to_ecu:
                 continue
             eventgroup_id = find_previous_eventgroup_id(interface_rows, j) if element_id_num > 0x8000 else 0xFFFF
             name = normalize_cell_text(child.get("Name"))
-            entries.append((entry_index, service_id, element_id, f'"{name}"', f'"{ecu_name}"', eventgroup_id))
+            service_id_literal = format_service_id_literal(service_id)
+            element_id_literal = format_service_id_literal(element_id)
+            eventgroup_literal = format_eventgroup_id_literal(eventgroup_id)
+            entries.append(
+                (
+                    entry_index,
+                    service_id_literal,
+                    element_id_literal,
+                    f'"{name}"',
+                    f'"{ecu_name}"',
+                    eventgroup_literal,
+                )
+            )
             entry_index += 1
     return entries
 
@@ -636,7 +675,7 @@ def render_datatab_document(
     method_lines = format_struct_entries(method_entries)
     signal_lines = format_signal_entries(signal_entries)
     parts: list[str] = [
-        "/*@!Encoding:936*/",
+        "/*@!Encoding:65001*/",
         "includes",
         "{",
         '   // #include "SOA_DataTyp.cin"',
@@ -673,13 +712,13 @@ def render_datatab_document(
 
 
 def resolve_datatab_output_directory(base_dir: str, configured_output_dir: str) -> str:
-    """解析 SOA_DataTab 固定输出目录（严格存在校验）。"""
-    return RuntimePathResolver.resolve_output_dir_relative_path(
+    """解析 SOA_DataTab 输出目录：按 output_dir 向上两级后拼 Public/...。"""
+    return RuntimePathResolver.resolve_soa_output_dir_relative_path(
         base_dir,
         configured_output_dir,
         SOA_DATATAB_RELATIVE_PARTS,
-        anchor_level="parent",
         required=True,
+        purpose="SOA_DataTab.cin 生成",
     )
 
 

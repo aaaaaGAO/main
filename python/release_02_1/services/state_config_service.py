@@ -182,7 +182,7 @@ class StateConfigService:
     @staticmethod
     def state_value_to_text(item_value: Any) -> str:
         """
-        将前端单字段（字符串或 list）规范成写入 INI 的文本；list 用英文逗号拼接，空表为 ``"ALL"``。
+        将前端单字段（字符串或 list）规范成写入 INI 的文本；list 用英文逗号拼接，空表为 ``""``。
 
         参数：item_value — 原始 state 值，可为 `None`、str、list 等。
 
@@ -191,7 +191,7 @@ class StateConfigService:
         if item_value is None:
             return ""
         if isinstance(item_value, list):
-            return ",".join(str(item) for item in item_value) if item_value else "ALL"
+            return ",".join(str(item) for item in item_value) if item_value else ""
         return str(item_value).strip()
 
     @staticmethod
@@ -201,13 +201,13 @@ class StateConfigService:
 
         参数：state — 含 `STATE_KEY_LR_*` 等键的 dict。
 
-        返回：各键为字符串的预设，缺省为 ``ALL`` / ``info`` 等约定默认值已填。
+        返回：各键为字符串的预设；筛选项空串表示「全不选」，日志缺省为 ``info``。
         """
         state_value_to_text = StateConfigService.state_value_to_text
         return {
             UIStateKey.LR_CAN_INPUT: state_value_to_text(state.get(UIStateKey.LR_CAN_INPUT)),
             UIStateKey.LR_OUT_ROOT: state_value_to_text(state.get(UIStateKey.LR_OUT_ROOT)),
-            UIStateKey.LR_LEVELS: state_value_to_text(state.get(UIStateKey.LR_LEVELS)) or "ALL",
+            UIStateKey.LR_LEVELS: state_value_to_text(state.get(UIStateKey.LR_LEVELS)),
             UIStateKey.LR_PLATFORMS: state_value_to_text(state.get(UIStateKey.LR_PLATFORMS)),
             UIStateKey.LR_MODELS: state_value_to_text(state.get(UIStateKey.LR_MODELS)),
             UIStateKey.LR_TARGET_VERSIONS: state_value_to_text(state.get(UIStateKey.LR_TARGET_VERSIONS)),

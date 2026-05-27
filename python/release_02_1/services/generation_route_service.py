@@ -200,14 +200,21 @@ class GenerationRouteService:
         )
 
         if not result.success:
-            message = (
-                options.failure_message
-                if options.failure_message is not None
-                else options.failure_separator.join(result.messages)
-            )
+            if result.messages:
+                message = options.failure_separator.join(result.messages)
+            elif options.failure_message is not None:
+                message = options.failure_message
+            else:
+                message = "生成失败"
+            detail_for_client = result.detail or None
+            if detail_for_client and (
+                "Traceback (most recent call last)" in detail_for_client
+                or 'File "' in detail_for_client
+            ):
+                detail_for_client = None
             return api_error(
                 message,
-                detail=result.detail or None,
+                detail=detail_for_client,
                 status=HttpStatus.INTERNAL_SERVER_ERROR,
             )
 
@@ -235,7 +242,7 @@ def generation_route_options_lr_rear() -> GenerationRouteOptions:
         orchestrator_method_name="run_lr_bundle",
         success_prefix="一键生成完成: ",
         success_separator=" | ",
-        failure_message="生成过程中出错",
+        failure_message=None,
         failure_separator=" | ",
     )
 
@@ -315,7 +322,7 @@ def generation_route_options_dtc() -> GenerationRouteOptions:
         orchestrator_method_name="run_dtc_bundle",
         success_prefix="一键生成完成: ",
         success_separator=" | ",
-        failure_message="生成过程中出错",
+        failure_message=None,
         failure_separator=" | ",
     )
 

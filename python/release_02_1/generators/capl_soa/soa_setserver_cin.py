@@ -37,7 +37,7 @@ from services.config_constants import (
 )
 from utils.logger import PROGRESS_LEVEL
 # SOA_StartSetserver.cin 输出目录规则与 SOA_DataTab.cin 保持一致：
-# 以用户配置的 output_dir 的“上一级”为锚点拼接 Public/TESTmode/Bus/SOA/SOA_Onder。
+# 以用户 output_dir 为基准，向上回退两级后再拼 Public/...。
 DEFAULT_SOA_SETSERVER_REL_PARTS: tuple[str, ...] = ("Public", "TESTmode", "Bus", "SOA", "SOA_Onder")
 SOA_LOGGER_NAME = "generate_soa_startsetserver"
 
@@ -521,26 +521,26 @@ class SOASetServerCinUtility:
         return "\r\n".join(parts)
 
     @staticmethod
-    def resolve_setserver_testmode_directory(anchor_path: str) -> str:
-        """按 output_dir 上一级规则解析 SOA_StartSetserver 输出目录。"""
-        if not anchor_path or not str(anchor_path).strip():
-            raise ValueError("anchor_path 为空")
-        anchor_abs = os.path.abspath(anchor_path.strip())
-        if not os.path.exists(anchor_abs):
-            raise FileNotFoundError(f"锚点路径不存在: {anchor_path}")
-        output_dir = anchor_abs if os.path.isdir(anchor_abs) else os.path.dirname(anchor_abs)
-        return RuntimePathResolver.resolve_output_dir_relative_path(
-            output_dir,
-            ".",
+    def resolve_setserver_testmode_directory(anchor_path: str, project_base_dir: str) -> str:
+        """解析 SOA_StartSetserver 输出目录：按 output_dir 向上两级后拼 Public/...。"""
+        if not project_base_dir or not str(project_base_dir).strip():
+            raise ValueError("project_base_dir 为空")
+        return RuntimePathResolver.resolve_soa_output_dir_from_absolute(
+            anchor_path,
+            project_base_dir,
             DEFAULT_SOA_SETSERVER_REL_PARTS,
-            anchor_level="parent",
             required=True,
+            purpose="SOA_StartSetserver.cin 生成",
         )
 
     @classmethod
-    def resolve_setserver_output_directory_strict(cls, anchor_path: str) -> str:
-        """按 output_dir 下级规则解析 SOA_StartSetserver 输出目录（严格模式）。"""
-        return cls.resolve_setserver_testmode_directory(anchor_path)
+    def resolve_setserver_output_directory_strict(
+        cls,
+        anchor_path: str,
+        project_base_dir: str,
+    ) -> str:
+        """按 SOA 规则解析 SOA_StartSetserver 输出目录（严格模式）。"""
+        return cls.resolve_setserver_testmode_directory(anchor_path, project_base_dir)
 
     @classmethod
     def resolve_srv_excel_absolute_path(cls, base_dir: str, domain_key: str) -> str:
@@ -605,8 +605,9 @@ class SOASetServerCinGenerator:
     - 统一由 `SOASetServerCinGenerator.generate()` 作为对外入口。
     """
 
-    def __init__(self, *, anchor_path: str) -> None:
+    def __init__(self, *, anchor_path: str, project_base_dir: str) -> None:
         self._anchor_path = anchor_path
+        self._project_base_dir = project_base_dir
 
     def generate(
         self,
@@ -672,7 +673,10 @@ class SOASetServerCinGenerator:
             logger.warning(
                 "find_or_create_soa_onder=True 已废弃：SOA_StartSetserver 输出目录固定为严格模式，不再自动创建目录。"
             )
-        output_directory = SOASetServerCinUtility.resolve_setserver_output_directory_strict(self._anchor_path)
+        output_directory = SOASetServerCinUtility.resolve_setserver_output_directory_strict(
+            self._anchor_path,
+            self._project_base_dir,
+        )
         resolved_output_filename = (output_filename or "").strip()
         if not resolved_output_filename:
             fixed_base_dir = SOASetServerCinUtility.detect_base_dir_for_fixed_config(

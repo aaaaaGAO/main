@@ -173,6 +173,7 @@ class CANEntrypointSupport:
             ("TESTmode",),
             anchor_level="self",
             required=True,
+            purpose="CAN 用例生成",
         )
         testcases_dir = RuntimePathResolver.resolve_output_dir_relative_path(
             testmode_dir,
@@ -180,6 +181,7 @@ class CANEntrypointSupport:
             ("Testcases",),
             anchor_level="self",
             required=True,
+            purpose="CAN 用例生成",
         )
         master_output_path = os.path.join(testmode_dir, output_filename)
 

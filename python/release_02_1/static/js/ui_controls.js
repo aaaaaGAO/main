@@ -15,6 +15,32 @@
     var ignConfig = global.ignConfig;
     var loginConfig = global.loginConfig || { username: '', password: '' };
 
+    /** 一键生成失败时组装用户可读提示（避免弹窗直接展示 Python 堆栈）。 */
+    function formatGenerationFailureAlert(result, httpStatus) {
+        var lines = [];
+        if (httpStatus) {
+            lines.push('HTTP ' + httpStatus);
+        }
+        if (result && result.message) {
+            lines.push(result.message);
+        } else {
+            lines.push('未知错误');
+        }
+        var detail = result && result.detail ? String(result.detail).trim() : '';
+        if (detail) {
+            var isTraceback = detail.indexOf('Traceback (most recent call last)') !== -1
+                || detail.indexOf('File "') !== -1;
+            if (isTraceback) {
+                lines.push('\n技术详情已写入运行日志，请打开 log 目录下对应生成日志查看。');
+            } else if (detail.length <= 800) {
+                lines.push('\n' + detail);
+            } else {
+                lines.push('\n' + detail.substring(0, 800) + '\n…（详情过长已截断）');
+            }
+        }
+        return lines.join('\n');
+    }
+
     function toggleCheck(groupId) {
         var inputs = document.querySelectorAll('#' + groupId + ' input');
         var isRadioGroup = groupId.indexOf('platform') !== -1 || groupId.indexOf('model') !== -1;
@@ -231,7 +257,7 @@
             if (initialSelectedSheets && String(initialSelectedSheets).trim()) {
                 global.restoreCaseCheckboxes(containerId, initialSelectedSheets);
             } else {
-                container.querySelectorAll('input.sheet-checkbox').forEach(function (inp) { inp.checked = true; });
+                container.querySelectorAll('input.sheet-checkbox').forEach(function (inp) { inp.checked = false; });
             }
             updateAllParentAndSelectAllState(containerId);
         } catch (e) {
@@ -420,17 +446,11 @@
         try {
             var out = await global.API.generate(payload);
             var result = out.data;
-            if (!out.ok) {
-                var msg = result.message || result.detail || ('HTTP ' + out.status);
-                var detail = result.detail ? '\n\n详情:\n' + result.detail : '';
-                alert('❌ 请求失败: ' + msg + detail);
+            if (!out.ok || !result.success) {
+                alert('❌ 生成失败\n\n' + formatGenerationFailureAlert(result, out.status));
                 return;
             }
-            if (result.success) {
-                alert(result.message);
-            } else {
-                alert('❌ 执行失败: ' + (result.message || '未知错误'));
-            }
+            alert(result.message);
         } catch (e) {
             console.error('请求失败:', e);
             alert('❌ 请求失败: ' + e.message + '\n\n请检查浏览器控制台查看详细信息。');
@@ -471,17 +491,11 @@
         try {
             var out = await global.API.generateCentral(payload);
             var result = out.data;
-            if (!out.ok) {
-                var msg = result.message || result.detail || ('HTTP ' + out.status);
-                var detail = result.detail ? '\n\n详情:\n' + result.detail : '';
-                alert('❌ 请求失败: ' + msg + detail);
+            if (!out.ok || !result.success) {
+                alert('❌ 生成失败\n\n' + formatGenerationFailureAlert(result, out.status));
                 return;
             }
-            if (result.success) {
-                alert(result.message);
-            } else {
-                alert('❌ 执行失败: ' + (result.message || '未知错误'));
-            }
+            alert(result.message);
         } catch (e) {
             console.error('请求失败:', e);
             alert('❌ 请求失败: ' + e.message + '\n\n请检查浏览器控制台查看详细信息。');
@@ -519,17 +533,11 @@
         try {
             var out = await global.API.generateDTC(payload);
             var result = out.data;
-            if (!out.ok) {
-                var msg = result.message || result.detail || ('HTTP ' + out.status);
-                var detail = result.detail ? '\n\n详情:\n' + result.detail : '';
-                alert('❌ 请求失败: ' + msg + detail);
+            if (!out.ok || !result.success) {
+                alert('❌ 生成失败\n\n' + formatGenerationFailureAlert(result, out.status));
                 return;
             }
-            if (result.success) {
-                alert(result.message);
-            } else {
-                alert('❌ 执行失败: ' + (result.message || '未知错误'));
-            }
+            alert(result.message);
         } catch (e) {
             console.error('请求失败:', e);
             alert('❌ 请求失败: ' + e.message + '\n\n请检查浏览器控制台查看详细信息。');

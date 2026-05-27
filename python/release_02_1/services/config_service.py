@@ -189,7 +189,7 @@ class ConfigService:
 
         levels = payload.get(STATE_KEY_LR_LEVELS)
         if levels is not None:
-            lr_data[OPTION_CASE_LEVELS] = levels if str(levels).strip() else "ALL"
+            lr_data[OPTION_CASE_LEVELS] = str(levels).strip()
 
         platforms = payload.get(STATE_KEY_LR_PLATFORMS)
         if platforms is not None:
@@ -247,11 +247,10 @@ class ConfigService:
 
     @staticmethod
     def normalize_level(level_value: Any) -> str:
-        """levels 空则写 ALL。"""
+        """将用例优先级写入配置；空值保持空串（与前端「全不选」一致）。"""
         if level_value is None:
-            return "ALL"
-        level_text = str(level_value).strip()
-        return level_text if level_text else "ALL"
+            return ""
+        return str(level_value).strip()
 
     @staticmethod
     def normalize_selected_sheets_str(sheets_str: Any) -> str:
@@ -290,11 +289,11 @@ class ConfigService:
             ),
         )
 
-        # 筛选器：levels 空则 ALL；平台/车型/Target Version 选什么写什么，空表示全部生成
+        # 筛选器：levels/平台/车型/Target Version 选什么写什么，空串表示界面「全不选」
         cfg.set(
             SECTION_LR_REAR,
             OPTION_CASE_LEVELS,
-            self.normalize_level(preset_data.get(STATE_KEY_LR_LEVELS, "ALL")),
+            self.normalize_level(preset_data.get(STATE_KEY_LR_LEVELS)),
         )
         cfg.set(
             SECTION_LR_REAR,

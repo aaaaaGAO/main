@@ -37,7 +37,7 @@ from services.http_api_constants import HttpStatus, api_error_dict
 from web import create_app
 
 # 工具显示名（Web 右上角 + build_exe 打包时的 EXE 文件名，只改此处即可）
-TOOL_DISPLAY_NAME = "测试用例生成工具_2026.5.21"
+TOOL_DISPLAY_NAME = "测试用例生成工具_2026.5.27_V2.0"
 
 # ---------------------------------------------------------------------------
 # 配置

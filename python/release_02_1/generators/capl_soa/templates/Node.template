@@ -1,7 +1,7 @@
 /*@!Encoding:65001*/
 includes
 {
-  #include "../SOALib/SOALib_Node.cin"
+  #include "..\..\TESTmode\Bus\SOA\SOA_Onder\SOALib\SOALib_Node.cin"
 }
 
 variables
@@ -26,4 +26,5 @@ variables
     { {{ service.ServiceId }}, {{ service.InstanceId }}, {{ service.Major }}, {{ service.Minor }} }{% if not loop.last %},{% endif %}
     {% endfor %}
   };
+{{ ServerCheckBlock }}
 }

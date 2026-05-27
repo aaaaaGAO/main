@@ -313,6 +313,102 @@ class RuntimePathResolver:
         )
 
     @staticmethod
+    def format_relative_parts_display(relative_parts: Iterable[str]) -> str:
+        """将相对路径片段格式化为 Windows 风格展示串。"""
+        return "\\".join(str(part) for part in relative_parts)
+
+    @staticmethod
+    def resolve_soa_public_anchor_dir(output_dir_abs: str, project_base_dir: str) -> str:
+        """解析 SOA 生成物（public/Public）锚点目录。
+
+        统一规则：
+        - 以用户选择的 output_dir 绝对路径为基准；
+        - 向上回退两级目录作为锚点目录；
+        - 例如 output_dir=`a/b/c`，锚点目录即 `a`。
+        """
+        _ = project_base_dir
+        output_norm = os.path.normpath(os.path.abspath(output_dir_abs))
+        if not output_norm:
+            raise PathResolutionError("错误：output_dir 为空，无法定位 public/Public 锚点目录。")
+        parent_level_1 = os.path.dirname(output_norm)
+        parent_level_2 = os.path.dirname(parent_level_1)
+        if not parent_level_1 or not parent_level_2:
+            raise PathResolutionError(f"错误：output_dir 层级不足，无法向上回退两级: {output_norm}")
+        if parent_level_1 == output_norm or parent_level_2 == parent_level_1:
+            raise PathResolutionError(f"错误：output_dir 层级不足，无法向上回退两级: {output_norm}")
+        return parent_level_2
+
+    @classmethod
+    def build_missing_output_dir_message(
+        cls,
+        *,
+        purpose: str,
+        output_dir_abs: str,
+        target_path: str,
+        relative_parts: Iterable[str],
+    ) -> str:
+        """构造面向用户的路径缺失说明（供 SOA / CAN 等严格目录校验失败时展示）。"""
+        rel_display = cls.format_relative_parts_display(relative_parts)
+        return (
+            f"{purpose}失败：缺少必需的输出目录。\n\n"
+            f"您配置的输出路径：\n  {output_dir_abs}\n\n"
+            f"SOA 目录解析规则：以 output_dir 向上回退两级后再拼接目标目录。\n\n"
+            f"请预先创建以下目录（工具不会自动创建）：\n  {target_path}\n\n"
+            f"（在向上两级后的锚点目录下拼接：{rel_display}）"
+        )
+
+    @classmethod
+    def resolve_soa_output_dir_from_absolute(
+        cls,
+        output_dir_abs: str,
+        project_base_dir: str,
+        relative_parts: Iterable[str],
+        *,
+        required: bool = True,
+        purpose: str | None = None,
+        configured_output_dir: str | None = None,
+    ) -> str:
+        """按 SOA 规则从已解析的 output_dir 绝对路径拼接目标目录。"""
+        relative_tuple = tuple(relative_parts)
+        output_norm = os.path.normpath(os.path.abspath(output_dir_abs))
+        if not output_norm or not os.path.isdir(output_norm):
+            raise PathResolutionError(f"错误：output_dir 目录不存在: {output_dir_abs}")
+        anchor_dir = cls.resolve_soa_public_anchor_dir(output_norm, project_base_dir)
+        target_path = os.path.abspath(os.path.join(anchor_dir, *relative_tuple))
+        if required and not os.path.isdir(target_path):
+            label = purpose or "SOA 输出路径解析"
+            raise PathResolutionError(
+                cls.build_missing_output_dir_message(
+                    purpose=label,
+                    output_dir_abs=output_norm,
+                    target_path=target_path,
+                    relative_parts=relative_tuple,
+                )
+            )
+        return target_path
+
+    @classmethod
+    def resolve_soa_output_dir_relative_path(
+        cls,
+        base_dir: str,
+        configured_output_dir: str,
+        relative_parts: Iterable[str],
+        *,
+        required: bool = True,
+        purpose: str | None = None,
+    ) -> str:
+        """按 SOA 规则解析 public/Public 等输出目录（严格模式，不自动创建）。"""
+        output_dir_abs = cls.resolve_configured_path(base_dir, configured_output_dir)
+        return cls.resolve_soa_output_dir_from_absolute(
+            output_dir_abs,
+            base_dir,
+            relative_parts,
+            required=required,
+            purpose=purpose,
+            configured_output_dir=configured_output_dir,
+        )
+
+    @staticmethod
     def resolve_output_dir_relative_path(
         base_dir: str,
         configured_output_dir: str,
@@ -321,24 +417,35 @@ class RuntimePathResolver:
         anchor_level: Literal["self", "parent"] = "self",
         create_dir: bool = False,
         required: bool = True,
+        purpose: str | None = None,
     ) -> str:
         """按 output_dir 统一规则解析目标路径。
 
         参数：
             create_dir：为 True 时会创建目标目录（副作用操作）。
             required：为 True 且目录不存在时抛出异常。
+            purpose：目录缺失时写入错误文案的用途说明（如「SOA Node 生成」）。
         """
+        relative_tuple = tuple(relative_parts)
         output_dir_abs = RuntimePathResolver.resolve_configured_path(base_dir, configured_output_dir)
         if not output_dir_abs or not os.path.isdir(output_dir_abs):
             raise PathResolutionError(
                 f"错误：output_dir 目录不存在: {output_dir_abs or configured_output_dir}"
             )
         anchor_dir = output_dir_abs if anchor_level == "self" else os.path.dirname(output_dir_abs)
-        target_path = os.path.abspath(os.path.join(anchor_dir, *tuple(relative_parts)))
+        target_path = os.path.abspath(os.path.join(anchor_dir, *relative_tuple))
         if create_dir:
             os.makedirs(target_path, exist_ok=True)
         if required and not os.path.isdir(target_path):
-            raise PathResolutionError(f"错误：目标目录不存在: {target_path}")
+            label = purpose or "输出路径解析"
+            raise PathResolutionError(
+                RuntimePathResolver.build_missing_output_dir_message(
+                    purpose=label,
+                    output_dir_abs=output_dir_abs,
+                    target_path=target_path,
+                    relative_parts=relative_tuple,
+                )
+            )
         return target_path
 
     @staticmethod

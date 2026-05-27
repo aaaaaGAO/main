@@ -507,7 +507,7 @@ class ConfigManager:
         """
         out[ConfigManager.ui_state_key(prefix, "input")] = section_data.get(ConfigOption.INPUT_EXCEL, "")
         out[ConfigManager.ui_state_key(prefix, UI_FIELD_OUT_ROOT)] = section_data.get(ConfigOption.OUTPUT_DIR, "")
-        out[ConfigManager.ui_state_key(prefix, UI_FIELD_LEVELS)] = section_data.get(ConfigOption.CASE_LEVELS, "ALL")
+        out[ConfigManager.ui_state_key(prefix, UI_FIELD_LEVELS)] = section_data.get(ConfigOption.CASE_LEVELS, "")
         out[ConfigManager.ui_state_key(prefix, UI_FIELD_PLATFORMS)] = section_data.get(ConfigOption.CASE_PLATFORMS, "")
         out[ConfigManager.ui_state_key(prefix, UI_FIELD_MODELS)] = section_data.get(ConfigOption.CASE_MODELS, "")
         out[ConfigManager.ui_state_key(prefix, UI_FIELD_TARGET_VERSIONS)] = section_data.get(ConfigOption.CASE_TARGET_VERSIONS, "")

@@ -78,9 +78,9 @@
         if (isRadioGroup) {
             return checked.length > 0 ? checked[0] : '';
         }
-        // 仅「未勾选任何项」表示不过滤（与后端 parse_* 中 ALL/空 一致）。
-        // 若「全选」也发 ALL，后端会当做不过滤，表中多出筛选项（如等级 F）仍会生成。
-        return checked.length === 0 ? 'ALL' : checked.join(',');
+        // 「未勾选任何项」写空字符串，保存配置时保持空值；
+        // 下次导入时可准确恢复为“全不选”状态。
+        return checked.length === 0 ? '' : checked.join(',');
     }
 
     function getSelectedSheets(containerId) {
@@ -169,7 +169,7 @@
     }
 
     function restoreChecks(id, vals) {
-        if (!vals) return;
+        if (vals === undefined || vals === null) return;
         var inputs = document.querySelectorAll('#' + id + ' input');
         var isRadioGroup = id.indexOf('platform') !== -1 || id.indexOf('model') !== -1;
         var values = Array.isArray(vals) ? vals : (typeof vals === 'string' ? vals.split(',').map(function (v) { return v.trim(); }).filter(function (v) { return v; }) : []);
@@ -177,7 +177,13 @@
             values = values.filter(function (v) { return v !== 'ALL' && v.trim().toUpperCase() !== 'ALL'; });
             if (values.length === 0) values = null;
         }
-        if (!values || values.length === 0 || values.indexOf('ALL') !== -1) {
+        // 历史配置曾把「全不选」误存为 ALL；用例优先级按空处理，恢复为全不选
+        if (id.indexOf('level_group') !== -1 && values.length === 1 && values[0].toUpperCase() === 'ALL') {
+            values = [];
+        }
+        if (!values || values.length === 0) {
+            inputs.forEach(function (i) { i.checked = false; });
+        } else if (values.indexOf('ALL') !== -1) {
             if (isRadioGroup) {
                 inputs.forEach(function (i) { i.checked = false; });
             } else {
@@ -197,11 +203,15 @@
     }
 
     function restoreCaseCheckboxes(containerId, selectedStr) {
-        if (!selectedStr || typeof selectedStr !== 'string') return;
-        var normalizedSelected = selectedStr.normalize('NFC');
-        var set = new Set(normalizedSelected.split(',').map(function (s) { return s.trim(); }).filter(Boolean));
+        if (selectedStr === undefined || selectedStr === null) return;
         var container = document.getElementById(containerId);
         if (!container) return;
+        if (typeof selectedStr !== 'string' || !String(selectedStr).trim()) {
+            container.querySelectorAll('input.sheet-checkbox').forEach(function (inp) { inp.checked = false; });
+            return;
+        }
+        var normalizedSelected = selectedStr.normalize('NFC');
+        var set = new Set(normalizedSelected.split(',').map(function (s) { return s.trim(); }).filter(Boolean));
         var basename = function (p) {
             var s = String(p).replace(/\\/g, '/');
             var i = s.lastIndexOf('/');

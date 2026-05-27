@@ -145,3 +145,14 @@
 日期：2026-04-29
 1.SOA_StartSetserver.cin改为生成位置在用户选择路径的上一级目录下+Public\TESTmode\Bus\SOA\SOA_Onder下
 
+版本 4.30
+日期：2026-05-26
+1.SOA 输出路径：当用户选择的 output_dir 位于工具目录内（如 release_02_1/out）时，public/ILNode/SOANode 与 Public/TESTmode/Bus/SOA/SOA_Onder 锚定到工具目录的上一级（与 release_02_1 并列，如 python/public）；客户工程路径不在工具包内时仍锚定 output_dir 的上一级。
+2.目录缺失时错误提示直接标明须创建的完整路径（如 out\TESTmode），一键生成失败弹窗展示具体失败原因。
+3.修复 SOA_StartSetserver 生成未传入工具工程根目录导致路径解析不一致的问题。
+4.SOA_DataTab.cin 文件头编码声明由 /*@!Encoding:936*/ 改为 /*@!Encoding:65001*/（与 SOA_StartSetserver、CAN/CIN 等生成物一致）。
+5.SOA_DataTab.cin 中 soa_subserviceinfo / soa_subservice_methodinfo 最后一列 EventgroupID：关联 Event 时输出 0x0001 等十六进制；Method 无关联时仍输出 65535（与 Excel 转换脚本一致，不写 0xffff）。
+6.SOA Node（public/ILNode/SOANode/*.can）中 SOALib 引用改为 #include "..\..\TESTmode\Bus\SOA\SOA_Onder\SOALib\SOALib_Node.cin"。
+7.SOA Node（*.can）底部追加 NodeInfo 表生成的 SOALib_NodeServerCheckSubEcuNameList（首行固定 {"", 0x0}；Client ID 统一按 0x10XX 字节对调后写 01 再拼 14AC，如 0x102D→0x2D0114AC、0x10E0→0xE00114AC）。
+
+

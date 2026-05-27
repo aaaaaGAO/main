@@ -14,10 +14,12 @@ from typing import Any
 from jinja2 import Environment, FileSystemLoader
 from infra.filesystem.pathing import RuntimePathResolver
 from core.generator_config import GeneratorConfig
+from generators.capl_soa.soa_node_server_check import SOANodeServerCheckUtility
 from generators.capl_soa.soa_setserver_cin import SOASetServerCinGenerator
 from generators.capl_soa.soa_excel_utils import is_client_marker, normalize_cell_text, open_workbook_cached
 from services.config_constants import (
     OPTION_OUTPUT_DIR,
+    OPTION_OUTPUT_DIR_CANDIDATES,
     OPTION_SRV_EXCEL,
     OPTION_SRV_EXCEL_CANDIDATES,
 )
@@ -60,7 +62,7 @@ class SOAGenerationUtility:
 
     @staticmethod
     def load_paths(gconfig: GeneratorConfig, base_dir: str, domain: str) -> tuple[str, str]:
-        """读取 SOA 输入矩阵与输出目录。"""
+        """读取 SOA 输入矩阵，并按 output_dir 向上两级定位 public 输出目录。"""
         srv_excel = ""
         for option_name in (OPTION_SRV_EXCEL, *OPTION_SRV_EXCEL_CANDIDATES):
             srv_excel = gconfig.get_from_section(domain, option_name, fallback="").strip()
@@ -68,28 +70,35 @@ class SOAGenerationUtility:
                 break
         if not srv_excel:
             raise ValueError(f"未配置 [{domain}] srv_excel（服务通信矩阵）")
-        output_dir = gconfig.get_required_from_section(domain, OPTION_OUTPUT_DIR).strip()
+        output_dir = ""
+        for option_name in (OPTION_OUTPUT_DIR, *OPTION_OUTPUT_DIR_CANDIDATES):
+            output_dir = gconfig.get_from_section(domain, option_name, fallback="").strip()
+            if output_dir:
+                break
+        if not output_dir:
+            raise ValueError(f"未配置 [{domain}] output_dir（输出路径）")
         excel_path = RuntimePathResolver.resolve_configured_path(base_dir, srv_excel)
-        soa_output_dir = RuntimePathResolver.resolve_output_dir_relative_path(
+        soa_output_dir = RuntimePathResolver.resolve_soa_output_dir_relative_path(
             base_dir,
             output_dir,
             ("public", "ILNode", "SOANode"),
-            anchor_level="parent",
             required=True,
+            purpose="SOA Node（.can）生成",
         )
         return excel_path, soa_output_dir
 
     @staticmethod
-    def read_variables_list_from_excel(
-        excel_path: str,
-        *,
-        workbook_cache: dict[str, Any] | None = None,
-    ) -> list[dict[str, Any]]:
-        """从 Service_Deployment 工作表提取节点变量列表。"""
-        cached = open_workbook_cached(excel_path, workbook_cache=workbook_cache)
-        workbook = cached.workbook
+    def read_variables_list_from_workbook(workbook: Any) -> list[dict[str, Any]]:
+        """从已打开工作簿的 Service_Deployment 工作表提取节点变量列表。
+
+        参数：
+            workbook：已打开的 Excel Workbook。
+
+        返回：
+            list[dict[str, Any]]：Jinja 模板变量列表。
+        """
         if "Service_Deployment" not in workbook.sheetnames:
-            error_message = f"服务通信矩阵缺少工作表 Service_Deployment: {cached.normalized_excel_path}"
+            error_message = "服务通信矩阵缺少工作表 Service_Deployment"
             logger.error(error_message)
             raise ValueError(error_message)
         sheet = workbook["Service_Deployment"]
@@ -184,22 +193,47 @@ class SOAGenerationUtility:
                     {"ServiceId": service_id, "InstanceId": instance_id, "Major": major, "Minor": minor}
                 )
 
-        if cached.should_close:
-            workbook.close()
         for node in node_data.values():
             node["ProvidedServiceListNum"] = str(len(node["ProvidedServiceList"]))
             node["ConsumedServiceListNum"] = str(len(node["ConsumedServiceList"]))
         return list(node_data.values())
 
     @staticmethod
-    def render_nodes_to_files(variables_list: list[dict[str, Any]], output_dir: str) -> None:
-        """将节点变量列表渲染并写入 SOA Node 文件。"""
+    def read_variables_list_from_excel(
+        excel_path: str,
+        *,
+        workbook_cache: dict[str, Any] | None = None,
+    ) -> list[dict[str, Any]]:
+        """打开 Excel 并从 Service_Deployment 工作表提取节点变量列表。"""
+        cached = open_workbook_cached(excel_path, workbook_cache=workbook_cache)
+        try:
+            return SOAGenerationUtility.read_variables_list_from_workbook(cached.workbook)
+        finally:
+            if cached.should_close:
+                cached.workbook.close()
+
+    @staticmethod
+    def render_nodes_to_files(
+        variables_list: list[dict[str, Any]],
+        output_dir: str,
+        *,
+        server_check_block: str = "",
+    ) -> None:
+        """将节点变量列表渲染并写入 SOA Node 文件。
+
+        参数：
+            variables_list：各节点模板变量字典列表。
+            output_dir：SOANode 输出目录。
+            server_check_block：NodeInfo 生成的 ServerCheck 常量块（各 .can 共用）。
+        """
         template_dir = os.path.join(os.path.dirname(__file__), "templates")
         env = Environment(loader=FileSystemLoader(template_dir), autoescape=False)
         template = env.get_template("Node.template")
         for variables in variables_list:
             output_path = os.path.join(output_dir, f"{variables['NodeName']}.can")
-            rendered = template.render(**variables)
+            render_context = dict(variables)
+            render_context["ServerCheckBlock"] = server_check_block
+            rendered = template.render(**render_context)
             with open(output_path, "w", encoding="utf-8-sig", newline="\r\n") as file_obj:
                 file_obj.write(rendered)
 
@@ -218,15 +252,46 @@ class SOAGenerationUtility:
         excel_path, output_dir = cls.load_paths(gconfig, resolved_base_dir, domain)
         if not os.path.isfile(excel_path):
             raise FileNotFoundError(f"服务通信矩阵不存在: {excel_path}")
-        variables_list = cls.read_variables_list_from_excel(excel_path, workbook_cache=workbook_cache)
-        cls.render_nodes_to_files(variables_list, output_dir)
-        logger.log(PROGRESS_LEVEL, "SOA 生成完成：%s 个节点文件，输出目录: %s", len(variables_list), output_dir)
+        cached_workbook = open_workbook_cached(excel_path, workbook_cache=workbook_cache)
+        variables_list: list[dict[str, Any]] = []
+        server_check_entry_count = 0
+        try:
+            server_check_entries = SOANodeServerCheckUtility.read_entries_from_workbook(
+                cached_workbook.workbook
+            )
+            server_check_entry_count = len(server_check_entries) + 1
+            server_check_block = SOANodeServerCheckUtility.render_server_check_block(
+                server_check_entries
+            )
+            variables_list = cls.read_variables_list_from_workbook(cached_workbook.workbook)
+            cls.render_nodes_to_files(
+                variables_list,
+                output_dir,
+                server_check_block=server_check_block,
+            )
+        finally:
+            if cached_workbook.should_close:
+                cached_workbook.workbook.close()
+        logger.log(
+            PROGRESS_LEVEL,
+            "SOA 生成完成：%s 个节点文件，输出目录: %s，ServerCheck 条目: %s",
+            len(variables_list),
+            output_dir,
+            server_check_entry_count,
+        )
         return gconfig
 
     @staticmethod
-    def run_setserver_cin_generation(excel_path: str, anchor_path: str) -> str:
+    def run_setserver_cin_generation(
+        excel_path: str,
+        anchor_path: str,
+        project_base_dir: str,
+    ) -> str:
         """根据 Service_Interface 工作表生成 ``SOA_StartSetserver.cin``。"""
-        return SOASetServerCinGenerator(anchor_path=anchor_path).generate(excel_path)
+        return SOASetServerCinGenerator(
+            anchor_path=anchor_path,
+            project_base_dir=project_base_dir,
+        ).generate(excel_path)
 
 
 if __name__ == "__main__":

@@ -16,6 +16,7 @@ from typing import Any, Dict, Optional
 
 from core.generator_logging import GeneratorLogger, LogSpecConfig
 from infra.filesystem import RuntimePathResolver
+from infra.filesystem.pathing import PathResolutionError
 from generators.capl_soa.soa_setserver_cin import SOASetServerCinGenerator
 from generators.capl_soa.soa_datatab_cin import SOADataTabCinGenerator
 from services.config_constants import (
@@ -165,6 +166,10 @@ class TaskService:
                 elapsed_ms=(time.perf_counter() - started) * 1000.0,
             )
             return TaskResult(success=True, message=f"{domain} CAN 生成完成")
+        except PathResolutionError as error:
+            elapsed_ms = (time.perf_counter() - started) * 1000.0
+            self.log_task_failed(step="can", domain=domain, error=error, elapsed_ms=elapsed_ms)
+            return TaskResult(success=False, message=str(error), detail="")
         except Exception as error:
             traceback_text = traceback.format_exc()
             error_message = str(error)
@@ -486,7 +491,10 @@ class TaskService:
                     anchor_abs = RuntimePathResolver.resolve_configured_path(
                         generator_config.base_dir, output_dir_raw
                     )
-                    SOASetServerCinGenerator(anchor_path=anchor_abs).generate(
+                    SOASetServerCinGenerator(
+                        anchor_path=anchor_abs,
+                        project_base_dir=generator_config.base_dir,
+                    ).generate(
                         excel_abs,
                         find_or_create_soa_onder=False,
                         uds_ecu_qualifier=uds_ecu_qualifier,
@@ -521,6 +529,18 @@ class TaskService:
             )
             soa_file_logger.log(PROGRESS_LEVEL, ">>> 任务完成！%s SOA Node 生成完成%s", domain, cin_note)
             return TaskResult(success=True, message=f"{domain} SOA Node 生成完成{cin_note}")
+        except PathResolutionError as error:
+            self.log_task_failed(
+                step="soa",
+                domain=domain,
+                error=error,
+                elapsed_ms=(time.perf_counter() - started) * 1000.0,
+            )
+            return TaskResult(
+                success=False,
+                message=str(error),
+                detail="",
+            )
         except Exception as error:
             traceback_text = traceback.format_exc()
             self.log_task_failed(
@@ -531,7 +551,7 @@ class TaskService:
             )
             return TaskResult(
                 success=False,
-                message=f"{domain} SOA Node 生成失败: {error}",
+                message=f"{domain} SOA 生成失败: {error}",
                 detail=traceback_text,
             )
         finally:

@@ -38,18 +38,21 @@ ANCHOR_REQUIRED_MESSAGE = (
 def invoke_soa_setserver_generation(
     resolved_excel: str,
     stripped_anchor: str,
+    project_base_dir: str,
 ) -> tuple[dict[str, Any], int]:
     """在已通过参数校验的前提下执行 CIN 生成并返回统一成功 tuple（不向调用方捕获异常）。
 
     参数：
         resolved_excel：解析后的接口表 Excel 绝对路径。
         stripped_anchor：已去首尾空白的锚点路径。
+        project_base_dir：工具工程根目录（用于 SOA public/Public 锚点解析）。
 
     返回：``api_success`` 拼装的结果与 HTTP 200。
     """
     output_path = SOAGenerationUtility.run_setserver_cin_generation(
         excel_path=resolved_excel,
         anchor_path=stripped_anchor,
+        project_base_dir=project_base_dir,
     )
     return api_success(
         f"已生成 SOA_StartSetserver.cin {output_path}",
@@ -131,6 +134,7 @@ class CentralProgrammaticRouteService:
                 invoke_soa_setserver_generation,
                 resolved_excel,
                 stripped_anchor,
+                base_dir,
             ),
         )
         return guarded()
